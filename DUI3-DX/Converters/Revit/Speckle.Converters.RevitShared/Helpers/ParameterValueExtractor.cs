@@ -112,16 +112,16 @@ public class ParameterValueExtractor
 
   public ElementId GetValueAsElementId(Element element, BuiltInParameter builtInParameter)
   {
-    if (TryGetValueAsElementId(element, builtInParameter, out ElementId elementId))
+    if (TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      return elementId;
+      return elementId!;
     }
     throw new SpeckleConversionException(
       $"Failed to get {builtInParameter} on element of type {element.GetType()} as ElementId"
     );
   }
 
-  public bool TryGetValueAsElementId(Element element, BuiltInParameter builtInParameter, out ElementId elementId)
+  public bool TryGetValueAsElementId(Element element, BuiltInParameter builtInParameter, out ElementId? elementId)
   {
     if (
       GetValueGeneric(element, builtInParameter, StorageType.ElementId, (parameter) => parameter.AsElementId())
@@ -143,7 +143,7 @@ public class ParameterValueExtractor
 
   public bool TryGetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter, out T? value)
   {
-    if (!TryGetValueAsElementId(element, builtInParameter, out ElementId elementId))
+    if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
       value = default;
       return false;
