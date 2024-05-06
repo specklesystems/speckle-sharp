@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class SpeckleFallbackToHostConversion
+public class FallbackToHostTopLevelConverter
   : ISpeckleObjectToHostConversion,
     IRawConversion<DisplayableObject, List<RG.GeometryBase>>
 {
@@ -16,7 +16,7 @@ public class SpeckleFallbackToHostConversion
   private readonly IRawConversion<SOG.Mesh, RG.Mesh> _meshConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
-  public SpeckleFallbackToHostConversion(
+  public FallbackToHostTopLevelConverter(
     IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
     IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
     IRawConversion<SOG.Mesh, RG.Mesh> meshConverter,
