@@ -98,15 +98,14 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
       List<ElementId> revitObjects = modelCard.SendFilter.GetObjectIds().Select(id => ElementId.Parse(id)).ToList();
 
-      var sendInfo = new SendInfo()
-      {
-        AccountId = modelCard.AccountId,
-        ProjectId = modelCard.ProjectId,
-        ModelId = modelCard.ModelId,
-        ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds,
-        SourceApplication = "Revit"
-      };
+      var sendInfo = new SendInfo(
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        _revitSettings.HostSlug,
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
 
       var sendResult = await sendOperation.Service
         .Execute(
