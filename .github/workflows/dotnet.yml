@@ -26,7 +26,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore DUI3-DX.slnf
       - name: Build
-        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
+        run: dotnet msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
