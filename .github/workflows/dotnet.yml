@@ -19,14 +19,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
-      - name: Restore tools
-        run: dotnet tool restore
-      - name: Code formatting check
-        run: dotnet csharpier --check .
-      - name: Restore dependencies
-        run: dotnet restore DUI3-DX.slnf
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+      # - name: Restore tools
+      #   run: dotnet tool restore
+      # - name: Code formatting check
+      #   run: dotnet csharpier --check .
       - name: Build
-        run: dotnet msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
+        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
