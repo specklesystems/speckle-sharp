@@ -1,6 +1,6 @@
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Bindings;
@@ -11,10 +11,10 @@ internal abstract class RevitBaseBinding : IBinding
   public string Name { get; protected set; }
   public IBridge Parent { get; protected set; }
 
-  protected readonly RevitDocumentStore _store;
+  protected readonly DocumentModelStore _store;
   protected readonly RevitContext _revitContext;
 
-  public RevitBaseBinding(string name, RevitDocumentStore store, IBridge bridge, RevitContext revitContext)
+  public RevitBaseBinding(string name, DocumentModelStore store, IBridge bridge, RevitContext revitContext)
   {
     Name = name;
     Parent = bridge;

@@ -5,6 +5,7 @@ using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
+using Speckle.Converters.ArcGIS3.Utils;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -12,14 +13,20 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
+  private readonly IFeatureClassUtils _featureClassUtils;
+  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
     IRawConversion<Row, GisFeature> gisFeatureConverter,
+    IFeatureClassUtils featureClassUtils,
+    IArcGISFieldUtils fieldsUtils,
     IConversionContextStack<Map, Unit> contextStack
   )
   {
     _gisFeatureConverter = gisFeatureConverter;
+    _featureClassUtils = featureClassUtils;
+    _fieldsUtils = fieldsUtils;
     _contextStack = contextStack;
   }
 
@@ -70,16 +77,23 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     // get feature class fields
     var allLayerAttributes = new Base();
     var dispayTable = target as IDisplayTable;
-    IReadOnlyList<FieldDescription> fieldDescriptions = dispayTable.GetFieldDescriptions();
-    foreach (FieldDescription field in fieldDescriptions)
+    IReadOnlyList<FieldDescription> allFieldDescriptions = dispayTable.GetFieldDescriptions();
+    List<FieldDescription> addedFieldDescriptions = new();
+    foreach (FieldDescription field in allFieldDescriptions)
     {
       if (field.IsVisible)
       {
         string name = field.Name;
-        if (name == "Shape")
+        if (
+          field.Type == FieldType.Geometry
+          || field.Type == FieldType.Raster
+          || field.Type == FieldType.XML
+          || field.Type == FieldType.Blob
+        )
         {
           continue;
         }
+        addedFieldDescriptions.Add(field);
         allLayerAttributes[name] = (int)field.Type;
       }
     }
@@ -105,7 +119,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 
           // replace element "attributes", to remove those non-visible on Layer level
           Base elementAttributes = new();
-          foreach (FieldDescription field in fieldDescriptions)
+          foreach (FieldDescription field in addedFieldDescriptions)
           {
             if (field.IsVisible)
             {

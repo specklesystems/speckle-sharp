@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Converters.RevitShared.Helpers;
 
@@ -16,7 +14,7 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
   public SelectionBinding(
     RevitContext revitContext,
-    RevitDocumentStore store,
+    DocumentModelStore store,
     IRevitIdleManager idleManager,
     IBridge bridge
   )
@@ -41,16 +39,17 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
-    List<Element> els = _revitContext.UIApplication.ActiveUIDocument.Selection
+    // POC: this was also being called on shutdown
+    // probably the bridge needs to be able to know if the plugin has been terminated
+    // also on termination the OnSelectionChanged event needs unwinding
+    var selectionIds = _revitContext.UIApplication.ActiveUIDocument.Selection
       .GetElementIds()
-      .Select(id => _revitContext.UIApplication.ActiveUIDocument.Document.GetElement(id))
+      .Select(id => id.ToString())
       .ToList();
-    List<string> cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
-    List<string> ids = els.Select(el => el.UniqueId.ToString()).ToList();
     return new SelectionInfo()
     {
-      SelectedObjectIds = ids,
-      Summary = $"{els.Count} objects ({string.Join(", ", cats)})"
+      SelectedObjectIds = selectionIds,
+      Summary = $"{selectionIds.Count} objects selected."
     };
   }
 }

@@ -11,7 +11,7 @@ public class SendSelection
     _selectedItemIds = new HashSet<string>(selectedItemIds);
   }
 
-  public bool Contains(string uniqueId) => _selectedItemIds.Contains(uniqueId);
+  public bool Contains(string elementId) => _selectedItemIds.Contains(elementId);
 
   public IReadOnlyCollection<string> SelectedItems => _selectedItemIds.ToList().AsReadOnly();
 }

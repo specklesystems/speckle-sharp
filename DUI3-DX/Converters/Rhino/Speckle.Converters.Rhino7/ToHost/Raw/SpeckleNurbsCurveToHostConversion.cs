@@ -5,15 +5,10 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.NurbsCurve>
 {
-  private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleNurbsCurveToHostConversion(
-    IRawConversion<SOG.Point, RG.Point3d> pointConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
-  )
+  public SpeckleNurbsCurveToHostConversion(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
   {
-    _pointConverter = pointConverter;
     _intervalConverter = intervalConverter;
   }
 
@@ -26,9 +21,7 @@ public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.Nu
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.NurbsCurve RawConvert(SOG.Curve target)
   {
-    var rhinoPoints = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
-
-    RG.NurbsCurve? nurbsCurve = RG.NurbsCurve.Create(false, target.degree, rhinoPoints);
+    RG.NurbsCurve? nurbsCurve = new(target.degree, target.points.Count / 3);
 
 #pragma warning disable CA1508
     if (nurbsCurve == null) // POC: CNX-9272 Nullability is wrong here, cannot remove this warning but code is required.
@@ -37,9 +30,11 @@ public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.Nu
       throw new SpeckleConversionException("Attempt to create Nurbs Curve failed with no explanation from Rhino");
     }
 
-    for (int j = 0; j < nurbsCurve.Points.Count; j++)
+    // Hyper optimised curve control point conversion
+    for (int i = 2, j = 0; i < target.points.Count; i += 3, j++)
     {
-      nurbsCurve.Points.SetPoint(j, rhinoPoints[j], target.weights[j]);
+      var pt = new RG.Point3d(target.points[i - 2], target.points[i - 1], target.points[i]); // Skip the point converter for performance
+      nurbsCurve.Points.SetPoint(j, pt, target.weights[j]);
     }
 
     // check knot multiplicity to match Rhino's standard of (# control points + degree - 1)

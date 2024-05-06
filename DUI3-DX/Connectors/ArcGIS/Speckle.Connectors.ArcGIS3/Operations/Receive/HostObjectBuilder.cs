@@ -48,7 +48,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
-    IEnumerable<(List<string>, Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
+    IEnumerable<(string[], Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
 
     IEnumerable<(List<string>, Base)> gisObjectsWithPath = objectsWithPath.Where(
       x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer
@@ -98,7 +98,7 @@ public class HostObjectBuilder : IHostObjectBuilder
         // BAKE OBJECTS HERE
 
         // POC: QueuedTask
-        QueuedTask.Run(() =>
+        var task = QueuedTask.Run(() =>
         {
           try
           {
@@ -128,6 +128,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             throw;
           }
         });
+        task.Wait(cancellationToken);
 
         onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
       }

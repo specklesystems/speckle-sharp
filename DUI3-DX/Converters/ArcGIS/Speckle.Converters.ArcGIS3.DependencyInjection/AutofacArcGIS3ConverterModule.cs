@@ -18,6 +18,8 @@ public class AutofacArcGISConverterModule : Module
     builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISConverterToHost>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
     builder.RegisterType<FeatureClassUtils>().As<IFeatureClassUtils>().InstancePerLifetimeScope();
+    builder.RegisterType<ArcGISFieldUtils>().As<IArcGISFieldUtils>().InstancePerLifetimeScope();
+    builder.RegisterType<CharacterCleaner>().As<ICharacterCleaner>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISProjectUtils>().As<IArcGISProjectUtils>().InstancePerLifetimeScope();
 
     builder

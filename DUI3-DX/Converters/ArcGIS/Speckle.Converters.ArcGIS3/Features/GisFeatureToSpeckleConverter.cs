@@ -57,22 +57,30 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     foreach (Field field in fields)
     {
       string name = field.Name;
-      if (name != "Shape") // ignore the field with geometry itself
+      // POC: check for all possible reserved Shape names
+      if (field.FieldType == FieldType.Geometry) // ignore the field with geometry itself
       {
-        try
-        {
-          object? value = target[name];
-          attributes[name] = value;
-        }
-        catch (ArgumentException)
-        {
-          // TODO: log in the conversion errors list
-          attributes[name] = null;
-        }
+        hasGeometry = true;
+      }
+      // Raster FieldType is not properly supported through API
+      else if (
+        field.FieldType == FieldType.Raster || field.FieldType == FieldType.Blob || field.FieldType == FieldType.XML
+      )
+      {
+        attributes[name] = null;
+      }
+      // to not break serializer (DateOnly) and to simplify complex types
+      else if (
+        field.FieldType == FieldType.DateOnly
+        || field.FieldType == FieldType.TimeOnly
+        || field.FieldType == FieldType.TimestampOffset
+      )
+      {
+        attributes[name] = target[name]?.ToString();
       }
       else
       {
-        hasGeometry = true;
+        attributes[name] = target[name];
       }
     }
 

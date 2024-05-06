@@ -8,65 +8,46 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: do we need to see the blocks investigation outcome? Does the current logic hold?
 // opportunity to rethink or confirm hosted element handling? Should this be a connector responsibiliy?
 // No interfacing out however...
+// CNX-9414 Re-evaluate hosted element conversions
 public class HostedElementConversionToSpeckle
 {
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly RevitConversionContextStack _contextStack;
 
   public HostedElementConversionToSpeckle(
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    ISpeckleConverterToSpeckle converter
+    ISpeckleConverterToSpeckle converter,
+    RevitConversionContextStack contextStack
   )
   {
     _convertedObjectsCache = convertedObjectsCache;
     _converter = converter;
+    _contextStack = contextStack;
   }
 
-  public List<Base> GetHostedElementsConverted(Element host)
+  public IEnumerable<Base> ConvertHostedElements(IEnumerable<ElementId> hostedElementIds)
   {
-    var convertedHostedElements = new List<Base>();
-
-    var hostedElementIds = GetHostedElementIds(host);
-
     foreach (var elemId in hostedElementIds)
     {
-      var element = host.Document.GetElement(elemId);
+      Element element = _contextStack.Current.Document.Document.GetElement(elemId);
       if (_convertedObjectsCache.ContainsBaseConvertedFromId(element.UniqueId))
       {
         continue;
       }
 
-      convertedHostedElements.Add(_converter.Convert(element));
+      Base @base;
+      try
+      {
+        @base = _converter.Convert(element);
+      }
+      catch (SpeckleConversionException)
+      {
+        // POC: logging
+        continue;
+      }
+
+      yield return @base;
     }
-
-    return convertedHostedElements;
-  }
-
-  private static IList<ElementId> GetHostedElementIds(Element host)
-  {
-    IList<ElementId> ids;
-    if (host is HostObject hostObject)
-    {
-      ids = hostObject.FindInserts(true, false, false, false);
-    }
-    else
-    {
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter(
-        new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_CLines,
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
-        },
-        true
-      );
-      ids = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
-    }
-
-    // dont include host elementId
-    ids.Remove(host.Id);
-
-    return ids;
   }
 }

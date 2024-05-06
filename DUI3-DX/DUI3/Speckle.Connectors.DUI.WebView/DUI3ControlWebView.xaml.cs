@@ -9,9 +9,9 @@ namespace Speckle.Connectors.DUI.WebView;
 
 public sealed partial class DUI3ControlWebView : UserControl
 {
-  private readonly IReadOnlyCollection<IBinding> _bindings;
+  private readonly IEnumerable<Lazy<IBinding>> _bindings;
 
-  public DUI3ControlWebView(IReadOnlyCollection<IBinding> bindings)
+  public DUI3ControlWebView(IEnumerable<Lazy<IBinding>> bindings)
   {
     _bindings = bindings;
     InitializeComponent();
@@ -32,10 +32,22 @@ public sealed partial class DUI3ControlWebView : UserControl
 
   private void OnInitialized(object? sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    foreach (IBinding binding in _bindings)
+    if (e.IsSuccess == false)
     {
-      binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
-      Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
+      //POC: avoid silently accepting webview failures handle...
     }
+
+    // We use Lazy here to delay creating the binding until after the Browser is fully initialized.
+    // Otherwise the Browser cannot respond to any requests to ExecuteScriptAsyncMethod
+    foreach (Lazy<IBinding> lazyBinding in _bindings)
+    {
+      SetupBinding(lazyBinding.Value);
+    }
+  }
+
+  private void SetupBinding(IBinding binding)
+  {
+    binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser, ShowDevToolsMethod);
+    Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
   }
 }

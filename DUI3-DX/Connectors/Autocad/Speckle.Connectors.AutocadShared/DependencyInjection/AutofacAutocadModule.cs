@@ -23,6 +23,7 @@ using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
@@ -49,11 +50,12 @@ public class AutofacAutocadModule : Module
 
     // Operations
     builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().InstancePerLifetimeScope();
-    builder.RegisterType<ReceiveOperation>().SingleInstance();
+    builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance().AutoActivate(); // Auto activation makes SynchronizationContext available right after building. Otherwise we were missing it in UoWs.
+    builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
 
     // Object Builders
-    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
+    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
     builder
       .RegisterType<RootObjectBuilder>()
       .As<IRootObjectBuilder<(DBObject obj, string applicationId)>>()

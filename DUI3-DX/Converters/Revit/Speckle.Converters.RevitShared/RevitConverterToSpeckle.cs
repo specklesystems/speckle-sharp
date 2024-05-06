@@ -1,8 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Autodesk.Revit.DB;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared;
@@ -10,12 +8,12 @@ namespace Speckle.Converters.RevitShared;
 // POC: maybe possible to restrict the access so this cannot be created directly?
 public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IConverterResolver<IHostObjectToSpeckleConversion> _toSpeckle;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public RevitConverterToSpeckle(
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IConverterResolver<IHostObjectToSpeckleConversion> toSpeckle,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     ParameterValueExtractor parameterValueExtractor
   )
@@ -29,7 +27,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   // if it cannot be converted then we should throw
   public Base Convert(object target)
   {
-    var objectConverter = _toSpeckle.ResolveInstance(target.GetType().Name);
+    var objectConverter = _toSpeckle.GetConversionForType(target.GetType());
 
     if (objectConverter == null)
     {
@@ -41,9 +39,23 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
       ?? throw new SpeckleConversionException($"Conversion of object with type {target.GetType()} returned null");
 
     // POC : where should logic common to most objects go?
-    if (target is Element element)
+    // shouldn't target ALWAYS be DB.Element?
+    if (target is DB.Element element)
     {
-      _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      // POC: is this the right place?
+      result.applicationId = element.UniqueId;
+
+      try
+      {
+        _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      }
+      catch (ArgumentException)
+      {
+        // POC: object converted multiple times
+        // we are doing this all the time in our current converter, and the serializer is fixing it for us.
+        // so for now, I am just silencing this exception
+        // https://spockle.atlassian.net/browse/CNX-9402
+      }
       _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
     }
 

@@ -1,6 +1,6 @@
 using System;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
@@ -11,7 +11,7 @@ internal class ReceiveBinding : RevitBaseBinding, ICancelable
 {
   public CancellationManager CancellationManager { get; } = new();
 
-  public ReceiveBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge)
+  public ReceiveBinding(RevitContext revitContext, DocumentModelStore store, IBridge bridge)
     : base("receiveBinding", store, bridge, revitContext) { }
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);

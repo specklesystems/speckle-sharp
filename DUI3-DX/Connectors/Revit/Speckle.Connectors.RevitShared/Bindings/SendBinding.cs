@@ -5,7 +5,6 @@ using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
@@ -16,6 +15,7 @@ using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.DUI.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -33,7 +33,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   public SendBinding(
     IRevitIdleManager idleManager,
     RevitContext revitContext,
-    RevitDocumentStore store,
+    DocumentModelStore store,
     IBridge bridge,
     IUnitOfWorkFactory unitOfWorkFactory
   )
@@ -73,25 +73,39 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     // it can be injected where needed instead of passing it around like a bomb :D
     CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-    if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+    // POC: this try catch pattern is coming from Rhino. I see there is a semi implemented "SpeckleTopLevelExceptionHandler"
+    // above that wraps the call of this HandleSend, but it currently is not doing anything - resulting in all errors from here
+    // bubbling up to the bridge.
+    try
     {
-      throw new InvalidOperationException("No publish model card was found.");
+      if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+      {
+        throw new InvalidOperationException("No publish model card was found.");
+      }
+
+      using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
+
+      string versionId = await sendOperation.Service
+        .Execute(
+          modelCard.SendFilter,
+          modelCard.AccountId,
+          modelCard.ProjectId,
+          modelCard.ModelId,
+          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          cts.Token
+        )
+        .ConfigureAwait(false);
+
+      Commands.SetModelCreatedVersionId(modelCardId, versionId);
     }
-
-    using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
-
-    string versionId = await sendOperation.Service
-      .Execute(
-        modelCard.SendFilter,
-        modelCard.AccountId,
-        modelCard.ProjectId,
-        modelCard.ModelId,
-        (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
-        cts.Token
-      )
-      .ConfigureAwait(false);
-
-    Commands.SetModelCreatedVersionId(modelCardId, versionId);
+    catch (OperationCanceledException)
+    {
+      return;
+    }
+    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    {
+      Commands.SetModelError(modelCardId, e);
+    }
   }
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
@@ -133,17 +147,17 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
     foreach (ElementId elementId in addedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     foreach (ElementId elementId in deletedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     foreach (ElementId elementId in modifiedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     // TODO: CHECK IF ANY OF THE ABOVE ELEMENTS NEED TO TRIGGER A FILTER REFRESH

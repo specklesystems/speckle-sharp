@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
@@ -8,7 +8,6 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
@@ -20,12 +19,12 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
   public string Name { get; private set; }
   public IBridge Parent { get; private set; }
 
-  protected readonly RevitDocumentStore _store;
+  protected readonly DocumentModelStore _store;
   protected readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
 
   public BasicConnectorBindingRevit(
-    RevitDocumentStore store,
+    DocumentModelStore store,
     RevitSettings revitSettings,
     IBridge parent,
     RevitContext revitContext
@@ -40,7 +39,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     // POC: event binding?
     _store.DocumentChanged += (_, _) =>
     {
-      parent.Send(Name, BasicConnectorBindingEvents.DOCUMENT_CHANGED);
+      Commands.NotifyDocumentChanged();
     };
   }
 
@@ -66,6 +65,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     }
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+
+    // POC: Notify user here if document is null.
 
     return new DocumentInfo
     {
@@ -103,56 +104,19 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
 
-    // POC: GetElementsFromDocument could be interfaced out, extension is cleaner
-    List<ElementId> elementIds = doc.GetElements(objectsIds).Select(e => e.Id).ToList();
+    var elementIds = model.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
+    if (elementIds.Count == 0)
+    {
+      Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
+      return;
+    }
 
     // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
     RevitTask.RunAsync(() =>
     {
       activeUIDoc.Selection.SetElementIds(elementIds);
       activeUIDoc.ShowElements(elementIds);
-
-      // Create a BoundingBoxXYZ to encompass the selected elements
-      BoundingBoxXYZ selectionBoundingBox = new();
-      bool first = true;
-
-      foreach (ElementId elementId in elementIds)
-      {
-        Element element = doc.GetElement(elementId);
-
-        if (element != null)
-        {
-          BoundingBoxXYZ elementBoundingBox = element.get_BoundingBox(null);
-
-          if (elementBoundingBox != null)
-          {
-            if (first)
-            {
-              selectionBoundingBox = elementBoundingBox;
-              first = false;
-            }
-            else
-            {
-              // selectionBoundingBox.Min = XYZ.Min(selectionBoundingBox.Min, elementBoundingBox.Min);
-              // selectionBoundingBox.Max = XYZ.Max(selectionBoundingBox.Max, elementBoundingBox.Max);
-            }
-          }
-        }
-      }
-
-      // Zoom the view to the selection bounding box
-      if (!first)
-      {
-        View activeView = activeUIDoc.ActiveView;
-
-        using Transaction tr = new(doc, "Zoom to Selection");
-        tr.Start();
-        activeView.CropBox = selectionBoundingBox;
-        doc.Regenerate();
-        tr.Commit();
-      }
     });
   }
 
