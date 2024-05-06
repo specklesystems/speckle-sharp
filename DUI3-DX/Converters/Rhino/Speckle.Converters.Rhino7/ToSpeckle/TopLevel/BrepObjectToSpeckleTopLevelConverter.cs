@@ -6,11 +6,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 [NameAndRankValue(nameof(BrepObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BrepObjectToSpeckleConverter : IHostObjectToSpeckleConversion
+public class BrepObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleConversion
 {
   private readonly IRawConversion<RG.Brep, SOG.Brep> _curveConverter;
 
-  public BrepObjectToSpeckleConverter(IRawConversion<RG.Brep, SOG.Brep> curveConverter)
+  public BrepObjectToSpeckleTopLevelConverter(IRawConversion<RG.Brep, SOG.Brep> curveConverter)
   {
     _curveConverter = curveConverter;
   }
