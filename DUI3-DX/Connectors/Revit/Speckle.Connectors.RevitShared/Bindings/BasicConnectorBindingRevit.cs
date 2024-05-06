@@ -66,6 +66,11 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
+    if (doc.IsFamilyDocument)
+    {
+      return new DocumentInfo();
+    }
+
     // POC: Notify user here if document is null.
 
     return new DocumentInfo
