@@ -59,6 +59,33 @@ public class HostObjectBuilder : IHostObjectBuilder
 
     List<string> objectIds = new();
     int count = 0;
+    int allCount = objectsWithPath.Count();
+    // convert non-gis stuff
+    foreach ((List<string> path, Base obj) in nonGisObjectsWithPath)
+    {
+      if (cancellationToken.IsCancellationRequested)
+      {
+        throw new OperationCanceledException(cancellationToken);
+      }
+
+      try
+      {
+        QueuedTask.Run(() =>
+        {
+          Geometry converted = (Geometry)_toHostConverter.Convert(obj);
+          objectIds.Add(obj.id);
+        });
+
+        onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+      }
+      catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+      {
+        // POC: report, etc.
+        Debug.WriteLine("conversion error happened.");
+      }
+    }
+
+    // convert gis-objects
     foreach ((List<string> path, Base obj) in gisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
@@ -102,7 +129,7 @@ public class HostObjectBuilder : IHostObjectBuilder
           }
         });
 
-        onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count());
+        onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
       }
       catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
