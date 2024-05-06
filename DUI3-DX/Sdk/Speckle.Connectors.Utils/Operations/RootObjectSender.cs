@@ -18,9 +18,9 @@ namespace Speckle.Connectors.Utils.Operations;
 public sealed class RootObjectSender : IRootObjectSender
 {
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
-  private readonly Func<Account, string, ITransport> _transportFactory;
+  private readonly ServerTransport.Factory _transportFactory;
 
-  public RootObjectSender(Func<Account, string, ITransport> transportFactory)
+  public RootObjectSender(ServerTransport.Factory transportFactory)
   {
     _transportFactory = transportFactory;
   }
@@ -38,7 +38,7 @@ public sealed class RootObjectSender : IRootObjectSender
 
     Account account = AccountManager.GetAccount(sendInfo.AccountId);
 
-    ITransport transport = _transportFactory(account, sendInfo.ProjectId);
+    ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
     ct.ThrowIfCancellationRequested();
@@ -47,7 +47,7 @@ public sealed class RootObjectSender : IRootObjectSender
 
     // 8 - Create the version (commit)
     using var apiClient = new Client(account);
-    string versionId = await apiClient
+    _ = await apiClient
       .CommitCreate(
         new CommitCreateInput
         {
