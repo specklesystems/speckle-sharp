@@ -66,6 +66,11 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
+    if (doc.IsFamilyDocument)
+    {
+      return new DocumentInfo { Message = "Family Environment files not supported by Speckle." };
+    }
+
     // POC: Notify user here if document is null.
 
     return new DocumentInfo

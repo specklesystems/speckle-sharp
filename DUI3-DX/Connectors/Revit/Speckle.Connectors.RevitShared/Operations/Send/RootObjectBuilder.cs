@@ -6,6 +6,7 @@ using System.Threading;
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using System.Linq;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
@@ -43,6 +44,13 @@ public class RootObjectBuilder
     CancellationToken ct = default
   )
   {
+    var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
+
+    if (doc.IsFamilyDocument)
+    {
+      throw new SpeckleException("Family Environment documents are not supported.");
+    }
+
     var objects = new List<Element>(); // = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
 
     foreach (var id in sendSelection.SelectedItems)
@@ -59,7 +67,6 @@ public class RootObjectBuilder
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
 
     foreach (Element revitElement in objects)
