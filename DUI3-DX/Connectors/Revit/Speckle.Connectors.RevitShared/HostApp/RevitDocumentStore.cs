@@ -82,12 +82,6 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    // Don't even attempt to write anything if empty.
-    if (!Models.Any())
-    {
-      return;
-    }
-
     string serializedModels = Serialize();
 
     using Transaction t = new(doc, "Speckle Write State");
