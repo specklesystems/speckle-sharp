@@ -1,5 +1,6 @@
 ﻿using Objects;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
@@ -27,7 +28,11 @@ public class SpecklePolyCurveRawToHostConversion : IRawConversion<SOG.Polycurve,
     foreach (var segment in target.segments)
     {
       var childCurve = CurveConverter!.RawConvert(segment);
-      result.Append(childCurve);
+      bool success = result.AppendSegment(childCurve);
+      if (!success)
+      {
+        throw new ConversionException($"Failed to append segment {segment}");
+      }
     }
 
     result.Domain = _intervalConverter.RawConvert(target.domain);
