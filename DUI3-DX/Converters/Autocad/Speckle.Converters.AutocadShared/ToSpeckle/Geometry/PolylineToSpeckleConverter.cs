@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -7,10 +6,10 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.Geometry;
 
 /// <summary>
-/// The <see cref="Polyline"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
+/// The <see cref="ADB.Polyline"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
 /// </summary>
 /// <remarks>
-/// <see cref="Polyline"/> is of type <see cref="SOG.Autocad.AutocadPolyType.Light"/> and will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline"/> is of type <see cref="SOG.Autocad.AutocadPolyType.Light"/> and will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolylineToSpeckleConverter
@@ -20,15 +19,15 @@ public class PolylineToSpeckleConverter
   private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;
   private readonly IRawConversion<AG.CircularArc3d, SOG.Arc> _arcConverter;
   private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public PolylineToSpeckleConverter(
     IRawConversion<AG.LineSegment3d, SOG.Line> lineConverter,
     IRawConversion<AG.CircularArc3d, SOG.Arc> arcConverter,
     IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _lineConverter = lineConverter;
@@ -45,7 +44,6 @@ public class PolylineToSpeckleConverter
     List<double> value = new(target.NumberOfVertices * 3);
     List<double> bulges = new(target.NumberOfVertices);
     List<Objects.ICurve> segments = new();
-
     for (int i = 0; i < target.NumberOfVertices; i++)
     {
       // get vertex value in the Object Coordinate System (OCS)
@@ -56,14 +54,16 @@ public class PolylineToSpeckleConverter
       bulges.Add(target.GetBulgeAt(i));
 
       // get segment in the Global Coordinate System (GCS)
-      SegmentType type = target.GetSegmentType(i);
+      ADB.SegmentType type = target.GetSegmentType(i);
       switch (type)
       {
-        case SegmentType.Line:
-          segments.Add(_lineConverter.RawConvert(target.GetLineSegmentAt(i)));
+        case ADB.SegmentType.Line:
+          AG.LineSegment3d line = target.GetLineSegmentAt(i);
+          segments.Add(_lineConverter.RawConvert(line));
           break;
-        case SegmentType.Arc:
-          segments.Add(_arcConverter.RawConvert(target.GetArcSegmentAt(i)));
+        case ADB.SegmentType.Arc:
+          AG.CircularArc3d arc = target.GetArcSegmentAt(i);
+          segments.Add(_arcConverter.RawConvert(arc));
           break;
         default:
           // we are skipping segments of type Empty, Point, and Coincident

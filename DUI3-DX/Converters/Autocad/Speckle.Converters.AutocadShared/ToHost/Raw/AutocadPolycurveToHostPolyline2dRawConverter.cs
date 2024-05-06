@@ -71,9 +71,9 @@ public class AutocadPolycurveToHostPolyline2dRawConverter : IRawConversion<SOG.A
     // append vertices
     for (int i = 0; i < points.Count; i++)
     {
-      double tangent = target.tangents[i];
-      ADB.Vertex2d vertex = new(points[i], target.bulges[i], 0, 0, tangent);
-      if (tangent != 0)
+      double? tangent = target.tangents[i];
+      ADB.Vertex2d vertex = new(points[i], target.bulges[i], 0, 0, tangent ?? 0);
+      if (tangent is not null)
       {
         vertex.TangentUsed = true;
       }
