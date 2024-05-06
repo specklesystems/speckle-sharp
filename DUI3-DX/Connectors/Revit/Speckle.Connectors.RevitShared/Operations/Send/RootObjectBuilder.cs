@@ -6,10 +6,12 @@ using System.Threading;
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using System.Linq;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
-public class RootObjectBuilder
+public class RootObjectBuilder : IRootObjectBuilder<ElementId>
 {
   // POC: SendSelection and RevitConversionContextStack should be interfaces, former needs interfaces
   private readonly ISpeckleConverterToSpeckle _converter;
@@ -38,23 +40,24 @@ public class RootObjectBuilder
   }
 
   public Base Build(
-    SendSelection sendSelection,
+    IReadOnlyList<ElementId> objects,
+    SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
   {
-    var objects = new List<Element>(); // = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var revitElements = new List<Element>(); // = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
 
-    foreach (var id in sendSelection.SelectedItems)
+    foreach (var id in objects)
     {
-      var el = _contextStack.Current.Document.Document.GetElement(ElementId.Parse(id));
+      var el = _contextStack.Current.Document.Document.GetElement(id);
       if (el != null)
       {
-        objects.Add(el);
+        revitElements.Add(el);
       }
     }
 
-    if (objects.Count == 0)
+    if (revitElements.Count == 0)
     {
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
@@ -62,7 +65,7 @@ public class RootObjectBuilder
     var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
 
-    foreach (Element revitElement in objects)
+    foreach (Element revitElement in revitElements)
     {
       ct.ThrowIfCancellationRequested();
 
@@ -70,16 +73,24 @@ public class RootObjectBuilder
       var path = new[] { doc.GetElement(revitElement.LevelId) is not Level level ? "No level" : level.Name, cat };
       var collection = GetAndCreateObjectHostCollection(path);
 
-      if (_convertedObjectsCache.ContainsBaseConvertedFromId(revitElement.UniqueId))
-      {
-        continue;
-      }
-
+      var applicationId = revitElement.Id.ToString();
       try
       {
-        var convertedElement = _converter.Convert(revitElement);
-        convertedElement.applicationId = revitElement.Id.ToString();
-        collection.elements.Add(convertedElement);
+        Base converted;
+        if (
+          !sendInfo.ChangedObjectIds.Contains(applicationId)
+          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value)
+        )
+        {
+          converted = value;
+        }
+        else
+        {
+          converted = _converter.Convert(revitElement);
+          converted.applicationId = applicationId;
+        }
+
+        collection.elements.Add(converted);
       }
       catch (SpeckleConversionException ex)
       {
@@ -87,7 +98,7 @@ public class RootObjectBuilder
       }
 
       countProgress++;
-      onOperationProgressed?.Invoke("Converting", (double)countProgress / objects.Count);
+      onOperationProgressed?.Invoke("Converting", (double)countProgress / revitElements.Count);
     }
 
     return _rootObject;

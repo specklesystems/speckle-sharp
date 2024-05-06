@@ -26,10 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\IStorageSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacUIModule.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\IRootObjectSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectSender.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\SendOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
       <DependentUpon>CefSharpPanel.xaml</DependentUpon>
     </Compile>
