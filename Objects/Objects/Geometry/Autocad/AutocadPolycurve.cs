@@ -43,7 +43,7 @@ public class AutocadPolycurve : Polycurve
   /// <summary>
   /// The tangent in radians at each vertex. Should be null for Polyline and Polyline3d.
   /// </summary>
-  public List<double>? tangents { get; set; }
+  public List<double?>? tangents { get; set; }
 
   /// <summary>
   /// The normal of the plane of the Autocad Polyline or Polyline2d. Should be null for Polyline3d.

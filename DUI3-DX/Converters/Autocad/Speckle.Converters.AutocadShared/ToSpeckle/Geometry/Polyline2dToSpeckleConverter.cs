@@ -74,7 +74,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     // get all vertex data
     List<double> value = new();
     List<double> bulges = new();
-    List<double> tangents = new();
+    List<double?> tangents = new();
     List<ADB.Vertex2d> vertices = target
       .GetSubEntities<ADB.Vertex2d>(
         ADB.OpenMode.ForRead,
@@ -88,11 +88,12 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       ADB.Vertex2d vertex = vertices[i];
 
       // get vertex value in the Global Coordinate System (GCS).
+      // NOTE: for some reason, the z value of the position for rotated polyline2ds doesn't seem to match the exploded segment endpoint values
       value.AddRange(vertex.Position.ToArray());
 
       // get the bulge and tangent
       bulges.Add(vertex.Bulge);
-      tangents.Add(vertex.Tangent);
+      tangents.Add(vertex.TangentUsed ? vertex.Tangent : null);
     }
 
     // explode the polyline
@@ -102,6 +103,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     List<double> segmentValues = new();
     ADB.DBObjectCollection exploded = new();
     target.Explode(exploded);
+    AG.Point3d previousPoint = new();
 
     for (int i = 0; i < exploded.Count; i++)
     {
@@ -119,13 +121,35 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
         // for non-splines, convert the curve and add to segments list
         else
         {
+          // for the first segment, the only way we can correctly determine its orientation is to find the connection point to the next segment
+          // this is because the z value of rotated polyline2d vertices is unreliable, so we can't use the first vertex
+          if (i == 0 && exploded.Count > 1 && exploded[1] is ADB.Curve nextSegment)
+          {
+            previousPoint =
+              segment.StartPoint.IsEqualTo(nextSegment.StartPoint) || segment.StartPoint.IsEqualTo(nextSegment.EndPoint)
+                ? segment.EndPoint
+                : segment.StartPoint;
+          }
+
           switch (segment)
           {
             case ADB.Arc arc:
+              if (ShouldReverseCurve(arc, previousPoint))
+              {
+                arc.ReverseCurve();
+              }
+
               segments.Add(_arcConverter.RawConvert(arc));
+              previousPoint = arc.EndPoint;
               break;
             case ADB.Line line:
+              if (ShouldReverseCurve(line, previousPoint))
+              {
+                line.ReverseCurve();
+              }
+
               segments.Add(_lineConverter.RawConvert(line));
+              previousPoint = line.EndPoint;
               break;
           }
         }
@@ -166,4 +190,12 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
 
     return polycurve;
   }
+
+  /// <summary>
+  /// Determines if the input curve is reversed according to the input start point
+  /// </summary>
+  /// <param name="curve"></param>
+  /// <param name="startPoint">Should match either the start or the end point of the curve.</param>
+  /// <returns>True if the endpoint of the curve matches the startpoint, or false if it doesn't.</returns>
+  private bool ShouldReverseCurve(ADB.Curve curve, AG.Point3d startPoint) => curve.EndPoint.IsEqualTo(startPoint);
 }
