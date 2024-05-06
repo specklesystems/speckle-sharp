@@ -25,6 +25,8 @@ jobs:
       #   run: dotnet tool restore
       # - name: Code formatting check
       #   run: dotnet csharpier --check .
+      - name: Restore projects
+        run: dotnet restore DUI3-DX.slnf
       - name: Build
         run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Upload artifacts
