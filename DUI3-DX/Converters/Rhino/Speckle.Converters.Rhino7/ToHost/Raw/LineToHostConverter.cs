@@ -2,11 +2,11 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleLineRawToHostConversion : IRawConversion<SOG.Line, RG.LineCurve>, IRawConversion<SOG.Line, RG.Line>
+public class LineToHostConverter : IRawConversion<SOG.Line, RG.LineCurve>, IRawConversion<SOG.Line, RG.Line>
 {
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
 
-  public SpeckleLineRawToHostConversion(IRawConversion<SOG.Point, RG.Point3d> pointConverter)
+  public LineToHostConverter(IRawConversion<SOG.Point, RG.Point3d> pointConverter)
   {
     _pointConverter = pointConverter;
   }

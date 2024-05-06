@@ -2,7 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleIntervalRawToHostConversion : IRawConversion<SOP.Interval, RG.Interval>
+public class IntervalToHostConverter : IRawConversion<SOP.Interval, RG.Interval>
 {
   /// <summary>
   /// Converts a Speckle Interval object to a Rhino.Geometry.Interval object.

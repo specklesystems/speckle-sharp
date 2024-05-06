@@ -2,7 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleVectorRawToHostConversion : IRawConversion<SOG.Vector, RG.Vector3d>
+public class VectorToHostConverter : IRawConversion<SOG.Vector, RG.Vector3d>
 {
   /// <summary>
   /// Converts a Speckle.Vector object to a Rhino Vector3d object.

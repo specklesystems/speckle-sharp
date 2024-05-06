@@ -2,9 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpecklePointRawToHostConversion
-  : IRawConversion<SOG.Point, RG.Point3d>,
-    IRawConversion<SOG.Point, RG.Point>
+public class PointToHostConverter : IRawConversion<SOG.Point, RG.Point3d>, IRawConversion<SOG.Point, RG.Point>
 {
   /// <summary>
   /// Converts a Speckle Point object to a Rhino Point3d object.

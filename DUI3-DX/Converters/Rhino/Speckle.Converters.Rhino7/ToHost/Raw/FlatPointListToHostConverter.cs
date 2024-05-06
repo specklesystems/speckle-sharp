@@ -7,7 +7,7 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 /// <summary>
 /// Converts a flat list of raw double values to a Point3dList.
 /// </summary>
-public class FlatPointListRawToHostConversion : IRawConversion<IReadOnlyList<double>, Point3dList>
+public class FlatPointListToHostConverter : IRawConversion<IReadOnlyList<double>, Point3dList>
 {
   /// <summary>
   /// Converts a flat list of raw double values to a Point3dList.

@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
+public class CurveToHostConverter : IRawConversion<ICurve, RG.Curve>
 {
   private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
   private readonly IRawConversion<SOG.Arc, RG.ArcCurve> _arcConverter;
@@ -14,7 +14,7 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
   private readonly IRawConversion<SOG.Polycurve, RG.PolyCurve> _polyCurveConverter;
   private readonly IRawConversion<SOG.Curve, RG.NurbsCurve> _nurbsCurveConverter;
 
-  public SpeckleICurveRawToHostConversion(
+  public CurveToHostConverter(
     IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
     IRawConversion<SOG.Arc, RG.ArcCurve> arcConverter,
     IRawConversion<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,

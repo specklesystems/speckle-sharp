@@ -2,14 +2,14 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleEllipseRawToHostConversion
+public class EllipseToHostConverter
   : IRawConversion<SOG.Ellipse, RG.Ellipse>,
     IRawConversion<SOG.Ellipse, RG.NurbsCurve>
 {
   private readonly IRawConversion<SOG.Plane, RG.Plane> _planeConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleEllipseRawToHostConversion(
+  public EllipseToHostConverter(
     IRawConversion<SOG.Plane, RG.Plane> planeConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )

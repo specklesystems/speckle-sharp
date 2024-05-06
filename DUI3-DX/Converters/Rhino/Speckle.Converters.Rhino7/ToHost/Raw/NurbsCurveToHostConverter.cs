@@ -3,11 +3,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.NurbsCurve>
+public class NurbsCurveToHostConverter : IRawConversion<SOG.Curve, RG.NurbsCurve>
 {
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleNurbsCurveToHostConversion(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
+  public NurbsCurveToHostConverter(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
   {
     _intervalConverter = intervalConverter;
   }

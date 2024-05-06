@@ -3,14 +3,14 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpecklePolylineRawToHostConversion
+public class PolylineToHostConverter
   : IRawConversion<SOG.Polyline, RG.Polyline>,
     IRawConversion<SOG.Polyline, RG.PolylineCurve>
 {
   private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpecklePolylineRawToHostConversion(
+  public PolylineToHostConverter(
     IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )

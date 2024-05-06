@@ -2,12 +2,12 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleSpiralRawToHostConversion : IRawConversion<SOG.Spiral, RG.PolylineCurve>
+public class SpiralToHostConverter : IRawConversion<SOG.Spiral, RG.PolylineCurve>
 {
   private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleSpiralRawToHostConversion(
+  public SpiralToHostConverter(
     IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )

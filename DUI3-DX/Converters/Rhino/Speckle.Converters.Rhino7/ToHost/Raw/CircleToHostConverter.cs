@@ -7,15 +7,13 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 /// Implements the <see cref="IRawConversion{TIn, TOut}"/> interface,
 /// providing implementation for <see cref="SOG.Circle"/> to <see cref="RG.Circle"/> and <see cref="RG.ArcCurve"/> conversion.
 /// </summary>
-public class SpeckleCircleRawToHostConversion
-  : IRawConversion<SOG.Circle, RG.Circle>,
-    IRawConversion<SOG.Circle, RG.ArcCurve>
+public class CircleToHostConverter : IRawConversion<SOG.Circle, RG.Circle>, IRawConversion<SOG.Circle, RG.ArcCurve>
 {
   private readonly IRawConversion<SOG.Plane, RG.Plane> _planeConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
   /// <summary>
-  /// Constructs a new instance of the <see cref="SpeckleCircleRawToHostConversion"/> class.
+  /// Constructs a new instance of the <see cref="CircleToHostConverter"/> class.
   /// </summary>
   /// <param name="intervalConverter">
   /// An implementation of <see cref="IRawConversion{TIn, TOut}"/> used to convert <see cref="SOP.Interval"/> into <see cref="RG.Interval"/>.
@@ -23,7 +21,7 @@ public class SpeckleCircleRawToHostConversion
   /// <param name="planeConverter">
   /// An implementation of <see cref="IRawConversion{TIn, TOut}"/> used to convert <see cref="SOG.Plane"/> into <see cref="RG.Plane"/>.
   /// </param>
-  public SpeckleCircleRawToHostConversion(
+  public CircleToHostConverter(
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter,
     IRawConversion<SOG.Plane, RG.Plane> planeConverter
   )

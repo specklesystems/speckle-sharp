@@ -5,7 +5,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
+public class BrepToHostConverter : IRawConversion<SOG.Brep, RG.Brep>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly IRawConversion<ICurve, RG.Curve> _curveConverter;
@@ -13,7 +13,7 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleBrepRawToHostConversion(
+  public BrepToHostConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     IRawConversion<ICurve, RG.Curve> curveConverter,
     IRawConversion<SOG.Surface, RG.NurbsSurface> surfaceConverter,

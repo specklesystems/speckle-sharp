@@ -4,13 +4,13 @@ using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpecklePolyCurveRawToHostConversion : IRawConversion<SOG.Polycurve, RG.PolyCurve>
+public class PolyCurveToHostConverter : IRawConversion<SOG.Polycurve, RG.PolyCurve>
 {
   public IRawConversion<ICurve, RG.Curve>? CurveConverter { get; set; } // POC: CNX-9311 Circular dependency injected by the container using property.
 
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpecklePolyCurveRawToHostConversion(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
+  public PolyCurveToHostConverter(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
   {
     _intervalConverter = intervalConverter;
   }

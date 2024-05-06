@@ -5,12 +5,12 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 /// <summary>
 /// Converts a SpeckleArcRaw object to a Rhino.Geometry.Arc object or Rhino.Geometry.ArcCurve object.
 /// </summary>
-public class SpeckleArcRawToHostConversion : IRawConversion<SOG.Arc, RG.Arc>, IRawConversion<SOG.Arc, RG.ArcCurve>
+public class ArcToHostConverter : IRawConversion<SOG.Arc, RG.Arc>, IRawConversion<SOG.Arc, RG.ArcCurve>
 {
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public SpeckleArcRawToHostConversion(
+  public ArcToHostConverter(
     IRawConversion<SOG.Point, RG.Point3d> pointConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )
