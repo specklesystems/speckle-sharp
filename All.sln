@@ -495,6 +495,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{4838C66E-8677-4FBD-9609-25376042E981}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Connectors", "Connectors", "{33D19E88-F3AE-4D28-B588-D91CCF9E3BA8}"
+	ProjectSection(SolutionItems) = preProject
+		DUI3-DX\Connectors\Directory.Build.targets = DUI3-DX\Connectors\Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Objects", "Objects", "{B92E6216-2CBA-4EA5-B94B-0A7658C7F84B}"
 EndProject

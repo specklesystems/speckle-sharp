@@ -10,6 +10,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <ConnectorSlug>arcgis</ConnectorSlug>
+    <ConnectorVersion>3</ConnectorVersion>
+  </PropertyGroup>
   
   <ItemGroup>
     <Content Include="Config.daml" />
