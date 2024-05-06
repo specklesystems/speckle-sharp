@@ -1,5 +1,4 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data.Analyst3D;
@@ -8,10 +7,7 @@ using Speckle.Converters.ArcGIS3.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-[NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointCloudToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
+public class PointCloudToSpeckleConverter : IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
 {
   private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<ACG.Envelope, SOG.Box> _boxConverter;
@@ -26,11 +22,6 @@ public class PointCloudToSpeckleConverter
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
-  }
-
-  public Base Convert(object target)
-  {
-    return RawConvert((LasDatasetLayer)target);
   }
 
   private int GetPointColor(LasPoint pt, object renderer)
