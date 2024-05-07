@@ -1,4 +1,5 @@
 using ArcGIS.Core.Data;
+using ArcGIS.Desktop.Internal.GeoProcessing;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -55,39 +56,23 @@ public class FeatureClassUtils : IFeatureClassUtils
     }
   }
 
-  public List<FieldDescription> GetFieldsFromGeometryList(List<Base> target)
+  public void AddNonGISFeaturesToFeatureClass(
+    FeatureClass newFeatureClass,
+    List<ACG.Geometry> features,
+    List<FieldDescription> fields
+  )
   {
-    List<FieldDescription> fields = new();
-    List<string> fieldAdded = new();
-
-    foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
+    foreach (ACG.Geometry geom in features)
     {
-      if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
-        // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
-        try
-        {
-          if (field.Value is not null)
-          {
-            string key = field.Key;
-            FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
+        rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = geom;
 
-            FieldDescription fiendDescription = new(CleanCharacters(key), fieldType) { AliasName = key };
-            fields.Add(fiendDescription);
-            fieldAdded.Add(key);
-          }
-          else
-          {
-            // log missing field
-          }
-        }
-        catch (GeodatabaseFieldException)
-        {
-          // log missing field
-        }
+        // TODO: get attributes
+        // newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
+        newFeatureClass.CreateRow(rowBuffer).Dispose();
       }
     }
-    return fields;
   }
 
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
@@ -99,37 +84,45 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
+    return GetGeometryTypeFromString(originalGeomType.ToLower());
+  }
+
+  public ACG.GeometryType GetGeometryTypeFromString(string target)
+  {
+    string originalString = target.ToLower();
 
     // POC: find better pattern
-    if (originalGeomType.ToLower().Contains("none"))
+    if (originalString.Contains("none"))
     {
-      geomType = ACG.GeometryType.Unknown;
+      return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("pointcloud"))
+    else if (originalString.Contains("pointcloud"))
     {
-      geomType = ACG.GeometryType.Unknown;
+      return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("point"))
+    else if (originalString.Contains("point"))
     {
-      geomType = ACG.GeometryType.Multipoint;
+      return ACG.GeometryType.Multipoint;
     }
-    else if (originalGeomType.ToLower().Contains("polyline"))
+    else if (originalString.Contains("line") || originalString.Contains("curve"))
     {
-      geomType = ACG.GeometryType.Polyline;
+      return ACG.GeometryType.Polyline;
     }
-    else if (originalGeomType.ToLower().Contains("polygon"))
+    else if (originalString.Contains("polygon"))
     {
-      geomType = ACG.GeometryType.Polygon;
+      return ACG.GeometryType.Polygon;
     }
-    else if (originalGeomType.ToLower().Contains("multipatch"))
+    else if (originalString.Contains("multipatch"))
     {
-      geomType = ACG.GeometryType.Multipatch;
+      return ACG.GeometryType.Multipatch;
+    }
+    else if (originalString.Contains("mesh"))
+    {
+      return ACG.GeometryType.Multipatch;
     }
     else
     {
-      throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
+      throw new SpeckleConversionException($"Unknown geometry type {originalString}");
     }
-
-    return geomType;
   }
 }

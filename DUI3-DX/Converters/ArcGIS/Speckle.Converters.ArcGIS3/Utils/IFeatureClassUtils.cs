@@ -14,12 +14,12 @@ public interface IFeatureClassUtils
     List<FieldDescription> fields,
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   );
+  void AddNonGISFeaturesToFeatureClass(
+    FeatureClass newFeatureClass,
+    List<ACG.Geometry> features,
+    List<FieldDescription> fields
+  );
   void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields);
-  public string CleanCharacters(string key);
-  public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat);
-  public object? FieldValueToNativeType(FieldType fieldType, object? value);
-  public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target);
-  public List<FieldDescription> GetFieldsFromGeometryList(List<Base> target);
-  public FieldType GetFieldTypeFromInt(int fieldType);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);
+  public ACG.GeometryType GetGeometryTypeFromString(string target);
 }
