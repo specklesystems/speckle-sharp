@@ -10,6 +10,7 @@ using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -21,6 +22,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     Dictionary<string, Tuple<List<string>, Geometry>>,
     List<Tuple<string, string>>
   > _nonGISToHostConverter;
+  private readonly GraphTraversal _graphTraversal;
 
   // POC: figure out the correct scope to only initialize on Receive
   private readonly IConversionContextStack<Map, Unit> _contextStack;
@@ -29,13 +31,18 @@ public class HostObjectBuilder : IHostObjectBuilder
     ISpeckleConverterToHost toHostConverter,
     IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<Dictionary<string, Tuple<List<string>, Geometry>>, List<Tuple<string, string>>> nonGISToHostConverter
+    IRawConversion<
+      Dictionary<string, Tuple<List<string>, Geometry>>,
+      List<Tuple<string, string>>
+    > nonGISToHostConverter,
+    GraphTraversal graphTraversal
   )
   {
     _toHostConverter = toHostConverter;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
     _nonGISToHostConverter = nonGISToHostConverter;
+    _graphTraversal = graphTraversal;
   }
 
   public IEnumerable<string> Build(
@@ -55,24 +62,24 @@ public class HostObjectBuilder : IHostObjectBuilder
     _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
-    IEnumerable<(string[], Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
+    TraversalContext[] objectsWithPath = _graphTraversal.Traverse(rootObject).ToArray();
 
-    IEnumerable<(string[], Base)> gisObjectsWithPath = objectsWithPath.Where(
-      x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer
+    IEnumerable<TraversalContext> gisObjectsWithPath = objectsWithPath.Where(
+      x => x.Current is VectorLayer || x.Current is Objects.GIS.RasterLayer
     );
-    IEnumerable<(string[], Base)> nonGisObjectsWithPath = objectsWithPath.Where(
-      x => x.Item2 is not GisFeature && x.Item2 is not VectorLayer && x.Item2 is not Objects.GIS.RasterLayer
+    IEnumerable<TraversalContext> nonGisObjectsWithPath = objectsWithPath.Where(
+      x => x.Current is not GisFeature && x.Current is not VectorLayer && x.Current is not Objects.GIS.RasterLayer
     );
 
     List<string> objectIds = new();
     int count = 0;
-    int allCount = objectsWithPath.Count();
+    int allCount = objectsWithPath.Length;
 
-    Dictionary<string, Tuple<List<string>, Geometry>> convertedGeometries = new();
+    Dictionary<string, (TraversalContext, Geometry)> convertedGeometries = new();
     List<Tuple<string, string>> convertedGISObjects = new();
 
     // 1. convert non-gis objects in a loop
-    foreach ((string[] path, Base obj) in nonGisObjectsWithPath)
+    foreach (TraversalContext tc in nonGisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
@@ -83,11 +90,11 @@ public class HostObjectBuilder : IHostObjectBuilder
         // POC: QueuedTask
         QueuedTask.Run(() =>
         {
+          Base obj = tc.Current;
           Geometry converted = (Geometry)_toHostConverter.Convert(obj);
           objectIds.Add(obj.id);
-          List<string> objPath = path.ToList();
-          objPath.Add(obj.speckle_type.Split(".")[^1]);
-          convertedGeometries[obj.id] = Tuple.Create(objPath, converted);
+
+          convertedGeometries[obj.id] = (tc, converted);
         });
 
         onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
@@ -111,7 +118,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     }
 
     // 2. convert gis-objects in a loop
-    foreach ((string[] path, Base obj) in gisObjectsWithPath)
+    foreach (TraversalContext tc in gisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
@@ -122,10 +129,13 @@ public class HostObjectBuilder : IHostObjectBuilder
         // POC: QueuedTask
         var task = QueuedTask.Run(() =>
         {
-          string converted = (string)_toHostConverter.Convert(obj);
-          objectIds.Add(obj.id);
-          string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
-          convertedGISObjects.Add(Tuple.Create(objPath, converted));
+          Base obj = tc.Current;
+          string[] path = tc.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+
+          // string converted = (string)_toHostConverter.Convert(obj);
+          // objectIds.Add(obj.id);
+          // string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          // convertedGISObjects.Add(Tuple.Create(objPath, converted));
         });
         task.Wait(cancellationToken);
 
