@@ -95,7 +95,7 @@ public class NonNativeLayerToHostConverter
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // TODO: generate meaningful name
-    string featureClassName = "x_" + Utilities.HashString(DateTime.Now.ToString());
+    string featureClassName = "hash_" + Utilities.HashString(string.Join("\\", geomList.Select(x => x.GetHashCode())));
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
