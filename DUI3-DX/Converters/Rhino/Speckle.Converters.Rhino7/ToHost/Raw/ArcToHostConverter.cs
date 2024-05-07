@@ -1,4 +1,5 @@
 ﻿using Speckle.Converters.Common.Objects;
+using Speckle;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
