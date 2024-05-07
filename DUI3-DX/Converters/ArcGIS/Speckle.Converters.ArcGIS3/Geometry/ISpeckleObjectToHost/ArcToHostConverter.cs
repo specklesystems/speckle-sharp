@@ -33,17 +33,6 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
       throw new SpeckleConversionException("Conversion failed: Arc doesn't have start & end angle or radius");
     }
 
-    // define the direction
-    bool isCounterClockwise = !new SOG.Polyline(target.Values()) { closed = true }.IsClockwisePolygon();
-    if (!((isCounterClockwise is false || fullAngle >= 0) && (isCounterClockwise is true || fullAngle < 0)))
-    {
-      fullAngle = Math.PI * 2 - Math.Abs((double)fullAngle);
-      if (isCounterClockwise is false)
-      {
-        coeff = -1;
-      }
-    }
-
     // Calculate the vertices along the arc
     for (int i = 0; i <= numVertices; i++)
     {
