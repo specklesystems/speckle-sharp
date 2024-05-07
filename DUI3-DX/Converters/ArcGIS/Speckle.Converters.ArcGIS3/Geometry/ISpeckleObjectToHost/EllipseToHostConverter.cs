@@ -26,8 +26,6 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConver
     {
       throw new SpeckleConversionException("Conversion failed: Ellipse doesn't have 1st and 2nd radius");
     }
-    // double maxRadius = Math.Max((double)target.firstRadius, (double)target.secondRadius);
-    // double minRadius = Math.Min((double)target.firstRadius, (double)target.secondRadius);
 
     // Calculate the vertices along the arc
     for (int i = 0; i <= numVertices; i++)
@@ -36,8 +34,8 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConver
       double angle = 2 * Math.PI * (i / (double)numVertices);
       SOG.Point pointOnEllipse =
         new(
-          target.plane.origin.x + (double)target.firstRadius * Math.Cos(angle),
-          target.plane.origin.y + (double)target.secondRadius * Math.Sin(angle),
+          target.plane.origin.x + (double)target.secondRadius * Math.Cos(angle),
+          target.plane.origin.y + (double)target.firstRadius * Math.Sin(angle),
           target.plane.origin.z
         );
 
