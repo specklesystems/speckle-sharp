@@ -101,6 +101,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     // convert Database entries with non-GIS geometry datasets
     try
     {
+      onOperationProgressed?.Invoke("Writing to Database", null);
       convertedGISObjects.AddRange(_nonGISToHostConverter.RawConvert(convertedGeometries));
     }
     catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
@@ -137,6 +138,8 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
     }
 
+    int bakeCount = 0;
+    onOperationProgressed?.Invoke("Adding to Map", 0);
     // 3. add layer and tables to the Table Of Content
     foreach (Tuple<string, string> databaseObj in convertedGISObjects)
     {
@@ -155,6 +158,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             _contextStack.Current.Document,
             layerName: databaseObj.Item1
           );
+          onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
         }
         catch (ArgumentException)
         {
@@ -163,6 +167,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             _contextStack.Current.Document,
             tableName: databaseObj.Item1
           );
+          onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
         }
       });
       task.Wait(cancellationToken);
