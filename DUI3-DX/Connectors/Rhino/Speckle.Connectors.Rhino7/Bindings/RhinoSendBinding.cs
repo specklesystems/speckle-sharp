@@ -8,7 +8,6 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
-using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
@@ -19,6 +18,7 @@ using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
+using Speckle.Connectors.DUI.Settings;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 

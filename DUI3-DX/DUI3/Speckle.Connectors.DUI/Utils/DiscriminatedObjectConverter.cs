@@ -11,8 +11,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 namespace Speckle.Connectors.DUI.Utils;
 
 /// <summary>
-/// This converter ensures we can do polymorphic deserialization to concrete types. It is automatically added to all
-/// serialization settings from <see cref="SerializationSettingsFactory.GetSerializerSettings"/>. This converter is intended
+/// This converter ensures we can do polymorphic deserialization to concrete types. This converter is intended
 /// for use only with UI bound types, not Speckle Bases.
 /// </summary>
 // POC: automatic registration of compatible objects
@@ -85,8 +84,6 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
     // then we can cache everything on startup
     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
     {
-      List<TypeInfo>? types;
-
       try
       {
         // POC: contains is weak
