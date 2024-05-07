@@ -4,7 +4,6 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Autocad.Extensions;
 using System.Linq;
-using Autodesk.AutoCAD.Geometry;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
@@ -12,7 +11,7 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// The <see cref="ADB.Polyline3d"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
 /// </summary>
 /// <remarks>
-/// <see cref="ADB.Polyline3d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline3d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only one <see cref="SOG.Polyline"/> in <see cref="SOG.Polycurve.segments"/>.
 /// <see cref="ADB.Polyline3d"/> of type <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
 /// The IHostObjectToSpeckleConversion inheritance should only expect database-resident Polyline2d objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
@@ -65,53 +64,54 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
       )
       .Where(e => e.VertexType != ADB.Vertex3dType.FitVertex) // Do not collect fit vertex points, they are not used for creation
       .ToList();
-
-    List<Objects.ICurve> segments = new();
     for (int i = 0; i < vertices.Count; i++)
     {
-      Point3d vertex = vertices[i].Position;
-
-      // get vertex value in the Global Coordinate System (GCS).
-      value.AddRange(vertex.ToArray());
-
-      // construct the segment lines if this is a simple poly
-      if (i < vertices.Count - 1)
-      {
-        if (polyType is SOG.Autocad.AutocadPolyType.Simple3d)
-        {
-          var nextVertex = vertices[i + 1].Position;
-          SOG.Point start = _pointConverter.RawConvert(vertex);
-          SOG.Point end = _pointConverter.RawConvert(nextVertex);
-
-          SOG.Line segment = new(start, end, _contextStack.Current.SpeckleUnits);
-          segments.Add(segment);
-        }
-      }
+      // vertex value is in the Global Coordinate System (GCS).
+      value.AddRange(vertices[i].Position.ToArray());
     }
 
-    // get the spline curve segment if this is a spline polyline3d
-    if (polyType is not SOG.Autocad.AutocadPolyType.Simple3d)
+    List<Objects.ICurve> segments = new();
+    // for spline polyline3ds, get the spline curve segment
+    // and explode the curve to get the spline displayvalue
+    if (target.PolyType is not ADB.Poly3dType.SimplePoly)
     {
-      // add first 3 coordinate to last for display value polyline for spline
-      if (target.Closed)
+      // get the spline segment
+      SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
+
+      // get the spline displayvalue by exploding the polyline
+      List<double> segmentValues = new();
+      ADB.DBObjectCollection exploded = new();
+      target.Explode(exploded);
+      for (int i = 0; i < exploded.Count; i++)
       {
-        var firstPoint = value.Take(3).ToList();
-        value.AddRange(firstPoint);
+        if (exploded[i] is ADB.Curve segment)
+        {
+          segmentValues.AddRange(segment.StartPoint.ToArray());
+          if (i == exploded.Count - 1)
+          {
+            segmentValues.AddRange(segment.EndPoint.ToArray());
+          }
+        }
       }
 
-      SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
-      spline.displayValue = value.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
+      SOG.Polyline displayValue = segmentValues.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
+      if (displayValue != null)
+      {
+        spline.displayValue = displayValue;
+      }
 
       segments.Add(spline);
     }
+    // for simple polyline3ds just get the polyline segment from the value
     else
     {
+      SOG.Polyline polyline = value.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
       if (target.Closed)
       {
-        SOG.Point start = _pointConverter.RawConvert(vertices.First().Position);
-        SOG.Point end = _pointConverter.RawConvert(vertices.Last().Position);
-        segments.Add(new SOG.Line(start, end, _contextStack.Current.SpeckleUnits));
+        polyline.closed = true;
       }
+
+      segments.Add(polyline);
     }
 
     SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);

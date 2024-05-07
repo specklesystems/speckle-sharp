@@ -156,7 +156,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       }
     }
 
-    // for splines, convert the spline curve and display value and add to the segments list and
+    // for splines, convert the spline curve and display value and add to the segments list
     if (isSpline)
     {
       SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
