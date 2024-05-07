@@ -31,10 +31,6 @@ public class HostedElementConversionToSpeckle
     foreach (var elemId in hostedElementIds)
     {
       Element element = _contextStack.Current.Document.Document.GetElement(elemId);
-      if (_convertedObjectsCache.ContainsBaseConvertedFromId(element.UniqueId))
-      {
-        continue;
-      }
 
       Base @base;
       try

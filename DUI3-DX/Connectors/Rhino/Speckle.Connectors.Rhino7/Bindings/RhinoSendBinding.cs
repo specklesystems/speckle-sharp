@@ -156,15 +156,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .Where(obj => obj != null)
         .ToList();
 
-      var sendInfo = new SendInfo()
-      {
-        AccountId = modelCard.AccountId,
-        ProjectId = modelCard.ProjectId,
-        ModelId = modelCard.ModelId,
-        ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds,
-        SourceApplication = _rhinoSettings.HostAppInfo.Name
-      };
+      var sendInfo = new SendInfo(
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        _rhinoSettings.HostAppInfo.Name,
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
 
       var sendResult = await unitOfWork.Service
         .Execute(

@@ -31,7 +31,9 @@ public sealed class SendOperation<T>
     CancellationToken ct = default
   )
   {
-    Base commitObject = _rootObjectBuilder.Build(objects, sendInfo, onOperationProgressed, ct);
+    Base commitObject = await _syncToMainThread
+      .RunOnThread(() => _rootObjectBuilder.Build(objects, sendInfo, onOperationProgressed, ct))
+      .ConfigureAwait(false);
 
     // base object handler is separated so we can do some testing on non-production databases
     // exact interface may want to be tweaked when we implement this
