@@ -21,7 +21,7 @@ public class AutocadCommand
 
   public AutofacContainer? Container { get; private set; }
 
-  [CommandMethod("SpeckleDUI3DX")]
+  [CommandMethod("SpeckleNewUI")]
   public void Command()
   {
     if (PaletteSet != null)

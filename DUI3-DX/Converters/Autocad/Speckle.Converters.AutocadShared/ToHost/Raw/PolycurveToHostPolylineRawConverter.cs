@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -25,13 +26,14 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
   public ADB.Polyline RawConvert(SOG.Polycurve target)
   {
     ADB.Polyline polyline = new() { Closed = target.closed };
-    var plane = new AG.Plane(
-      AG.Point3d.Origin,
-      AG.Vector3d.ZAxis.TransformBy(_contextStack.Current.Document.Editor.CurrentUserCoordinateSystem)
-    );
+    AG.Plane plane =
+      new(
+        AG.Point3d.Origin,
+        AG.Vector3d.ZAxis.TransformBy(_contextStack.Current.Document.Editor.CurrentUserCoordinateSystem)
+      );
 
     int count = 0;
-    foreach (var segment in target.segments)
+    foreach (Objects.ICurve segment in target.segments)
     {
       switch (segment)
       {
@@ -46,12 +48,13 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
           break;
         case SOG.Arc arc:
           // POC: possibly endAngle and startAngle null?
-          var angle = arc.endAngle - arc.startAngle;
+          double? angle = arc.endAngle - arc.startAngle;
           angle = angle < 0 ? angle + 2 * Math.PI : angle;
           if (angle is null)
           {
             throw new ArgumentNullException(nameof(arc), "Cannot convert arc without angle value.");
           }
+
           var bulge = Math.Tan((double)angle / 4) * BulgeDirection(arc.startPoint, arc.midPoint, arc.endPoint);
           polyline.AddVertexAt(count, _pointConverter.RawConvert(arc.startPoint).Convert2d(plane), bulge, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)
@@ -62,12 +65,13 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
           count++;
           break;
         case SOG.Spiral o:
-          var vertices = o.displayValue.GetPoints().Select(_pointConverter.RawConvert).ToList();
-          foreach (var vertex in vertices)
+          List<AG.Point3d> vertices = o.displayValue.GetPoints().Select(_pointConverter.RawConvert).ToList();
+          foreach (AG.Point3d vertex in vertices)
           {
             polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
             count++;
           }
+
           break;
         default:
           break;
@@ -87,13 +91,6 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
     // calculate cross product z direction
     double z = v1[0] * v2[1] - v2[0] * v1[1];
 
-    if (z > 0)
-    {
-      return -1;
-    }
-    else
-    {
-      return 1;
-    }
+    return z > 0 ? -1 : 1;
   }
 }
