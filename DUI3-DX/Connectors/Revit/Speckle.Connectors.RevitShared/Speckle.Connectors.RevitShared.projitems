@@ -9,6 +9,8 @@
     <Import_RootNamespace>Speckle.Connectors.Revit</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
     <Content Include="$(MSBuildThisFileDirectory)Plugin\Speckle.Connectors.Revit2023.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

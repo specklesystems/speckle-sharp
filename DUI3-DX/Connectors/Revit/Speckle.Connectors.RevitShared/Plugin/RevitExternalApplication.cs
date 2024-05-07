@@ -32,11 +32,11 @@ internal class RevitExternalApplication : IExternalApplication
     // POC: load from JSON file?
     _revitSettings = new RevitSettings
     {
-      RevitPanelName = "Speckle DUI3 (DI)",
+      RevitPanelName = "Speckle New UI",
       RevitTabName = "Speckle",
-      RevitTabTitle = "Speckle DUI3 (DI)",
+      RevitTabTitle = "Speckle New UI",
       RevitVersionName = "2023",
-      RevitButtonName = "Speckle DUI3 (DI)",
+      RevitButtonName = "Speckle New UI",
       RevitButtonText = "Revit Connector",
       ModuleFolders = new string[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
       HostSlug = "Revit"
