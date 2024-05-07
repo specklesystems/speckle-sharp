@@ -30,6 +30,36 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     _arcGISProjectUtils = arcGISProjectUtils;
   }
 
+  private List<GisFeature> RecoverOutdatedGisFeatures(VectorLayer target)
+  {
+    List<GisFeature> gisFeatures = new();
+    foreach (Base baseElement in target.elements)
+    {
+      if (baseElement is GisFeature feature)
+      {
+        gisFeatures.Add(feature);
+      }
+      else
+      {
+        List<Base>? geometry = ((List<object>)baseElement["geometry"]).Select(x => (Base)x).ToList();
+        Base attributes = (Base)baseElement["attributes"] == null ? new Base() : (Base)baseElement["attributes"];
+        List<Base>? displayValue =
+          baseElement["displayValue"] == null
+            ? new List<Base>()
+            : ((List<object>)baseElement["displayValue"]).Select(x => (Base)x).ToList();
+        GisFeature newfeature =
+          new()
+          {
+            geometry = geometry,
+            attributes = attributes,
+            displayValue = displayValue
+          };
+        gisFeatures.Add(newfeature);
+      }
+    }
+    return gisFeatures;
+  }
+
   public FeatureClass RawConvert(VectorLayer target)
   {
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
@@ -90,8 +120,9 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     try
     {
       FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
+      // backwards compatibility:
+      List<GisFeature> gisFeatures = RecoverOutdatedGisFeatures(target);
       // Add features to the FeatureClass
-      List<GisFeature> gisFeatures = target.elements.Select(x => (GisFeature)x).ToList();
       geodatabase.ApplyEdits(() =>
       {
         _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, gisFeatures, fields, _gisGeometryConverter);
