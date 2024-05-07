@@ -127,7 +127,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     if (conversionExceptions.Count != 0)
     {
-      throw new AggregateException("Some conversions failed. Please check inner exceptions.", conversionExceptions);
+      throw new AggregateException("Conversion failed for some objects.", conversionExceptions);
     }
 
     return newObjectIds;
