@@ -3,7 +3,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))"/>
 
 
-  <Target Name="Copy To Folder" AfterTargets="Build">
+  <Target Name="CopyToDistAndZip" AfterTargets="Build" Condition="'$(IsDesktopBuild)' == false">
     
     <Error Text="ConnectorSlug property is not set" Condition=" '$(ConnectorSlug)' == '' " />
     <Error Text="ConnectorVersion property is not set" Condition=" '$(ConnectorVersion)' == '' " />
@@ -25,5 +25,6 @@
     <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(OutputDirectory)/%(RecursiveDir)"/>
     
     <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)/$(OutputZipFile)"/>
+    
   </Target>
 </Project>
