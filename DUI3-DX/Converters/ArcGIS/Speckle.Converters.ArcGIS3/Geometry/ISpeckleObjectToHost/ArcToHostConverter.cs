@@ -19,7 +19,7 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
   public ACG.Polyline RawConvert(SOG.Arc target)
   {
     // Determine the number of vertices to create along the arc
-    int numVertices = Math.Max((int)target.length, 3); // Determine based on desired segment length or other criteria
+    int numVertices = Math.Max((int)target.length, 50); // Determine based on desired segment length or other criteria
     List<SOG.Point> pointsOriginal = new();
 
     // get correct direction
@@ -34,7 +34,7 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
     }
 
     // define the direction
-    bool isCounterClockwise = !new SOG.Polyline(target.Values()).IsClockwisePolygon();
+    bool isCounterClockwise = !new SOG.Polyline(target.Values()) { closed = true }.IsClockwisePolygon();
     if (!((isCounterClockwise is false || fullAngle >= 0) && (isCounterClockwise is true || fullAngle < 0)))
     {
       fullAngle = Math.PI * 2 - Math.Abs((double)fullAngle);

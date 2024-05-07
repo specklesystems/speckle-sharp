@@ -9,6 +9,7 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
+using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -16,6 +17,10 @@ public class HostObjectBuilder : IHostObjectBuilder
 {
   private readonly ISpeckleConverterToHost _toHostConverter;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
+  private readonly IRawConversion<
+    Dictionary<string, Tuple<List<string>, Geometry>>,
+    List<Tuple<string, string>>
+  > _nonGISToHostConverter;
 
   // POC: figure out the correct scope to only initialize on Receive
   private readonly IConversionContextStack<Map, Unit> _contextStack;
@@ -23,12 +28,14 @@ public class HostObjectBuilder : IHostObjectBuilder
   public HostObjectBuilder(
     ISpeckleConverterToHost toHostConverter,
     IArcGISProjectUtils arcGISProjectUtils,
-    IConversionContextStack<Map, Unit> contextStack
+    IConversionContextStack<Map, Unit> contextStack,
+    IRawConversion<Dictionary<string, Tuple<List<string>, Geometry>>, List<Tuple<string, string>>> nonGISToHostConverter
   )
   {
     _toHostConverter = toHostConverter;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
+    _nonGISToHostConverter = nonGISToHostConverter;
   }
 
   public IEnumerable<string> Build(
@@ -50,30 +57,37 @@ public class HostObjectBuilder : IHostObjectBuilder
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     IEnumerable<(string[], Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
 
-    IEnumerable<(List<string>, Base)> gisObjectsWithPath = objectsWithPath.Where(
+    IEnumerable<(string[], Base)> gisObjectsWithPath = objectsWithPath.Where(
       x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer
     );
-    IEnumerable<(List<string>, Base)> nonGisObjectsWithPath = objectsWithPath.Where(
+    IEnumerable<(string[], Base)> nonGisObjectsWithPath = objectsWithPath.Where(
       x => x.Item2 is not GisFeature && x.Item2 is not VectorLayer && x.Item2 is not Objects.GIS.RasterLayer
     );
 
     List<string> objectIds = new();
     int count = 0;
     int allCount = objectsWithPath.Count();
-    // convert non-gis stuff
-    foreach ((List<string> path, Base obj) in nonGisObjectsWithPath)
+
+    Dictionary<string, Tuple<List<string>, Geometry>> convertedGeometries = new();
+    List<Tuple<string, string>> convertedGISObjects = new();
+
+    // 1. convert non-gis objects in a loop
+    foreach ((string[] path, Base obj) in nonGisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
         throw new OperationCanceledException(cancellationToken);
       }
-
       try
       {
+        // POC: QueuedTask
         QueuedTask.Run(() =>
         {
           Geometry converted = (Geometry)_toHostConverter.Convert(obj);
           objectIds.Add(obj.id);
+          List<string> objPath = path.ToList();
+          objPath.Add(obj.speckle_type.Split(".")[^1]);
+          convertedGeometries[obj.id] = Tuple.Create(objPath, converted);
         });
 
         onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
@@ -84,49 +98,33 @@ public class HostObjectBuilder : IHostObjectBuilder
         Debug.WriteLine("conversion error happened.");
       }
     }
+    // convert Database entries with non-GIS geometry datasets
+    try
+    {
+      convertedGISObjects.AddRange(_nonGISToHostConverter.RawConvert(convertedGeometries));
+    }
+    catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+    {
+      // POC: report, etc.
+      Debug.WriteLine("conversion error happened.");
+    }
 
-    // convert gis-objects
-    foreach ((List<string> path, Base obj) in gisObjectsWithPath)
+    // 2. convert gis-objects in a loop
+    foreach ((string[] path, Base obj) in gisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
         throw new OperationCanceledException(cancellationToken);
       }
-
       try
       {
-        // BAKE OBJECTS HERE
-
         // POC: QueuedTask
         var task = QueuedTask.Run(() =>
         {
-          try
-          {
-            string converted = (string)_toHostConverter.Convert(obj);
-            objectIds.Add(obj.id);
-            try
-            {
-              LayerFactory.Instance.CreateLayer(
-                new Uri($"{databasePath}\\{converted}"),
-                _contextStack.Current.Document,
-                layerName: ((Collection)obj).name
-              );
-            }
-            catch (ArgumentException)
-            {
-              StandaloneTableFactory.Instance.CreateStandaloneTable(
-                new Uri($"{databasePath}\\{converted}"),
-                _contextStack.Current.Document,
-                tableName: ((Collection)obj).name
-              );
-            }
-          }
-          catch (ArgumentException)
-          {
-            // for the layers with "invalid" names
-            // doesn't do anything actually, but needs to be logged
-            throw;
-          }
+          string converted = (string)_toHostConverter.Convert(obj);
+          objectIds.Add(obj.id);
+          string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          convertedGISObjects.Add(Tuple.Create(objPath, converted));
         });
         task.Wait(cancellationToken);
 
@@ -139,7 +137,36 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
     }
 
-    List<Geometry> convertedGeometries = new();
+    // 3. add layer and tables to the Table Of Content
+    foreach (Tuple<string, string> databaseObj in convertedGISObjects)
+    {
+      if (cancellationToken.IsCancellationRequested)
+      {
+        throw new OperationCanceledException(cancellationToken);
+      }
+      // BAKE OBJECTS HERE
+      // POC: QueuedTask
+      var task = QueuedTask.Run(() =>
+      {
+        try
+        {
+          LayerFactory.Instance.CreateLayer(
+            new Uri($"{databasePath}\\{databaseObj.Item2}"),
+            _contextStack.Current.Document,
+            layerName: databaseObj.Item1
+          );
+        }
+        catch (ArgumentException)
+        {
+          StandaloneTableFactory.Instance.CreateStandaloneTable(
+            new Uri($"{databasePath}\\{databaseObj.Item2}"),
+            _contextStack.Current.Document,
+            tableName: databaseObj.Item1
+          );
+        }
+      });
+      task.Wait(cancellationToken);
+    }
 
     return objectIds;
   }

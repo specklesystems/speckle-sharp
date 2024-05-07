@@ -66,7 +66,15 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
-        rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = geom;
+        ACG.Geometry newGeom = geom;
+        if (geom is ACG.MapPoint pointGeom)
+        {
+          newGeom = new ACG.MultipointBuilderEx(
+            new List<ACG.MapPoint>() { pointGeom },
+            ACG.AttributeFlags.HasZ
+          ).ToGeometry();
+        }
+        rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = newGeom;
 
         // TODO: get attributes
         // newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
@@ -104,7 +112,13 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       return ACG.GeometryType.Multipoint;
     }
-    else if (originalString.Contains("line") || originalString.Contains("curve"))
+    else if (
+      originalString.Contains("line")
+      || originalString.Contains("curve")
+      || originalString.Contains("arc")
+      || originalString.Contains("circle")
+      || originalString.Contains("ellipse")
+    )
     {
       return ACG.GeometryType.Polyline;
     }

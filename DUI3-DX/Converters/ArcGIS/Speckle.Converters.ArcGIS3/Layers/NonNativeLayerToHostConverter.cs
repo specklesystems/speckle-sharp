@@ -1,7 +1,7 @@
+using System.Diagnostics;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
@@ -12,44 +12,90 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-public class NonNativeLayerToHostConverter : IRawConversion<List<ACG.Geometry>, List<string>>
+public class NonNativeLayerToHostConverter
+  : IRawConversion<Dictionary<string, Tuple<List<string>, ACG.Geometry>>, List<Tuple<string, string>>>
 {
   private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
+  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public NonNativeLayerToHostConverter(
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
+    IArcGISFieldUtils fieldsUtils,
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils,
-    IConversionContextStack<Map, Unit> contextStack
+    IConversionContextStack<Map, ACG.Unit> contextStack
   )
   {
     _gisGeometryConverter = gisGeometryConverter;
+    _fieldsUtils = fieldsUtils;
     _featureClassUtils = featureClassUtils;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
   }
 
-  public List<string> RawConvert(List<ACG.Geometry> target)
+  public List<Tuple<string, string>> RawConvert(Dictionary<string, Tuple<List<string>, ACG.Geometry>> target)
   {
-    GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+    List<Tuple<string, string>> result = new();
+    try
+    {
+      // 1. Sort features into groups by path and geom type
+      Dictionary<string, List<ACG.Geometry>> geometryGroups = new();
+      foreach (var item in target)
+      {
+        string objId = item.Key;
+        (List<string> objPath, ACG.Geometry geom) = item.Value;
+        string geomType = objPath[^1];
+        string parentPath = $"{string.Join("\\", objPath.Where((x, i) => i < objPath.Count - 1))}\\{geomType}";
 
+        // add dictionnary item if doesn't exist yet
+        if (!geometryGroups.ContainsKey(parentPath))
+        {
+          geometryGroups[parentPath] = new List<ACG.Geometry>();
+        }
+        geometryGroups[parentPath].Add(geom);
+      }
+
+      // 2. for each group create a Dataset and add geometries there as Features
+      foreach ((string parentPath, List<ACG.Geometry> geomList) in geometryGroups)
+      {
+        ACG.GeometryType geomType = _featureClassUtils.GetGeometryTypeFromString(parentPath.Split("\\")[^1]);
+        try
+        {
+          string converted = CreateDatasetInDatabase(geomType, geomList);
+          result.Add(Tuple.Create(parentPath, converted));
+        }
+        catch (GeodatabaseGeometryException)
+        {
+          // do nothing if conversion of some geometry groups fails
+        }
+      }
+    }
+    catch (Exception)
+    {
+      // POC: report, etc.
+      Debug.WriteLine("conversion error happened.");
+    }
+    return result;
+  }
+
+  private string CreateDatasetInDatabase(ACG.GeometryType geomType, List<ACG.Geometry> geomList)
+  {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
     Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
     SchemaBuilder schemaBuilder = new(geodatabase);
 
     // get Spatial Reference from the document
-    SpatialReference spatialRef = _contextStack.Current.Document.SpatialReference;
+    ACG.SpatialReference spatialRef = _contextStack.Current.Document.SpatialReference;
 
-    // create Fields
-    List<FieldDescription> fields = _featureClassUtils.GetFieldsFromSpeckleLayer(target);
+    // TODO: create Fields
+    List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
-    // getting rid of forbidden symbols in the class name: adding a letter in the beginning
-    // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
-    string featureClassName = "speckleID_" + target.id;
+    // TODO: generate meaningful name
+    string featureClassName = "x_" + Utilities.HashString(DateTime.Now.ToString());
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
@@ -83,23 +129,13 @@ public class NonNativeLayerToHostConverter : IRawConversion<List<ACG.Geometry>, 
       IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
     }
 
-    try
+    FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
+    // Add features to the FeatureClass
+    geodatabase.ApplyEdits(() =>
     {
-      FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
-      // Add features to the FeatureClass
-      List<GisFeature> gisFeatures = target.elements.Select(x => (GisFeature)x).ToList();
-      geodatabase.ApplyEdits(() =>
-      {
-        _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, gisFeatures, fields, _gisGeometryConverter);
-      });
+      _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, geomList, fields);
+    });
 
-      return newFeatureClass.GetName();
-      ;
-    }
-    catch (GeodatabaseException exObj)
-    {
-      // POC: review the exception
-      throw exObj;
-    }
+    return featureClassName;
   }
 }
