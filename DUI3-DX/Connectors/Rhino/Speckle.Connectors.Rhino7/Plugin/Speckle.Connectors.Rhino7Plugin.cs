@@ -25,6 +25,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
 {
   private IRhinoPlugin? _rhinoPlugin;
 
+  protected override string LocalPlugInName => "Speckle (New UI)";
   public AutofacContainer? Container { get; private set; }
 
   public SpeckleConnectorsRhino7Plugin()
