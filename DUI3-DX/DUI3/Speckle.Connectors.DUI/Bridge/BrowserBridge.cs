@@ -71,9 +71,10 @@ public class BrowserBridge : IBridge
   }
 
   /// <summary>
-  /// Creates a new bridge.
+  /// Initializes a new instance of the <see cref="BrowserBridge"/> class.
   /// </summary>
-  /// <param name="binding">The actual binding class.</param>
+  /// <param name="jsonSerializerSettings">The settings to use for JSON serialization and deserialization.</param>
+  /// <param name="loggerFactory">The factory to create a logger for <see cref="BrowserBridge"/>.</param>
   public BrowserBridge(JsonSerializerSettings jsonSerializerSettings, ILoggerFactory loggerFactory)
   {
     _serializerOptions = jsonSerializerSettings;
@@ -119,7 +120,6 @@ public class BrowserBridge : IBridge
       }
     );
 
-    //
     _logger.LogInformation("Bridge bound to front end name {FrontEndName}", binding.Name);
   }
 
@@ -212,13 +212,10 @@ public class BrowserBridge : IBridge
 
       var resultTyped = method.Invoke(Binding, typedArgs);
 
-      // Was it an async method (in bridgeClass?)
-      var resultTypedTask = resultTyped as Task;
-
       string resultJson;
 
       // Was the method called async?
-      if (resultTypedTask == null)
+      if (resultTyped is not Task resultTypedTask)
       {
         // Regular method: no need to await things
         resultJson = JsonConvert.SerializeObject(resultTyped, _serializerOptions);

@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
@@ -10,6 +9,7 @@ using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.Settings;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 

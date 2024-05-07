@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Speckle.Connectors.DUI.Utils;
 
-namespace Speckle.Connectors.DUI.Utils;
+namespace Speckle.Connectors.DUI.Settings;
 
 public class CardSetting : DiscriminatedObject
 {
