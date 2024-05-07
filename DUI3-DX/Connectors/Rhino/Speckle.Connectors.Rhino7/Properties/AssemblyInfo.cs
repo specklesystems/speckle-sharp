@@ -1,3 +1,4 @@
+using System.Resources;
 using System.Runtime.InteropServices;
 using Rhino.PlugIns;
 
@@ -18,3 +19,5 @@ using Rhino.PlugIns;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 // This will also be the Guid of the Rhino plug-in
 [assembly: Guid("2153799A-0CEC-40DE-BC3A-01E5055222FF")]
+
+[assembly: NeutralResourcesLanguage("en")]
