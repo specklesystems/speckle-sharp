@@ -2,8 +2,7 @@ using System;
 using Autodesk.Revit.UI;
 using System.Reflection;
 using System.IO;
-using Autofac;
-using Speckle.Autofac.DependencyInjection.Registration;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Core.Logging;
 
@@ -14,7 +13,7 @@ internal class RevitExternalApplication : IExternalApplication
   private IRevitPlugin? _revitPlugin;
 
   // POC: temp change to test
-  private static IContainer? _container;
+  private static SpeckleContainer? _container;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way

@@ -1,4 +1,4 @@
-﻿using Speckle.Autofac.DependencyInjection.Registration;
+﻿using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Common.DependencyInjection;

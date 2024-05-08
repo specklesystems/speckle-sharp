@@ -8,9 +8,10 @@ using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
 using Module = Autofac.Module;
 
-namespace Speckle.Autofac.DependencyInjection.Registration;
+namespace Speckle.Autofac.DependencyInjection;
 
 // POC: wrap the IContainer or expose it?
+
 public class SpeckleContainerBuilder
 {
   private readonly IStorageInfo _storageInfo;
@@ -88,7 +89,7 @@ public class SpeckleContainerBuilder
     return this;
   }
 
-  public IContainer Build()
+  public SpeckleContainer Build()
   {
     var container = ContainerBuilder.Build();
 
@@ -99,6 +100,6 @@ public class SpeckleContainerBuilder
     List<string> assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => x.FullName).ToList();
     logger.LogInformation("Loaded assemblies: {@Assemblies}", assemblies);
 
-    return container;
+    return new SpeckleContainer(container);
   }
 }

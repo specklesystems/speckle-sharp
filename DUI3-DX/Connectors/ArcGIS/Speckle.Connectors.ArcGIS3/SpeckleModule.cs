@@ -1,15 +1,10 @@
 using System.IO;
 using System.Reflection;
 using ArcGIS.Desktop.Framework;
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.DependencyInjection.Registration;
-using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.HostApp;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.Registration;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS;
@@ -27,7 +22,7 @@ internal class SpeckleModule : Module
   public static SpeckleModule Current =>
     s_this ??= (SpeckleModule)FrameworkApplication.FindModule("ConnectorArcGIS_Module");
 
-  public IContainer Container { get; }
+  public SpeckleContainer Container { get; }
 
   public SpeckleModule()
   {

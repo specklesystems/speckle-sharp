@@ -1,8 +1,7 @@
 using System.Drawing;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
-using Autofac;
-using Speckle.Autofac.DependencyInjection.Registration;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
@@ -17,7 +16,7 @@ public class AutocadCommand
   private static readonly Guid s_id = new("3223E594-1B09-4E54-B3DD-8EA0BECE7BA5");
   private IAutocadPlugin? _autocadPlugin;
 
-  public IContainer? Container { get; private set; }
+  public SpeckleContainer? Container { get; private set; }
 
   [CommandMethod("SpeckleNewUI")]
   public void Command()
