@@ -31,12 +31,6 @@ public class RhinoSelectionBinding : ISelectionBinding
     {
       idleManager.SubscribeToIdle(OnSelectionChanged);
     };
-
-    RhinoDoc.EndOpenDocumentInitialViewUpdate += (_, _) =>
-    {
-      // Resets selection doc change
-      Parent?.Send(SELECTION_EVENT, new SelectionInfo());
-    };
   }
 
   private void OnSelectionChanged()
