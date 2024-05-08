@@ -41,20 +41,32 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
       }
       else
       {
-        List<Base>? geometry = ((List<object>)baseElement["geometry"]).Select(x => (Base)x).ToList();
-        Base attributes = (Base)baseElement["attributes"] == null ? new Base() : (Base)baseElement["attributes"];
-        List<Base>? displayValue =
-          baseElement["displayValue"] == null
-            ? new List<Base>()
-            : ((List<object>)baseElement["displayValue"]).Select(x => (Base)x).ToList();
-        GisFeature newfeature =
-          new()
-          {
-            geometry = geometry,
-            attributes = attributes,
-            displayValue = displayValue
-          };
-        gisFeatures.Add(newfeature);
+        if (
+          baseElement["geometry"] is List<object> originalGeometries
+          && baseElement["attributes"] is Base originalAttrs
+          && (baseElement["displayValue"] is List<object> || baseElement["displayValue"] == null)
+        )
+        {
+          var originalDisplayVal = baseElement["displayValue"];
+          List<Base> geometry = originalGeometries.Select(x => (Base)x).ToList();
+          Base attributes = originalAttrs;
+          List<Base>? displayValue =
+            originalDisplayVal == null
+              ? new List<Base>()
+              : ((List<object>)originalDisplayVal).Select(x => (Base)x).ToList();
+          GisFeature newfeature =
+            new()
+            {
+              geometry = geometry,
+              attributes = attributes,
+              displayValue = displayValue
+            };
+          gisFeatures.Add(newfeature);
+        }
+        else
+        {
+          gisFeatures.Add((GisFeature)baseElement);
+        }
       }
     }
     return gisFeatures;

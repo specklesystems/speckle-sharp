@@ -1,5 +1,4 @@
 using ArcGIS.Core.Data;
-using ArcGIS.Desktop.Internal.GeoProcessing;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -86,7 +85,6 @@ public class FeatureClassUtils : IFeatureClassUtils
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
     string? originalGeomType = target.geomType != null ? target.geomType : target.nativeGeomType;
-    ACG.GeometryType geomType;
 
     if (string.IsNullOrEmpty(originalGeomType))
     {

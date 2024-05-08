@@ -3,12 +3,12 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Desktop.Mapping;
-using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
+using Speckle.Core.Logging;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -73,7 +73,7 @@ public class NonNativeLayerToHostConverter
         }
       }
     }
-    catch (Exception)
+    catch (Exception e) when (!e.IsFatal())
     {
       // POC: report, etc.
       Debug.WriteLine("conversion error happened.");
