@@ -59,7 +59,7 @@ public class AccountServerMigrationTests
     _accountsToCleanUp.Clear();
   }
 
-  private static Account CreateTestAccount(string url, Uri movedFrom, Uri movedTo)
+  private static Account CreateTestAccount(string url, Uri? movedFrom, Uri? movedTo)
   {
     return new Account
     {
