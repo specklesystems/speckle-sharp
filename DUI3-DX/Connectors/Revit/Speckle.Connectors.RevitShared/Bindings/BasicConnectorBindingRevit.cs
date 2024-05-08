@@ -72,7 +72,6 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     }
 
     // POC: Notify user here if document is null.
-
     return new DocumentInfo
     {
       Name = doc.Title,

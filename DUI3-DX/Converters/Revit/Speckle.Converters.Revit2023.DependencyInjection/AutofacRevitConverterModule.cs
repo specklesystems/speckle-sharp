@@ -33,11 +33,7 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
 
     // POC: the concrete type can come out if we remove all the reference to it
-    builder
-      .RegisterType<RevitConversionContextStack>()
-      .As<IRevitConversionContextStack>()
-      .AsSelf()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<RevitConversionContextStack>().As<IRevitConversionContextStack>().InstancePerLifetimeScope();
 
     builder
       .RegisterType<RevitToSpeckleUnitConverter>()

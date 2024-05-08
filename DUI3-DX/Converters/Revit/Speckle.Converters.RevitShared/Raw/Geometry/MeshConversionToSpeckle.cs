@@ -8,10 +8,10 @@ public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 {
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly IRawConversion<DB.Material, RenderMaterial> _materialConverter;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
 
   public MeshConversionToSpeckle(
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
     IRawConversion<DB.Material, RenderMaterial> materialConverter
   )
@@ -23,7 +23,7 @@ public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 
   public SOG.Mesh RawConvert(DB.Mesh target)
   {
-    var doc = _contextStack.Current.Document.Document;
+    var doc = _contextStack.Current.Document;
 
     List<double> vertices = GetSpeckleMeshVertexData(target);
     List<int> faces = GetSpeckleMeshFaceData(target);

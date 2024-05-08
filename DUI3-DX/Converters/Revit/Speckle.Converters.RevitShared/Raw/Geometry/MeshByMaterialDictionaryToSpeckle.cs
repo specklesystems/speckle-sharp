@@ -6,13 +6,13 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>>
 {
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly IRawConversion<DB.Material, RenderMaterial> _materialConverter;
 
   public MeshByMaterialDictionaryToSpeckle(
     IRawConversion<DB.Material, RenderMaterial> materialConverter,
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter
   )
   {
@@ -53,7 +53,7 @@ public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.El
         units: _contextStack.Current.SpeckleUnits
       );
 
-      var doc = _contextStack.Current.Document.Document;
+      var doc = _contextStack.Current.Document;
       if (doc.GetElement(materialId) is DB.Material material)
       {
         speckleMesh["renderMaterial"] = _materialConverter.RawConvert(material);

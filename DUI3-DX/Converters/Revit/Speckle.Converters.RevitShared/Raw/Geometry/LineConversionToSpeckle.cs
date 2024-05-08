@@ -7,12 +7,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
 {
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
     ScalingServiceToSpeckle scalingService
   )
