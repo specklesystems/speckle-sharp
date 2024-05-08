@@ -7,6 +7,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Core.Credentials;
 using Speckle.Connectors.Autocad.HostApp.Extensions;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -96,14 +97,14 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     if (model is SenderModelCard senderModelCard)
     {
-      List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(senderModelCard.SendFilter.GetObjectIds());
+      List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects((senderModelCard.SendFilter?.GetObjectIds()).Empty());
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
 
     if (model is ReceiverModelCard receiverModelCard)
     {
       List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(
-        receiverModelCard.ReceiveResult.BakedObjectIds
+        (receiverModelCard.ReceiveResult?.BakedObjectIds).Empty()
       );
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }

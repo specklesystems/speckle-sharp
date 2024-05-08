@@ -2,6 +2,6 @@
 
 public class CreateVersionArgs
 {
-  public string ModelCardId { get; set; }
-  public string ObjectId { get; set; }
+  public string? ModelCardId { get; set; }
+  public string? ObjectId { get; set; }
 }

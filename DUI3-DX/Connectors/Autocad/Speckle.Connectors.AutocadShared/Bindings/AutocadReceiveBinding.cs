@@ -4,6 +4,7 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
@@ -54,11 +55,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       // Receive host objects
       IEnumerable<string> receivedObjectIds = await unitOfWork.Service
         .Execute(
-          modelCard.AccountId, // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
-          modelCard.ProjectId,
-          modelCard.ProjectName,
-          modelCard.ModelName,
-          modelCard.SelectedVersionId,
+          modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
+          modelCard.ProjectId.NotNull(),
+          modelCard.ProjectName.NotNull(),
+          modelCard.ModelName.NotNull(),
+          modelCard.SelectedVersionId.NotNull(),
           cts.Token,
           onOperationProgressed: (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )

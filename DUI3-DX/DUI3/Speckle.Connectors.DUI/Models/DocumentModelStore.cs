@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.DUI.Objects;
 using Speckle.Newtonsoft.Json;
@@ -28,7 +25,7 @@ public abstract class DocumentModelStore : DiscriminatedObject
   /// This event is triggered by each specific host app implementation of the document model store.
   /// </summary>
   // POC: unsure about the PublicAPI annotation, unsure if this changed handle should live here on the store...  :/
-  public event EventHandler DocumentChanged;
+  public event EventHandler? DocumentChanged;
 
   public virtual bool IsDocumentInit { get; set; }
 
@@ -55,7 +52,7 @@ public abstract class DocumentModelStore : DiscriminatedObject
   }
 
   // POC: this seemms more like a IModelsDeserializer?, seems disconnected from this class
-  protected List<ModelCard> Deserialize(string models)
+  protected List<ModelCard>? Deserialize(string models)
   {
     return JsonConvert.DeserializeObject<List<ModelCard>>(models, _serializerOptions);
   }

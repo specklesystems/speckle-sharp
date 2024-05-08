@@ -2,8 +2,8 @@
 
 public class ModelCardProgress
 {
-  public string ModelCardId { get; set; }
-  public string Status { get; set; }
+  public string? ModelCardId { get; set; }
+  public string? Status { get; set; }
 
   /// <summary>
   /// Progress value between 0 and 1 to calculate UI progress bar width.

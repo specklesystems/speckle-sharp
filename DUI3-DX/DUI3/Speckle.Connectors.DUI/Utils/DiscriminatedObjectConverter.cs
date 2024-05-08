@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
@@ -25,16 +22,20 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       NullValueHandling = NullValueHandling.Ignore
     };
 
-  public override void WriteJson(JsonWriter writer, DiscriminatedObject value, JsonSerializer serializer)
+  public override void WriteJson(JsonWriter writer, DiscriminatedObject? value, JsonSerializer serializer)
   {
+    if (value is null)
+    {
+      return;
+    }
     var jo = JObject.FromObject(value, _localSerializer);
     jo.WriteTo(writer);
   }
 
-  public override DiscriminatedObject ReadJson(
+  public override DiscriminatedObject? ReadJson(
     JsonReader reader,
     Type objectType,
-    DiscriminatedObject existingValue,
+    DiscriminatedObject? existingValue,
     bool hasExistingValue,
     JsonSerializer serializer
   )
@@ -116,13 +117,13 @@ public class AbstractConverter<TReal, TAbstract> : JsonConverter
 {
   public override bool CanConvert(Type objectType) => objectType == typeof(TAbstract);
 
-  public override object ReadJson(
+  public override object? ReadJson(
     JsonReader reader,
     Type objectType,
-    object existingValue,
+    object? existingValue,
     JsonSerializer serializer
   ) => serializer.Deserialize<TReal>(reader);
 
-  public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
+  public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) =>
     serializer.Serialize(writer, value);
 }

@@ -1,5 +1,6 @@
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Autocad.HostApp;
@@ -84,7 +85,7 @@ public class AutocadDocumentStore : DocumentModelStore
       return;
     }
 
-    Models = Deserialize(serializedModelCards);
+    Models = Deserialize(serializedModelCards).NotNull();
   }
 
   public override void WriteToFile()
