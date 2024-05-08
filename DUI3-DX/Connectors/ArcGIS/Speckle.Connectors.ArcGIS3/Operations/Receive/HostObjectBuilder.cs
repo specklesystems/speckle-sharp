@@ -9,7 +9,6 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
-using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -17,10 +16,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 {
   private readonly ISpeckleConverterToHost _toHostConverter;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
-  private readonly IRawConversion<
-    Dictionary<string, Tuple<List<string>, Geometry>>,
-    List<Tuple<string, string>>
-  > _nonGISToHostConverter;
+  private readonly INonNativeFeaturesUtils _nonGisFeaturesUtils;
 
   // POC: figure out the correct scope to only initialize on Receive
   private readonly IConversionContextStack<Map, Unit> _contextStack;
@@ -29,13 +25,50 @@ public class HostObjectBuilder : IHostObjectBuilder
     ISpeckleConverterToHost toHostConverter,
     IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<Dictionary<string, Tuple<List<string>, Geometry>>, List<Tuple<string, string>>> nonGISToHostConverter
+    INonNativeFeaturesUtils nonGisFeaturesUtils
   )
   {
     _toHostConverter = toHostConverter;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
-    _nonGISToHostConverter = nonGISToHostConverter;
+    _nonGisFeaturesUtils = nonGisFeaturesUtils;
+  }
+
+  public Tuple<List<string>, Geometry> ConvertNonNativeGeometries(Base obj, string[] path, List<string> objectIds)
+  {
+    Geometry converted = (Geometry)_toHostConverter.Convert(obj);
+    objectIds.Add(obj.id);
+    List<string> objPath = path.ToList();
+    objPath.Add(obj.speckle_type.Split(".")[^1]);
+    return Tuple.Create(objPath, converted);
+  }
+
+  public Tuple<string, string> ConvertNativeLayers(Base obj, string[] path, List<string> objectIds)
+  {
+    string converted = (string)_toHostConverter.Convert(obj);
+    objectIds.Add(obj.id);
+    string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+    return Tuple.Create(objPath, converted);
+  }
+
+  public void AddDatasetsToMap(Tuple<string, string> databaseObj, string databasePath)
+  {
+    try
+    {
+      LayerFactory.Instance.CreateLayer(
+        new Uri($"{databasePath}\\{databaseObj.Item2}"),
+        _contextStack.Current.Document,
+        layerName: databaseObj.Item1
+      );
+    }
+    catch (ArgumentException)
+    {
+      StandaloneTableFactory.Instance.CreateStandaloneTable(
+        new Uri($"{databasePath}\\{databaseObj.Item2}"),
+        _contextStack.Current.Document,
+        tableName: databaseObj.Item1
+      );
+    }
   }
 
   public IEnumerable<string> Build(
@@ -71,7 +104,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     Dictionary<string, Tuple<List<string>, Geometry>> convertedGeometries = new();
     List<Tuple<string, string>> convertedGISObjects = new();
 
-    // 1. convert non-gis objects in a loop
+    // 1.1. convert non-gis objects in a loop
     foreach ((string[] path, Base obj) in nonGisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
@@ -83,13 +116,8 @@ public class HostObjectBuilder : IHostObjectBuilder
         // POC: QueuedTask
         QueuedTask.Run(() =>
         {
-          Geometry converted = (Geometry)_toHostConverter.Convert(obj);
-          objectIds.Add(obj.id);
-          List<string> objPath = path.ToList();
-          objPath.Add(obj.speckle_type.Split(".")[^1]);
-          convertedGeometries[obj.id] = Tuple.Create(objPath, converted);
+          convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, objectIds);
         });
-
         onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
       }
       catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
@@ -98,11 +126,11 @@ public class HostObjectBuilder : IHostObjectBuilder
         Debug.WriteLine("conversion error happened.");
       }
     }
-    // convert Database entries with non-GIS geometry datasets
+    // 1.2. convert Database entries with non-GIS geometry datasets
     try
     {
       onOperationProgressed?.Invoke("Writing to Database", null);
-      convertedGISObjects.AddRange(_nonGISToHostConverter.RawConvert(convertedGeometries));
+      convertedGISObjects.AddRange(_nonGisFeaturesUtils.WriteGeometriesToDatasets(convertedGeometries));
     }
     catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
     {
@@ -122,10 +150,7 @@ public class HostObjectBuilder : IHostObjectBuilder
         // POC: QueuedTask
         var task = QueuedTask.Run(() =>
         {
-          string converted = (string)_toHostConverter.Convert(obj);
-          objectIds.Add(obj.id);
-          string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
-          convertedGISObjects.Add(Tuple.Create(objPath, converted));
+          convertedGISObjects.Add(ConvertNativeLayers(obj, path, objectIds));
         });
         task.Wait(cancellationToken);
 
@@ -151,24 +176,8 @@ public class HostObjectBuilder : IHostObjectBuilder
       // POC: QueuedTask
       var task = QueuedTask.Run(() =>
       {
-        try
-        {
-          LayerFactory.Instance.CreateLayer(
-            new Uri($"{databasePath}\\{databaseObj.Item2}"),
-            _contextStack.Current.Document,
-            layerName: databaseObj.Item1
-          );
-          onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
-        }
-        catch (ArgumentException)
-        {
-          StandaloneTableFactory.Instance.CreateStandaloneTable(
-            new Uri($"{databasePath}\\{databaseObj.Item2}"),
-            _contextStack.Current.Document,
-            tableName: databaseObj.Item1
-          );
-          onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
-        }
+        AddDatasetsToMap(databaseObj, databasePath);
+        onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
       });
       task.Wait(cancellationToken);
     }

@@ -23,21 +23,30 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
     List<SOG.Point> pointsOriginal = new();
 
     // get correct direction
-    int coeff = 1;
-    double? angleStart = target.startAngle;
-    double? fullAngle = target.endAngle - target.startAngle;
+    double initialAngle = Math.Atan2(
+      target.plane.origin.y - target.startPoint.y,
+      target.plane.origin.x - target.startPoint.x
+    );
+    double? fullAngle = initialAngle + target.endAngle - target.startAngle;
     double? radius = target.radius;
 
-    if (angleStart == null || fullAngle == null || radius == null)
+    if (fullAngle == null || radius == null)
     {
       throw new SpeckleConversionException("Conversion failed: Arc doesn't have start & end angle or radius");
+    }
+
+    // define the direction
+    bool isCounterClockwise = !new SOG.Polyline(target.Values()) { closed = true }.IsClockwisePolygon();
+    if (isCounterClockwise is false && fullAngle >= 0 || isCounterClockwise is true && fullAngle < 0)
+    {
+      fullAngle = -1 * fullAngle;
     }
 
     // Calculate the vertices along the arc
     for (int i = 0; i <= numVertices; i++)
     {
       // Calculate the point along the arc
-      double angle = (double)angleStart + coeff * (double)fullAngle * (i / (double)numVertices);
+      double angle = initialAngle + (double)fullAngle * (i / (double)numVertices);
       SOG.Point pointOnArc =
         new(
           target.plane.origin.x + (double)radius * Math.Cos(angle),

@@ -26,6 +26,10 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion, IRawConv
     List<ACG.MapPoint> points = new();
     foreach (var segment in target.segments)
     {
+      if (segment is SOG.Arc)
+      {
+        throw new NotImplementedException("Polycurves with arc segments are not supported");
+      }
       ACG.Polyline converted = (ACG.Polyline)_toHostConverter.Convert((Base)segment);
       List<ACG.MapPoint> newPts = converted.Points.ToList();
 

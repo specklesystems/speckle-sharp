@@ -3,17 +3,15 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Desktop.Mapping;
-using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 using Speckle.Core.Logging;
 
-namespace Speckle.Converters.ArcGIS3.Layers;
+namespace Speckle.Converters.ArcGIS3.Utils;
 
-public class NonNativeLayerToHostConverter
-  : IRawConversion<Dictionary<string, Tuple<List<string>, ACG.Geometry>>, List<Tuple<string, string>>>
+public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 {
   private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IArcGISFieldUtils _fieldsUtils;
@@ -21,7 +19,7 @@ public class NonNativeLayerToHostConverter
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
-  public NonNativeLayerToHostConverter(
+  public NonNativeFeaturesUtils(
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IArcGISFieldUtils fieldsUtils,
     IFeatureClassUtils featureClassUtils,
@@ -36,7 +34,9 @@ public class NonNativeLayerToHostConverter
     _contextStack = contextStack;
   }
 
-  public List<Tuple<string, string>> RawConvert(Dictionary<string, Tuple<List<string>, ACG.Geometry>> target)
+  public List<Tuple<string, string>> WriteGeometriesToDatasets(
+    Dictionary<string, Tuple<List<string>, ACG.Geometry>> target
+  )
   {
     List<Tuple<string, string>> result = new();
     try
