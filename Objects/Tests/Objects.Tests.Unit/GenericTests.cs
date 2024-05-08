@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Speckle.Core;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -14,7 +15,7 @@ public class GenericTests
   public static IEnumerable<Type> AvailableTypesInKit()
   {
     // Get all types in the Objects assembly that inherit from Base
-    return Assembly.GetAssembly(typeof(ObjectsKit)).GetTypes().Where(t => typeof(Base).IsAssignableFrom(t));
+    return Assembly.GetAssembly(typeof(ObjectsKit)).NotNull().GetTypes().Where(t => typeof(Base).IsAssignableFrom(t));
   }
 
   public static IEnumerable<Type> NonAbstractTypesInKit()

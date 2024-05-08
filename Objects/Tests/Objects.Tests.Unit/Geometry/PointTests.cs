@@ -15,9 +15,9 @@ public class PointTests
   )]
   public void TestNull()
   {
-    Point a = null;
-    Point b = null;
-    Point c = new(0, 0, 0, null);
+    Point? a = null;
+    Point? b = null;
+    Point c = new(0, 0, 0);
 
     Assert.Multiple(() =>
     {
