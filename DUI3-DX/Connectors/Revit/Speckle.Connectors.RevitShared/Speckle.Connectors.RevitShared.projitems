@@ -18,7 +18,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ReceiveBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />

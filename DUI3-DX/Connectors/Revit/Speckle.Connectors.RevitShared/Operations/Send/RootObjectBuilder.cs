@@ -99,7 +99,7 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
 
         collection.elements.Add(converted);
       }
-      catch (SpeckleConversionException ex)
+      catch (SpeckleConversionException)
       {
         // POC: logging
       }

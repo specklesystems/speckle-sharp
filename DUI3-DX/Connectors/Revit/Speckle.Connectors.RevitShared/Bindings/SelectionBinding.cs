@@ -24,9 +24,9 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
     // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
-    _revitContext.UIApplication.SelectionChanged += (_, _) => _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
+    RevitContext.UIApplication.SelectionChanged += (_, _) => _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
 
-    _revitContext.UIApplication.ViewActivated += (_, _) =>
+    RevitContext.UIApplication.ViewActivated += (_, _) =>
     {
       Parent.Send(SelectionBindingEvents.SET_SELECTION, new SelectionInfo());
     };
@@ -42,7 +42,7 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // POC: this was also being called on shutdown
     // probably the bridge needs to be able to know if the plugin has been terminated
     // also on termination the OnSelectionChanged event needs unwinding
-    var selectionIds = _revitContext.UIApplication.ActiveUIDocument.Selection
+    var selectionIds = RevitContext.UIApplication.ActiveUIDocument.Selection
       .GetElementIds()
       .Select(id => id.ToString())
       .ToList();
