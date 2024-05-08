@@ -73,7 +73,7 @@ public static class GeometryUtils
     return isClockwise;
   }
 
-  public static SOG.Mesh CreateDisplayMeshForPolygon(this SGIS.GisPolygonGeometry polygon)
+  public static SOG.Mesh CreateDisplayMeshForPolygon(this SGIS.PolygonGeometry polygon)
   {
     if (polygon.voids.Count == 0)
     {

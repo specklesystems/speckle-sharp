@@ -20,7 +20,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     List<Base> displayVal = new();
     foreach (var shp in speckleShapes)
     {
-      if (shp is SGIS.GisPolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
+      if (shp is SGIS.PolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
       {
         try
         {
@@ -97,7 +97,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
       // if geometry is primitive
       if (
         speckleShapes.Count > 0
-        && speckleShapes[0] is not SGIS.GisPolygonGeometry
+        && speckleShapes[0] is not SGIS.PolygonGeometry
         && speckleShapes[0] is not SGIS.GisMultipatchGeometry
       )
       {
