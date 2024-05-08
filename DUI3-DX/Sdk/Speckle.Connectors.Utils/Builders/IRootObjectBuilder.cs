@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Speckle.Connectors.Utils.Operations;
+﻿using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Utils.Builders;

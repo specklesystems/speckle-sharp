@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Speckle.Autofac.DependencyInjection;
+﻿namespace Speckle.Autofac.DependencyInjection;
 
 public interface IUnitOfWork<out TService> : IDisposable
   where TService : class

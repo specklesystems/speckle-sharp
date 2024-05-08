@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Speckle.Connectors.Utils.Operations;
+﻿namespace Speckle.Connectors.Utils.Operations;
 
 public interface ISyncToMainThread
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Speckle.Converters.Common;
+﻿namespace Speckle.Converters.Common;
 
 public class SpeckleConversionException : Exception
 {

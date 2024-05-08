@@ -3,9 +3,7 @@
     <Import Project="../Directory.Build.props"/>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+        <ImplicitUsings>enable</ImplicitUsings>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 </Project>
