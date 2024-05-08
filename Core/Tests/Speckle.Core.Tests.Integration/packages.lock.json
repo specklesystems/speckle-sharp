@@ -8,12 +8,6 @@
         "resolved": "3.2.0",
         "contentHash": "xjY8xBigSeWIYs4I7DgUHqSNoGqnHi7Fv7/7RZD02rvZyG3hlsjnQKiVKVWKgr9kRKgmV+dEfu8KScvysiC0Wg=="
       },
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "JunitXml.TestLogger": {
         "type": "Direct",
         "requested": "[3.0.124, )",
@@ -461,15 +455,15 @@
           "Microsoft.NET.Test.Sdk": "[17.6.0, )",
           "NUnit": "[3.13.3, )",
           "NUnit3TestAdapter": "[4.5.0, )",
-          "Speckle.Core": "[1.0.0, )",
-          "Speckle.Transports.Disk": "[1.0.0, )",
+          "Speckle.Core": "[2.0.999-local, )",
+          "Speckle.Transports.Disk": "[2.0.999-local, )",
           "System.Text.Json": "[7.0.2, )"
         }
       },
       "Speckle.Transports.Disk": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       }
     }

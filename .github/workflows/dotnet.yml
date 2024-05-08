@@ -21,8 +21,6 @@ jobs:
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
       - name: NuGet Restore
         run: msbuild  DUI3-DX.slnf -t:Restore /p:RestoreLockedMode=true /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Build

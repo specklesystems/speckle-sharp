@@ -11,12 +11,6 @@
           "Microsoft.Bcl.AsyncInterfaces": "1.1.0"
         }
       },
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "NETStandard.Library": {
         "type": "Direct",
         "requested": "[2.0.3, )",
@@ -449,14 +443,14 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Autofac": "[1.0.0, )",
-          "Speckle.Objects": "[1.0.0, )"
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
@@ -484,7 +478,7 @@
       "Speckle.Objects": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       }
     }

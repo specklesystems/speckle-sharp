@@ -8,12 +8,6 @@
         "resolved": "3.2.0.49743",
         "contentHash": "fmnYm+mD14Cz0Uqh1ij37SfLJerkyFHK5581y5tXT/l3H2ZvUmVuuxjYquXzyzj9p7IexQzMW4xCpxe+mD922g=="
       },
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "Microsoft.Extensions.Logging": {
         "type": "Direct",
         "requested": "[7.0.0, )",
@@ -382,15 +376,15 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.connectors.dui": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Connectors.Utils": "[1.0.0, )",
-          "Speckle.Core": "[1.0.0, )",
+          "Speckle.Connectors.Utils": "[2.0.999-local, )",
+          "Speckle.Core": "[2.0.999-local, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
@@ -398,42 +392,42 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Web.WebView2": "[1.0.1823.32, )",
-          "Speckle.Connectors.DUI": "[1.0.0, )"
+          "Speckle.Connectors.DUI": "[2.0.999-local, )"
         }
       },
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.converters.arcgis3": {
         "type": "Project",
         "dependencies": {
           "Esri.ArcGISPro.Extensions30": "[3.2.0.49743, )",
-          "Speckle.Converters.Common": "[1.0.0, )"
+          "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
       "speckle.converters.arcgis3.dependencyinjection": {
         "type": "Project",
         "dependencies": {
           "Autofac": "[5.2.0, )",
-          "Speckle.Converters.ArcGIS3": "[1.0.0, )",
-          "Speckle.Converters.Common.DependencyInjection": "[1.0.0, )"
+          "Speckle.Converters.ArcGIS3": "[2.0.999-local, )",
+          "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Autofac": "[1.0.0, )",
-          "Speckle.Objects": "[1.0.0, )"
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Autofac": "[1.0.0, )",
-          "Speckle.Converters.Common": "[1.0.0, )"
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
@@ -461,7 +455,7 @@
       "Speckle.Objects": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       }
     },

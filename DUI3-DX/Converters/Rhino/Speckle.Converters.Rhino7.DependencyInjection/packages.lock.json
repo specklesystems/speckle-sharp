@@ -11,12 +11,6 @@
           "Microsoft.Bcl.AsyncInterfaces": "1.1.0"
         }
       },
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "RhinoCommon": {
         "type": "Direct",
         "requested": "[7.13.21348.13001, )",
@@ -358,28 +352,28 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Autofac": "[1.0.0, )",
-          "Speckle.Objects": "[1.0.0, )"
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Autofac": "[1.0.0, )",
-          "Speckle.Converters.Common": "[1.0.0, )"
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
       "speckle.converters.rhino7": {
         "type": "Project",
         "dependencies": {
           "RhinoCommon": "[7.13.21348.13001, )",
-          "Speckle.Converters.Common": "[1.0.0, )"
+          "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
@@ -407,7 +401,7 @@
       "Speckle.Objects": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       }
     }

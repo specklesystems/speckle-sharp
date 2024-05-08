@@ -2,12 +2,6 @@
   "version": 1,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "Microsoft.Web.WebView2": {
         "type": "Direct",
         "requested": "[1.0.1823.32, )",
@@ -354,15 +348,15 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Connectors.Utils": "[1.0.0, )",
-          "Speckle.Core": "[1.0.0, )",
+          "Speckle.Connectors.Utils": "[2.0.999-local, )",
+          "Speckle.Core": "[2.0.999-local, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
@@ -389,12 +383,6 @@
       }
     },
     "net6.0-windows7.0": {
-      "GitVersion.MsBuild": {
-        "type": "Direct",
-        "requested": "[5.12.0, )",
-        "resolved": "5.12.0",
-        "contentHash": "dJuigXycpJNOiLT9or7mkHSkGFHgGW3/p6cNNYEKZBa7Hhp1FdX/cvqYWWYhRLpfoZOedeA7aRbYiOB3vW/dvA=="
-      },
       "Microsoft.Web.WebView2": {
         "type": "Direct",
         "requested": "[1.0.1823.32, )",
@@ -736,15 +724,15 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Connectors.Utils": "[1.0.0, )",
-          "Speckle.Core": "[1.0.0, )",
+          "Speckle.Connectors.Utils": "[2.0.999-local, )",
+          "Speckle.Core": "[2.0.999-local, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Core": "[1.0.0, )"
+          "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
