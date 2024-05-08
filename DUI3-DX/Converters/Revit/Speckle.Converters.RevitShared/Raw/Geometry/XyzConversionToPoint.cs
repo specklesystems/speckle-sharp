@@ -7,9 +7,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public class XyzConversionToPoint : IRawConversion<DB.XYZ, SOG.Point>
 {
   private readonly ScalingServiceToSpeckle _toSpeckleScalingService;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
 
-  public XyzConversionToPoint(ScalingServiceToSpeckle toSpeckleScalingService, RevitConversionContextStack contextStack)
+  public XyzConversionToPoint(
+    ScalingServiceToSpeckle toSpeckleScalingService,
+    IRevitConversionContextStack contextStack
+  )
   {
     _toSpeckleScalingService = toSpeckleScalingService;
     _contextStack = contextStack;

@@ -9,12 +9,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public sealed class CurveArrayConversionToSpeckle : IRawConversion<DB.CurveArray, SOG.Polycurve>
 {
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly ScalingServiceToSpeckle _scalingService;
   private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
 
   public CurveArrayConversionToSpeckle(
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     ScalingServiceToSpeckle scalingService,
     IRawConversion<DB.Curve, ICurve> curveConverter
   )
