@@ -8,28 +8,23 @@ using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
 using Module = Autofac.Module;
 
-namespace Speckle.Autofac.DependencyInjection;
+namespace Speckle.Autofac.DependencyInjection.Registration;
 
 // POC: wrap the IContainer or expose it?
-public class AutofacContainer
+public class SpeckleContainerBuilder
 {
-  // Declare the event.
-  public event EventHandler<ContainerBuilder>? PreBuildEvent;
-
-  private readonly ContainerBuilder _builder;
   private readonly IStorageInfo _storageInfo;
 
-  private IContainer? _container;
-
-  public AutofacContainer(IStorageInfo storageInfo)
+  public SpeckleContainerBuilder(IStorageInfo storageInfo)
   {
     _storageInfo = storageInfo;
-
-    _builder = new ContainerBuilder();
+    ContainerBuilder = new ContainerBuilder();
   }
 
+  public static SpeckleContainerBuilder CreateInstance() => new(new StorageInfo());
+
   // POC: HOW TO GET TYPES loaded, this feels a bit heavy handed and relies on Autofac where we can probably do something different
-  public AutofacContainer LoadAutofacModules(IEnumerable<string> dependencyPaths)
+  public SpeckleContainerBuilder LoadAutofacModules(IEnumerable<string> dependencyPaths)
   {
     // look for assemblies in these paths that offer autofac modules
     foreach (string path in dependencyPaths)
@@ -52,7 +47,7 @@ public class AutofacContainer
           foreach (var moduleClass in moduleClasses)
           {
             var module = (Module)Activator.CreateInstance(moduleClass);
-            _builder.RegisterModule(module);
+            ContainerBuilder.RegisterModule(module);
           }
         }
         // POC: catch only certain exceptions
@@ -63,48 +58,47 @@ public class AutofacContainer
     return this;
   }
 
-  public AutofacContainer AddModule(Module module)
+  private readonly Lazy<IReadOnlyList<Type>> _types =
+    new(() =>
+    {
+      var types = new List<Type>();
+      foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
+      {
+        types.AddRange(asm.GetTypes());
+      }
+
+      return types;
+    });
+
+  public IReadOnlyList<Type> SpeckleTypes => _types.Value;
+  public ContainerBuilder ContainerBuilder { get; private set; }
+
+  public SpeckleContainerBuilder AddModule(Module module)
   {
-    _builder.RegisterModule(module);
+    ContainerBuilder.RegisterModule(module);
 
     return this;
   }
 
-  public AutofacContainer AddSingletonInstance<T>(T instance)
+  public SpeckleContainerBuilder AddSingletonInstance<T>(T instance)
     where T : class
   {
-    _builder.RegisterInstance(instance);
+    ContainerBuilder.RegisterInstance(instance);
 
     return this;
   }
 
-  public AutofacContainer Build()
+  public IContainer Build()
   {
-    // before we build give some last minute registration options.
-    PreBuildEvent?.Invoke(this, _builder);
-
-    _container = _builder.Build();
+    var container = ContainerBuilder.Build();
 
     // POC: we could create the factory on construction of the container and then inject that and store it
-    var logger = _container.Resolve<ILoggerFactory>().CreateLogger<AutofacContainer>();
+    var logger = container.Resolve<ILoggerFactory>().CreateLogger<SpeckleContainerBuilder>();
 
     // POC: we could probably expand on this
     List<string> assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => x.FullName).ToList();
     logger.LogInformation("Loaded assemblies: {@Assemblies}", assemblies);
 
-    return this;
-  }
-
-  public T Resolve<T>()
-    where T : class
-  {
-    if (_container == null)
-    {
-      throw new InvalidOperationException(
-        $"Container was not initialized, {nameof(Build)} must be called before calling {nameof(Resolve)}"
-      );
-    }
-
-    return _container.Resolve<T>();
+    return container;
   }
 }

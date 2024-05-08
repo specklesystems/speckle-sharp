@@ -3,7 +3,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Rhino;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Rhino7.ToSpeckle;
 
@@ -19,8 +18,6 @@ public class AutofacRhinoConverterModule : Module
       .As<IConversionContextStack<RhinoDoc, UnitSystem>>()
       .InstancePerLifetimeScope();
 
-    builder.RegisterRawConversions();
-
     // To Speckle
     builder
       .RegisterType<RhinoToSpeckleUnitConverter>()
@@ -32,7 +29,6 @@ public class AutofacRhinoConverterModule : Module
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
-    builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
       .As<IFactory<string, IHostObjectToSpeckleConversion>>()
@@ -47,7 +43,6 @@ public class AutofacRhinoConverterModule : Module
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
-    builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
     builder
       .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
       .As<IFactory<string, ISpeckleObjectToHostConversion>>()

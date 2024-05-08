@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Autofac;
 using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Plugin;
 
