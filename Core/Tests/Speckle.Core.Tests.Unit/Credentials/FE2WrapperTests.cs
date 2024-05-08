@@ -33,9 +33,9 @@ public class Fe2WrapperTests
     string url,
     StreamWrapperType expectedType,
     string expectedProjectId,
-    string expectedBranchId = null,
-    string expectedCommitId = null,
-    string expectedObjectId = null
+    string? expectedBranchId = null,
+    string? expectedCommitId = null,
+    string? expectedObjectId = null
   )
   {
     var streamWrapper = new StreamWrapper(url);

@@ -177,12 +177,12 @@ public class BaseTests
     var value = "something";
     // Can create a new dynamic member
     @base[key] = value;
-    Assert.That(value, Is.EqualTo((string)@base[key]));
+    Assert.That(value, Is.EqualTo(@base.Get<string>(key)));
 
     // Can overwrite existing
     value = "some other value";
     @base[key] = value;
-    Assert.That(value, Is.EqualTo((string)@base[key]));
+    Assert.That(value, Is.EqualTo(@base.Get<string>(key)));
 
     // Accepts null values
     @base[key] = null;

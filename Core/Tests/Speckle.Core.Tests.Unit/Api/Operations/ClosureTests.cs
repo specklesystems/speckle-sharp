@@ -49,18 +49,21 @@ public class Closures
     var d4_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d4.GetId(true)]);
     var d5_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d5.GetId(true)]);
 
+    Assert.That(d1_, Is.Not.Null);
     var depthOf_d5_in_d1 = int.Parse((string)d1_.__closure[d5.GetId(true)]);
     Assert.That(depthOf_d5_in_d1, Is.EqualTo(1));
 
     var depthOf_d4_in_d1 = int.Parse((string)d1_.__closure[d4.GetId(true)]);
     Assert.That(depthOf_d4_in_d1, Is.EqualTo(3));
 
+    Assert.That(d3_, Is.Not.Null);
     var depthOf_d5_in_d3 = int.Parse((string)d3_.__closure[d5.GetId(true)]);
     Assert.That(depthOf_d5_in_d3, Is.EqualTo(2));
 
     var depthOf_d4_in_d3 = int.Parse((string)d3_.__closure[d4.GetId(true)]);
     Assert.That(depthOf_d4_in_d3, Is.EqualTo(1));
 
+    Assert.That(d2_, Is.Not.Null);
     var depthOf_d5_in_d2 = int.Parse((string)d2_.__closure[d5.GetId(true)]);
     Assert.That(depthOf_d5_in_d2, Is.EqualTo(1));
   }

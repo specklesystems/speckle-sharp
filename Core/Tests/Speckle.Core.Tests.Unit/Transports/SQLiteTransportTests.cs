@@ -24,10 +24,9 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
   [TearDown]
   public void TearDown()
   {
-    _sqlite?.Dispose();
+    _sqlite.Dispose();
     SqliteConnection.ClearAllPools();
     Directory.Delete(s_basePath, true);
-    _sqlite = null;
   }
 
   [Test]

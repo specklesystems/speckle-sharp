@@ -78,6 +78,7 @@ public class CredentialInfrastructure
   {
     var acc = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == "123345");
 
+    Assert.That(acc, Is.Not.Null);
     Assert.That(acc.serverInfo.url, Is.EqualTo("https://sample.com"));
     Assert.That(acc.token, Is.EqualTo("secret"));
   }
