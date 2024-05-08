@@ -25,11 +25,6 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
     RevitContext.UIApplication.SelectionChanged += (_, _) => _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
-
-    RevitContext.UIApplication.ViewActivated += (_, _) =>
-    {
-      Parent.Send(SelectionBindingEvents.SET_SELECTION, new SelectionInfo());
-    };
   }
 
   private void OnSelectionChanged()
