@@ -109,7 +109,10 @@ public sealed class SendReceiveLocal : IDisposable
     Assert.That(_objId01, Is.Not.Null);
 
     var objsPulled = await Core.Api.Operations.Receive(_objId01);
-    Assert.That(((List<object>)(objsPulled.Get<Dictionary<string, object>>("@dictionary")["a"])).First(), Is.EqualTo(1));
+    Assert.That(
+      ((List<object>)(objsPulled.Get<Dictionary<string, object>>("@dictionary")["a"])).First(),
+      Is.EqualTo(1)
+    );
     Assert.That(objsPulled.Get<List<object>>("@list").Last(), Is.EqualTo("ciao"));
   }
 
