@@ -8,23 +8,22 @@
     <Error Text="ConnectorVersion property is not set" Condition=" '$(ConnectorVersion)' == '' " />
 
     <PropertyGroup>
-      <OutputDirectory>$(RepositoryRoot)/dist/$(ConnectorSlug)/$(ConnectorVersion)</OutputDirectory>
-      <OutputZipDirectory>$(RepositoryRoot)/dist/zip</OutputZipDirectory>
+      <OutputDirectory>$(RepositoryRoot)dist/$(ConnectorSlug)/$(ConnectorVersion)/</OutputDirectory>
+      <OutputZipDirectory>$(RepositoryRoot)dist/zip/</OutputZipDirectory>
       <OutputZipFile>$(ConnectorSlug)-$(ConnectorVersion)-$(Version).zip</OutputZipFile>
     </PropertyGroup>
 
-    <RemoveDir Directories="$(OutputDirectory)" ContinueOnError="true" />
-    <RemoveDir Directories="$(OutputZipDirectory)" ContinueOnError="true"/>
+    <RemoveDir Directories="$(OutputDirectory)"/>
     <MakeDir Directories="$(OutputDirectory)"/>
-    <MakeDir Directories="$(OutputZipDirectory)"/>
+    <MakeDir Directories="$(OutputZipDirectory)" ContinueOnError="true"/>
 
     <ItemGroup>
       <DllFiles Include="$(OutDir)**/*.*"/>
     </ItemGroup>
     
-    <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(OutputDirectory)/%(RecursiveDir)"/>
+    <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(OutputDirectory)%(RecursiveDir)" />
     
-    <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)/$(OutputZipFile)" Overwrite="true"/>
+    <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)$(OutputZipFile)" Overwrite="true"/>
     
   </Target>
 </Project>
