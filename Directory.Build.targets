@@ -44,9 +44,9 @@
   <!--
   Reports the current build version number in the build logs.
   -->
-  <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
+  <Target Name="ReportBuildVersion" AfterTargets="Build">
     <Message
-      Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)"
+      Text="Built $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)"
       Importance="high"/>
   </Target>
 

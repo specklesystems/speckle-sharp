@@ -5,7 +5,7 @@ name: .NET
 
 on:
   push:
-    branches: ["dui3/alpha", "dui3/ci/*"]
+    branches: ["dui3/ci/*"]
   pull_request:
     branches: ["dui3/alpha"]
 
@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x.x
+          global-json-file: ./global.json
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
       # - name: Restore tools
@@ -32,5 +32,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: DUI3 Connectors
+          name: dui3-connector-build-artifacts
           path: dist/zip/*.zip

@@ -13,8 +13,9 @@
       <OutputZipDirectory>$(RepositoryRoot)/dist/zip</OutputZipDirectory>
       <OutputZipFile>$(ConnectorSlug)-$(ConnectorVersion)-$(Version).zip</OutputZipFile>
     </PropertyGroup>
-    
-    <RemoveDir Directories="$(OutputDirectory)"/>
+
+    <RemoveDir Directories="$(OutputDirectory)" ContinueOnError="true" />
+    <RemoveDir Directories="$(OutputZipDirectory)" ContinueOnError="true"/>
     <MakeDir Directories="$(OutputDirectory)"/>
     <MakeDir Directories="$(OutputZipDirectory)"/>
 
@@ -24,7 +25,7 @@
     
     <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(OutputDirectory)/%(RecursiveDir)"/>
     
-    <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)/$(OutputZipFile)"/>
+    <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)/$(OutputZipFile)" Overwrite="true"/>
     
   </Target>
 </Project>
