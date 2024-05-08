@@ -10,28 +10,17 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      DOTNET_NUGET_SIGNATURE_VERIFICATION: false # fix long restore by adding security risk? Dodgy... We should be building on ubunty
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup MsBuild
         uses: microsoft/setup-msbuild@v2
-      - uses: nuget/setup-nuget@v2
-        with:
-          nuget-version: "5.x"
       - name: NuGet Restore
-        run: nuget restore All.sln
-      # - name: Restore tools
-      #   run: dotnet tool restore
-      # - name: Code formatting check
-      #   run: dotnet csharpier --check .
-      # - name: Restore projects
-      #   run: dotnet restore DUI3-DX.slnf
+        run: msbuild  DUI3-DX.slnf -t:Restore
       - name: Build
         run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: dist/zip/
+          path: dist/zip/*
