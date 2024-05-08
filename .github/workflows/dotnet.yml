@@ -23,9 +23,9 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
       - name: NuGet Restore
         if: steps.cache.outputs.cache-hit != 'true'
-        run: msbuild  DUI3-DX.slnf -t:Restore
+        run: msbuild  DUI3-DX.slnf -t:Restore /p:Configuration=Release /p:IsDesktopBuild=false
       - name: Build
-        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
+        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -11,10 +11,8 @@
 
     <PropertyGroup>
       <OutputDirectory>$(RepositoryRoot)dist/$(ConnectorSlug)/$(ConnectorVersion)/</OutputDirectory>
-      <OutputZipDirectory>$(RepositoryRoot)dist/zip/</OutputZipDirectory>
-      <OutputZipFile>$(ConnectorSlug)-$(ConnectorVersion)-$(Version).zip</OutputZipFile>
     </PropertyGroup>
-    ms
+    
 
     <RemoveDir Directories="$(OutputDirectory)"/>
     <MakeDir Directories="$(OutputDirectory)"/>
