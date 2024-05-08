@@ -128,7 +128,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild" Version="5.6.10*" PrivateAssets="All"/>
+    <PackageReference Include="GitVersion.MsBuild" Version="5.12.0" PrivateAssets="All"/>
   </ItemGroup>
   
   <ItemGroup>
