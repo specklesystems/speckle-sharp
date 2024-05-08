@@ -107,7 +107,9 @@
 
   <PropertyGroup Label="Package Config">
     <!-- Version info -->
-
+    <Version Condition="$(Version) == ''">2.0.999-local</Version>
+    <FileVersion Condition="$(FileVersion) == ''">2.0.999.0000</FileVersion>
+    <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
     
     <!-- Package info -->
     <PackageVersion Condition="$(PackageVersion) == ''">$(Version)</PackageVersion>
@@ -126,10 +128,6 @@
     <!-- Expose the repository root to all projects -->
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild" Version="5.12.0" PrivateAssets="All"/>
-  </ItemGroup>
   
   <ItemGroup>
     <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic

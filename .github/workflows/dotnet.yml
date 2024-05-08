@@ -12,17 +12,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          fetch-depth: 0
-      - name: Setup MsBuild
-        uses: microsoft/setup-msbuild@v2
+          dotnet-version: 7.x.x
       - uses: actions/cache@v4
         id: cache
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-      - name: NuGet Restore
-        run: msbuild  DUI3-DX.slnf -t:Restore /p:RestoreLockedMode=true /p:Configuration=Release /p:IsDesktopBuild=false
+      - name: Restore projects
+        run: dotnet restore DUI3-DX.slnf -c Release --locked-mode
       - name: Build
         run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
       - name: Upload artifacts
