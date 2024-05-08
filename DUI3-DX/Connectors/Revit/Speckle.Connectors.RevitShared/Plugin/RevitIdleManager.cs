@@ -16,7 +16,7 @@ internal class RevitIdleManager : IRevitIdleManager
   private readonly ConcurrentDictionary<string, Action> _calls = new();
 
   // POC: still not thread safe
-  private volatile bool _hasSubscribed = false;
+  private volatile bool _hasSubscribed;
 
   public RevitIdleManager(RevitContext revitContext)
   {

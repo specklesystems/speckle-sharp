@@ -9,13 +9,13 @@ namespace Speckle.Converters.Revit2023.ToSpeckle;
 [NameAndRankValue(nameof(DB.DirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DirectShapeConversionToSpeckle : BaseConversionToSpeckle<DB.DirectShape, SOBR.DirectShape>
 {
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly DisplayValueExtractor _displayValueExtractor;
 
   public DirectShapeConversionToSpeckle(
     ParameterObjectAssigner parameterObjectAssigner,
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     DisplayValueExtractor displayValueExtractor
   )
   {

@@ -87,7 +87,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     // bubbling up to the bridge.
     try
     {
-      if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+      if (Store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
         throw new InvalidOperationException("No publish model card was found.");
       }
@@ -195,7 +195,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    List<SenderModelCard> senders = Store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 

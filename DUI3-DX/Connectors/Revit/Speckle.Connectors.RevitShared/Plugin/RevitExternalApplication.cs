@@ -50,7 +50,7 @@ internal class RevitExternalApplication : IExternalApplication
       // POC: not sure what this is doing...  could be messing up our Aliasing????
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
       _container = new AutofacContainer(new StorageInfo());
-      _container.PreBuildEvent += _container_PreBuildEvent;
+      _container.PreBuildEvent += ContainerPreBuildEvent;
 
       // init DI
       _container
@@ -72,7 +72,7 @@ internal class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
-  private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
+  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
     // POC: need to settle on the mechanism and location as to where we should register these services
     containerBuilder.RegisterRawConversions();

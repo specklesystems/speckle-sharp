@@ -10,9 +10,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 )]
 // POC: so this should *probably* be Document and NOT UI.UIDocument, the former is Conversion centric
 // and the latter is more for connector
-public class RevitConversionContextStack
-  : ConversionContextStack<UI.UIDocument, ForgeTypeId>,
-    IRevitConversionContextStack
+public class RevitConversionContextStack : ConversionContextStack<Document, ForgeTypeId>, IRevitConversionContextStack
 {
   public const double TOLERANCE = 0.0164042; // 5mm in ft
 
@@ -22,7 +20,7 @@ public class RevitConversionContextStack
       // so should this perpetuate or do we assume this is valid?
       // relting on the context.UIApplication?.ActiveUIDocument is not right
       // this should be some IActiveDocument I suspect?
-      context.UIApplication?.ActiveUIDocument
+      context.UIApplication?.ActiveUIDocument?.Document
         ?? throw new SpeckleConversionException("Active UI document could not be determined"),
       context.UIApplication.ActiveUIDocument.Document.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId(),
       unitConverter

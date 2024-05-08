@@ -16,7 +16,7 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
   private readonly IRawConversion<Level, RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public ColumnConversionToSpeckle(
@@ -24,7 +24,7 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
     IRawConversion<Level, RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     ParameterObjectAssigner parameterObjectAssigner
   )
   {

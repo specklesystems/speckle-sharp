@@ -17,14 +17,14 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
   // POC: SendSelection and RevitConversionContextStack should be interfaces, former needs interfaces
   private readonly ISpeckleConverterToSpeckle _converter;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
 
   public RootObjectBuilder(
     ISpeckleConverterToSpeckle converter,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    RevitConversionContextStack contextStack
+    IRevitConversionContextStack contextStack
   )
   {
     _converter = converter;
@@ -36,7 +36,7 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
     _collectionCache = new Dictionary<string, Collection>();
     _rootObject = new Collection()
     {
-      name = _contextStack.Current.Document.Document.PathName.Split('\\').Last().Split('.').First()
+      name = _contextStack.Current.Document.PathName.Split('\\').Last().Split('.').First()
     };
   }
 
@@ -47,18 +47,18 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
     CancellationToken ct = default
   )
   {
-    var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
+    var doc = _contextStack.Current.Document;
 
     if (doc.IsFamilyDocument)
     {
       throw new SpeckleException("Family Environment documents are not supported.");
     }
 
-    var revitElements = new List<Element>(); // = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var revitElements = new List<Element>(); // = _contextStack.Current.Document.GetElements(sendSelection.SelectedItems).ToList();
 
     foreach (var id in objects)
     {
-      var el = _contextStack.Current.Document.Document.GetElement(id);
+      var el = _contextStack.Current.Document.GetElement(id);
       if (el != null)
       {
         revitElements.Add(el);
@@ -99,7 +99,7 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
 
         collection.elements.Add(converted);
       }
-      catch (SpeckleConversionException ex)
+      catch (SpeckleConversionException)
       {
         // POC: logging
       }

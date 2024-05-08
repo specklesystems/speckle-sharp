@@ -13,12 +13,12 @@ public class HostedElementConversionToSpeckle
 {
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ISpeckleConverterToSpeckle _converter;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
 
   public HostedElementConversionToSpeckle(
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     ISpeckleConverterToSpeckle converter,
-    RevitConversionContextStack contextStack
+    IRevitConversionContextStack contextStack
   )
   {
     _convertedObjectsCache = convertedObjectsCache;
@@ -30,7 +30,7 @@ public class HostedElementConversionToSpeckle
   {
     foreach (var elemId in hostedElementIds)
     {
-      Element element = _contextStack.Current.Document.Document.GetElement(elemId);
+      Element element = _contextStack.Current.Document.GetElement(elemId);
 
       Base @base;
       try

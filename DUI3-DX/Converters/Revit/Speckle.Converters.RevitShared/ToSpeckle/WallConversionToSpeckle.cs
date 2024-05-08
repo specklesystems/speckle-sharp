@@ -18,7 +18,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly RevitConversionContextStack _contextStack;
+  private readonly IRevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly ISpeckleConverterToSpeckle _converter;
@@ -27,7 +27,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     IRawConversion<DB.Curve, ICurve> curveConverter,
     IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
     IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
-    RevitConversionContextStack contextStack,
+    IRevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
@@ -124,7 +124,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
   {
     foreach (DB.ElementId elementId in elementIds)
     {
-      yield return _converter.Convert(_contextStack.Current.Document.Document.GetElement(elementId));
+      yield return _converter.Convert(_contextStack.Current.Document.GetElement(elementId));
     }
   }
 
