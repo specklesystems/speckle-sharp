@@ -23,7 +23,6 @@ internal class RevitPlugin : IRevitPlugin
   private readonly RevitSettings _revitSettings;
   private readonly IEnumerable<Lazy<IBinding>> _bindings; // should be lazy to ensure the bindings are not created too early
   private readonly BindingOptions _bindingOptions;
-  private readonly CefSharpPanel _panel;
   private readonly RevitContext _revitContext;
   private readonly CefSharpPanel _cefSharpPanel;
 
@@ -177,9 +176,9 @@ internal class RevitPlugin : IRevitPlugin
     {
       var assembly = Assembly.LoadFrom(Path.Combine(path));
       var icon = assembly.GetManifestResourceStream(sourceName);
-      PngBitmapDecoder m_decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
-      ImageSource m_source = m_decoder.Frames[0];
-      return (m_source);
+      PngBitmapDecoder decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+      ImageSource source = decoder.Frames[0];
+      return source;
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
