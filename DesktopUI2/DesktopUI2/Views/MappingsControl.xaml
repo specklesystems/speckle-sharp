@@ -163,7 +163,7 @@
                           VerticalAlignment="Center"
                           Foreground="Gray"
                           Kind="InfoCircle"
-                          ToolTip.Tip="Select a stream coming from Revit with types and levels" />
+                          ToolTip.Tip="Select a project coming from Revit with types and levels" />
                         <TextBlock
                           Margin="5,0"
                           VerticalAlignment="Center"
@@ -185,9 +185,9 @@
                             <TextBlock
                               Classes="SpeckleFont"
                               IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNull}}"
-                              Text="Choose Stream" />
+                              Text="Choose Project" />
                             <StackPanel IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}" Orientation="Horizontal">
-                              <TextBlock Classes="SpeckleFont" Text="Stream: " />
+                              <TextBlock Classes="SpeckleFont" Text="Project: " />
                               <TextBlock Classes="SpeckleFont" Text="{Binding SelectedStream.Stream.name}" />
                             </StackPanel>
                           </Grid>
@@ -362,10 +362,10 @@
 
                       <!--  APPLY MAPPINGS  -->
                       <Button
-                                                                                                            Command="{Binding SetMappingsCommand}"
-                                                                                                            Content="Apply Mappings"
-                                                                                                            IsEnabled="{Binding SelectedSchema.IsValid}"
-                                                                                                            ToolTip.Tip="Apply mappings to all the selected elements" />
+                        Command="{Binding SetMappingsCommand}"
+                        Content="Apply Mappings"
+                        IsEnabled="{Binding SelectedSchema.IsValid}"
+                        ToolTip.Tip="Apply mappings to all the selected elements" />
 
 
 
@@ -381,7 +381,7 @@
                         VerticalAlignment="Center"
                         Foreground="Gray"
                         Kind="InfoCircle"
-                        ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+                        ToolTip.Tip="A version is a snapshot in time&#x0a;of the data inside a model.&#x0a;Every time you send to Speckle from a connector,&#x0a;a version is created." />
                       <TextBlock
                         Margin="5,0"
                         VerticalAlignment="Center"

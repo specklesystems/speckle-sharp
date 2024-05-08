@@ -32,7 +32,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   /// <returns></returns>
   public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
   {
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
     converter.SetContextDocument(Doc);
     converter.ReceiveMode = state.ReceiveMode;
 
@@ -55,11 +55,19 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var conversionProgressDict = new ConcurrentDictionary<string, int>();
     conversionProgressDict["Conversion"] = 0;
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> typeCountDict = new();
+
     Base commitObject = null;
     if (Preview.Count == 0)
     {
       commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(state, commit, Utils.RhinoAppName, progress.CancellationToken);
+      await ConnectorHelpers.TryCommitReceived(
+        state,
+        commit,
+        Utils.GetRhinoHostAppVersion(),
+        progress.CancellationToken
+      );
     }
 
     // get commit layer name
@@ -156,6 +164,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             .Where(o => !string.IsNullOrEmpty(o))
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
+
           // if on create mode, make sure the parent commit layer is created first
           if (state.ReceiveMode == ReceiveMode.Create)
           {
@@ -180,6 +189,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             var collection = Preview
               .Where(o => o.Container == container && o.Descriptor.Contains("Collection"))
               .FirstOrDefault();
+
             if (collection != null)
             {
               var storedCollection = StoredObjects[collection.OriginalId];
@@ -212,6 +222,13 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
           foreach (var previewObj in Preview)
           {
+            // log received object type
+            if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
+            {
+              typeCountDict.TryGetValue(previewBaseObj.speckle_type, out var currentCount);
+              typeCountDict[previewBaseObj.speckle_type] = ++currentCount;
+            }
+
             if (previewObj.Status != ApplicationObject.State.Unknown)
             {
               continue; // this has already been converted and baked
@@ -297,6 +314,20 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           progress.Report.Merge(converter.Report);
 
           RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // reactivate the layer handler
+
+          // track the object type counts as an event before we try to receive
+          // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received
+          // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+          var typeCountList = typeCountDict
+            .Select(o => new { TypeName = o.Key, Count = o.Value })
+            .OrderBy(pair => pair.Count)
+            .Reverse()
+            .Take(200);
+
+          Speckle.Core.Logging.Analytics.TrackEvent(
+            Speckle.Core.Logging.Analytics.Events.ConvertToNative,
+            new Dictionary<string, object>() { { "typeCount", typeCountList } }
+          );
 
           // undo notes edit
           var segments = Doc.Notes.Split(new[] { "%%%" }, StringSplitOptions.None).ToList();

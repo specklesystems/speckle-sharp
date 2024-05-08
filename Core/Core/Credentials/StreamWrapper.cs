@@ -375,11 +375,6 @@ public class StreamWrapper
   /// <exception cref="SpeckleException">Verification of the current state of the stream wrapper with provided <paramref name="acc"/> was unsuccessful. The <paramref name="acc"/> could be invalid, or lack permissions for the <see cref="StreamId"/>, or the <see cref="StreamId"/> or <see cref="BranchName"/> are invalid</exception>
   public async Task ValidateWithAccount(Account acc)
   {
-    if (ServerUrl != acc.serverInfo.url)
-    {
-      throw new ArgumentException($"Account is not from server {ServerUrl}", nameof(acc));
-    }
-
     Uri url;
     try
     {
@@ -388,6 +383,11 @@ public class StreamWrapper
     catch (UriFormatException ex)
     {
       throw new ArgumentException("Server Url is improperly formatted", nameof(acc), ex);
+    }
+
+    if (ServerUrl != acc.serverInfo.url && url != acc.serverInfo.migration?.movedFrom)
+    {
+      throw new ArgumentException($"Account is not from server {ServerUrl}", nameof(acc));
     }
 
     try

@@ -179,6 +179,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         var commitLayerObjects = new Dictionary<string, List<Base>>();
         var commitCollections = new Dictionary<string, Collection>();
 
+        // track object types for mixpanel logging
+        Dictionary<string, int> typeCountDict = new();
+
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
           // handle user cancellation
@@ -200,6 +203,11 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             progress.Report.LogOperationError(new Exception($"Failed to find doc object ${autocadObjectHandle}."));
             continue;
           }
+
+          // log selection object type
+          var objectType = obj.GetType().ToString();
+          typeCountDict.TryGetValue(objectType, out var currentCount);
+          typeCountDict[objectType] = ++currentCount;
 
           // create applicationobject for reporting
           Base converted = null;
@@ -341,6 +349,20 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         }
 
         #endregion
+
+        // track the object type counts as an event before we try to send
+        // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
+        // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+        var typeCountList = typeCountDict
+          .Select(o => new { TypeName = o.Key, Count = o.Value })
+          .OrderBy(pair => pair.Count)
+          .Reverse()
+          .Take(200);
+
+        Analytics.TrackEvent(
+          Analytics.Events.ConvertToSpeckle,
+          new Dictionary<string, object>() { { "typeCount", typeCountList } }
+        );
 
         tr.Commit();
       }

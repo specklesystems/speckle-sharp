@@ -4,35 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api;
 
 [SuppressMessage("Design", "CA1068:CancellationToken parameters must come last")]
 public partial class Client
 {
-  #region Depreated Invites
-
-  /// <summary>
-  /// Checks if Speckle Server version is at least v2.6.4 meaning stream invites are supported.
-  /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <returns>true if invites are supported</returns>
-  /// <exception cref="SpeckleException">if Speckle Server version is less than v2.6.4</exception>
-  [Obsolete("We're not supporting 2.6.4 version any more", true)]
-  [SuppressMessage("Style", "IDE1006:Naming Styles")]
-  public async Task<bool> _CheckStreamInvitesSupported(CancellationToken cancellationToken = default)
-  {
-    var version = ServerVersion ?? await GetServerVersion(cancellationToken).ConfigureAwait(false);
-    if (version < new System.Version("2.6.4"))
-    {
-      throw new SpeckleException("Stream invites are only supported as of Speckle Server v2.6.4.");
-    }
-
-    return true;
-  }
-  #endregion
-
   #region Stream Grant Permission
 
   /// <summary>

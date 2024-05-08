@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using Dynamo.Graph.Nodes;
 using Dynamo.Utilities;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
+using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -149,11 +149,7 @@ public class CreateStream : NodeModel
 
       Name = "Stream Created";
 
-      Analytics.TrackEvent(
-        SelectedAccount,
-        Analytics.Events.NodeRun,
-        new Dictionary<string, object>() { { "name", "Stream Create" } }
-      );
+      AnalyticsUtils.TrackNodeRun(SelectedAccount, "Stream Create");
 
       OnNodeModified(true);
     }

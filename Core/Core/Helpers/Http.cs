@@ -134,7 +134,7 @@ public static class Http
   /// </summary>
   /// <param name="uri">The URI that should be pinged</param>
   /// <exception cref="HttpRequestException">Request to <paramref name="uri"/> failed</exception>
-  internal static async Task<HttpResponseMessage> HttpPing(Uri uri)
+  public static async Task<HttpResponseMessage> HttpPing(Uri uri)
   {
     try
     {
