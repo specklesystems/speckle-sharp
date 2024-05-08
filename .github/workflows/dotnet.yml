@@ -4,15 +4,14 @@
 name: .NET
 
 on:
-  push:
-    branches: ["dui3/ci/*"]
   pull_request:
     branches: ["dui3/alpha"]
 
 jobs:
   build:
     runs-on: windows-latest
-
+    env:
+      DOTNET_NUGET_SIGNATURE_VERIFICATION: false # fix long restore by adding security risk? Dodgy... We should be building on ubunty
     steps:
       - uses: actions/checkout@v4
         with:
