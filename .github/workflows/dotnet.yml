@@ -33,5 +33,4 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dui3-connector-build-artifacts
-          path: dist/zip/*.zip
+          path: dist/zip/
