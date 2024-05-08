@@ -16,7 +16,13 @@ jobs:
           fetch-depth: 0
       - name: Setup MsBuild
         uses: microsoft/setup-msbuild@v2
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
       - name: NuGet Restore
+        if: steps.cache.outputs.cache-hit != 'true'
         run: msbuild  DUI3-DX.slnf -t:Restore
       - name: Build
         run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
