@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: ./global.json
+          dotnet-version: 7.x.x
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
       # - name: Restore tools
