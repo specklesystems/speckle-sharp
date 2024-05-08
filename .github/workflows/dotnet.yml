@@ -20,9 +20,9 @@ jobs:
         uses: microsoft/setup-msbuild@v2
       - uses: nuget/setup-nuget@v2
         with:
-          nuget-version: '5.x'
+          nuget-version: "5.x"
       - name: NuGet Restore
-        run: nuget restore DUI3-DX.slnf
+        run: nuget restore All.sln
       # - name: Restore tools
       #   run: dotnet tool restore
       # - name: Code formatting check
