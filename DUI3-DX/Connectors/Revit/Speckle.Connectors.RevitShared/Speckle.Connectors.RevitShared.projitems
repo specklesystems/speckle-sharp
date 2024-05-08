@@ -9,6 +9,8 @@
     <Import_RootNamespace>Speckle.Connectors.Revit</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
     <Content Include="$(MSBuildThisFileDirectory)Plugin\Speckle.Connectors.Revit2023.addin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -16,7 +18,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ReceiveBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
@@ -26,10 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\IStorageSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacUIModule.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\IRootObjectSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectSender.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\SendOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
       <DependentUpon>CefSharpPanel.xaml</DependentUpon>
     </Compile>

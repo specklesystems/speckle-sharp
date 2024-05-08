@@ -3,12 +3,30 @@ using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Utils.Operations;
 
-public struct SendInfo
+public readonly struct SendInfo
 {
-  public string AccountId { get; set; }
-  public string ProjectId { get; set; }
-  public string ModelId { get; set; }
-  public string SourceApplication { get; set; }
-  public Dictionary<string, ObjectReference> ConvertedObjects { get; set; }
-  public HashSet<string> ChangedObjectIds { get; set; }
+  public SendInfo(
+    string accountId,
+    string projectId,
+    string modelId,
+    string sourceApplication,
+    IReadOnlyDictionary<string, ObjectReference> convertedObjects,
+    ISet<string> changedObjectIds
+  )
+  {
+    AccountId = accountId;
+    ProjectId = projectId;
+    ModelId = modelId;
+    SourceApplication = sourceApplication;
+    ConvertedObjects = convertedObjects;
+    ChangedObjectIds = changedObjectIds;
+  }
+
+  public string AccountId { get; }
+  public string ProjectId { get; }
+  public string ModelId { get; }
+  public string SourceApplication { get; }
+  public IReadOnlyDictionary<string, ObjectReference> ConvertedObjects { get; }
+
+  public ISet<string> ChangedObjectIds { get; }
 }

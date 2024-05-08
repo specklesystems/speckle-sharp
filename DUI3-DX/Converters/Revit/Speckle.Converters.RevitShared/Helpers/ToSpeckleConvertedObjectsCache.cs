@@ -17,4 +17,9 @@ public sealed class ToSpeckleConvertedObjectsCache
   {
     return _uniqueIdToConvertedBaseDict.ContainsKey(revitUniqueId);
   }
+
+  public bool TryGetConvertedBase(string revitUniqueId, out Base? value)
+  {
+    return _uniqueIdToConvertedBaseDict.TryGetValue(revitUniqueId, out value);
+  }
 }

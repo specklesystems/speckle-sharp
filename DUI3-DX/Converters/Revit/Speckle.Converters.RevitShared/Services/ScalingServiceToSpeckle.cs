@@ -10,10 +10,10 @@ public sealed class ScalingServiceToSpeckle
   private readonly double _defaultLengthConversionFactor;
 
   // POC: this seems like the reverse relationship
-  public ScalingServiceToSpeckle(RevitConversionContextStack contextStack)
+  public ScalingServiceToSpeckle(IRevitConversionContextStack contextStack)
   {
     // POC: this is accurate for the current context stack
-    Units documentUnits = contextStack.Current.Document.Document.GetUnits();
+    Units documentUnits = contextStack.Current.Document.GetUnits();
     FormatOptions formatOptions = documentUnits.GetFormatOptions(SpecTypeId.Length);
     var lengthUnitsTypeId = formatOptions.GetUnitTypeId();
     _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);

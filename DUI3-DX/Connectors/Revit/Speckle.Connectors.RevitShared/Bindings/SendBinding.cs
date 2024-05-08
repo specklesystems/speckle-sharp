@@ -11,11 +11,12 @@ using Speckle.Connectors.Utils;
 using System.Threading.Tasks;
 using System.Threading;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -27,6 +28,12 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
+  /// <summary>
+  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
+  /// </summary>
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+
+  private readonly RevitSettings _revitSettings;
   private readonly IRevitIdleManager _idleManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
@@ -35,12 +42,14 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     RevitContext revitContext,
     DocumentModelStore store,
     IBridge bridge,
-    IUnitOfWorkFactory unitOfWorkFactory
+    IUnitOfWorkFactory unitOfWorkFactory,
+    RevitSettings revitSettings
   )
     : base("sendBinding", store, bridge, revitContext)
   {
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
+    _revitSettings = revitSettings;
     Commands = new SendBindingUICommands(bridge);
 
     // TODO expiry events
@@ -78,25 +87,45 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     // bubbling up to the bridge.
     try
     {
-      if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+      if (Store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
+      using IUnitOfWork<SendOperation<ElementId>> sendOperation = _unitOfWorkFactory.Resolve<
+        SendOperation<ElementId>
+      >();
 
-      string versionId = await sendOperation.Service
+      List<ElementId> revitObjects = modelCard.SendFilter.GetObjectIds().Select(id => ElementId.Parse(id)).ToList();
+
+      var sendInfo = new SendInfo(
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        _revitSettings.HostSlug,
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
+
+      var sendResult = await sendOperation.Service
         .Execute(
-          modelCard.SendFilter,
-          modelCard.AccountId,
-          modelCard.ProjectId,
-          modelCard.ModelId,
+          revitObjects,
+          sendInfo,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
           cts.Token
         )
         .ConfigureAwait(false);
 
-      Commands.SetModelCreatedVersionId(modelCardId, versionId);
+      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      }
+
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      modelCard.ChangedObjectIds = new();
+
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
@@ -166,15 +195,18 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    List<SenderModelCard> senders = Store.GetSenders();
+    string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    foreach (var sender in senders)
+    foreach (SenderModelCard modelCard in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      bool isExpired = modelCard.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId);
+        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 

@@ -29,7 +29,7 @@ public class ReferencePointConverter : IReferencePointConverter
   // doc can change during the lifeycycle of the conversions. This may need some looking into
   public DB.XYZ ConvertToExternalCoordindates(DB.XYZ inbound, bool isPoint)
   {
-    var rpt = GetDocReferencePointTransform(_contextStack.Current.Document.Document);
+    var rpt = GetDocReferencePointTransform(_contextStack.Current.Document);
     return isPoint ? rpt.OfPoint(inbound) : rpt.OfVector(inbound);
   }
 
@@ -60,7 +60,7 @@ public class ReferencePointConverter : IReferencePointConverter
 
     // POC: bogus disposal below
 #pragma warning disable CA2000
-    var points = new DB.FilteredElementCollector(_contextStack.Current.Document.Document)
+    var points = new DB.FilteredElementCollector(_contextStack.Current.Document)
       .OfClass(typeof(DB.BasePoint))
       .Cast<DB.BasePoint>()
       .ToList();

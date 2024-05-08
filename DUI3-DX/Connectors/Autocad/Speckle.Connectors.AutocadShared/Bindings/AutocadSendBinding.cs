@@ -138,15 +138,14 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
       }
 
-      var sendInfo = new SendInfo()
-      {
-        AccountId = modelCard.AccountId,
-        ProjectId = modelCard.ProjectId,
-        ModelId = modelCard.ModelId,
-        ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds,
-        SourceApplication = _autocadSettings.HostAppInfo.Name
-      };
+      var sendInfo = new SendInfo(
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        _autocadSettings.HostAppInfo.Name,
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
 
       var sendResult = await uow.Service
         .Execute(

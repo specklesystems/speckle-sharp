@@ -9,6 +9,11 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using System.Diagnostics;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Core.Logging;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.IO;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -18,7 +23,6 @@ internal class RevitPlugin : IRevitPlugin
   private readonly RevitSettings _revitSettings;
   private readonly IEnumerable<Lazy<IBinding>> _bindings; // should be lazy to ensure the bindings are not created too early
   private readonly BindingOptions _bindingOptions;
-  private readonly CefSharpPanel _panel;
   private readonly RevitContext _revitContext;
   private readonly CefSharpPanel _cefSharpPanel;
 
@@ -62,11 +66,12 @@ internal class RevitPlugin : IRevitPlugin
     }
     catch (ArgumentException)
     {
-      throw;
+      // exception occurs when the speckle tab has already been created.
+      // this happens when both the dui2 and the dui3 connectors are installed. Can be safely ignored.
     }
 
     RibbonPanel specklePanel = application.CreateRibbonPanel(_revitSettings.RevitTabName, _revitSettings.RevitTabTitle);
-    PushButton _ =
+    PushButton dui3Button =
       specklePanel.AddItem(
         new PushButtonData(
           _revitSettings.RevitButtonName,
@@ -75,6 +80,23 @@ internal class RevitPlugin : IRevitPlugin
           typeof(SpeckleRevitCommand).FullName
         )
       ) as PushButton;
+
+    string path = typeof(RevitPlugin).Assembly.Location;
+    dui3Button.Image = LoadPngImgSource(
+      $"Speckle.Connectors.Revit{_revitSettings.RevitVersionName}.Assets.logo16.png",
+      path
+    );
+    dui3Button.LargeImage = LoadPngImgSource(
+      $"Speckle.Connectors.Revit{_revitSettings.RevitVersionName}.Assets.logo32.png",
+      path
+    );
+    dui3Button.ToolTipImage = LoadPngImgSource(
+      $"Speckle.Connectors.Revit{_revitSettings.RevitVersionName}.Assets.logo32.png",
+      path
+    );
+    dui3Button.ToolTip = "Speckle Connector for Revit New UI";
+    //dui3Button.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+    dui3Button.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
   }
 
   private void OnApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
@@ -146,5 +168,23 @@ internal class RevitPlugin : IRevitPlugin
               CefSharpPanel.Browser.Load("http://localhost:8082");
 #endif
     };
+  }
+
+  private ImageSource? LoadPngImgSource(string sourceName, string path)
+  {
+    try
+    {
+      var assembly = Assembly.LoadFrom(Path.Combine(path));
+      var icon = assembly.GetManifestResourceStream(sourceName);
+      PngBitmapDecoder decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+      ImageSource source = decoder.Frames[0];
+      return source;
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      // POC: logging
+    }
+
+    return null;
   }
 }

@@ -8,7 +8,6 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
-using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
@@ -19,6 +18,7 @@ using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
+using Speckle.Connectors.DUI.Settings;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -156,15 +156,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .Where(obj => obj != null)
         .ToList();
 
-      var sendInfo = new SendInfo()
-      {
-        AccountId = modelCard.AccountId,
-        ProjectId = modelCard.ProjectId,
-        ModelId = modelCard.ModelId,
-        ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds,
-        SourceApplication = _rhinoSettings.HostAppInfo.Name
-      };
+      var sendInfo = new SendInfo(
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        _rhinoSettings.HostAppInfo.Name,
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
 
       var sendResult = await unitOfWork.Service
         .Execute(

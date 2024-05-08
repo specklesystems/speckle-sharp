@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
 using Rhino.UI;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Rhino7.Properties;
 
 namespace Speckle.Connectors.Rhino7.Plugin;
 
@@ -17,8 +18,8 @@ public class SpeckleConnectorsRhino7Command : Command
     Panels.RegisterPanel(
       SpeckleConnectorsRhino7Plugin.Instance,
       typeof(SpeckleRhinoPanelHost),
-      "SpeckleRhino7DUI3",
-      System.Drawing.SystemIcons.Information,
+      "Speckle (New UI)",
+      Resources.speckle32,
       PanelType.System
     );
   }
