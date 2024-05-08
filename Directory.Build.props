@@ -16,6 +16,7 @@
   <PropertyGroup Label="General Config">
     <LangVersion>11</LangVersion>
     <DebugSymbols>true</DebugSymbols>
+    <Nullable>enable</Nullable>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->

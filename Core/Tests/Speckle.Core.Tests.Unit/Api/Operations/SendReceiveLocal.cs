@@ -26,7 +26,7 @@ public sealed class SendReceiveLocal : IDisposable
 
     for (int i = 0; i < NUM_OBJECTS; i++)
     {
-      ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+      myObject.Get<List<Base>>("@items").Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
     using SQLiteTransport localTransport = new();
@@ -41,8 +41,8 @@ public sealed class SendReceiveLocal : IDisposable
   {
     var commitPulled = Core.Api.Operations.Receive(_objId01).Result;
 
-    Assert.That(((List<object>)commitPulled["@items"])[0], Is.TypeOf<Point>());
-    Assert.That(((List<object>)commitPulled["@items"]), Has.Count.EqualTo(NUM_OBJECTS));
+    Assert.That(commitPulled.Get<List<object>>("@items")[0], Is.TypeOf<Point>());
+    Assert.That(commitPulled.Get<List<object>>("@items"), Has.Count.EqualTo(NUM_OBJECTS));
   }
 
   [Test(Description = "Pushing and Pulling a commit locally")]
@@ -55,13 +55,13 @@ public sealed class SendReceiveLocal : IDisposable
 
     for (int i = 0; i < NUM_OBJECTS; i++)
     {
-      ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+      myObject.Get<List<Base>>("@items").Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
     _objId01 = Core.Api.Operations.Send(myObject, _sut, false).Result;
 
     var commitPulled = Core.Api.Operations.Receive(_objId01).Result;
-    List<object> items = (List<object>)commitPulled["@items"];
+    List<object> items = commitPulled.Get<List<object>>("@items");
 
     Assert.That(items, Has.All.TypeOf<Point>());
     Assert.That(items, Has.Count.EqualTo(NUM_OBJECTS));
@@ -77,7 +77,7 @@ public sealed class SendReceiveLocal : IDisposable
 
     for (int i = 0; i < 30; i++)
     {
-      ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
+      myObject.Get<List<Base>>("@items").Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
     }
 
     _objId01 = await Core.Api.Operations.Send(myObject, _sut, false);
@@ -86,7 +86,7 @@ public sealed class SendReceiveLocal : IDisposable
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
 
     var objsPulled = await Core.Api.Operations.Receive(_objId01);
-    Assert.That(((List<object>)objsPulled["@items"]), Has.Count.EqualTo(30));
+    Assert.That((objsPulled.Get<List<object>>("@items")), Has.Count.EqualTo(30));
   }
 
   [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
@@ -109,8 +109,8 @@ public sealed class SendReceiveLocal : IDisposable
     Assert.That(_objId01, Is.Not.Null);
 
     var objsPulled = await Core.Api.Operations.Receive(_objId01);
-    Assert.That(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), Is.EqualTo(1));
-    Assert.That(((List<object>)objsPulled["@list"]).Last(), Is.EqualTo("ciao"));
+    Assert.That(((List<object>)(objsPulled.Get<Dictionary<string, object>>("@dictionary")["a"])).First(), Is.EqualTo(1));
+    Assert.That(objsPulled.Get<List<object>>("@list").Last(), Is.EqualTo("ciao"));
   }
 
   [Test(Description = "Pushing and pulling a random object, with our without detachment"), Order(3)]
@@ -171,10 +171,10 @@ public sealed class SendReceiveLocal : IDisposable
 
     for (int i = 0; i < 30; i++)
     {
-      ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
+      myObject.Get<List<Base>>("items").Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
     }
 
-    ConcurrentDictionary<string, int> progress = null;
+    ConcurrentDictionary<string, int>? progress = null;
     _commitId02 = await Core.Api.Operations.Send(
       myObject,
       _sut,
@@ -186,13 +186,13 @@ public sealed class SendReceiveLocal : IDisposable
     );
 
     Assert.That(progress, Is.Not.Null);
-    Assert.That(progress!.Keys, Has.Count.GreaterThanOrEqualTo(1));
+    Assert.That(progress.Keys, Has.Count.GreaterThanOrEqualTo(1));
   }
 
   [Test(Description = "Should show progress!"), Order(5)]
   public async Task DownloadProgressReports()
   {
-    ConcurrentDictionary<string, int> progress = null;
+    ConcurrentDictionary<string, int>? progress = null;
     var pulledCommit = await Core.Api.Operations.Receive(
       _commitId02,
       onProgressAction: dict =>

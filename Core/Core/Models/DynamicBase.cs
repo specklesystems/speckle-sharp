@@ -14,7 +14,7 @@ namespace Speckle.Core.Models;
 /// <para>Orginally adapted from Rick Strahl 🤘</para>
 /// <para>https://weblog.west-wind.com/posts/2012/feb/08/creating-a-dynamic-extensible-c-expando-object</para>
 /// </summary>
-public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
+public class DynamicBase : DynamicObject
 {
   /// <summary>
   /// Default <see cref="DynamicBaseMemberType"/> value for <see cref="GetMembers"/>
