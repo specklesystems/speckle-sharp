@@ -47,7 +47,7 @@ public class RootObjectBuilder : IRootObjectBuilder<ElementId>
     CancellationToken ct = default
   )
   {
-    var doc = _contextStack.Current.Document; // POC: Document.Document is funny
+    var doc = _contextStack.Current.Document;
 
     if (doc.IsFamilyDocument)
     {
