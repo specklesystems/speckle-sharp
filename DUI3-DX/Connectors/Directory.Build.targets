@@ -1,29 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))"/>
-  
+  <Import
+    Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))"/>
+
   <Target Name="CopyToDistAndZip" AfterTargets="Build" Condition="'$(IsDesktopBuild)' == false">
-    
-    <Error Text="ConnectorSlug property is not set" Condition=" '$(ConnectorSlug)' == '' " />
-    <Error Text="ConnectorVersion property is not set" Condition=" '$(ConnectorVersion)' == '' " />
+
+    <Error Text="ConnectorSlug property is not set" Condition=" '$(ConnectorSlug)' == '' "/>
+    <Error
+      Text="ConnectorVersion property is not set" Condition=" '$(ConnectorVersion)' == '' "/>
 
     <PropertyGroup>
       <OutputDirectory>$(RepositoryRoot)dist/$(ConnectorSlug)/$(ConnectorVersion)/</OutputDirectory>
       <OutputZipDirectory>$(RepositoryRoot)dist/zip/</OutputZipDirectory>
       <OutputZipFile>$(ConnectorSlug)-$(ConnectorVersion)-$(Version).zip</OutputZipFile>
     </PropertyGroup>
+    ms
 
     <RemoveDir Directories="$(OutputDirectory)"/>
     <MakeDir Directories="$(OutputDirectory)"/>
-    <MakeDir Directories="$(OutputZipDirectory)" ContinueOnError="true"/>
+    <MakeDir
+      Directories="$(OutputZipDirectory)" ContinueOnError="true"/>
 
     <ItemGroup>
       <DllFiles Include="$(OutDir)**/*.*"/>
     </ItemGroup>
     
-    <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(OutputDirectory)%(RecursiveDir)" />
-    
-    <ZipDirectory SourceDirectory="$(OutputDirectory)" DestinationFile="$(OutputZipDirectory)$(OutputZipFile)" Overwrite="true"/>
-    
+    <Copy SourceFiles="@(DllFiles)"
+      DestinationFolder="$(OutputDirectory)%(RecursiveDir)"/>
   </Target>
 </Project>
