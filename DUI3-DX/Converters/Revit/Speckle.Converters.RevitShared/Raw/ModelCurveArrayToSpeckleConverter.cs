@@ -34,7 +34,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.Mode
     }
 
     var start = curves[0].GetEndPoint(0);
-    var end = curves[curves.Length - 1].GetEndPoint(1);
+    var end = curves[^1].GetEndPoint(1);
     polycurve.units = _contextStack.Current.SpeckleUnits;
     polycurve.closed = start.DistanceTo(end) < RevitConversionContextStack.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));

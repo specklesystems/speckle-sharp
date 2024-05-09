@@ -1,5 +1,4 @@
-﻿using Speckle.Connectors.Utils;
-using Speckle.Converters.Common.Objects;
+﻿using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 

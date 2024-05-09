@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Speckle.Connectors.Utils;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
