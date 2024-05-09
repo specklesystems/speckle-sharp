@@ -146,8 +146,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      List<RhinoObject> rhinoObjects = (modelCard.SendFilter?
-        .GetObjectIds()).Empty()
+      List<RhinoObject> rhinoObjects = (modelCard.SendFilter?.GetObjectIds())
+        .Empty()
         .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
         .Where(obj => obj != null)
         .ToList();
