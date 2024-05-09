@@ -16,7 +16,7 @@ public class SpeckleContainerBuilder
 {
   private readonly IStorageInfo _storageInfo;
 
-  public SpeckleContainerBuilder(IStorageInfo storageInfo)
+  private SpeckleContainerBuilder(IStorageInfo storageInfo)
   {
     _storageInfo = storageInfo;
     ContainerBuilder = new ContainerBuilder();
@@ -63,7 +63,11 @@ public class SpeckleContainerBuilder
     new(() =>
     {
       var types = new List<Type>();
-      foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
+      foreach (
+        var asm in AppDomain.CurrentDomain
+          .GetAssemblies()
+          .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
+      )
       {
         types.AddRange(asm.GetTypes());
       }
@@ -72,7 +76,7 @@ public class SpeckleContainerBuilder
     });
 
   public IReadOnlyList<Type> SpeckleTypes => _types.Value;
-  public ContainerBuilder ContainerBuilder { get; private set; }
+  public ContainerBuilder ContainerBuilder { get; }
 
   public SpeckleContainerBuilder AddModule(Module module)
   {
