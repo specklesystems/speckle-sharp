@@ -34,7 +34,7 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
 
-    UIApplication? uiApplication = _revitContext.UIApplication.NotNull();
+    UIApplication uiApplication = _revitContext.UIApplication.NotNull();
     uiApplication.ApplicationClosing += (_, _) => WriteToFile(); // POC: Not sure why we would need it since we have save and clos events
     uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
     uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
