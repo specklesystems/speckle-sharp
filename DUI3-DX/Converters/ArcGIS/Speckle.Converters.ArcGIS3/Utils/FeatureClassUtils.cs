@@ -126,7 +126,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       return ACG.GeometryType.Multipatch;
     }
-    else if (target.Contains("mesh"))
+    else if (target.Contains("mesh", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }
