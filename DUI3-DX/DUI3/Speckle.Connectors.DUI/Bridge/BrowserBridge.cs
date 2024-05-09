@@ -258,7 +258,7 @@ public class BrowserBridge : IBridge
     }
 
     string script = $"{FrontendBoundName}.responseReady('{requestId}')";
-    _scriptMethod!(script);
+    _scriptMethod?.Invoke(script);
   }
 
   /// <summary>
@@ -291,7 +291,7 @@ public class BrowserBridge : IBridge
   {
     var script = $"{FrontendBoundName}.emit('{eventName}')";
 
-    _scriptMethod!(script);
+    _scriptMethod?.Invoke(script);
   }
 
   public void Send<T>(string eventName, T data)
@@ -300,6 +300,6 @@ public class BrowserBridge : IBridge
     string payload = JsonConvert.SerializeObject(data, _serializerOptions);
     var script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
 
-    _scriptMethod!(script);
+    _scriptMethod?.Invoke(script);
   }
 }

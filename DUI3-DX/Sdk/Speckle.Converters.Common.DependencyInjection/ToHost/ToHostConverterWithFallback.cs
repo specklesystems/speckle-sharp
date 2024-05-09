@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common.Objects;
+﻿using Speckle.Connectors.Utils;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
@@ -44,7 +45,7 @@ public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
     // Direct conversion if a converter is found
     if (_baseConverter.TryConvert(target, out object? result))
     {
-      return result!;
+      return result.NotNull();
     }
 
     // Fallback to display value if it exists.

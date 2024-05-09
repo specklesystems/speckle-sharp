@@ -1,4 +1,7 @@
-﻿namespace Speckle.Connectors.Utils;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+
+namespace Speckle.Connectors.Utils;
 
 public static class NotNullExtensions
 {
@@ -26,22 +29,29 @@ public static class NotNullExtensions
     return x.Value;
   }
 
-  public static T NotNull<T>(this T? obj, string? message = null)
+
+  public static T NotNull<T>(
+    [NotNull] this T? obj,
+    [CallerArgumentExpression(nameof(obj))] string? paramName = null
+  )
     where T : class
   {
     if (obj is null)
     {
-      throw new ArgumentNullException(message ?? "Value is null");
+      throw new ArgumentNullException(paramName ?? "Value is null");
     }
     return obj;
   }
 
-  public static T NotNull<T>(this T? obj, string? message = null)
+  public static T NotNull<T>(
+    [NotNull] this T? obj,
+    [CallerArgumentExpression(nameof(obj))] string? paramName = null
+  )
     where T : struct
   {
     if (obj is null)
     {
-      throw new ArgumentNullException(message ?? "Value is null");
+      throw new ArgumentNullException(paramName ?? "Value is null");
     }
     return obj.Value;
   }

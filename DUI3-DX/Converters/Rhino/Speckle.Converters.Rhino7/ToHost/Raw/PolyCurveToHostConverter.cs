@@ -27,7 +27,7 @@ public class PolyCurveToHostConverter : IRawConversion<SOG.Polycurve, RG.PolyCur
 
     foreach (var segment in target.segments)
     {
-      var childCurve = CurveConverter!.RawConvert(segment);
+      var childCurve = CurveConverter?.RawConvert(segment);
       bool success = result.AppendSegment(childCurve);
       if (!success)
       {
