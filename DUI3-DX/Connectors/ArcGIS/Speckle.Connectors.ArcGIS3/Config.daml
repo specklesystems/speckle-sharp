@@ -47,19 +47,19 @@
 			</groups>
 			<controls>
 				<!-- add your controls here -->
-				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="Speckle"
+				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="Speckle (New UI)"
 						className="SpeckleDUI3OpenButton" loadOnClick="true"
 						keytip="B1"
 						smallImage="Images/s2logo_16.png"
 						largeImage="Images/s2logo_32.png">
 					<tooltip heading="Speckle Connector for ArcGIS">
-                        Speckle New UI<disabledText />
+                        <disabledText />
 					</tooltip>
 				</button>
 			</controls>
 
             <dockPanes>
-                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
+                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle (New UI)" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
                     <content className="SpeckleDUI3Wrapper" />
                 </dockPane>
             </dockPanes>
