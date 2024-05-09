@@ -45,9 +45,9 @@ internal class RevitPlugin : IRevitPlugin
 
   public void Initialise()
   {
-    _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
-
     CreateTabAndRibbonPanel(_uIControlledApplication);
+    RegisterPanelAndInitializePlugin();
+    _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
   }
 
   public void Shutdown()
@@ -107,19 +107,11 @@ internal class RevitPlugin : IRevitPlugin
     // POC: might be worth to interface this out, we shall see...
     RevitTask.Initialize(uiApplication);
 
-    RegisterPanelAndInitializePlugin();
+    PostApplicationInit();
   }
 
-  private void RegisterPanelAndInitializePlugin()
+  private void PostApplicationInit()
   {
-    CefSharpSettings.ConcurrentTaskExecution = true;
-
-    _uIControlledApplication.RegisterDockablePane(
-      RevitExternalApplication.DoackablePanelId,
-      _revitSettings.RevitPanelName,
-      _cefSharpPanel
-    );
-
     // binding the bindings to each bridge
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
@@ -168,6 +160,17 @@ internal class RevitPlugin : IRevitPlugin
               CefSharpPanel.Browser.Load("http://localhost:8082");
 #endif
     };
+  }
+
+  private void RegisterPanelAndInitializePlugin()
+  {
+    CefSharpSettings.ConcurrentTaskExecution = true;
+
+    _uIControlledApplication.RegisterDockablePane(
+      RevitExternalApplication.DoackablePanelId,
+      _revitSettings.RevitPanelName,
+      _cefSharpPanel
+    );
   }
 
   private ImageSource? LoadPngImgSource(string sourceName, string path)

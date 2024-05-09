@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
@@ -45,6 +46,8 @@ internal class RevitDocumentStore : DocumentModelStore
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
     uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+
+    ReadFromFile(); // Smells... there is no event that we can hook here for double-click file open... This line push ReadFromFile immediately.
   }
 
   /// <summary>
@@ -52,6 +55,7 @@ internal class RevitDocumentStore : DocumentModelStore
   /// </summary>
   private void OnViewActivated(object sender, ViewActivatedEventArgs e)
   {
+    TaskDialog.Show("a", "a");
     if (e.Document == null)
     {
       return;
@@ -70,7 +74,6 @@ internal class RevitDocumentStore : DocumentModelStore
 
     IsDocumentInit = true;
     ReadFromFile();
-    OnDocumentChanged();
   }
 
   private void WriteToFileWithDoc(Document doc)
@@ -114,6 +117,7 @@ internal class RevitDocumentStore : DocumentModelStore
 
       string modelsString = stateEntity.Get<string>("contents");
       Models = Deserialize(modelsString);
+      OnDocumentChanged();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
