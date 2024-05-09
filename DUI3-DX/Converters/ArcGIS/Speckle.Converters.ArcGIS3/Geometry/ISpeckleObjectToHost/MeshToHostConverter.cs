@@ -22,11 +22,20 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
     target.TriangulateMesh();
     ACG.MultipatchBuilderEx multipatchPart = new();
     ACG.Patch newPatch = multipatchPart.MakePatch(ACG.PatchType.Triangles);
-    for (int i = 0; i < target.VerticesCount; i++)
+    for (int i = 0; i < target.faces.Count; i++)
     {
+      if (i % 4 == 0)
+      {
+        continue;
+      }
+      int ptIndex = target.faces[i];
       newPatch.AddPoint(
         _pointConverter.RawConvert(
-          new SOG.Point(target.vertices[i * 3], target.vertices[i * 3 + 1], target.vertices[i * 3 + 2])
+          new SOG.Point(
+            target.vertices[ptIndex * 3],
+            target.vertices[ptIndex * 3 + 1],
+            target.vertices[ptIndex * 3 + 2]
+          )
         )
       );
     }

@@ -19,7 +19,7 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
   public ACG.Polyline RawConvert(SOG.Circle target)
   {
     // Determine the number of vertices to create along the cirlce
-    int numVertices = Math.Min((int)target.length, 100); // Determine based on desired segment length or other criteria
+    int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
     List<SOG.Point> pointsOriginal = new();
 
     if (target.radius == null)
@@ -41,7 +41,10 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
 
       pointsOriginal.Add(pointOnCircle);
     }
-    pointsOriginal.Add(pointsOriginal[0]);
+    if (pointsOriginal[0] != pointsOriginal[^1])
+    {
+      pointsOriginal.Add(pointsOriginal[0]);
+    }
 
     var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();

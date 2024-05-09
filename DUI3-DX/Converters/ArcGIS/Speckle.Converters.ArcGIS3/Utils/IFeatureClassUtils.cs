@@ -14,6 +14,12 @@ public interface IFeatureClassUtils
     List<FieldDescription> fields,
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   );
+  void AddNonGISFeaturesToFeatureClass(
+    FeatureClass newFeatureClass,
+    List<ACG.Geometry> features,
+    List<FieldDescription> fields
+  );
   void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);
+  public ACG.GeometryType GetGeometryTypeFromString(string target);
 }

@@ -19,11 +19,10 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
   public ACG.Polyline RawConvert(SOG.Arc target)
   {
     // Determine the number of vertices to create along the arc
-    int numVertices = Math.Max((int)target.length, 3); // Determine based on desired segment length or other criteria
+    int numVertices = Math.Max((int)target.length, 50); // Determine based on desired segment length or other criteria
     List<SOG.Point> pointsOriginal = new();
 
     // get correct direction
-    int coeff = 1;
     double? angleStart = target.startAngle;
     double? fullAngle = target.endAngle - target.startAngle;
     double? radius = target.radius;
@@ -33,22 +32,11 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
       throw new SpeckleConversionException("Conversion failed: Arc doesn't have start & end angle or radius");
     }
 
-    // define the direction
-    bool isCounterClockwise = !new SOG.Polyline(target.Values()).IsClockwisePolygon();
-    if (!((isCounterClockwise is false || fullAngle >= 0) && (isCounterClockwise is true || fullAngle < 0)))
-    {
-      fullAngle = Math.PI * 2 - Math.Abs((double)fullAngle);
-      if (isCounterClockwise is false)
-      {
-        coeff = -1;
-      }
-    }
-
     // Calculate the vertices along the arc
     for (int i = 0; i <= numVertices; i++)
     {
       // Calculate the point along the arc
-      double angle = (double)angleStart + coeff * (double)fullAngle * (i / (double)numVertices);
+      double angle = (double)angleStart + (double)fullAngle * (i / (double)numVertices);
       SOG.Point pointOnArc =
         new(
           target.plane.origin.x + (double)radius * Math.Cos(angle),

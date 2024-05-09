@@ -18,7 +18,11 @@ public class PolylineToHostConverter : ISpeckleObjectToHostConversion, IRawConve
 
   public ACG.Polyline RawConvert(SOG.Polyline target)
   {
-    var points = target.GetPoints().Select(x => _pointConverter.RawConvert(x));
+    var points = target.GetPoints().Select(x => _pointConverter.RawConvert(x)).ToList();
+    if (target.closed)
+    {
+      points.Add(points[0]);
+    }
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }
