@@ -52,7 +52,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
   public string GetSourceApplicationVersion()
   {
     // POC: maybe not right place but...
-    return _revitSettings.HostAppVersion.NotNull();
+    return _revitSettings.HostAppVersion;
   }
 
   public DocumentInfo GetDocumentInfo()

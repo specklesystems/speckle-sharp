@@ -29,17 +29,17 @@ internal sealed class RevitExternalApplication : IExternalApplication
   public RevitExternalApplication()
   {
     // POC: load from JSON file?
-    _revitSettings = new RevitSettings
-    {
-      RevitPanelName = "Speckle New UI",
-      RevitTabName = "Speckle",
-      RevitTabTitle = "Speckle New UI",
-      RevitVersionName = "2023",
-      RevitButtonName = "Speckle New UI",
-      RevitButtonText = "Revit Connector",
-      ModuleFolders = new string[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
-      HostSlug = "Revit"
-    };
+    _revitSettings = new RevitSettings(
+      "Speckle New UI",
+      "Speckle",
+      "Speckle New UI",
+      "2023",
+      "Speckle New UI",
+      "Revit",
+      new[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
+      "Revit Connector",
+      "2023" //POC: app version?
+    );
   }
 
   public Result OnStartup(UIControlledApplication application)
