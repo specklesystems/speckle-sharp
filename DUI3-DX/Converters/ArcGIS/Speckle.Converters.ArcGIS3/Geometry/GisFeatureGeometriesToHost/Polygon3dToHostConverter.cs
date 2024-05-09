@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch>
+public class Polygon3dToHostConverter : IRawConversion<List<SGIS.PolygonGeometry3d>, ACG.Multipatch>
 {
   private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
@@ -17,7 +17,7 @@ public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeome
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SGIS.GisPolygonGeometry3d> target)
+  public ACG.Multipatch RawConvert(List<SGIS.PolygonGeometry3d> target)
   {
     if (target.Count == 0)
     {
@@ -25,7 +25,7 @@ public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeome
     }
 
     ACG.MultipatchBuilderEx multipatchPart = new();
-    foreach (SGIS.GisPolygonGeometry3d part in target)
+    foreach (SGIS.PolygonGeometry3d part in target)
     {
       ACG.Patch newPatch = multipatchPart.MakePatch(ACG.PatchType.FirstRing);
       List<SOG.Point> boundaryPts = part.boundary.GetPoints();

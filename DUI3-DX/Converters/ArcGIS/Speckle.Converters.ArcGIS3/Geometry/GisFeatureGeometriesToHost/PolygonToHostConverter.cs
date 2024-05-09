@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon>
+public class PolygonToHostConverter : IRawConversion<List<SGIS.PolygonGeometry>, ACG.Polygon>
 {
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
 
@@ -12,14 +12,14 @@ public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometr
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Polygon RawConvert(List<SGIS.GisPolygonGeometry> target)
+  public ACG.Polygon RawConvert(List<SGIS.PolygonGeometry> target)
   {
     if (target.Count == 0)
     {
       throw new SpeckleConversionException("Feature contains no geometries");
     }
     List<ACG.Polygon> polyList = new();
-    foreach (SGIS.GisPolygonGeometry poly in target)
+    foreach (SGIS.PolygonGeometry poly in target)
     {
       ACG.Polyline boundary = _polylineConverter.RawConvert(poly.boundary);
       ACG.PolygonBuilderEx polyOuterRing = new(boundary);
