@@ -1,5 +1,4 @@
 using System.Windows.Controls;
-using Autofac;
 using Speckle.Connectors.DUI.WebView;
 
 namespace Speckle.Connectors.ArcGIS;
