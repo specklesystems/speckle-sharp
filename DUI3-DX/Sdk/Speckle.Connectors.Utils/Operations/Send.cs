@@ -159,7 +159,7 @@ public static class SendHelper
     await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
     var parsed = JObject.Parse(obj);
-    JToken? idToken = parsed.GetValue("id", StringComparison.CurrentCultureIgnoreCase);
+    JToken? idToken = parsed.GetValue("id", StringComparison.Ordinal);
 
     if (idToken == null)
     {

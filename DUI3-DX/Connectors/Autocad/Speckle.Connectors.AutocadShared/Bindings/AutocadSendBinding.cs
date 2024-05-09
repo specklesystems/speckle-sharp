@@ -96,7 +96,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter?.GetObjectIds().Intersect(objectIdsList).ToList() ?? new();
+      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
       bool isExpired = intersection.Count != 0;
       if (isExpired)
       {
@@ -133,7 +133,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
       // Get elements to convert
       List<(DBObject obj, string applicationId)> autocadObjects =
-        Application.DocumentManager.CurrentDocument.GetObjects((modelCard.SendFilter?.GetObjectIds()).Empty());
+        Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.NotNull().GetObjectIds());
       if (autocadObjects.Count == 0)
       {
         throw new InvalidOperationException("No objects were found. Please update your send filter!");

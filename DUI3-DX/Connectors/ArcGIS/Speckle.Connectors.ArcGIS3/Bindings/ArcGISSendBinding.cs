@@ -119,7 +119,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
     foreach (var sender in senders)
     {
-      bool isExpired = sender.SendFilter?.CheckExpiry(ChangedObjectIds.ToArray()) ?? false;
+      bool isExpired = sender.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
         expiredSenderIds.Add(sender.ModelCardId.NotNull());

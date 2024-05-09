@@ -42,12 +42,11 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
   public string GetSourceApplicationVersion() => "7";
 
   public DocumentInfo GetDocumentInfo() =>
-    new()
-    {
-      Location = RhinoDoc.ActiveDoc.Path,
-      Name = RhinoDoc.ActiveDoc.Name,
-      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString((IFormatProvider?)null)
-    };
+    new(
+      RhinoDoc.ActiveDoc.Path,
+      RhinoDoc.ActiveDoc.Name,
+      RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString((IFormatProvider?)null)
+    );
 
   public DocumentModelStore GetDocumentState() => _store;
 
@@ -72,7 +71,7 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
     if (myModel is SenderModelCard sender)
     {
-      objectIds = (sender.SendFilter?.GetObjectIds()).Empty().ToList();
+      objectIds = sender.SendFilter.NotNull().GetObjectIds().ToList();
     }
 
     if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)

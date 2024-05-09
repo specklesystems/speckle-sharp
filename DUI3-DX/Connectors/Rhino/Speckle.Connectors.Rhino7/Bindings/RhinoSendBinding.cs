@@ -146,8 +146,9 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      List<RhinoObject> rhinoObjects = (modelCard.SendFilter?.GetObjectIds())
-        .Empty()
+      List<RhinoObject> rhinoObjects = modelCard.SendFilter
+        .NotNull()
+        .GetObjectIds()
         .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
         .Where(obj => obj != null)
         .ToList();
@@ -209,9 +210,9 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter?.GetObjectIds().Intersect(objectIdsList).ToList();
-      var isExpired = modelCard.SendFilter?.CheckExpiry(ChangedObjectIds.ToArray());
-      if (isExpired ?? false)
+      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
+      var isExpired = modelCard.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
+      if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
         modelCard.ChangedObjectIds.UnionWith(intersection.Empty());

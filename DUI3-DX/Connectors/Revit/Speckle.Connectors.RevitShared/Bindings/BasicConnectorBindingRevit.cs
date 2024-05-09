@@ -55,25 +55,25 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     return _revitSettings.HostAppVersion;
   }
 
-  public DocumentInfo GetDocumentInfo()
+  public DocumentInfo? GetDocumentInfo()
   {
     // POC: not sure why this would ever be null, is this needed?
     _revitContext.UIApplication.NotNull();
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+    if (doc is null)
+    {
+      return null;
+    }
 
+    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString((IFormatProvider?)null), doc.PathName);
     if (doc.IsFamilyDocument)
     {
-      return new DocumentInfo { Message = "Family Environment files not supported by Speckle." };
+      info.Message = "Family Environment files not supported by Speckle.";
     }
 
     // POC: Notify user here if document is null.
-    return new DocumentInfo
-    {
-      Name = doc.Title,
-      Id = doc.GetHashCode().ToString((IFormatProvider?)null),
-      Location = doc.PathName
-    };
+    return info;
   }
 
   public DocumentModelStore GetDocumentState() => _store;
@@ -101,12 +101,11 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     var activeUIDoc =
       _revitContext.UIApplication?.ActiveUIDocument
       ?? throw new SpeckleException("Unable to retrieve active UI document");
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
-    var elementIds = model.SendFilter?.GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Empty().Any())
+    var elementIds = model.SendFilter.NotNull().GetObjectIds().Select(ElementId.Parse).ToList();
+    if (elementIds.Any())
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;

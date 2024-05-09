@@ -95,8 +95,11 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
         SendOperation<ElementId>
       >();
 
-      List<ElementId> revitObjects =
-        modelCard.SendFilter?.GetObjectIds().Select(id => ElementId.Parse(id)).ToList() ?? new();
+      List<ElementId> revitObjects = modelCard.SendFilter
+        .NotNull()
+        .GetObjectIds()
+        .Select(id => ElementId.Parse(id))
+        .ToList();
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),

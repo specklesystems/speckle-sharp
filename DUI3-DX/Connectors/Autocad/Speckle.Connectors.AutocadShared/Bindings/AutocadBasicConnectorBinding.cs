@@ -42,23 +42,16 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public Account[] GetAccounts() => AccountManager.GetAccounts().ToArray();
 
-  public DocumentInfo GetDocumentInfo()
+  public DocumentInfo? GetDocumentInfo()
   {
     // POC: Will be addressed to move it into AutocadContext!
     var doc = Application.DocumentManager.MdiActiveDocument;
-
-    if (doc == null)
+    if (doc is null)
     {
-      return new DocumentInfo();
+      return null;
     }
-
     string name = doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
-    return new DocumentInfo()
-    {
-      Name = name,
-      Id = doc.Name,
-      Location = doc.Name
-    };
+    return new DocumentInfo(doc.Name, name, doc.Name);
   }
 
   public DocumentModelStore GetDocumentState() => _store;
@@ -98,7 +91,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     if (model is SenderModelCard senderModelCard)
     {
       List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(
-        (senderModelCard.SendFilter?.GetObjectIds()).Empty()
+        senderModelCard.SendFilter.NotNull().GetObjectIds()
       );
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
