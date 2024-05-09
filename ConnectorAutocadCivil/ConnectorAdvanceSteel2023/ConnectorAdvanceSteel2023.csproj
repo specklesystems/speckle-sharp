@@ -21,7 +21,7 @@
   <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <GenerateManifest InputFilename="$(ProjectDir)\MyAddons.xml" OutputFilename="C:\Program Files\Autodesk\AutoCAD 2023\ADVS\Addons\MyAddons.xml" MatchExpression="\$PATH\$" ReplacementText="$(TargetPath)" />
   </Target>
-  <UsingTask TaskName="GenerateManifest" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+  <UsingTask TaskName="GenerateManifest" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <InputFilename ParameterType="System.String" Required="true" />
       <OutputFilename ParameterType="System.String" Required="true" />
