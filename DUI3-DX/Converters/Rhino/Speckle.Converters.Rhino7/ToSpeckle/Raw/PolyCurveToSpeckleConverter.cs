@@ -1,6 +1,5 @@
 ﻿using Objects;
 using Rhino;
-using Speckle.Connectors.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
