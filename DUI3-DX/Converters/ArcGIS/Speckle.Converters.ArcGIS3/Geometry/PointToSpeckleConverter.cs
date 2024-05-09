@@ -16,15 +16,25 @@ public class PointToSpeckleConverter : IRawConversion<MapPoint, SOG.Point>
 
   public SOG.Point RawConvert(MapPoint target)
   {
-    if (
-      GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
-      is not MapPoint reprojectedPt
-    )
+    try
+    {
+      if (
+        GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
+        is not MapPoint reprojectedPt
+      )
+      {
+        throw new SpeckleConversionException(
+          $"Conversion to Spatial Reference {_contextStack.Current.Document.SpatialReference} failed"
+        );
+      }
+      return new(reprojectedPt.X, reprojectedPt.Y, reprojectedPt.Z, _contextStack.Current.SpeckleUnits);
+    }
+    catch (ArgumentException ex)
     {
       throw new SpeckleConversionException(
-        $"Conversion to Spatial Reference {_contextStack.Current.Document.SpatialReference} failed"
+        $"Conversion to Spatial Reference {_contextStack.Current.Document.SpatialReference} failed",
+        ex
       );
     }
-    return new(reprojectedPt.X, reprojectedPt.Y, reprojectedPt.Z, _contextStack.Current.SpeckleUnits);
   }
 }

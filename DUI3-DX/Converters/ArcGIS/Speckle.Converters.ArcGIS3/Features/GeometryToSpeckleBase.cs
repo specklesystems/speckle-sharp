@@ -9,14 +9,14 @@ public class GeometryToSpeckleBaseList : IRawConversion<ACG.Geometry, IReadOnlyL
   private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointToSpeckleConverter;
   private readonly IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
   private readonly IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
-  private readonly IRawConversion<ACG.Polygon, IReadOnlyList<SGIS.GisPolygonGeometry>> _polygonFeatureConverter;
+  private readonly IRawConversion<ACG.Polygon, IReadOnlyList<SGIS.PolygonGeometry>> _polygonFeatureConverter;
   private readonly IRawConversion<ACG.Multipatch, IReadOnlyList<Base>> _multipatchFeatureConverter;
 
   public GeometryToSpeckleBaseList(
     IRawConversion<ACG.MapPoint, SOG.Point> pointToSpeckleConverter,
     IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
     IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
-    IRawConversion<ACG.Polygon, IReadOnlyList<SGIS.GisPolygonGeometry>> polygonFeatureConverter,
+    IRawConversion<ACG.Polygon, IReadOnlyList<SGIS.PolygonGeometry>> polygonFeatureConverter,
     IRawConversion<ACG.Multipatch, IReadOnlyList<Base>> multipatchFeatureConverter
   )
   {
@@ -37,7 +37,7 @@ public class GeometryToSpeckleBaseList : IRawConversion<ACG.Geometry, IReadOnlyL
         ACG.Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
         ACG.Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
         ACG.Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
-        ACG.Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch), // GisMultipatchGeometry or GisPolygonGeometry3d
+        ACG.Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch), // GisMultipatchGeometry or PolygonGeometry3d
         _ => throw new NotSupportedException($"No conversion found for {target.GetType().Name}"),
       };
     }
