@@ -116,7 +116,7 @@ public sealed class DisplayValueExtractor
   /// does not have modified geometry (the docs say that modified geometry will not have a geom instance,
   /// however in my experience, all family instances have a top-level geom instance, but if the family instance
   /// is modified, then the geom instance won't contain any geometry.)
-  /// 
+  ///
   /// This remark also leads me to think that a family instance will not have top-level solids and geom instances.
   /// We are logging cases where this is not true.
   /// </summary>

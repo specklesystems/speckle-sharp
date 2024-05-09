@@ -26,7 +26,11 @@ namespace Speckle.Connectors.Revit.DependencyInjection;
 // POC: should interface out things that are not
 public class AutofacUIModule : Module
 {
-  [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling", Justification = "This is registering everything")]
+  [SuppressMessage(
+    "Maintainability",
+    "CA1506:Avoid excessive class coupling",
+    Justification = "This is registering everything"
+  )]
   protected override void Load(ContainerBuilder builder)
   {
     builder.RegisterInstance(new RevitContext());

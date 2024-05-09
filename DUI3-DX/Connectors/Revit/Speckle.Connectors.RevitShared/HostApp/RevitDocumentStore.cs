@@ -98,7 +98,8 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     t.Commit();
   }
 
-  public override void WriteToFile() => WriteToFileWithDoc(_revitContext.UIApplication.NotNull().ActiveUIDocument.Document);
+  public override void WriteToFile() =>
+    WriteToFileWithDoc(_revitContext.UIApplication.NotNull().ActiveUIDocument.Document);
 
   public override void ReadFromFile()
   {

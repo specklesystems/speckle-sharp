@@ -68,7 +68,9 @@ public class ArcGISProjectUtils : IArcGISProjectUtils
     QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
 
     // Add a file geodatabase or a SQLite or enterprise database connection to a project
-    var gdbToAdd = folderToAdd.GetItems().FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName, StringComparison.Ordinal));
+    var gdbToAdd = folderToAdd
+      .GetItems()
+      .FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName, StringComparison.Ordinal));
     if (gdbToAdd is not null)
     {
       // POC: QueuedTask

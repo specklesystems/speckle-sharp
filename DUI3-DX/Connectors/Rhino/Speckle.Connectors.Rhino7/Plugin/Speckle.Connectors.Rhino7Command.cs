@@ -22,6 +22,7 @@ public class SpeckleConnectorsRhino7Command : Command
       PanelType.System
     );
   }
+
   ///<summary>The only instance of this command.</summary>
   public static SpeckleConnectorsRhino7Command? Instance { get; private set; }
 

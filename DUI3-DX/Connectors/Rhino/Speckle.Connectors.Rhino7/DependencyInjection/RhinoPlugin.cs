@@ -22,7 +22,9 @@ public class RhinoPlugin : IRhinoPlugin
 
   public void Initialise()
   {
-    _idleManager.SubscribeToIdle(() => RhinoApp.RunScript(SpeckleConnectorsRhino7Command.Instance.NotNull().EnglishName, false));
+    _idleManager.SubscribeToIdle(
+      () => RhinoApp.RunScript(SpeckleConnectorsRhino7Command.Instance.NotNull().EnglishName, false)
+    );
   }
 
   public void Shutdown() { }
