@@ -7,6 +7,7 @@ using Speckle.Converters.ArcGIS3.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
+[NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointCloudToSpeckleConverter : IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
 {
   private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
