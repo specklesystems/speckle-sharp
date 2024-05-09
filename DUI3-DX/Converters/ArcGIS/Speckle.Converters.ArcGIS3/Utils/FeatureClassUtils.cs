@@ -66,27 +66,27 @@ public class FeatureClassUtils : IFeatureClassUtils
     }
 
     // POC: find better pattern
-    if (originalGeomType.ToLower().Contains("none"))
+    if (originalGeomType.Contains("none", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("pointcloud"))
+    else if (originalGeomType.Contains("pointcloud", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("point"))
+    else if (originalGeomType.Contains("point", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Multipoint;
     }
-    else if (originalGeomType.ToLower().Contains("polyline"))
+    else if (originalGeomType.Contains("polyline", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Polyline;
     }
-    else if (originalGeomType.ToLower().Contains("polygon"))
+    else if (originalGeomType.Contains("polygon", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Polygon;
     }
-    else if (originalGeomType.ToLower().Contains("multipatch"))
+    else if (originalGeomType.Contains("multipatch", StringComparison.CurrentCultureIgnoreCase))
     {
       geomType = ACG.GeometryType.Multipatch;
     }

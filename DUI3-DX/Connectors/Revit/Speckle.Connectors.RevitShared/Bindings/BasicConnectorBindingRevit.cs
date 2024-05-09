@@ -6,19 +6,20 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
-internal class BasicConnectorBindingRevit : IBasicConnectorBinding
+internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   // POC: name and bridge might be better for them to be protected props?
   public string Name { get; private set; }
   public IBridge Parent { get; private set; }
 
-  protected readonly DocumentModelStore _store;
-  protected readonly RevitContext _revitContext;
+  private readonly DocumentModelStore _store;
+  private readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
 
   public BasicConnectorBindingRevit(
@@ -46,21 +47,18 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     return Assembly.GetAssembly(GetType()).GetVersion();
   }
 
-  public string GetSourceApplicationName() => _revitSettings.HostSlug; // POC: maybe not right place but...
+  public string GetSourceApplicationName() => _revitSettings.HostSlug.NotNull(); // POC: maybe not right place but...
 
   public string GetSourceApplicationVersion()
   {
     // POC: maybe not right place but...
-    return _revitSettings.HostAppVersion;
+    return _revitSettings.HostAppVersion.NotNull();
   }
 
   public DocumentInfo GetDocumentInfo()
   {
     // POC: not sure why this would ever be null, is this needed?
-    if (_revitContext.UIApplication == null)
-    {
-      return null;
-    }
+    _revitContext.UIApplication.NotNull();
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
@@ -73,7 +71,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     return new DocumentInfo
     {
       Name = doc.Title,
-      Id = doc.GetHashCode().ToString(),
+      Id = doc.GetHashCode().ToString((IFormatProvider?)null),
       Location = doc.PathName
     };
   }
@@ -107,8 +105,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
-    var elementIds = model.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Count == 0)
+    var elementIds = model.SendFilter?.GetObjectIds().Select(ElementId.Parse).ToList();
+    if (elementIds.Empty().Any())
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;

@@ -7,7 +7,7 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Connectors.Revit.Bindings;
 
 // POC: we need a base a RevitBaseBinding
-internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
+internal sealed class SelectionBinding : RevitBaseBinding, ISelectionBinding
 {
   private readonly IRevitIdleManager _revitIdleManager;
 
@@ -21,6 +21,10 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
   {
     _revitIdleManager = idleManager;
 
+    if (RevitContext.UIApplication is null)
+    {
+      return;
+    }
     // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
     RevitContext.UIApplication.SelectionChanged += (_, _) => _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
@@ -36,14 +40,14 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // POC: this was also being called on shutdown
     // probably the bridge needs to be able to know if the plugin has been terminated
     // also on termination the OnSelectionChanged event needs unwinding
-    var selectionIds = RevitContext.UIApplication.ActiveUIDocument.Selection
+    var selectionIds = RevitContext.UIApplication?.ActiveUIDocument.Selection
       .GetElementIds()
       .Select(id => id.ToString())
       .ToList();
     return new SelectionInfo()
     {
       SelectedObjectIds = selectionIds,
-      Summary = $"{selectionIds.Count} objects selected."
+      Summary = $"{selectionIds?.Count} objects selected."
     };
   }
 }

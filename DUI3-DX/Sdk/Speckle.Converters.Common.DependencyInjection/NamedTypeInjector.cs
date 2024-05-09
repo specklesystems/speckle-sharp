@@ -13,7 +13,7 @@ public static class ConversionTypesInjector
     List<Type> types = new();
 
     // POC: hard-coding speckle... :/
-    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
+    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.CurrentCultureIgnoreCase)))
     {
       try
       {

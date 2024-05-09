@@ -28,7 +28,7 @@ public class PointCloudToSpeckleConverter : IRawConversion<LasDatasetLayer, SGIS
   {
     // get color
     int color = 0;
-    string classCode = pt.ClassCode.ToString();
+    string classCode = pt.ClassCode.ToString((IFormatProvider?)null);
     if (renderer is CIMTinUniqueValueRenderer uniqueRenderer)
     {
       foreach (CIMUniqueValueGroup group in uniqueRenderer.Groups)

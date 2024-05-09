@@ -15,7 +15,7 @@ namespace Speckle.Connectors.ArcGIS;
 /// <summary>
 /// This sample shows how to implement pane that contains an Edge WebView2 control using the built-in ArcGIS Pro SDK's WebBrowser control.  For details on how to utilize the WebBrowser control in an add-in see here: https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-Framework#webbrowser  For details on how to utilize the Microsoft Edge web browser control in an add-in see here: https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-Framework#webbrowser-control
 /// </summary>
-internal class SpeckleModule : Module
+internal sealed class SpeckleModule : Module
 {
   private static SpeckleModule? s_this;
 

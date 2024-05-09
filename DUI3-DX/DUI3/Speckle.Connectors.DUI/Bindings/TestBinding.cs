@@ -36,7 +36,7 @@ public class TestBinding : IBinding
   public object GetComplexType() =>
     new
     {
-      Id = GetHashCode().ToString() + " - I am a string",
+      Id = GetHashCode() + " - I am a string",
       count = GetHashCode(),
       thisIsABoolean = false
     };

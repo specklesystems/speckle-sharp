@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
   
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -33,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />

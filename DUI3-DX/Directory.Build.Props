@@ -5,5 +5,6 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>NU1903;CS1591;CA1815;CA1003;CA1848;CA1054;CA1812</NoWarn>
     </PropertyGroup>
 </Project>

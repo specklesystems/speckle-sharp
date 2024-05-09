@@ -25,6 +25,6 @@ public class CharacterCleaner : ICharacterCleaner
         result += "_";
       }
     }
-    return key.Replace(" ", "_").Replace("%", "_").Replace("$", "_");
+    return key.Replace(' ', '_').Replace('%', '_').Replace('$', '_');
   }
 }

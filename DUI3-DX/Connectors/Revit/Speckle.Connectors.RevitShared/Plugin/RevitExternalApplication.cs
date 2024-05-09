@@ -4,18 +4,18 @@ using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
 using Autofac;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
-internal class RevitExternalApplication : IExternalApplication
+internal sealed class RevitExternalApplication : IExternalApplication
 {
   private IRevitPlugin? _revitPlugin;
 
-  // POC: temp change to test
-  public static AutofacContainer? _container;
+  private AutofacContainer? _container;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way
@@ -53,7 +53,7 @@ internal class RevitExternalApplication : IExternalApplication
 
       // init DI
       _container
-        .LoadAutofacModules(_revitSettings.ModuleFolders)
+        .LoadAutofacModules(_revitSettings.ModuleFolders.NotNull())
         .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
         .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
         .Build();
@@ -86,7 +86,7 @@ internal class RevitExternalApplication : IExternalApplication
       // POC: could this be more a generic Connector Init() Shutdown()
       // possibly with injected pieces or with some abstract methods?
       // need to look for commonality
-      _revitPlugin.Shutdown();
+      _revitPlugin?.Shutdown();
     }
     catch (Exception e) when (!e.IsFatal())
     {
@@ -100,7 +100,7 @@ internal class RevitExternalApplication : IExternalApplication
   private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     // POC: tight binding to files
-    Assembly assembly = null;
+    Assembly? assembly = null;
     string name = args.Name.Split(',')[0];
     string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
 
@@ -114,6 +114,6 @@ internal class RevitExternalApplication : IExternalApplication
       }
     }
 
-    return assembly;
+    return assembly.NotNull();
   }
 }

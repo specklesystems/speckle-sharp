@@ -46,7 +46,7 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
     {
       Location = RhinoDoc.ActiveDoc.Path,
       Name = RhinoDoc.ActiveDoc.Name,
-      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
+      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString((IFormatProvider?)null)
     };
 
   public DocumentModelStore GetDocumentState() => _store;

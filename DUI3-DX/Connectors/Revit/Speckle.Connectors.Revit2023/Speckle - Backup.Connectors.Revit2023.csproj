@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
   
   <ItemGroup>
     <Reference Include="PresentationCore" />
