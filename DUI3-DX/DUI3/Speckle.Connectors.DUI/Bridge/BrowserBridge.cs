@@ -6,6 +6,7 @@ using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -23,7 +24,7 @@ public class BrowserBridge : IBridge
   /// </summary>
 
   private readonly JsonSerializerSettings _serializerOptions;
-  private readonly Dictionary<string, string> _resultsStore = new();
+  private readonly Dictionary<string, string?> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
 
   private Dictionary<string, MethodInfo> BindingMethodCache { get; set; } = new();
@@ -252,13 +253,9 @@ public class BrowserBridge : IBridge
   /// <param name="serializedData"></param>
   private void NotifyUIMethodCallResultReady(string requestId, string? serializedData = null)
   {
-    if (serializedData is not null)
-    {
-      _resultsStore[requestId] = serializedData;
-    }
-
+    _resultsStore[requestId] = serializedData;
     string script = $"{FrontendBoundName}.responseReady('{requestId}')";
-    _scriptMethod?.Invoke(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 
   /// <summary>
@@ -266,7 +263,7 @@ public class BrowserBridge : IBridge
   /// </summary>
   /// <param name="requestId"></param>
   /// <returns></returns>
-  public string GetCallResult(string requestId)
+  public string? GetCallResult(string requestId)
   {
     var res = _resultsStore[requestId];
     _resultsStore.Remove(requestId);
@@ -291,7 +288,7 @@ public class BrowserBridge : IBridge
   {
     var script = $"{FrontendBoundName}.emit('{eventName}')";
 
-    _scriptMethod?.Invoke(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 
   public void Send<T>(string eventName, T data)
@@ -300,6 +297,6 @@ public class BrowserBridge : IBridge
     string payload = JsonConvert.SerializeObject(data, _serializerOptions);
     var script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
 
-    _scriptMethod?.Invoke(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 }
