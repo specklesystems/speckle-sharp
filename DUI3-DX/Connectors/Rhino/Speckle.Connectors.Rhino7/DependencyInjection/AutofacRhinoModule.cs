@@ -22,6 +22,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
@@ -35,8 +36,8 @@ public class AutofacRhinoModule : Module
     RegisterLoggerFactory(builder);
 
     // Register instances initialised by Rhino
-    builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
-    builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance);
+    builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance.NotNull());
+    builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance.NotNull());
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();

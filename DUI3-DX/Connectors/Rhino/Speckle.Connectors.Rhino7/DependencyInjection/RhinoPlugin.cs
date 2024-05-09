@@ -3,6 +3,7 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -21,7 +22,7 @@ public class RhinoPlugin : IRhinoPlugin
 
   public void Initialise()
   {
-    _idleManager.SubscribeToIdle(() => RhinoApp.RunScript(SpeckleConnectorsRhino7Command.Instance.EnglishName, false));
+    _idleManager.SubscribeToIdle(() => RhinoApp.RunScript(SpeckleConnectorsRhino7Command.Instance.NotNull().EnglishName, false));
   }
 
   public void Shutdown() { }
