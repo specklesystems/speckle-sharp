@@ -10,7 +10,6 @@
   
     <ItemGroup>
       <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
-      <ProjectReference Include="..\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
       <ProjectReference Include="..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     </ItemGroup>
 
