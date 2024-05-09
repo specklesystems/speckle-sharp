@@ -109,11 +109,11 @@ public class FeatureClassUtils : IFeatureClassUtils
       return ACG.GeometryType.Multipoint;
     }
     else if (
-      target.Contains("line")
-      || target.Contains("curve")
-      || target.Contains("arc")
-      || target.Contains("circle")
-      || target.Contains("ellipse")
+      target.Contains("line", StringComparison.CurrentCultureIgnoreCase)
+      || target.Contains("curve", StringComparison.CurrentCultureIgnoreCase)
+      || target.Contains("arc", StringComparison.CurrentCultureIgnoreCase)
+      || target.Contains("circle", StringComparison.CurrentCultureIgnoreCase)
+      || target.Contains("ellipse", StringComparison.CurrentCultureIgnoreCase)
     )
     {
       return ACG.GeometryType.Polyline;
