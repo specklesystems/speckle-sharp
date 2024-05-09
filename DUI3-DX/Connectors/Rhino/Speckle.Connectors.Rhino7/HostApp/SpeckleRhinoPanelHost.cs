@@ -10,7 +10,7 @@ public class SpeckleRhinoPanelHost : RhinoWindows.Controls.WpfElementHost
   private readonly uint _docSn;
 
   public SpeckleRhinoPanelHost(uint docSn)
-    : base(SpeckleConnectorsRhino7Plugin.Instance?.Container?.Resolve<DUI3ControlWebView>(), null)
+    : base(SpeckleConnectorsRhino7Plugin.Instance.Container?.Resolve<DUI3ControlWebView>(), null)
   {
     _docSn = docSn;
   }

@@ -27,13 +27,8 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   protected override string LocalPlugInName => "Speckle (New UI)";
   public AutofacContainer? Container { get; private set; }
 
-  public SpeckleConnectorsRhino7Plugin()
-  {
-    Instance = this;
-  }
-
   ///<summary>Gets the only instance of the Speckle_Connectors_Rhino7Plugin plug-in.</summary>
-  public static SpeckleConnectorsRhino7Plugin? Instance { get; private set; }
+  public static SpeckleConnectorsRhino7Plugin Instance { get; } = new();
 
   // You can override methods here to change the plug-in behavior on
   // loading and shut down, add options pages to the Rhino _Option command

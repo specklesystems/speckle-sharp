@@ -13,7 +13,6 @@ public class SpeckleConnectorsRhino7Command : Command
   {
     // Rhino only creates one instance of each command class defined in a
     // plug-in, so it is safe to store a reference in a static property.
-    Instance = this;
     Panels.RegisterPanel(
       SpeckleConnectorsRhino7Plugin.Instance,
       typeof(SpeckleRhinoPanelHost),
@@ -24,7 +23,7 @@ public class SpeckleConnectorsRhino7Command : Command
   }
 
   ///<summary>The only instance of this command.</summary>
-  public static SpeckleConnectorsRhino7Command? Instance { get; private set; }
+  public static SpeckleConnectorsRhino7Command Instance { get; } = new();
 
   ///<returns>The command name as it appears on the Rhino command line.</returns>
   public override string EnglishName => "SpeckleNewUI";
