@@ -66,7 +66,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
       return null;
     }
 
-    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString((IFormatProvider?)null), doc.PathName);
+    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString(), doc.PathName);
     if (doc.IsFamilyDocument)
     {
       info.Message = "Family Environment files not supported by Speckle.";

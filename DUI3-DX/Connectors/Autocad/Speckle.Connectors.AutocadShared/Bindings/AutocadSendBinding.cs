@@ -84,7 +84,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
   private void OnChangeChangedObjectIds(DBObject dBObject)
   {
-    ChangedObjectIds.Add(dBObject.Handle.Value.ToString((IFormatProvider?)null));
+    ChangedObjectIds.Add(dBObject.Handle.Value.ToString());
     _idleManager.SubscribeToIdle(RunExpirationChecks);
   }
 

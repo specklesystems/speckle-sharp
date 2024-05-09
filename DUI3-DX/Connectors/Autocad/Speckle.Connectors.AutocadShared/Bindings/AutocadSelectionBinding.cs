@@ -72,7 +72,7 @@ public class AutocadSelectionBinding : ISelectionBinding
             continue;
           }
 
-          var handleString = dbObject.Handle.Value.ToString((IFormatProvider?)null);
+          var handleString = dbObject.Handle.Value.ToString();
           objectTypes.Add(dbObject.GetType().Name);
           objs.Add(handleString);
         }

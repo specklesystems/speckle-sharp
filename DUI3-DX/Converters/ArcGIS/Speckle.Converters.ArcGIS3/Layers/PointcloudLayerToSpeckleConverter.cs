@@ -32,7 +32,7 @@ public class PointCloudToSpeckleConverter
   {
     // get color
     int color = 0;
-    string classCode = pt.ClassCode.ToString((IFormatProvider?)null);
+    string classCode = pt.ClassCode.ToString();
     if (renderer is CIMTinUniqueValueRenderer uniqueRenderer)
     {
       foreach (CIMUniqueValueGroup group in uniqueRenderer.Groups)

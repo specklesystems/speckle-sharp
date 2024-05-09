@@ -85,7 +85,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
             conversionResult.Append(layerFullName);
 
-            handleValues.Add(conversionResult.Handle.Value.ToString((IFormatProvider?)null));
+            handleValues.Add(conversionResult.Handle.Value.ToString());
           }
 
           onOperationProgressed?.Invoke("Converting", (double)++count / traversalGraph.Length);
