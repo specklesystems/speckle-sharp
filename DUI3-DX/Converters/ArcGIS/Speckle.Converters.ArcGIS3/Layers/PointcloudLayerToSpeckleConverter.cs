@@ -4,11 +4,14 @@ using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data.Analyst3D;
 using ArcGIS.Core.CIM;
 using Speckle.Converters.ArcGIS3.Geometry;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointCloudToSpeckleConverter : IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
+public class PointCloudToSpeckleConverter
+  : IHostObjectToSpeckleConversion,
+    IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
 {
   private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<ACG.Envelope, SOG.Box> _boxConverter;
@@ -61,6 +64,11 @@ public class PointCloudToSpeckleConverter : IRawConversion<LasDatasetLayer, SGIS
       color = pt.RGBColor.RGBToInt();
     }
     return color;
+  }
+
+  public Base Convert(object target)
+  {
+    return RawConvert((LasDatasetLayer)target);
   }
 
   public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
