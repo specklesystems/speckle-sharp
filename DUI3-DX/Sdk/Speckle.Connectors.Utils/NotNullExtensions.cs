@@ -29,11 +29,7 @@ public static class NotNullExtensions
     return x.Value;
   }
 
-
-  public static T NotNull<T>(
-    [NotNull] this T? obj,
-    [CallerArgumentExpression(nameof(obj))] string? paramName = null
-  )
+  public static T NotNull<T>([NotNull] this T? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     where T : class
   {
     if (obj is null)
@@ -43,10 +39,7 @@ public static class NotNullExtensions
     return obj;
   }
 
-  public static T NotNull<T>(
-    [NotNull] this T? obj,
-    [CallerArgumentExpression(nameof(obj))] string? paramName = null
-  )
+  public static T NotNull<T>([NotNull] this T? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     where T : struct
   {
     if (obj is null)
