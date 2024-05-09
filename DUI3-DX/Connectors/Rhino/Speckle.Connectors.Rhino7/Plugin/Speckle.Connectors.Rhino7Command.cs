@@ -13,6 +13,7 @@ public class SpeckleConnectorsRhino7Command : Command
   {
     // Rhino only creates one instance of each command class defined in a
     // plug-in, so it is safe to store a reference in a static property.
+    Instance = this;
     Panels.RegisterPanel(
       SpeckleConnectorsRhino7Plugin.Instance,
       typeof(SpeckleRhinoPanelHost),
@@ -23,7 +24,9 @@ public class SpeckleConnectorsRhino7Command : Command
   }
 
   ///<summary>The only instance of this command.</summary>
-  public static SpeckleConnectorsRhino7Command Instance { get; } = new();
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+  public static SpeckleConnectorsRhino7Command Instance { get; private set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
   ///<returns>The command name as it appears on the Rhino command line.</returns>
   public override string EnglishName => "SpeckleNewUI";
