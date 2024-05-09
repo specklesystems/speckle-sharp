@@ -33,7 +33,8 @@ public class App : IExternalApplication
   private bool _initialized;
   private static readonly string[] s_assemblyPathFragmentsToIgnore = new string[]
   {
-    "Microsoft.Net\\assembly\\GAC_MSIL\\"
+    "Microsoft.Net\\assembly\\GAC_MSIL\\",
+    "C:\\Program Files\\dotnet\\shared\\"
   };
 
   public Result OnStartup(UIControlledApplication application)
@@ -133,6 +134,8 @@ public class App : IExternalApplication
     return "2023";
 #elif REVIT2024
     return "2024";
+#elif REVIT2025
+    return "2025";
 #endif
   }
 
