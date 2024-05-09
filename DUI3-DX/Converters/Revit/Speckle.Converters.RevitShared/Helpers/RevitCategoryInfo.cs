@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Helpers;
@@ -36,13 +37,12 @@ public class RevitCategoryInfo
     return GetElementTypes<ElementType>(document);
   }
 
+  [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
   public List<T> GetElementTypes<T>(Document document)
     where T : ElementType
   {
     // POC: why is this disabled? surely a using statement is golden here?
-#pragma warning disable CA2000 // Dispose objects before losing scope
     var collector = new FilteredElementCollector(document);
-#pragma warning restore CA2000 // Dispose objects before losing scope
 
     if (BuiltInCategories.Count > 0)
     {
