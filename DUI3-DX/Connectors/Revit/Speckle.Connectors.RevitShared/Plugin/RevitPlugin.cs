@@ -45,6 +45,7 @@ internal class RevitPlugin : IRevitPlugin
 
   public void Initialise()
   {
+    // Create and register panels before app initialized. this was needed for double-click file open
     CreateTabAndRibbonPanel(_uIControlledApplication);
     RegisterPanelAndInitializePlugin();
     _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
@@ -107,9 +108,12 @@ internal class RevitPlugin : IRevitPlugin
     // POC: might be worth to interface this out, we shall see...
     RevitTask.Initialize(uiApplication);
 
-    PostApplicationInit();
+    PostApplicationInit(); // for double-click file open
   }
 
+  /// <summary>
+  /// Actions to run after UiApplication initialized. This was needed for double-click file open issue.
+  /// </summary>
   private void PostApplicationInit()
   {
     // binding the bindings to each bridge
