@@ -53,6 +53,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     // get attributes
     var attributes = new Base();
     bool hasGeometry = false;
+    string geometryField = "Shape";
     IReadOnlyList<Field> fields = target.GetFields();
     foreach (Field field in fields)
     {
@@ -61,6 +62,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
       if (field.FieldType == FieldType.Geometry) // ignore the field with geometry itself
       {
         hasGeometry = true;
+        geometryField = name;
       }
       // Raster FieldType is not properly supported through API
       else if (
@@ -91,7 +93,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     }
     else
     {
-      var shape = (ACG.Geometry)target["Shape"];
+      var shape = (ACG.Geometry)target[geometryField];
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
       // if geometry is primitive
