@@ -108,9 +108,11 @@ public class AutofacAutocadModule : Module
 
   private static void RegisterLoggerFactory(ContainerBuilder builder)
   {
+#pragma warning disable CA1305
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+#pragma warning restore CA1305
       .CreateLogger();
 
     ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);

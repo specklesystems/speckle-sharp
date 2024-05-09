@@ -1,4 +1,3 @@
-using System.IO;
 using Autodesk.Revit.DB;
 using Autofac;
 using CefSharp;
@@ -90,14 +89,15 @@ public class AutofacUIModule : Module
 
     // POC: logging factory couldn't be added, which is the recommendation, due to janky dependencies
     // having a SpeckleLogging service, might be interesting, if a service can listen on a local port or use named pipes
-    var current = Directory.GetCurrentDirectory();
+
+#pragma warning disable CA1305
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+#pragma warning restore CA1305
       .CreateLogger();
 
-    ILoggerFactory loggerFactory = new LoggerFactory();
-    var serilog = loggerFactory.AddSerilog(serilogLogger);
+    ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
     builder.RegisterInstance(loggerFactory).As<ILoggerFactory>().SingleInstance();
   }
 }
