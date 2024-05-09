@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Rhino;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
@@ -56,6 +55,6 @@ public class RhinoDocumentStore : DocumentModelStore
       Models = new List<ModelCard>();
       return;
     }
-    Models = Deserialize(stateString);
+    Models = Deserialize(stateString) ?? new ();
   }
 }

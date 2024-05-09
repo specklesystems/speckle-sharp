@@ -10,6 +10,7 @@ using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Settings;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -85,10 +86,10 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
       string versionId = await unitOfWork.Service
         .Execute(
-          modelCard.SendFilter,
-          modelCard.AccountId,
-          modelCard.ProjectId,
-          modelCard.ModelId,
+          modelCard.SendFilter.NotNull(),
+          modelCard.AccountId.NotNull(),
+          modelCard.ProjectId.NotNull(),
+          modelCard.ModelId.NotNull(),
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
           cts.Token
         )
@@ -118,10 +119,10 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
     foreach (var sender in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      bool isExpired = sender.SendFilter?.CheckExpiry(ChangedObjectIds.ToArray()) ?? false;
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(sender.ModelCardId.NotNull());
       }
     }
 

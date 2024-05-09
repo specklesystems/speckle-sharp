@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -11,6 +8,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -74,12 +72,12 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
     if (myModel is SenderModelCard sender)
     {
-      objectIds = sender.SendFilter.GetObjectIds();
+      objectIds = (sender.SendFilter?.GetObjectIds()).Empty().ToList();
     }
 
     if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
     {
-      objectIds = receiver.ReceiveResult.BakedObjectIds;
+      objectIds = receiver.ReceiveResult.BakedObjectIds ?? new();
     }
 
     if (objectIds.Count == 0)

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -12,13 +8,13 @@ using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using System.Threading.Tasks;
 using Speckle.Autofac.DependencyInjection;
 using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 using Speckle.Connectors.DUI.Settings;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -150,16 +146,16 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      List<RhinoObject> rhinoObjects = modelCard.SendFilter
-        .GetObjectIds()
+      List<RhinoObject> rhinoObjects = (modelCard.SendFilter?
+        .GetObjectIds()).Empty()
         .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
         .Where(obj => obj != null)
         .ToList();
 
       var sendInfo = new SendInfo(
-        modelCard.AccountId,
-        modelCard.ProjectId,
-        modelCard.ModelId,
+        modelCard.AccountId.NotNull(),
+        modelCard.ProjectId.NotNull(),
+        modelCard.ModelId.NotNull(),
         _rhinoSettings.HostAppInfo.Name,
         _convertedObjectReferences,
         modelCard.ChangedObjectIds
@@ -213,12 +209,12 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
-      bool isExpired = modelCard.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
-      if (isExpired)
+      var intersection = modelCard.SendFilter?.GetObjectIds().Intersect(objectIdsList).ToList();
+      var isExpired = modelCard.SendFilter?.CheckExpiry(ChangedObjectIds.ToArray());
+      if (isExpired ?? false)
       {
-        expiredSenderIds.Add(modelCard.ModelCardId);
-        modelCard.ChangedObjectIds.UnionWith(intersection);
+        expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
+        modelCard.ChangedObjectIds.UnionWith(intersection.Empty());
       }
     }
 

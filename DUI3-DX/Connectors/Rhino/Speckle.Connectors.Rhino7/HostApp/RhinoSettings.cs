@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
