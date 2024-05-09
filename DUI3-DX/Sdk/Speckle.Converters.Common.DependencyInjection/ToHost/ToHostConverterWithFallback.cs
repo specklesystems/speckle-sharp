@@ -45,7 +45,7 @@ public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
     // Direct conversion if a converter is found
     if (_baseConverter.TryConvert(target, out object? result))
     {
-      return result.NotNull();
+      return result;
     }
 
     // Fallback to display value if it exists.

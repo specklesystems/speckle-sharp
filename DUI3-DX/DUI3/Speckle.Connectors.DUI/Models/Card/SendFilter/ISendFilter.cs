@@ -2,7 +2,7 @@ namespace Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 public interface ISendFilter
 {
-  public string? Name { get; set; }
+  public string Name { get; set; }
   public string? Summary { get; set; }
   public bool IsDefault { get; set; }
 
