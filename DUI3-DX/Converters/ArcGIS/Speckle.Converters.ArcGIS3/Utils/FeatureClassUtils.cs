@@ -95,47 +95,44 @@ public class FeatureClassUtils : IFeatureClassUtils
 
   public ACG.GeometryType GetGeometryTypeFromString(string target)
   {
-    string originalString = target.ToLower();
-
     // POC: find better pattern
-    if (originalGeomType.Contains("none", StringComparison.CurrentCultureIgnoreCase))
+    if (target.Contains("none", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.Contains("pointcloud", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("pointcloud", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.Contains("point", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("point", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Multipoint;
     }
-    else if (originalGeomType.Contains("polyline", StringComparison.CurrentCultureIgnoreCase))
     else if (
-      originalString.Contains("line")
-      || originalString.Contains("curve")
-      || originalString.Contains("arc")
-      || originalString.Contains("circle")
-      || originalString.Contains("ellipse")
+      target.Contains("line")
+      || target.Contains("curve")
+      || target.Contains("arc")
+      || target.Contains("circle")
+      || target.Contains("ellipse")
     )
     {
       return ACG.GeometryType.Polyline;
     }
-    else if (originalGeomType.Contains("polygon", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("polygon", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Polygon;
     }
-    else if (originalGeomType.Contains("multipatch", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("multipatch", StringComparison.CurrentCultureIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }
-    else if (originalString.Contains("mesh"))
+    else if (target.Contains("mesh"))
     {
       return ACG.GeometryType.Multipatch;
     }
     else
     {
-      throw new SpeckleConversionException($"Unknown geometry type {originalString}");
+      throw new SpeckleConversionException($"Unknown geometry type {target}");
     }
   }
 }
