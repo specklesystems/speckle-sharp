@@ -38,19 +38,19 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
   private string SpeckleGeometryType(string nativeGeometryType)
   {
     string spekleGeometryType = "None";
-    if (nativeGeometryType.Contains("point", StringComparison.CurrentCultureIgnoreCase))
+    if (nativeGeometryType.Contains("point", StringComparison.OrdinalIgnoreCase))
     {
       spekleGeometryType = "Point";
     }
-    else if (nativeGeometryType.Contains("polyline", StringComparison.CurrentCultureIgnoreCase))
+    else if (nativeGeometryType.Contains("polyline", StringComparison.OrdinalIgnoreCase))
     {
       spekleGeometryType = "Polyline";
     }
-    else if (nativeGeometryType.Contains("polygon", StringComparison.CurrentCultureIgnoreCase))
+    else if (nativeGeometryType.Contains("polygon", StringComparison.OrdinalIgnoreCase))
     {
       spekleGeometryType = "Polygon";
     }
-    else if (nativeGeometryType.Contains("multipatch", StringComparison.CurrentCultureIgnoreCase))
+    else if (nativeGeometryType.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
     {
       spekleGeometryType = "Multipatch";
     }

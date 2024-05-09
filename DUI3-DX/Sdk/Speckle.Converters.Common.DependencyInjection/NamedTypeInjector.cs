@@ -16,7 +16,7 @@ public static class ConversionTypesInjector
     foreach (
       var asm in AppDomain.CurrentDomain
         .GetAssemblies()
-        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.CurrentCultureIgnoreCase))
+        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
     )
     {
       try

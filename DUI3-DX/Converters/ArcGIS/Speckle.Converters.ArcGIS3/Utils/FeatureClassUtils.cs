@@ -96,37 +96,37 @@ public class FeatureClassUtils : IFeatureClassUtils
   public ACG.GeometryType GetGeometryTypeFromString(string target)
   {
     // POC: find better pattern
-    if (target.Contains("none", StringComparison.CurrentCultureIgnoreCase))
+    if (target.Contains("none", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (target.Contains("pointcloud", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("pointcloud", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (target.Contains("point", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("point", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipoint;
     }
     else if (
-      target.Contains("line", StringComparison.CurrentCultureIgnoreCase)
-      || target.Contains("curve", StringComparison.CurrentCultureIgnoreCase)
-      || target.Contains("arc", StringComparison.CurrentCultureIgnoreCase)
-      || target.Contains("circle", StringComparison.CurrentCultureIgnoreCase)
-      || target.Contains("ellipse", StringComparison.CurrentCultureIgnoreCase)
+      target.Contains("line", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("curve", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("arc", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("circle", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("ellipse", StringComparison.OrdinalIgnoreCase)
     )
     {
       return ACG.GeometryType.Polyline;
     }
-    else if (target.Contains("polygon", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("polygon", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Polygon;
     }
-    else if (target.Contains("multipatch", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }
-    else if (target.Contains("mesh", StringComparison.CurrentCultureIgnoreCase))
+    else if (target.Contains("mesh", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }

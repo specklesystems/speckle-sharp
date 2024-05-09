@@ -14,7 +14,7 @@ public static class RawConversionRegisterer
     foreach (
       var asm in AppDomain.CurrentDomain
         .GetAssemblies()
-        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.CurrentCultureIgnoreCase))
+        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
     )
     {
       foreach (var type in asm.GetTypes())
