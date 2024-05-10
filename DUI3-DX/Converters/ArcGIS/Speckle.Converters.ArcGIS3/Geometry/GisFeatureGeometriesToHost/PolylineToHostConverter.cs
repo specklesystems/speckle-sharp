@@ -3,11 +3,11 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class PolylineToHostConverter : IRawConversion<List<SOG.Polyline>, ACG.Polyline>
+public class PolylineListToHostConverter : IRawConversion<List<SOG.Polyline>, ACG.Polyline>
 {
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
 
-  public PolylineToHostConverter(IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter)
+  public PolylineListToHostConverter(IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter)
   {
     _polylineConverter = polylineConverter;
   }
