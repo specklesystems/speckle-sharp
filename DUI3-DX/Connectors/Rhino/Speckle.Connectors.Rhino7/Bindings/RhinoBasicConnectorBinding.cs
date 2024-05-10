@@ -72,7 +72,7 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
     if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
     {
-      objectIds = receiver.ReceiveResult.BakedObjectIds ?? new();
+      objectIds = receiver.ReceiveResult.BakedObjectIds.NotNull();
     }
 
     if (objectIds.Count == 0)
