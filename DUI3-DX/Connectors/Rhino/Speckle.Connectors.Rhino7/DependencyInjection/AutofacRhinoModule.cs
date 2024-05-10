@@ -29,7 +29,7 @@ public class AutofacRhinoModule : ISpeckleModule
     // Register instances initialised by Rhino
     builder.AddSingleton<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
     builder.AddSingleton<Command>(SpeckleConnectorsRhino7Command.Instance);
-    
+
     builder.AddDUI();
 
     // Register DUI3 related stuff
@@ -43,7 +43,7 @@ public class AutofacRhinoModule : ISpeckleModule
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();
-    builder.AddSingleton<IBinding, ConfigBinding>("connectorName", "Rhino");  // POC: Easier like this for now, should be cleaned up later
+    builder.AddSingleton<IBinding, ConfigBinding>("connectorName", "Rhino"); // POC: Easier like this for now, should be cleaned up later
     builder.AddSingleton<IBinding, AccountBinding>();
     builder.AddSingleton<IBinding, RhinoBasicConnectorBinding>();
     builder.AddSingleton<IBasicConnectorBinding, RhinoBasicConnectorBinding>();
@@ -67,5 +67,4 @@ public class AutofacRhinoModule : ISpeckleModule
 
     builder.AddSingleton<IRootObjectBuilder<RhinoObject>, RootObjectBuilder>();
   }
-
 }

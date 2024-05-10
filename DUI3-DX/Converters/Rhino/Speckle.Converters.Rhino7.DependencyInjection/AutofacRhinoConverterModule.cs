@@ -22,9 +22,14 @@ public class AutofacRhinoConverterModule : ISpeckleModule
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
-    builder.AddScoped<IFactory<string, IHostObjectToSpeckleConversion>, Factory<string, IHostObjectToSpeckleConversion>>();
-    builder.AddScoped<IConverterResolver<IHostObjectToSpeckleConversion>, RecursiveConverterResolver<IHostObjectToSpeckleConversion>>();
+    builder.AddScoped<
+      IFactory<string, IHostObjectToSpeckleConversion>,
+      Factory<string, IHostObjectToSpeckleConversion>
+    >();
+    builder.AddScoped<
+      IConverterResolver<IHostObjectToSpeckleConversion>,
+      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+    >();
     builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
-    
   }
 }

@@ -17,12 +17,9 @@ public static class ContainerRegistration
     speckleContainerBuilder.AddSingletonInstance<ISyncToMainThread, SyncToUIThread>();
     speckleContainerBuilder.AddTransient<ITransport, ServerTransport>();
     speckleContainerBuilder.AddSingleton<IRootObjectSender, RootObjectSender>();
-    
+
     speckleContainerBuilder.AddSingleton(GetJsonSerializerSettings());
   }
-  
-  
-  
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
   {

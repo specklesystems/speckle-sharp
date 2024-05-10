@@ -19,8 +19,14 @@ public class AutofacRevitConverterModule : ISpeckleModule
     builder.AddScoped<ISpeckleConverterToSpeckle, RevitConverterToSpeckle>();
 
     // factory for conversions
-    builder.AddScoped<IFactory<string, IHostObjectToSpeckleConversion>, Factory<string, IHostObjectToSpeckleConversion>>();
-    builder.AddScoped<IConverterResolver<IHostObjectToSpeckleConversion>, RecursiveConverterResolver<IHostObjectToSpeckleConversion>>();
+    builder.AddScoped<
+      IFactory<string, IHostObjectToSpeckleConversion>,
+      Factory<string, IHostObjectToSpeckleConversion>
+    >();
+    builder.AddScoped<
+      IConverterResolver<IHostObjectToSpeckleConversion>,
+      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+    >();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.AddScoped<ScalingServiceToSpeckle>();
