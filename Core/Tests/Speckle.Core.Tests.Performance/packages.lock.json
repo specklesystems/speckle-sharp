@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    ".NETFramework,Version=v4.8.1": {
+    ".NETFramework,Version=v4.8": {
       "BenchmarkDotNet": {
         "type": "Direct",
         "requested": "[0.13.12, )",
@@ -23,15 +23,6 @@
           "System.Reflection.Emit": "4.7.0",
           "System.Reflection.Emit.Lightweight": "4.7.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
-        }
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies": {
-        "type": "Direct",
-        "requested": "[1.0.3, )",
-        "resolved": "1.0.3",
-        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
-        "dependencies": {
-          "Microsoft.NETFramework.ReferenceAssemblies.net481": "1.0.3"
         }
       },
       "BenchmarkDotNet.Annotations": {
@@ -240,11 +231,6 @@
           "System.Memory": "4.5.1",
           "System.Runtime.CompilerServices.Unsafe": "4.5.1"
         }
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies.net481": {
-        "type": "Transitive",
-        "resolved": "1.0.3",
-        "contentHash": "Vv/20vgHS7VglVOVh8J3Iz/MA+VYKVRp9f7r2qiKBMuzviTOmocG70yq0Q8T5OTmCONkEAIJwETD1zhEfLkAXQ=="
       },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
@@ -588,7 +574,7 @@
         }
       }
     },
-    ".NETFramework,Version=v4.8.1/win7-x86": {
+    ".NETFramework,Version=v4.8/win7-x86": {
       "Gee.External.Capstone": {
         "type": "Transitive",
         "resolved": "2.3.0",
