@@ -19,7 +19,6 @@ using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
@@ -33,7 +32,6 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddSingleton<Command>(SpeckleConnectorsRhino7Command.Instance);
 
     builder.AddAutofac();
-    builder.AddConverterCommon();
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();

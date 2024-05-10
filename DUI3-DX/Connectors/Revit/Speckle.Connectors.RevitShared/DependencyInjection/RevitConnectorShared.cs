@@ -12,8 +12,6 @@ using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
@@ -23,11 +21,9 @@ public class RevitConnectorShared : ISpeckleModule
   public void Load(SpeckleContainerBuilder builder)
   {
     builder.AddAutofac();
-    builder.AddConverterCommon();
     builder.AddConnectorUtils();
     builder.AddDUI();
     //builder.AddDUIView();
-    builder.AddSingleton(new RevitContext());
 
     // POC: different versons for different versions of CEF
     builder.AddSingleton(BindingOptions.DefaultBinder);
@@ -60,8 +56,6 @@ public class RevitConnectorShared : ISpeckleModule
 
     // send operation and dependencies
     builder.AddScoped<SendOperation<ElementId>>();
-    builder.AddScoped<SendSelection>();
-    builder.AddScoped<ToSpeckleConvertedObjectsCache>();
     builder.AddScoped<IRootObjectBuilder<ElementId>, RootObjectBuilder>();
   }
 }

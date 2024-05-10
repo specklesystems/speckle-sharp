@@ -3,6 +3,7 @@
 using Autodesk.Revit.DB;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
@@ -15,6 +16,8 @@ public class RevitConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
+    builder.AddConverterCommon();
+    builder.AddSingleton(new RevitContext());
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.AddScoped<ISpeckleConverterToSpeckle, RevitConverterToSpeckle>();
 
@@ -46,5 +49,7 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddScoped<HostedElementConversionToSpeckle>();
     builder.AddScoped<ParameterObjectAssigner>();
     builder.AddScoped<ISlopeArrowExtractor, SlopeArrowExtractor>();
+    builder.AddScoped<SendSelection>();
+    builder.AddScoped<ToSpeckleConvertedObjectsCache>();
   }
 }
