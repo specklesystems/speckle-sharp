@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Autofac.Core;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
-using Module = Autofac.Module;
 
 namespace Speckle.Autofac.DependencyInjection;
 
@@ -41,13 +41,13 @@ public class SpeckleContainerBuilder
         {
           // inspect the assemblies for Autofac.Module
           var assembly = Assembly.LoadFrom(file);
-          var moduleClasses = assembly.GetTypes().Where(x => x.BaseType == typeof(Module));
+          var moduleClasses = assembly.GetTypes().Where(x => x.BaseType == typeof(IModule));
 
           // create each module
           // POC: could look for some attribute here
           foreach (var moduleClass in moduleClasses)
           {
-            var module = (Module)Activator.CreateInstance(moduleClass);
+            var module = (IModule)Activator.CreateInstance(moduleClass);
             ContainerBuilder.RegisterModule(module);
           }
         }
@@ -78,7 +78,7 @@ public class SpeckleContainerBuilder
   public IReadOnlyList<Type> SpeckleTypes => _types.Value;
   public ContainerBuilder ContainerBuilder { get; }
 
-  public SpeckleContainerBuilder AddModule(Module module)
+  public SpeckleContainerBuilder AddModule(IModule module)
   {
     ContainerBuilder.RegisterModule(module);
 
@@ -88,8 +88,28 @@ public class SpeckleContainerBuilder
   public SpeckleContainerBuilder AddSingletonInstance<T>(T instance)
     where T : class
   {
-    ContainerBuilder.RegisterInstance(instance);
-
+    ContainerBuilder.RegisterInstance(instance).SingleInstance();
+    return this;
+  }
+  public SpeckleContainerBuilder AddSingleton<Tinterface, T>()
+    where T : class, Tinterface 
+    where Tinterface : notnull
+  {
+    ContainerBuilder.RegisterType<T>().As<Tinterface>().SingleInstance();
+    return this;
+  }
+  public SpeckleContainerBuilder AddScoped<Tinterface, T>()
+    where T : class, Tinterface
+    where Tinterface : notnull
+  {
+    ContainerBuilder.RegisterType<T>().As<Tinterface>().InstancePerLifetimeScope();
+    return this;
+  }
+  public SpeckleContainerBuilder AddTransient<Tinterface, Tservice>()
+    where Tservice : class, Tinterface
+    where Tinterface : notnull
+  {
+    ContainerBuilder.RegisterType<Tservice>().As<Tinterface>().InstancePerDependency();
     return this;
   }
 

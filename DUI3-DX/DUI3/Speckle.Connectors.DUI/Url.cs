@@ -1,4 +1,5 @@
 ﻿using System;
+using Speckle.Connectors.Utils.Builders;
 
 namespace Speckle.Connectors.DUI;
 
