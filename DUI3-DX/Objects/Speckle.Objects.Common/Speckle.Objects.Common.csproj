@@ -1,17 +1,1 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
-  </ItemGroup>
-
-</Project>
+﻿

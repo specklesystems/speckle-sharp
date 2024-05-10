@@ -9,7 +9,6 @@
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023\\Speckle.Converters.Revit2023.csproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
-      "DUI3-DX\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
       "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
