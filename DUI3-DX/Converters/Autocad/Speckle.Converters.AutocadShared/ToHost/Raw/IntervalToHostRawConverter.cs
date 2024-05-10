@@ -1,4 +1,3 @@
-using System;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Raw;

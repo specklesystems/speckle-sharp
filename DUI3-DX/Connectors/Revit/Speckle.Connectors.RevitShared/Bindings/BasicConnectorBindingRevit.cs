@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
 using Revit.Async;
@@ -48,7 +46,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     return Assembly.GetAssembly(GetType()).GetVersion();
   }
 
-  public string GetSourceApplicationName() => _revitSettings.HostSlug; // POC: maybe not right place but...
+  public string GetSourceApplicationName() => _revitSettings.HostSlug.ToLower(); // POC: maybe not right place but... // ANOTHER POC: We should align this naming from somewhere in common DUI projects instead old structs. I know there are other POC comments around this
 
   public string GetSourceApplicationVersion()
   {

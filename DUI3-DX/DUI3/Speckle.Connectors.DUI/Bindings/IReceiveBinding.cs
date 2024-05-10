@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Speckle.Connectors.DUI.Bindings;
 
 public interface IReceiveBinding : IBinding

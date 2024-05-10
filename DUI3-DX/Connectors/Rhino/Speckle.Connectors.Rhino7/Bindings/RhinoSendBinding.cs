@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -12,7 +8,6 @@ using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using System.Threading.Tasks;
 using Speckle.Autofac.DependencyInjection;
 using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;

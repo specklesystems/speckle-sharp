@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Rhino.DocObjects;
 using Rhino;
 using Speckle.Core.Models;
-using System.Threading;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;

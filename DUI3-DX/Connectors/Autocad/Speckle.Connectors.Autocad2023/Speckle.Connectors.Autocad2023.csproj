@@ -3,7 +3,6 @@
     <RootNamespace>Speckle.Connectors.Autocad</RootNamespace>
     <TargetFramework>net48</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UseWpf>true</UseWpf>
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>

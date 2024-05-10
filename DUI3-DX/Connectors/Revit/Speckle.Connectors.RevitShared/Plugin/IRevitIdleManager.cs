@@ -1,5 +1,3 @@
-using System;
-
 namespace Speckle.Connectors.Revit.Plugin;
 
 // POC: needs interface

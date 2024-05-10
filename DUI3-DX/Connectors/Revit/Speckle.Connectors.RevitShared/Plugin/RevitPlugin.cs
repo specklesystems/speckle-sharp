@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.ApplicationServices;
 using Revit.Async;
 using CefSharp;
-using System.Linq;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using System.Diagnostics;

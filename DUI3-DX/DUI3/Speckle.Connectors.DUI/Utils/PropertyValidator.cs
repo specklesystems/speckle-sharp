@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Utils;

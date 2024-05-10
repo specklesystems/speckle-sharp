@@ -1,6 +1,3 @@
-﻿using System;
-using Speckle.Connectors.Utils.Builders;
-
 namespace Speckle.Connectors.DUI;
 
 // POC: XAML file accept Static only, but later we can search more is it possible to inject this? or necessary??
