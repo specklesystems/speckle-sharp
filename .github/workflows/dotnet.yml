@@ -26,7 +26,7 @@ jobs:
       - name: Restore projects
         run: dotnet restore --locked-mode DUI3-DX.slnf
       - name: Build
-        run: msbuild --no-restore DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
+        run: msbuild DUI3-DX.slnf /p:RestorePackages=false /p:Configuration=Release /p:IsDesktopBuild=false -v:m
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
