@@ -215,7 +215,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection.Empty());
+        modelCard.ChangedObjectIds.UnionWith(intersection.NotNull());
       }
     }
 

@@ -42,7 +42,7 @@ internal sealed class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // probably the bridge needs to be able to know if the plugin has been terminated
     // also on termination the OnSelectionChanged event needs unwinding
     var selectionIds = (RevitContext.UIApplication?.ActiveUIDocument.Selection.GetElementIds())
-      .Empty()
+      .NotNull()
       .Select(id => id.ToString())
       .ToList();
     return new SelectionInfo(selectionIds, $"{selectionIds.Count} objects selected.");

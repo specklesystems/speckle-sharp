@@ -37,7 +37,7 @@ public class PropertyValidator : DiscriminatedObject
     bool removedPropertiesExist = false;
     var currentPropertyNames = this.GetType().GetProperties().Select(p => p.Name).ToList();
 
-    foreach (var jsonPropName in JsonPropertyNames.Empty())
+    foreach (var jsonPropName in JsonPropertyNames.NotNull())
     {
       if (!currentPropertyNames.Contains(jsonPropName))
       {

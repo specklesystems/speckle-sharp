@@ -5,8 +5,6 @@ namespace Speckle.Converters.Common;
 
 public static class NotNullExtensions
 {
-  public static IEnumerable<T> Empty<T>(this IEnumerable<T>? source) => source ?? Enumerable.Empty<T>();
-
   public static async Task<T> NotNull<T>(
     this Task<T?> task,
     [CallerArgumentExpression(nameof(task))] string? message = null
