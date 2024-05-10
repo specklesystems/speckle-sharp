@@ -1,6 +1,5 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using System.Collections;
-using System.Collections.Generic;
 
 namespace Speckle.Converters.Autocad.Extensions;
 

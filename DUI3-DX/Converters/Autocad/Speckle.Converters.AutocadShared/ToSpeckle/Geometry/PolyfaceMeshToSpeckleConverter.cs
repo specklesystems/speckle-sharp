@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;

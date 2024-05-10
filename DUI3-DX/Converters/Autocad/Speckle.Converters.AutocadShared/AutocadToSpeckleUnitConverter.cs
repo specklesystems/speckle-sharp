@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Core.Kits;
