@@ -4,11 +4,11 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -20,38 +20,46 @@ public class HostObjectBuilder : IHostObjectBuilder
 
   // POC: figure out the correct scope to only initialize on Receive
   private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly GraphTraversal _traverseFunction;
 
   public HostObjectBuilder(
     ISpeckleConverterToHost toHostConverter,
     IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<Map, Unit> contextStack,
-    INonNativeFeaturesUtils nonGisFeaturesUtils
+    INonNativeFeaturesUtils nonGisFeaturesUtils,
+    GraphTraversal traverseFunction
   )
   {
     _toHostConverter = toHostConverter;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
     _nonGisFeaturesUtils = nonGisFeaturesUtils;
+    _traverseFunction = traverseFunction;
   }
 
-  public Tuple<List<string>, Geometry> ConvertNonNativeGeometries(Base obj, string[] path, List<string> objectIds)
+  public (string, Geometry, string?) ConvertNonNativeGeometries(
+    Base obj,
+    string[] path,
+    string? parentId,
+    List<string> objectIds
+  )
   {
     Geometry converted = (Geometry)_toHostConverter.Convert(obj);
     objectIds.Add(obj.id);
     List<string> objPath = path.ToList();
     objPath.Add(obj.speckle_type.Split(".")[^1]);
-    return Tuple.Create(objPath, converted);
+    return ($"{string.Join("\\", objPath)}", converted, parentId);
   }
 
-  public Tuple<string, string> ConvertNativeLayers(Base obj, string[] path, List<string> objectIds)
+  public (string, string) ConvertNativeLayers(Base obj, string[] path, List<string> objectIds)
   {
     string converted = (string)_toHostConverter.Convert(obj);
     objectIds.Add(obj.id);
     string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
-    return Tuple.Create(objPath, converted);
+    return (objPath, converted);
   }
 
-  public void AddDatasetsToMap(Tuple<string, string> databaseObj, string databasePath)
+  public void AddDatasetsToMap((string, string) databaseObj, string databasePath)
   {
     try
     {
@@ -71,6 +79,14 @@ public class HostObjectBuilder : IHostObjectBuilder
     }
   }
 
+  private string[] GetLayerPath(TraversalContext context)
+  {
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    return reverseOrderPath.Reverse().ToArray();
+    ;
+  }
+
   public IEnumerable<string> Build(
     Base rootObject,
     string projectName,
@@ -88,24 +104,33 @@ public class HostObjectBuilder : IHostObjectBuilder
     _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
-    IEnumerable<(string[], Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
+    IEnumerable<(string[], Base, string?)> objectsToConvert = _traverseFunction
+      .Traverse(rootObject)
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current, ctx.Parent?.Current.id));
 
-    IEnumerable<(string[], Base)> gisObjectsWithPath = objectsWithPath.Where(
-      x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer
-    );
-    IEnumerable<(string[], Base)> nonGisObjectsWithPath = objectsWithPath.Where(
-      x => x.Item2 is not GisFeature && x.Item2 is not VectorLayer && x.Item2 is not Objects.GIS.RasterLayer
-    );
+#pragma warning disable CA1851 // need to enumerate objects 2 times: to find GIS objects, and to count
+    IEnumerable<(string[], Base)> gisObjectsWithPath = objectsToConvert
+      .Select(x => (x.Item1, x.Item2))
+      .Where(x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer);
+    int allCount = gisObjectsWithPath.Count();
+
+    // get convertible objects only if the commit was non-gis (otherwise it will duplicate GIS features under VectorLayer)
+    IEnumerable<(string[], Base, string?)> nonGisObjectsWithPath = Enumerable.Empty<(string[], Base, string?)>();
+    if (allCount == 0)
+    {
+      nonGisObjectsWithPath = objectsToConvert;
+#pragma warning disable CA1851 // need to enumerate objects 2 times: to find GIS objects, and to count
+      allCount = nonGisObjectsWithPath.Count();
+    }
 
     List<string> objectIds = new();
     int count = 0;
-    int allCount = objectsWithPath.Count();
 
-    Dictionary<string, Tuple<List<string>, Geometry>> convertedGeometries = new();
-    List<Tuple<string, string>> convertedGISObjects = new();
+    Dictionary<string, (string, Geometry, string?)> convertedGeometries = new();
+    List<(string, string)> convertedGISObjects = new();
 
     // 1.1. convert non-gis objects in a loop
-    foreach ((string[] path, Base obj) in nonGisObjectsWithPath)
+    foreach ((string[] path, Base obj, string? parentId) in nonGisObjectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
@@ -116,7 +141,7 @@ public class HostObjectBuilder : IHostObjectBuilder
         // POC: QueuedTask
         QueuedTask.Run(() =>
         {
-          convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, objectIds);
+          convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
         });
         onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
       }
@@ -166,7 +191,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     int bakeCount = 0;
     onOperationProgressed?.Invoke("Adding to Map", 0);
     // 3. add layer and tables to the Table Of Content
-    foreach (Tuple<string, string> databaseObj in convertedGISObjects)
+    foreach ((string, string) databaseObj in convertedGISObjects)
     {
       if (cancellationToken.IsCancellationRequested)
       {

@@ -34,38 +34,38 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     _contextStack = contextStack;
   }
 
-  public List<Tuple<string, string>> WriteGeometriesToDatasets(
-    Dictionary<string, Tuple<List<string>, ACG.Geometry>> target
+  public List<(string, string)> WriteGeometriesToDatasets(
+    Dictionary<string, (string, ACG.Geometry, string?)> convertedObjs
   )
   {
-    List<Tuple<string, string>> result = new();
+    List<(string, string)> result = new();
     try
     {
       // 1. Sort features into groups by path and geom type
-      Dictionary<string, List<ACG.Geometry>> geometryGroups = new();
-      foreach (var item in target)
+      Dictionary<string, (List<ACG.Geometry>, string?)> geometryGroups = new();
+      foreach (var item in convertedObjs)
       {
         string objId = item.Key;
-        (List<string> objPath, ACG.Geometry geom) = item.Value;
-        string geomType = objPath[^1];
-        string parentPath = $"{string.Join("\\", objPath.Where((x, i) => i < objPath.Count - 1))}\\{geomType}";
+        (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
 
         // add dictionnary item if doesn't exist yet
         if (!geometryGroups.ContainsKey(parentPath))
         {
-          geometryGroups[parentPath] = new List<ACG.Geometry>();
+          geometryGroups[parentPath] = (new List<ACG.Geometry>(), parentId);
         }
-        geometryGroups[parentPath].Add(geom);
+        geometryGroups[parentPath].Item1.Add(geom);
       }
 
       // 2. for each group create a Dataset and add geometries there as Features
-      foreach ((string parentPath, List<ACG.Geometry> geomList) in geometryGroups)
+      foreach (var item in geometryGroups)
       {
+        string parentPath = item.Key;
+        (List<ACG.Geometry> geomList, string? parentId) = item.Value;
         ACG.GeometryType geomType = _featureClassUtils.GetGeometryTypeFromString(parentPath.Split("\\")[^1]);
         try
         {
-          string converted = CreateDatasetInDatabase(geomType, geomList);
-          result.Add(Tuple.Create(parentPath, converted));
+          string converted = CreateDatasetInDatabase(geomType, geomList, parentId);
+          result.Add((parentPath, converted));
         }
         catch (GeodatabaseGeometryException)
         {
@@ -81,7 +81,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     return result;
   }
 
-  private string CreateDatasetInDatabase(ACG.GeometryType geomType, List<ACG.Geometry> geomList)
+  private string CreateDatasetInDatabase(ACG.GeometryType geomType, List<ACG.Geometry> geomList, string? parentId)
   {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
@@ -95,7 +95,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // TODO: generate meaningful name
-    string featureClassName = "hash_" + Utilities.HashString(string.Join("\\", geomList.Select(x => x.GetHashCode())));
+    string featureClassName = $"speckleID_{geomType}_{parentId}";
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
