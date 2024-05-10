@@ -46,14 +46,9 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     _unitOfWorkFactory = unitOfWorkFactory;
     _revitSettings = revitSettings;
     Commands = new SendBindingUICommands(bridge);
-
-    if (revitContext.UIApplication is null)
-    {
-      return;
-    }
     // TODO expiry events
     // TODO filters need refresh events
-    revitContext.UIApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) => DocChangeHandler(e);
   }
 
   public List<ISendFilter> GetSendFilters()
