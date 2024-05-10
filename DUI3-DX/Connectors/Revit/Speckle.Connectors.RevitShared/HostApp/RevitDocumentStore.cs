@@ -50,6 +50,7 @@ internal class RevitDocumentStore : DocumentModelStore
     // There is no event that we can hook here for double-click file open...
     // It is kind of harmless since we create this object as "SingleInstance".
     ReadFromFile();
+    OnDocumentChanged();
   }
 
   /// <summary>
@@ -75,6 +76,7 @@ internal class RevitDocumentStore : DocumentModelStore
 
     IsDocumentInit = true;
     ReadFromFile();
+    OnDocumentChanged();
   }
 
   private void WriteToFileWithDoc(Document doc)
@@ -118,7 +120,6 @@ internal class RevitDocumentStore : DocumentModelStore
 
       string modelsString = stateEntity.Get<string>("contents");
       Models = Deserialize(modelsString);
-      OnDocumentChanged();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
