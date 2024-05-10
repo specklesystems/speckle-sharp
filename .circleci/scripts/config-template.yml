@@ -18,6 +18,9 @@ workflows:
       - build-sdk:
           requires:
             - get-ci-tools
+  build-dui3:
+    jobs:
+      - build-dui3-job
   nuget:
     jobs:
       - build-sdk:
@@ -84,6 +87,25 @@ commands:
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
+  build-dui3-job:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Enforce formatting
+          command: |
+            dotnet tool restore
+            dotnet csharpier --check .
+      - run:
+          name: Dotnet Restore
+          command: |
+            dotnet restore DUI3-DX.slnf
+      - run:
+          name: Build DUI3 Solution filter
+          command: |
+            msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
   build-sdk:
     docker:
       - image: cimg/base:2021.01
