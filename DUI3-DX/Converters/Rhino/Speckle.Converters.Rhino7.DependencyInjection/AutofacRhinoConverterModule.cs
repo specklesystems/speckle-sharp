@@ -1,4 +1,3 @@
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -8,44 +7,24 @@ using Speckle.Converters.Rhino7.ToSpeckle;
 
 namespace Speckle.Converters.Rhino7.DependencyInjection;
 
-public class AutofacRhinoConverterModule : Module
+public class AutofacRhinoConverterModule : ISpeckleModule
 {
-  protected override void Load(ContainerBuilder builder)
+  public void Load(SpeckleContainerBuilder builder)
   {
     // single stack per conversion
-    builder
-      .RegisterType<RhinoConversionContextStack>()
-      .As<IConversionContextStack<RhinoDoc, UnitSystem>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<IConversionContextStack<RhinoDoc, UnitSystem>, RhinoConversionContextStack>();
 
     // To Speckle
-    builder
-      .RegisterType<RhinoToSpeckleUnitConverter>()
-      .As<IHostToSpeckleUnitConverter<UnitSystem>>()
-      .InstancePerLifetimeScope();
-    builder.RegisterType<RhinoConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
+    builder.AddScoped<IHostToSpeckleUnitConverter<UnitSystem>, RhinoToSpeckleUnitConverter>();
+    builder.AddScoped<ISpeckleConverterToSpeckle, RhinoConverterToSpeckle>();
 
     /*
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
-    builder
-      .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
-      .As<IFactory<string, IHostObjectToSpeckleConversion>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<RecursiveConverterResolver<ISpeckleObjectToHostConversion>>()
-      .As<IConverterResolver<ISpeckleObjectToHostConversion>>()
-      .InstancePerLifetimeScope();
-    builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
-
-    /*
-      POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
-      This will require consolidating across other connectors.
-    */
-    builder
-      .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
-      .As<IFactory<string, ISpeckleObjectToHostConversion>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<IFactory<string, IHostObjectToSpeckleConversion>, Factory<string, IHostObjectToSpeckleConversion>>();
+    builder.AddScoped<IConverterResolver<IHostObjectToSpeckleConversion>, RecursiveConverterResolver<IHostObjectToSpeckleConversion>>();
+    builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
+    
   }
 }

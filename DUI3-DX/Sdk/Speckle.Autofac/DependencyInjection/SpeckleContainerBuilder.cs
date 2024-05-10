@@ -82,10 +82,22 @@ public class SpeckleContainerBuilder
     return this;
   }
 
-  public SpeckleContainerBuilder AddSingletonInstance<T>(T instance)
+  public SpeckleContainerBuilder AddSingleton<T>(T instance)
     where T : class
   {
     ContainerBuilder.RegisterInstance(instance).SingleInstance();
+    return this;
+  }
+  public SpeckleContainerBuilder AddSingleton<T>()
+    where T : class
+  {
+    ContainerBuilder.RegisterType<T>().AsSelf().SingleInstance();
+    return this;
+  }
+  public SpeckleContainerBuilder AddSingletonInstance<T>()
+    where T : class
+  {
+    ContainerBuilder.RegisterType<T>().AsSelf().SingleInstance().AutoActivate();
     return this;
   }
   public SpeckleContainerBuilder AddSingletonInstance<TInterface, T>()
@@ -100,6 +112,12 @@ public class SpeckleContainerBuilder
     where TInterface : notnull
   {
     ContainerBuilder.RegisterType<T>().As<TInterface>().SingleInstance();
+    return this;
+  }
+  public SpeckleContainerBuilder AddSingleton<TInterface, T>(string param, string value)
+    where T : class
+  {
+    ContainerBuilder.RegisterType<T>().As<TInterface>().SingleInstance().WithParameter(param, value);
     return this;
   }
   public SpeckleContainerBuilder AddScoped<TInterface, T>()
