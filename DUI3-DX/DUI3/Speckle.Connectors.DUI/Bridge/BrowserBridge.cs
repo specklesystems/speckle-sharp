@@ -41,7 +41,7 @@ public class BrowserBridge : IBridge
   /// </summary>
   public Action? ShowDevToolsAction { get; set; }
 
-  public string? FrontendBoundName { get; private set; }
+  public string FrontendBoundName { get; private set; } = "Unknown";
 
   public object? Browser { get; private set; }
 

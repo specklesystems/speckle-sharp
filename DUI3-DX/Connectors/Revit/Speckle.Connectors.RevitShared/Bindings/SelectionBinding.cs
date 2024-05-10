@@ -2,6 +2,7 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Bindings;
@@ -40,14 +41,11 @@ internal sealed class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // POC: this was also being called on shutdown
     // probably the bridge needs to be able to know if the plugin has been terminated
     // also on termination the OnSelectionChanged event needs unwinding
-    var selectionIds = RevitContext.UIApplication?.ActiveUIDocument.Selection
-      .GetElementIds()
+    var selectionIds = (RevitContext.UIApplication?.ActiveUIDocument.Selection
+      .GetElementIds())
+      .Empty()
       .Select(id => id.ToString())
       .ToList();
-    return new SelectionInfo()
-    {
-      SelectedObjectIds = selectionIds,
-      Summary = $"{selectionIds?.Count} objects selected."
-    };
+    return new SelectionInfo(selectionIds, $"{selectionIds.Count} objects selected.");
   }
 }

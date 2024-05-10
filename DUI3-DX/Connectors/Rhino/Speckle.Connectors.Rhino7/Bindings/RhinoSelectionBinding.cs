@@ -43,11 +43,7 @@ public class RhinoSelectionBinding : ISelectionBinding
     List<string> objectIds = objects.Select(o => o.Id.ToString()).ToList();
     int layerCount = objects.Select(o => o.Attributes.LayerIndex).Distinct().Count();
     List<string> objectTypes = objects.Select(o => o.ObjectType.ToString()).Distinct().ToList();
-    return new SelectionInfo
-    {
-      SelectedObjectIds = objectIds,
-      Summary =
-        $"{objectIds.Count} objects ({string.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}"
-    };
+    return new SelectionInfo(objectIds,
+      $"{objectIds.Count} objects ({string.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}");
   }
 }

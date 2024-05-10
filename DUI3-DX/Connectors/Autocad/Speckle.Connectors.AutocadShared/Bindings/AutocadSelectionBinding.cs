@@ -81,10 +81,6 @@ public class AutocadSelectionBinding : ISelectionBinding
       }
     }
     List<string> flatObjectTypes = objectTypes.Select(o => o).Distinct().ToList();
-    return new SelectionInfo
-    {
-      SelectedObjectIds = objs,
-      Summary = $"{objs.Count} objects ({string.Join(", ", flatObjectTypes)})"
-    };
+    return new SelectionInfo(objs, $"{objs.Count} objects ({string.Join(", ", flatObjectTypes)})");
   }
 }

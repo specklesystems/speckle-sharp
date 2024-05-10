@@ -10,7 +10,7 @@ namespace Speckle.Connectors.DUI.Bridge;
 public interface IBridge
 {
   // POC: documnetation comments
-  string? FrontendBoundName { get; }
+  string FrontendBoundName { get; }
 
   void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser, Action showDevToolsAction);
 

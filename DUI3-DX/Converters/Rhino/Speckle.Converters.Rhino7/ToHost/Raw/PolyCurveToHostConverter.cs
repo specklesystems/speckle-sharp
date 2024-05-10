@@ -1,4 +1,5 @@
 ﻿using Objects;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 
@@ -27,7 +28,7 @@ public class PolyCurveToHostConverter : IRawConversion<SOG.Polycurve, RG.PolyCur
 
     foreach (var segment in target.segments)
     {
-      var childCurve = CurveConverter?.RawConvert(segment);
+      var childCurve = CurveConverter.NotNull().RawConvert(segment);
       bool success = result.AppendSegment(childCurve);
       if (!success)
       {
