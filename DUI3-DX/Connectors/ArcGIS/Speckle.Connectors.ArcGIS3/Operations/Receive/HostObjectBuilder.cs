@@ -37,7 +37,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public (string, Geometry, string?) ConvertNonNativeGeometries(
+  public (string path, Geometry converted, string? parentId) ConvertNonNativeGeometries(
     Base obj,
     string[] path,
     string? parentId,
@@ -111,7 +111,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
     int allCount = objectsToConvert.Count;
     int count = 0;
-    Dictionary<string, (string, Geometry, string?)> convertedGeometries = new();
+    Dictionary<string, (string path, Geometry converted, string? parentId)> convertedGeometries = new();
     List<string> objectIds = new();
     List<(string, string)> convertedGISObjects = new();
 
