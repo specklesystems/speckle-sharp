@@ -20,8 +20,7 @@
   
   <ItemGroup>
     <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
   </ItemGroup>
   
   <ItemGroup>

@@ -37,7 +37,6 @@
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" />
   </ItemGroup>
 

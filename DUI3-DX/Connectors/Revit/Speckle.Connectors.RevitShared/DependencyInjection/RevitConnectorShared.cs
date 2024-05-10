@@ -4,7 +4,6 @@ using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
@@ -27,7 +26,7 @@ public class RevitConnectorShared : ISpeckleModule
     builder.AddConverterCommon();
     builder.AddConnectorUtils();
     builder.AddDUI();
-    builder.AddDUIView();
+    //builder.AddDUIView();
     builder.AddSingleton(new RevitContext());
 
     // POC: different versons for different versions of CEF
