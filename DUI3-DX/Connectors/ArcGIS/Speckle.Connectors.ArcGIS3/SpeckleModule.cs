@@ -4,7 +4,6 @@ using ArcGIS.Desktop.Framework;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Core.Kits;
-using Speckle.Converters.Common.DependencyInjection;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS;
@@ -29,7 +28,6 @@ internal class SpeckleModule : Module
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
     var builder = SpeckleContainerBuilder.CreateInstance();
-    builder.AddConverterCommon();
 
     // Register Settings
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);

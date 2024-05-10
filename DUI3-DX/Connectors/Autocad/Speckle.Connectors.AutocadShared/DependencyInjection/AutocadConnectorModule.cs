@@ -28,7 +28,6 @@ public class AutocadConnectorModule : ISpeckleModule
   public void Load(SpeckleContainerBuilder builder)
   {
     builder.AddAutofac();
-    builder.AddConverterCommon();
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();
