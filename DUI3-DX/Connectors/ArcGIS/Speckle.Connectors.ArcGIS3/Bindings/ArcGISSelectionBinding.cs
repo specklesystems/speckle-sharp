@@ -2,7 +2,6 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
