@@ -11,21 +11,21 @@
   
   <ItemGroup>
     <Content Include="Config.daml" />
-    <Content Include="Images\AddInDesktop16.png" />
-    <Content Include="Images\AddInDesktop32.png" />
-    <Content Include="DarkImages\AddInDesktop16.png" />
-    <Content Include="DarkImages\AddInDesktop32.png" />
+    <Content Include="Images\s2logo_16.png" />
+    <Content Include="Images\s2logo_32.png" />
+    <Content Include="DarkImages\s2logo_16.png" />
+    <Content Include="DarkImages\s2logo_32.png" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743"/>
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3.DependencyInjection\Speckle.Converters.ArcGIS3.DependencyInjection.csproj"/>
-    <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI.WebView\Speckle.Connectors.DUI.WebView.csproj"/>
+    <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3.DependencyInjection\Speckle.Converters.ArcGIS3.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI.WebView\Speckle.Connectors.DUI.WebView.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
   </ItemGroup>
 </Project>

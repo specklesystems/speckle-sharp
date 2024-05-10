@@ -50,10 +50,10 @@
 				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="Speckle"
 						className="SpeckleDUI3OpenButton" loadOnClick="true"
 						keytip="B1"
-						smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/MarsCat16.png"
-						largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/MarsCat32.png">
+						smallImage="Images/s2logo_16.png"
+						largeImage="Images/s2logo_32.png">
 					<tooltip heading="Speckle Connector for ArcGIS">
-						Open Pane to test WebView2 browser control<disabledText />
+                        Speckle New UI<disabledText />
 					</tooltip>
 				</button>
 			</controls>
