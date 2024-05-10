@@ -91,25 +91,25 @@ public class SpeckleContainerBuilder
     ContainerBuilder.RegisterInstance(instance).SingleInstance();
     return this;
   }
-  public SpeckleContainerBuilder AddSingleton<Tinterface, T>()
-    where T : class, Tinterface 
-    where Tinterface : notnull
+  public SpeckleContainerBuilder AddSingleton<TInterface, T>()
+    where T : class, TInterface 
+    where TInterface : notnull
   {
-    ContainerBuilder.RegisterType<T>().As<Tinterface>().SingleInstance();
+    ContainerBuilder.RegisterType<T>().As<TInterface>().SingleInstance();
     return this;
   }
-  public SpeckleContainerBuilder AddScoped<Tinterface, T>()
-    where T : class, Tinterface
-    where Tinterface : notnull
+  public SpeckleContainerBuilder AddScoped<TInterface, T>()
+    where T : class, TInterface
+    where TInterface : notnull
   {
-    ContainerBuilder.RegisterType<T>().As<Tinterface>().InstancePerLifetimeScope();
+    ContainerBuilder.RegisterType<T>().As<TInterface>().InstancePerLifetimeScope();
     return this;
   }
-  public SpeckleContainerBuilder AddTransient<Tinterface, Tservice>()
-    where Tservice : class, Tinterface
-    where Tinterface : notnull
+  public SpeckleContainerBuilder AddTransient<TInterface, TService>()
+    where TService : class, TInterface
+    where TInterface : notnull
   {
-    ContainerBuilder.RegisterType<Tservice>().As<Tinterface>().InstancePerDependency();
+    ContainerBuilder.RegisterType<TService>().As<TInterface>().InstancePerDependency();
     return this;
   }
 
