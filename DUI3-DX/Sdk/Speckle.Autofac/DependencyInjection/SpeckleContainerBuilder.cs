@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Autofac;
 using Autofac.Core;
@@ -91,6 +88,13 @@ public class SpeckleContainerBuilder
     ContainerBuilder.RegisterInstance(instance).SingleInstance();
     return this;
   }
+  public SpeckleContainerBuilder AddSingletonInstance<TInterface, T>()
+    where T : class, TInterface 
+    where TInterface : notnull
+  {
+    ContainerBuilder.RegisterType<T>().As<TInterface>().SingleInstance().AutoActivate();
+    return this;
+  }
   public SpeckleContainerBuilder AddSingleton<TInterface, T>()
     where T : class, TInterface 
     where TInterface : notnull
@@ -105,11 +109,24 @@ public class SpeckleContainerBuilder
     ContainerBuilder.RegisterType<T>().As<TInterface>().InstancePerLifetimeScope();
     return this;
   }
-  public SpeckleContainerBuilder AddTransient<TInterface, TService>()
-    where TService : class, TInterface
+  public SpeckleContainerBuilder AddScoped<T>()
+    where T : class
+  {
+    ContainerBuilder.RegisterType<T>().AsSelf().InstancePerLifetimeScope();
+    return this;
+  }
+  public SpeckleContainerBuilder AddTransient<TInterface, T>()
+    where T : class, TInterface
     where TInterface : notnull
   {
-    ContainerBuilder.RegisterType<TService>().As<TInterface>().InstancePerDependency();
+    ContainerBuilder.RegisterType<T>().As<TInterface>().InstancePerDependency();
+    return this;
+  }
+  
+  public SpeckleContainerBuilder AddTransient<T>()
+    where T : class
+  {
+    ContainerBuilder.RegisterType<T>().AsSelf().InstancePerDependency();
     return this;
   }
 

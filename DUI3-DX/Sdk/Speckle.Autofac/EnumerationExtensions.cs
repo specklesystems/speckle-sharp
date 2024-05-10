@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Speckle.Autofac;
+﻿namespace Speckle.Autofac;
 
 public static class EnumerationExtensions
 {
