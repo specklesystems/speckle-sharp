@@ -35,11 +35,6 @@ public class ArcGISSelectionBinding : ISelectionBinding
     selectedMembers.AddRange(mapView.GetSelectedLayers());
     selectedMembers.AddRange(mapView.GetSelectedStandaloneTables());
 
-    if (selectedMembers.Count == 0)
-    {
-      throw new SpeckleException("No data to send");
-    }
-
     List<string> objectTypes = selectedMembers
       .Select(o => o.GetType().ToString().Split(".").Last())
       .Distinct()
