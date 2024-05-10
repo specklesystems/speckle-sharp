@@ -16,10 +16,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
       - name: Restore projects
-        run: dotnet restore DUI3-DX.slnf
+        run: dotnet restore --locked-mode DUI3-DX.slnf
       - name: Build
-        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
+        run: msbuild --no-restore DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
