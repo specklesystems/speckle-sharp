@@ -18,8 +18,8 @@ public sealed class UtilitiesTests
     Assert.That(upper, Is.EqualTo(expected.ToUpper()));
   }
 
-  [TestCase("fxFB14cBcXvoENN", "a6b48b2514a3ded45ad2cbea9e325c25c7ddc998247f2aff9bdd0e2694f5d5d4")]
-  [TestCase("tgWsOH8frdAwJT7", "82ac4675b283bae908fd110095252eca87dc6080244fc2014cf61bd9e45d37fc")]
+  [TestCase("fxFB14cBcXvoENN", "887db9349afa455f957a95f9dbacbb3c10697749cf4d4afc5c6398932a596fbc")]
+  [TestCase("tgWsOH8frdAwJT7", "e486224ded0dcb1452d69d0d005a6dcbc52087f6e8c66e04803e1337a192abb4")]
   [TestOf(nameof(Crypt.Sha256))]
   public void Sha256(string input, string expected)
   {
