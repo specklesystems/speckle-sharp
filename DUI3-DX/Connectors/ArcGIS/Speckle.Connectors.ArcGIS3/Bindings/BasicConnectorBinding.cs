@@ -17,10 +17,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public IBridge Parent { get; }
 
   public BasicConnectorBindingCommands Commands { get; }
-  private readonly ArcGISDocumentStore _store;
+  private readonly DocumentModelStore _store;
   private readonly ArcGISSettings _settings;
 
-  public BasicConnectorBinding(ArcGISDocumentStore store, ArcGISSettings settings, IBridge parent)
+  public BasicConnectorBinding(DocumentModelStore store, ArcGISSettings settings, IBridge parent)
   {
     _store = store;
     _settings = settings;
