@@ -7,7 +7,7 @@ using Speckle.Converters.Rhino7.ToSpeckle;
 
 namespace Speckle.Converters.Rhino7.DependencyInjection;
 
-public class AutofacRhinoConverterModule : ISpeckleModule
+public class RhinoConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {

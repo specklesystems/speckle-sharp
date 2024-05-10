@@ -1,6 +1,7 @@
 using Rhino.Commands;
 using Rhino.DocObjects;
 using Rhino.PlugIns;
+using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Bindings;
@@ -16,13 +17,15 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
-public class AutofacRhinoModule : ISpeckleModule
+public class RhinoConnectorModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
@@ -30,11 +33,11 @@ public class AutofacRhinoModule : ISpeckleModule
     builder.AddSingleton<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
     builder.AddSingleton<Command>(SpeckleConnectorsRhino7Command.Instance);
 
+    builder.AddAutofac();
+    builder.AddConverterCommon();
+    builder.AddConnectorUtils();
     builder.AddDUI();
-
-    // Register DUI3 related stuff
-    builder.AddSingleton<DUI3ControlWebView>();
-    builder.AddTransient<IBridge, BrowserBridge>(); // POC: Each binding should have it's own bridge instance
+    builder.AddDUIView();
 
     // Register other connector specific types
     builder.AddSingleton<IRhinoPlugin, RhinoPlugin>();
@@ -55,15 +58,12 @@ public class AutofacRhinoModule : ISpeckleModule
     builder.AddTransient<CancellationManager>();
 
     // register send filters
-    builder.AddTransient<ISendFilter, RhinoSelectionFilter>();
+    builder.AddScoped<ISendFilter, RhinoSelectionFilter>();
+    builder.AddScoped<IHostObjectBuilder, RhinoHostObjectBuilder>();
 
     // register send operation and dependencies
-    builder.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
     builder.AddScoped<SendOperation<RhinoObject>>();
-    builder.AddScoped<ReceiveOperation>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
-
-    builder.AddScoped<IHostObjectBuilder, RhinoHostObjectBuilder>();
 
     builder.AddSingleton<IRootObjectBuilder<RhinoObject>, RootObjectBuilder>();
   }

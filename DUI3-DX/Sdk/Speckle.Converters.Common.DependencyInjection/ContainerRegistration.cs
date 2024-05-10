@@ -20,6 +20,6 @@ public static class ContainerRegistration
       .CreateLogger();
 
     ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
-    speckleContainerBuilder.AddSingletonInstance(loggerFactory);
+    speckleContainerBuilder.AddSingleton(loggerFactory);
   }
 }
