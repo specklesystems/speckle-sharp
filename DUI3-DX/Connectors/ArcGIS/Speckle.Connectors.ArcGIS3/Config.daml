@@ -47,7 +47,7 @@
 			</groups>
 			<controls>
 				<!-- add your controls here -->
-				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="Speckle (New UI)"
+				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="SpeckleNewUI"
 						className="SpeckleDUI3OpenButton" loadOnClick="true"
 						keytip="B1"
 						smallImage="Images/s2logo_16.png"
@@ -59,7 +59,7 @@
 			</controls>
 
             <dockPanes>
-                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle (New UI)" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
+                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="SpeckleNewUI" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
                     <content className="SpeckleDUI3Wrapper" />
                 </dockPane>
             </dockPanes>
