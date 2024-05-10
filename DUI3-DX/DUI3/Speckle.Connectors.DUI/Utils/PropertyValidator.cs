@@ -1,4 +1,3 @@
-using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Utils;
