@@ -9,5 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="PolySharp" Version="1.14.1" />
+        <PackageReference Include="InterfaceGenerator" Version="1.0.14" />
     </ItemGroup>
 </Project>

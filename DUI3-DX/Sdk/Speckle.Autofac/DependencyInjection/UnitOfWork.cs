@@ -1,7 +1,14 @@
 ﻿using Autofac;
+using InterfaceGenerator;
 
 namespace Speckle.Autofac.DependencyInjection;
 
+public partial interface IUnitOfWork<TService> : IDisposable
+  where TService : class
+{
+  
+}
+[GenerateAutoInterface]
 public sealed class UnitOfWork<TService> : IUnitOfWork<TService>
   where TService : class
 {
@@ -15,7 +22,8 @@ public sealed class UnitOfWork<TService> : IUnitOfWork<TService>
   }
 
   public TService Service { get; private set; }
-
+  
+  [AutoInterfaceIgnore]
   public void Dispose() => Disposing(true);
 
   private void Disposing(bool fromDispose)

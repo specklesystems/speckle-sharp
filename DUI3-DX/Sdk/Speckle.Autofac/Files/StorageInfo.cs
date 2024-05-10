@@ -1,5 +1,8 @@
+using InterfaceGenerator;
+
 namespace Speckle.Autofac.Files;
 
+[GenerateAutoInterface]
 public class StorageInfo : IStorageInfo
 {
   public IEnumerable<string> GetFilenamesInDirectory(string path, string pattern)
