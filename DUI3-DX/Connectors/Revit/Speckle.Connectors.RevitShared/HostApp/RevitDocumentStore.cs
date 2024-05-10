@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
