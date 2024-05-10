@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Chuongmep.Revit.Api.RevitAPI" Version="2025.0.0" />
-    <PackageReference Include="Chuongmep.Revit.Api.RevitAPIUI" Version="2025.0.0" />
+    <PackageReference Include="Speckle.Revit.API" Version="2025.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
