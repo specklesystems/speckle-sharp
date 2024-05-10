@@ -5,7 +5,7 @@ name: .NET
 
 on:
   pull_request:
-    branches: ["dui3/alpha"]
+    branches: ["dui3/alpha". "dui3/ci/github-actions-test"]
 
 jobs:
   build:
