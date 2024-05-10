@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Core.Logging;

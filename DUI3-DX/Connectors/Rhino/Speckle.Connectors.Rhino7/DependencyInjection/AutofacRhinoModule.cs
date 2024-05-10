@@ -1,4 +1,3 @@
-using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Rhino.Commands;

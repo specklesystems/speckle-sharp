@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Speckle.Connectors.DUI.Models.Card;
+﻿namespace Speckle.Connectors.DUI.Models.Card;
 
 public class ModelCardError
 {

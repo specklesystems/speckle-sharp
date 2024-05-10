@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 public interface ISendFilter

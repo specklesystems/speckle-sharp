@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Speckle.Core.Models;
+﻿using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Utils.Operations;
 

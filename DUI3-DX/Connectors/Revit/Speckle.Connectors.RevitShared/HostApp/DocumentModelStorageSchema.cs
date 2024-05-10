@@ -1,5 +1,4 @@
-﻿using System;
-using Autodesk.Revit.DB.ExtensibleStorage;
+﻿using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace Speckle.Connectors.Revit.HostApp;
 
