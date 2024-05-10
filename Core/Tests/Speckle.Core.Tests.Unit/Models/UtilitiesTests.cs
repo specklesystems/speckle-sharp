@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Speckle.Core.Helpers;
 
 namespace Speckle.Core.Tests.Unit.Models;

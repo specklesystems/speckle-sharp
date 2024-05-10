@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Cancellation;
@@ -8,8 +5,6 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
-using System.Threading.Tasks;
-using System.Threading;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;

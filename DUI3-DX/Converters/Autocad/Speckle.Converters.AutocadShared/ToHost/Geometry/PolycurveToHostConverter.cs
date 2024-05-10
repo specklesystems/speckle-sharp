@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;

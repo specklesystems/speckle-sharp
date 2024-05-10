@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Speckle.Converters.Common;
+﻿namespace Speckle.Converters.Common;
 
 public class ContextWrapper<TDocument, THostUnit> : IDisposable
   where TDocument : class

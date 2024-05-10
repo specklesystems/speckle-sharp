@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Rhino.DocObjects;
+﻿using Rhino.DocObjects;
 using Rhino.Geometry;
 
 namespace Speckle.Connectors.Rhino7.Extensions;

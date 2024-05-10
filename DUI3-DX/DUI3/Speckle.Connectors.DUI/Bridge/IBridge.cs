@@ -1,4 +1,3 @@
-using System;
 using Speckle.Connectors.DUI.Bindings;
 
 namespace Speckle.Connectors.DUI.Bridge;
