@@ -84,7 +84,6 @@ public class HostObjectBuilder : IHostObjectBuilder
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
     string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
     return reverseOrderPath.Reverse().ToArray();
-    ;
   }
 
   public IEnumerable<string> Build(
