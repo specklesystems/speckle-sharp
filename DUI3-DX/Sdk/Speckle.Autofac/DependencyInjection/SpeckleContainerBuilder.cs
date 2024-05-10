@@ -120,7 +120,8 @@ public class SpeckleContainerBuilder
   }
 
   public SpeckleContainerBuilder AddSingleton<TInterface, T>(string param, string value)
-    where T : class
+    where T : class, TInterface
+    where TInterface : notnull
   {
     ContainerBuilder.RegisterType<T>().As<TInterface>().SingleInstance().WithParameter(param, value);
     return this;
