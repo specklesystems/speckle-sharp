@@ -45,9 +45,9 @@ internal class RevitPlugin : IRevitPlugin
 
   public void Initialise()
   {
-    // Create and register panels before app initialized. this was needed for double-click file open
+    // Create and register panels before app initialized. this is needed for double-click file open
     CreateTabAndRibbonPanel(_uIControlledApplication);
-    RegisterPanelAndInitializePlugin();
+    RegisterDockablePane();
     _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
   }
 
@@ -112,7 +112,7 @@ internal class RevitPlugin : IRevitPlugin
   }
 
   /// <summary>
-  /// Actions to run after UiApplication initialized. This was needed for double-click file open issue.
+  /// Actions to run after UiApplication initialized. This is needed for double-click file open issue.
   /// </summary>
   private void PostApplicationInit()
   {
@@ -166,10 +166,12 @@ internal class RevitPlugin : IRevitPlugin
     };
   }
 
-  private void RegisterPanelAndInitializePlugin()
+  private void RegisterDockablePane()
   {
     CefSharpSettings.ConcurrentTaskExecution = true;
 
+    // Registering dockable pane should happen before UiApplication is initialized with RevitTask.
+    // Otherwise pane cannot be registered for double-click file open.
     _uIControlledApplication.RegisterDockablePane(
       RevitExternalApplication.DoackablePanelId,
       _revitSettings.RevitPanelName,
