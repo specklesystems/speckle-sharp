@@ -26,6 +26,7 @@ using Speckle.Connectors.ArcGIS.Filters;
 // This should go whenever it is aligned.
 using IRootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.IRootObjectSender;
 using RootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.RootObjectSender;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -73,6 +74,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
+    builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
 
     //POC: how tf does this work?
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();

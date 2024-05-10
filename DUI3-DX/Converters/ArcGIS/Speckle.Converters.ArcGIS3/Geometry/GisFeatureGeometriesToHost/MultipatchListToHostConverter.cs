@@ -3,11 +3,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class MultipatchToHostConverter : IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch>
+public class MultipatchListToHostConverter : IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch>
 {
   private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public MultipatchToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public MultipatchListToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }
