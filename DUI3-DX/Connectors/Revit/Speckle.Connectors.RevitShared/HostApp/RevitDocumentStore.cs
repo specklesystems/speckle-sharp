@@ -55,7 +55,6 @@ internal class RevitDocumentStore : DocumentModelStore
   /// </summary>
   private void OnViewActivated(object sender, ViewActivatedEventArgs e)
   {
-    TaskDialog.Show("a", "a");
     if (e.Document == null)
     {
       return;
