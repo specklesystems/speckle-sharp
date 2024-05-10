@@ -76,4 +76,4 @@ Target(
 
 Target("default", DependsOn(BUILD), () => Console.WriteLine("Done!"));
 
-await RunTargetsAndExitAsync(args);
+await RunTargetsAndExitAsync(args).ConfigureAwait(true);

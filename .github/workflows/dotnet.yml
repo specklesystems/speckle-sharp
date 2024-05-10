@@ -23,10 +23,10 @@ jobs:
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-      - name: Restore projects
-        run: dotnet restore --locked-mode DUI3-DX.slnf
+      - name: Restore
+        run: dotnet run --project Build/Build.csproj -- restore
       - name: Build
-        run: msbuild DUI3-DX.slnf /p:RestorePackages=false /p:Configuration=Release /p:IsDesktopBuild=false -v:m
+        run: dotnet run --project Build/Build.csproj -- build
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
