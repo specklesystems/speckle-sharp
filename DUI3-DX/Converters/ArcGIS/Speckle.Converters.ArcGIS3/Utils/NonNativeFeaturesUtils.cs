@@ -39,11 +39,11 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
   )
   {
     List<(string, string)> result = new();
-    try
+    // 1. Sort features into groups by path and geom type
+    Dictionary<string, (List<ACG.Geometry>, string?)> geometryGroups = new();
+    foreach (var item in convertedObjs)
     {
-      // 1. Sort features into groups by path and geom type
-      Dictionary<string, (List<ACG.Geometry>, string?)> geometryGroups = new();
-      foreach (var item in convertedObjs)
+      try
       {
         string objId = item.Key;
         (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
@@ -53,11 +53,20 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
         {
           geometryGroups[parentPath] = (new List<ACG.Geometry>(), parentId);
         }
+
         geometryGroups[parentPath].Item1.Add(geom);
       }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // POC: report, etc.
+        Debug.WriteLine("conversion error happened.");
+      }
+    }
 
-      // 2. for each group create a Dataset and add geometries there as Features
-      foreach (var item in geometryGroups)
+    // 2. for each group create a Dataset and add geometries there as Features
+    foreach (var item in geometryGroups)
+    {
+      try
       {
         string parentPath = item.Key;
         (List<ACG.Geometry> geomList, string? parentId) = item.Value;
@@ -72,11 +81,11 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           // do nothing if conversion of some geometry groups fails
         }
       }
-    }
-    catch (Exception e) when (!e.IsFatal())
-    {
-      // POC: report, etc.
-      Debug.WriteLine("conversion error happened.");
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // POC: report, etc.
+        Debug.WriteLine("conversion error happened.");
+      }
     }
     return result;
   }
