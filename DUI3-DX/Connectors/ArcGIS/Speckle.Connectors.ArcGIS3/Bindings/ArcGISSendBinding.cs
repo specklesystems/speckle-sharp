@@ -132,7 +132,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void Dispose()

@@ -75,7 +75,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   // POC: JEDD: We should not update the UI until a OperationCancelledException is caught, we don't want to show the UI as cancelled

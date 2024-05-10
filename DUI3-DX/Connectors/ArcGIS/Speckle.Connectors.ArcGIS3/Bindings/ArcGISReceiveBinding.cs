@@ -73,7 +73,7 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
