@@ -38,7 +38,6 @@ public class RevitConnectorShared : ISpeckleModule
 
     builder.AddSingleton(panel);
     builder.AddSingleton<IRevitPlugin, RevitPlugin>();
-    builder.AddTransient<IBridge, BrowserBridge>();
 
     // register
     builder.AddSingleton<DocumentModelStore, RevitDocumentStore>();

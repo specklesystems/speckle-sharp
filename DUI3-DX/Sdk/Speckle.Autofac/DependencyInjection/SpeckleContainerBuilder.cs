@@ -4,6 +4,7 @@ using Autofac.Core;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
+using Module = Autofac.Module;
 
 namespace Speckle.Autofac.DependencyInjection;
 
@@ -13,13 +14,16 @@ public class SpeckleContainerBuilder
 {
   private readonly IStorageInfo _storageInfo;
 
-  private SpeckleContainerBuilder(IStorageInfo storageInfo)
+  private SpeckleContainerBuilder(IStorageInfo storageInfo, ContainerBuilder? containerBuilder)
   {
     _storageInfo = storageInfo;
-    ContainerBuilder = new ContainerBuilder();
+    ContainerBuilder = containerBuilder ?? new ContainerBuilder();
   }
 
-  public static SpeckleContainerBuilder CreateInstance() => new(new StorageInfo());
+  public static SpeckleContainerBuilder CreateInstance() => new(new StorageInfo(), null);
+
+  private static SpeckleContainerBuilder CreateInstanceForLoading(ContainerBuilder containerBuilder) =>
+    new(new StorageInfo(), containerBuilder);
 
   // POC: HOW TO GET TYPES loaded, this feels a bit heavy handed and relies on Autofac where we can probably do something different
   public SpeckleContainerBuilder LoadAutofacModules(IEnumerable<string> dependencyPaths)
@@ -75,9 +79,21 @@ public class SpeckleContainerBuilder
   public IReadOnlyList<Type> SpeckleTypes => _types.Value;
   public ContainerBuilder ContainerBuilder { get; }
 
-  public SpeckleContainerBuilder AddModule(IModule module)
+  private class ModuleAdapter : Module
   {
-    ContainerBuilder.RegisterModule(module);
+    private readonly ISpeckleModule _speckleModule;
+
+    public ModuleAdapter(ISpeckleModule speckleModule)
+    {
+      _speckleModule = speckleModule;
+    }
+
+    protected override void Load(ContainerBuilder builder) => _speckleModule.Load(CreateInstanceForLoading(builder));
+  }
+
+  public SpeckleContainerBuilder AddModule(ISpeckleModule module)
+  {
+    ContainerBuilder.RegisterModule(new ModuleAdapter(module));
 
     return this;
   }

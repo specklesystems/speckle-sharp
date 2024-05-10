@@ -52,8 +52,8 @@ internal class RevitExternalApplication : IExternalApplication
       // init DI
       _container = containerBuilder
         .LoadAutofacModules(_revitSettings.ModuleFolders)
-        .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
-        .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
+        .AddSingleton(_revitSettings) // apply revit settings into DI
+        .AddSingleton(application) // inject UIControlledApplication application
         .Build();
 
       // resolve root object

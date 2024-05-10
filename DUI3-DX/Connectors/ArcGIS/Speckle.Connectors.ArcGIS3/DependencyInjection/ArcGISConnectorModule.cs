@@ -21,7 +21,7 @@ using Speckle.Converters.Common.DependencyInjection;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
-public class ArcGISModule : ISpeckleModule
+public class ArcGISConnectorModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
@@ -30,7 +30,7 @@ public class ArcGISModule : ISpeckleModule
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();
-    
+
     builder.AddSingleton<ArcGISDocumentStore>();
 
     // Register bindings
@@ -43,9 +43,7 @@ public class ArcGISModule : ISpeckleModule
     builder.AddSingleton<IBinding, ArcGISSendBinding>();
     builder.AddSingleton<IBinding, ArcGISReceiveBinding>();
 
-    builder
-      .AddScoped<IHostToSpeckleUnitConverter<Unit>, ArcGISToSpeckleUnitConverter>();
-
+    builder.AddScoped<IHostToSpeckleUnitConverter<Unit>, ArcGISToSpeckleUnitConverter>();
 
     builder.AddTransient<ISendFilter, ArcGISSelectionFilter>();
     builder.AddScoped<IHostObjectBuilder, HostObjectBuilder>();

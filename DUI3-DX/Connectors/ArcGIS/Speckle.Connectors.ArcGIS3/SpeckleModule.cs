@@ -34,7 +34,7 @@ internal class SpeckleModule : Module
     // Register Settings
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
-    Container = builder.LoadAutofacModules(arcgisSettings.Modules).AddSingletonInstance(arcgisSettings).Build();
+    Container = builder.LoadAutofacModules(arcgisSettings.Modules).AddSingleton(arcgisSettings).Build();
   }
 
   /// <summary>

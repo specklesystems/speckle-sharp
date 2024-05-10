@@ -56,9 +56,9 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       // POC: We must load the Rhino connector module manually because we only search for DLL files when calling `LoadAutofacModules`,
       // but the Rhino connector has `.rhp` as it's extension.
       Container = builder
-        .AddModule(new AutofacRhinoModule())
+        .AddModule(new RhinoConnectorModule())
         .LoadAutofacModules(rhinoSettings.Modules)
-        .AddSingletonInstance(rhinoSettings)
+        .AddSingleton(rhinoSettings)
         .Build();
 
       // Resolve root plugin object and initialise.
