@@ -47,7 +47,9 @@ internal class RevitDocumentStore : DocumentModelStore
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
     uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
 
-    ReadFromFile(); // Smells... there is no event that we can hook here for double-click file open... This line push ReadFromFile immediately.
+    // There is no event that we can hook here for double-click file open...
+    // It is kind of harmless since we create this object as "SingleInstance".
+    ReadFromFile();
   }
 
   /// <summary>
