@@ -103,46 +103,45 @@ public class HostObjectBuilder : IHostObjectBuilder
     _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
-    IEnumerable<(string[], Base, string?)> objectsToConvert = _traverseFunction
+    var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current, ctx.Parent?.Current.id));
+      .Where(ctx => ctx.Parent?.Current is not VectorLayer && ctx.Parent?.Current is not Objects.GIS.RasterLayer)
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current, ctx.Parent?.Current.id))
+      .ToList();
 
-#pragma warning disable CA1851 // need to enumerate objects 2 times: to find GIS objects, and to count
-    IEnumerable<(string[], Base)> gisObjectsWithPath = objectsToConvert
-      .Select(x => (x.Item1, x.Item2))
-      .Where(x => x.Item2 is VectorLayer || x.Item2 is Objects.GIS.RasterLayer);
-    int allCount = gisObjectsWithPath.Count();
-
-    // get convertible objects only if the commit was non-gis (otherwise it will duplicate GIS features under VectorLayer)
-    IEnumerable<(string[], Base, string?)> nonGisObjectsWithPath = Enumerable.Empty<(string[], Base, string?)>();
-    if (allCount == 0)
-    {
-      nonGisObjectsWithPath = objectsToConvert;
-#pragma warning disable CA1851 // need to enumerate objects 2 times: to find GIS objects, and to count
-      allCount = nonGisObjectsWithPath.Count();
-    }
-
-    List<string> objectIds = new();
+    int allCount = objectsToConvert.Count;
     int count = 0;
-
     Dictionary<string, (string, Geometry, string?)> convertedGeometries = new();
+    List<string> objectIds = new();
     List<(string, string)> convertedGISObjects = new();
 
-    // 1.1. convert non-gis objects in a loop
-    foreach ((string[] path, Base obj, string? parentId) in nonGisObjectsWithPath)
+    // 1. convert everything
+    foreach (var item in objectsToConvert)
     {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cancellationToken);
-      }
+      (string[] path, Base obj, string? parentId) = item;
+      cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        // POC: QueuedTask
-        QueuedTask.Run(() =>
+        if (obj is VectorLayer or Objects.GIS.RasterLayer)
         {
-          convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
-        });
-        onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+          // POC: QueuedTask
+          var task = QueuedTask.Run(() =>
+          {
+            convertedGISObjects.Add(ConvertNativeLayers(obj, path, objectIds));
+          });
+          task.Wait(cancellationToken);
+
+          onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+        }
+        else
+        {
+          // POC: QueuedTask
+          QueuedTask.Run(() =>
+          {
+            convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
+          });
+          onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+        }
       }
       catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
@@ -150,7 +149,8 @@ public class HostObjectBuilder : IHostObjectBuilder
         Debug.WriteLine("conversion error happened.");
       }
     }
-    // 1.2. convert Database entries with non-GIS geometry datasets
+
+    // 2. convert Database entries with non-GIS geometry datasets
     try
     {
       onOperationProgressed?.Invoke("Writing to Database", null);
@@ -162,33 +162,8 @@ public class HostObjectBuilder : IHostObjectBuilder
       Debug.WriteLine("conversion error happened.");
     }
 
-    // 2. convert gis-objects in a loop
-    foreach ((string[] path, Base obj) in gisObjectsWithPath)
-    {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cancellationToken);
-      }
-      try
-      {
-        // POC: QueuedTask
-        var task = QueuedTask.Run(() =>
-        {
-          convertedGISObjects.Add(ConvertNativeLayers(obj, path, objectIds));
-        });
-        task.Wait(cancellationToken);
-
-        onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
-      }
-      catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
-      {
-        // POC: report, etc.
-        Debug.WriteLine("conversion error happened.");
-      }
-    }
-
     int bakeCount = 0;
-    onOperationProgressed?.Invoke("Adding to Map", 0);
+    onOperationProgressed?.Invoke("Adding to Map", bakeCount);
     // 3. add layer and tables to the Table Of Content
     foreach ((string, string) databaseObj in convertedGISObjects)
     {
