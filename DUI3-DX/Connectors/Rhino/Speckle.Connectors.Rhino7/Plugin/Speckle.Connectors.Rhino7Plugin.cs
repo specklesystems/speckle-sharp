@@ -5,7 +5,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;

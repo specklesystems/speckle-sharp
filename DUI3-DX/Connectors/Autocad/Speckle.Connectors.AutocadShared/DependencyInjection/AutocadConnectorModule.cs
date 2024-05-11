@@ -18,7 +18,6 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;

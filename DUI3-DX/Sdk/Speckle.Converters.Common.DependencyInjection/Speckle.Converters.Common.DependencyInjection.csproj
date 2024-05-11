@@ -7,7 +7,6 @@
   
     <ItemGroup>
       <PackageReference Include="Autofac" Version="5.2.0" PrivateAssets="All"/>
-      <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     </ItemGroup>
   
     <ItemGroup>

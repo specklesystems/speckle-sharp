@@ -4,7 +4,6 @@ using Autodesk.AutoCAD.Windows;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Core.Kits;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.DUI.WebView;
 
