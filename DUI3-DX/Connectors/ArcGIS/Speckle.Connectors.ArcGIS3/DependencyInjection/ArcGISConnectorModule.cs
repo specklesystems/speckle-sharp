@@ -11,6 +11,7 @@ using Speckle.Autofac;
 using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.Utils;
+using Speckle.Core.Models.GraphTraversal;
 
 // POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
 // This should go whenever it is aligned.
@@ -40,6 +41,7 @@ public class ArcGISConnectorModule : ISpeckleModule
 
     builder.AddTransient<ISendFilter, ArcGISSelectionFilter>();
     builder.AddScoped<IHostObjectBuilder, HostObjectBuilder>();
+    builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // register send operation and dependencies
     builder.AddScoped<SendOperation>();
