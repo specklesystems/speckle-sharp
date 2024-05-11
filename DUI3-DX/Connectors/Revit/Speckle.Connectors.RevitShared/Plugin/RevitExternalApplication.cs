@@ -46,8 +46,6 @@ internal class RevitExternalApplication : IExternalApplication
       // POC: not sure what this is doing...  could be messing up our Aliasing????
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
       var containerBuilder = SpeckleContainerBuilder.CreateInstance();
-      // POC: need to settle on the mechanism and location as to where we should register these services
-      containerBuilder.AddConverterCommon();
 
       // init DI
       _container = containerBuilder

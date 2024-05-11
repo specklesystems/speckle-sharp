@@ -34,7 +34,6 @@ public class AutocadCommand
     };
 
     var builder = SpeckleContainerBuilder.CreateInstance();
-    builder.AddConverterCommon();
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 

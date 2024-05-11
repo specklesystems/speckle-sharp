@@ -48,7 +48,6 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
       var builder = SpeckleContainerBuilder.CreateInstance();
-      builder.AddConverterCommon();
 
       // Register Settings
       var rhinoSettings = new RhinoSettings(HostApplications.Rhino, HostAppVersion.v7);
