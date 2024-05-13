@@ -1,4 +1,3 @@
-using System;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;

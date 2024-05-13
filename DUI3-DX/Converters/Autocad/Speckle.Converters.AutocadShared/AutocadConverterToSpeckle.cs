@@ -1,4 +1,3 @@
-using System;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;

@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
-using System.Threading;
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
-using System.Linq;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;

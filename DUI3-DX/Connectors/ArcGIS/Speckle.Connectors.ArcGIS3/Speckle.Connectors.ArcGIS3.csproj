@@ -7,7 +7,6 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RootNameSpace>Speckle.Connectors.ArcGIS</RootNameSpace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   

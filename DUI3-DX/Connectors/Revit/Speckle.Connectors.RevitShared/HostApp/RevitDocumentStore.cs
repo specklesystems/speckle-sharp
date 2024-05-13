@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
@@ -45,6 +43,11 @@ internal class RevitDocumentStore : DocumentModelStore
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
     uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+
+    // There is no event that we can hook here for double-click file open...
+    // It is kind of harmless since we create this object as "SingleInstance".
+    ReadFromFile();
+    OnDocumentChanged();
   }
 
   /// <summary>

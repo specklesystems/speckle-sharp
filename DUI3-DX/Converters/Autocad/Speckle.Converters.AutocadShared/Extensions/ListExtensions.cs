@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Speckle.Converters.Autocad.Extensions;
 
 public static class ListExtensions

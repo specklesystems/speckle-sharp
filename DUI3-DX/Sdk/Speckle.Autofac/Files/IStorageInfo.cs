@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Speckle.Autofac.Files;
 
 public interface IStorageInfo

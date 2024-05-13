@@ -1,4 +1,3 @@
-using System.Linq;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Core.Credentials;
 

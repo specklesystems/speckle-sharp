@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Objects;
+﻿using Objects;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -16,15 +13,12 @@ public sealed class DisplayableObject : Base, IDisplayValue<IReadOnlyList<Base>>
 {
   public DisplayableObject(IReadOnlyList<Base> displayValue)
   {
-    var invalidGeometries = displayValue
-      .Where(b => b is not (Line or Polyline or Mesh))
-      .Select(b => b.GetType())
-      .Distinct();
+    var invalidGeometry = displayValue.FirstOrDefault(b => b is not (Line or Polyline or Mesh or Arc or Point));
 
-    if (invalidGeometries.Any())
+    if (invalidGeometry != null)
     {
       throw new ArgumentException(
-        $"Displayable objects should only contain simple geometries (lines, polylines, meshes) but contained {invalidGeometries}"
+        $"Displayable objects should only contain simple geometries (lines, polylines, meshes) but contained {invalidGeometry}"
       );
     }
 

@@ -1,4 +1,3 @@
-using System;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -42,6 +41,25 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConver
 
     AG.Vector3d majorAxis = f * (double)target.firstRadius * xAxis.GetNormal();
     double radiusRatio = (double)target.secondRadius / (double)target.firstRadius;
-    return new(origin, normal, majorAxis, radiusRatio, 0, 2 * Math.PI);
+
+    // get trim
+    double startAngle = 0;
+    double endAngle = Math.PI * 2;
+    if (
+      target.domain.start is double domainStart
+      && target.domain.end is double domainEnd
+      && target.trimDomain is SOP.Interval trim
+      && trim.start is double start
+      && trim.end is double end
+    )
+    {
+      // normalize the start and end trim values to [0,2pi]
+      startAngle = (start - domainStart) / (domainEnd - domainStart) * Math.PI * 2;
+      endAngle = (end - domainStart) / (domainEnd - domainStart) * Math.PI * 2;
+    }
+
+    ADB.Ellipse ellipse = new(origin, normal, majorAxis, radiusRatio, startAngle, endAngle);
+
+    return ellipse;
   }
 }

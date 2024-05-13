@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Speckle.Converters.Common;
+﻿namespace Speckle.Converters.Common;
 
 // POC: maybe better to put in utils/reflection
 [AttributeUsage(AttributeTargets.Class)]

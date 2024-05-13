@@ -4,7 +4,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
-[NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+//TODO: Ellipses don't convert correctly, see Autocad test stream
+//[NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Arc, ACG.Polyline>
 {
   private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;

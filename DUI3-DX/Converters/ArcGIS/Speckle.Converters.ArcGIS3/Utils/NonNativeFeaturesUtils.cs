@@ -34,54 +34,63 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     _contextStack = contextStack;
   }
 
-  public List<Tuple<string, string>> WriteGeometriesToDatasets(
-    Dictionary<string, Tuple<List<string>, ACG.Geometry>> target
+  public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
+    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId)> convertedObjs
   )
   {
-    List<Tuple<string, string>> result = new();
-    try
+    List<(string, string)> result = new();
+    // 1. Sort features into groups by path and geom type
+    Dictionary<string, (List<ACG.Geometry> geometries, string? parentId)> geometryGroups = new();
+    foreach (var item in convertedObjs)
     {
-      // 1. Sort features into groups by path and geom type
-      Dictionary<string, List<ACG.Geometry>> geometryGroups = new();
-      foreach (var item in target)
+      try
       {
         string objId = item.Key;
-        (List<string> objPath, ACG.Geometry geom) = item.Value;
-        string geomType = objPath[^1];
-        string parentPath = $"{string.Join("\\", objPath.Where((x, i) => i < objPath.Count - 1))}\\{geomType}";
+        (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
 
         // add dictionnary item if doesn't exist yet
         if (!geometryGroups.ContainsKey(parentPath))
         {
-          geometryGroups[parentPath] = new List<ACG.Geometry>();
+          geometryGroups[parentPath] = (new List<ACG.Geometry>(), parentId);
         }
-        geometryGroups[parentPath].Add(geom);
-      }
 
-      // 2. for each group create a Dataset and add geometries there as Features
-      foreach ((string parentPath, List<ACG.Geometry> geomList) in geometryGroups)
+        geometryGroups[parentPath].geometries.Add(geom);
+      }
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        ACG.GeometryType geomType = _featureClassUtils.GetGeometryTypeFromString(parentPath.Split("\\")[^1]);
+        // POC: report, etc.
+        Debug.WriteLine($"conversion error happened. {ex.Message}");
+      }
+    }
+
+    // 2. for each group create a Dataset and add geometries there as Features
+    foreach (var item in geometryGroups)
+    {
+      try
+      {
+        string parentPath = item.Key;
+        (List<ACG.Geometry> geomList, string? parentId) = item.Value;
+        ACG.GeometryType geomType = geomList[0].GeometryType;
         try
         {
-          string converted = CreateDatasetInDatabase(geomType, geomList);
-          result.Add(Tuple.Create(parentPath, converted));
+          string converted = CreateDatasetInDatabase(geomType, geomList, parentId);
+          result.Add((parentPath, converted));
         }
         catch (GeodatabaseGeometryException)
         {
           // do nothing if conversion of some geometry groups fails
         }
       }
-    }
-    catch (Exception e) when (!e.IsFatal())
-    {
-      // POC: report, etc.
-      Debug.WriteLine("conversion error happened.");
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // POC: report, etc.
+        Debug.WriteLine("conversion error happened.");
+      }
     }
     return result;
   }
 
-  private string CreateDatasetInDatabase(ACG.GeometryType geomType, List<ACG.Geometry> geomList)
+  private string CreateDatasetInDatabase(ACG.GeometryType geomType, List<ACG.Geometry> geomList, string? parentId)
   {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
@@ -95,7 +104,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // TODO: generate meaningful name
-    string featureClassName = "hash_" + Utilities.HashString(string.Join("\\", geomList.Select(x => x.GetHashCode())));
+    string featureClassName = $"speckleID_{geomType}_{parentId}";
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())

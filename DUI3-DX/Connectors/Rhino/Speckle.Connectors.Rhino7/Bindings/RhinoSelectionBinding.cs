@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Rhino;
 using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Bindings;
