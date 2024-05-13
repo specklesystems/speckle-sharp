@@ -80,8 +80,8 @@ Target(
 Target(
   PACK,
   Consts.Projects,
- x  =>
- {
+  x =>
+  {
     var fullPath = Path.Combine(Consts.Root, x.Item1, "bin", "Release", x.Item2);
     var outputPath = Path.Combine(Consts.Root, "output", $"{new DirectoryInfo(x.Item1).Name}.zip");
     ZipFile.CreateFromDirectory(fullPath, outputPath);
