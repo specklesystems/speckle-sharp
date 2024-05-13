@@ -21,6 +21,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using ArcGIS.Core.Geometry;
 using Speckle.Connectors.ArcGIS.Filters;
+using Speckle.Connectors.DUI.Models;
 
 // POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
 // This should go whenever it is aligned.
@@ -41,7 +42,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
     builder.RegisterType<DUI3ControlWebView>().SingleInstance();
-    builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
+    builder.RegisterType<ArcGISDocumentStore>().As<DocumentModelStore>().SingleInstance();
 
     // Register bindings
     builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();

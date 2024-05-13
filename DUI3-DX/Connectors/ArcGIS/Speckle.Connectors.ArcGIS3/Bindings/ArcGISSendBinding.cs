@@ -6,7 +6,7 @@ using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using Speckle.Connectors.ArcGIS.Utils;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Settings;
@@ -20,7 +20,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public SendBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
-  private readonly ArcGISDocumentStore _store;
+  private readonly DocumentModelStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
@@ -31,7 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   public ArcGISSendBinding(
-    ArcGISDocumentStore store,
+    DocumentModelStore store,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,

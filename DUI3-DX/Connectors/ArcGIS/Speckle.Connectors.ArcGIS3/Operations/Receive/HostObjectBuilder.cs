@@ -37,7 +37,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public (string, Geometry, string?) ConvertNonNativeGeometries(
+  public (string path, Geometry converted, string? parentId) ConvertNonNativeGeometries(
     Base obj,
     string[] path,
     string? parentId,
@@ -86,6 +86,19 @@ public class HostObjectBuilder : IHostObjectBuilder
     return reverseOrderPath.Reverse().ToArray();
   }
 
+  private bool HasGISParent(TraversalContext context)
+  {
+    List<VectorLayer> vectorLayers = context
+      .GetAscendantOfType<VectorLayer>()
+      .Where(obj => obj != context.Current)
+      .ToList();
+    List<Objects.GIS.RasterLayer> rasterLayers = context
+      .GetAscendantOfType<Objects.GIS.RasterLayer>()
+      .Where(obj => obj != context.Current)
+      .ToList();
+    return vectorLayers.Count + rasterLayers.Count > 0;
+  }
+
   public IEnumerable<string> Build(
     Base rootObject,
     string projectName,
@@ -105,13 +118,13 @@ public class HostObjectBuilder : IHostObjectBuilder
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
-      .Where(ctx => ctx.Parent?.Current is not VectorLayer && ctx.Parent?.Current is not Objects.GIS.RasterLayer)
+      .Where(ctx => HasGISParent(ctx) is false)
       .Select(ctx => (GetLayerPath(ctx), ctx.Current, ctx.Parent?.Current.id))
       .ToList();
 
     int allCount = objectsToConvert.Count;
     int count = 0;
-    Dictionary<string, (string, Geometry, string?)> convertedGeometries = new();
+    Dictionary<string, (string path, Geometry converted, string? parentId)> convertedGeometries = new();
     List<string> objectIds = new();
     List<(string, string)> convertedGISObjects = new();
 
