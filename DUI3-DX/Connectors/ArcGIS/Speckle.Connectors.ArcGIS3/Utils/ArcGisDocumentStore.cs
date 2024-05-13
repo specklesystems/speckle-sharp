@@ -1,3 +1,4 @@
+using ArcGIS.Desktop.Mapping.Events;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Newtonsoft.Json;
 
@@ -9,6 +10,12 @@ public class ArcGISDocumentStore : DocumentModelStore
     : base(serializerOption)
   {
     // POC: Subscribe here document related events like OnSave, OnClose, OnOpen etc...
+    ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
+  }
+
+  private void OnMapViewChanged(ActiveMapViewChangedEventArgs args)
+  {
+    OnDocumentChanged();
   }
 
   public override void WriteToFile()
