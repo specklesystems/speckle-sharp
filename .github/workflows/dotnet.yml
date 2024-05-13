@@ -34,7 +34,10 @@ jobs:
       - name: Build
         run: dotnet run --project Build/Build.csproj -- build
 
+      - name: Pack
+        run: dotnet run --project Build/Build.csproj -- pack
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: dist/**/*.*
+          path: output/*.*

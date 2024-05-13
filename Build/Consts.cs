@@ -3,8 +3,10 @@
 public static class Consts
 {
   public static readonly string[] Solutions = { "DUI3-DX.slnf" };
-  public static readonly string[] Projects =
+  public static readonly (string, string)[] Projects =
   {
-    "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj"
+    ("DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023", "net48")
   };
+
+  public static readonly string Root = "C:\\Users\\adam\\Git\\speckle-sharp";
 }

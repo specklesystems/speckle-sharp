@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
@@ -79,13 +80,14 @@ Target(
 Target(
   PACK,
   Consts.Projects,
-  p =>
-  {
-    //Run("dotnet", $"build {p} -c Release --no-restore");
-    Run("dotnet", $"pack {p} -c Release --no-restore --no-build -o ./output");
+ x  =>
+ {
+    var fullPath = Path.Combine(Consts.Root, x.Item1, "bin", "Release", x.Item2);
+    var outputPath = Path.Combine(Consts.Root, "output", $"{new DirectoryInfo(x.Item1).Name}.zip");
+    ZipFile.CreateFromDirectory(fullPath, outputPath);
   }
 );
 
-Target("default", DependsOn(BUILD), () => Console.WriteLine("Done!"));
+Target("default", DependsOn(PACK), () => Console.WriteLine("Done!"));
 
 await RunTargetsAndExitAsync(args).ConfigureAwait(true);
