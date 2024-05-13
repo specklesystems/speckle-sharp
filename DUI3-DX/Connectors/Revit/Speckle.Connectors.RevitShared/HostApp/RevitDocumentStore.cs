@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Converters.RevitShared.Helpers;
@@ -25,24 +26,23 @@ internal class RevitDocumentStore : DocumentModelStore
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
-    IdStorageSchema idStorageSchema
+    IdStorageSchema idStorageSchema,
+    bool writeToFileOnChange
   )
-    : base(serializerSettings)
+    : base(serializerSettings, writeToFileOnChange)
   {
     _revitContext = revitContext;
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
 
     UIApplication uiApplication = _revitContext.UIApplication;
-    uiApplication.ApplicationClosing += (_, _) => WriteToFile(); // POC: Not sure why we would need it since we have save and clos events
-    uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile(); // POC: Not sure why we have it
 
     uiApplication.ViewActivated += OnViewActivated;
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
     uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+
+    Models.CollectionChanged += (_, _) => WriteToFile();
 
     // There is no event that we can hook here for double-click file open...
     // It is kind of harmless since we create this object as "SingleInstance".
@@ -66,11 +66,6 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    if (e.PreviousActiveView?.Document != null)
-    {
-      WriteToFileWithDoc(e.PreviousActiveView.Document);
-    }
-
     IsDocumentInit = true;
     ReadFromFile();
     OnDocumentChanged();
@@ -84,22 +79,23 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    string serializedModels = Serialize();
+    RevitTask.RunAsync(() =>
+    {
+      using Transaction t = new(doc, "Speckle Write State");
+      t.Start();
+      using DataStorage ds = GetSettingsDataStorage(doc) ?? DataStorage.Create(doc);
 
-    using Transaction t = new(doc, "Speckle Write State");
-    t.Start();
-    using DataStorage ds = GetSettingsDataStorage(doc) ?? DataStorage.Create(doc);
+      using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
+      string serializedModels = Serialize();
+      stateEntity.Set("contents", serializedModels);
 
-    using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
-    // string serializedModels = Serialize();
-    stateEntity.Set("contents", serializedModels);
+      using Entity idEntity = new(_idStorageSchema.GetSchema());
+      idEntity.Set("Id", s_revitDocumentStoreId);
 
-    using Entity idEntity = new(_idStorageSchema.GetSchema());
-    idEntity.Set("Id", s_revitDocumentStoreId);
-
-    ds.SetEntity(idEntity);
-    ds.SetEntity(stateEntity);
-    t.Commit();
+      ds.SetEntity(idEntity);
+      ds.SetEntity(stateEntity);
+      t.Commit();
+    });
   }
 
   public override void WriteToFile() => WriteToFileWithDoc(_revitContext.UIApplication.ActiveUIDocument.Document);
@@ -111,7 +107,7 @@ internal class RevitDocumentStore : DocumentModelStore
       Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
-        Models = new List<ModelCard>();
+        Models = new();
         return;
       }
 
@@ -120,7 +116,7 @@ internal class RevitDocumentStore : DocumentModelStore
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      Models = new List<ModelCard>();
+      Models = new();
       Debug.WriteLine(ex.Message); // POC: Log here error and notify UI that cards not read succesfully
     }
   }

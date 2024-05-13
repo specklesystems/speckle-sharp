@@ -59,7 +59,11 @@ public class AutofacUIModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
     // register
-    builder.RegisterType<RevitDocumentStore>().As<DocumentModelStore>().SingleInstance();
+    builder
+      .RegisterType<RevitDocumentStore>()
+      .As<DocumentModelStore>()
+      .SingleInstance()
+      .WithParameter("writeToFileOnChange", true);
 
     // Storage Schema
     builder.RegisterType<DocumentModelStorageSchema>().InstancePerLifetimeScope();
