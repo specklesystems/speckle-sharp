@@ -13,8 +13,7 @@ public static class ContainerRegistration
     // send operation and dependencies
     builder.AddSingleton<CancellationManager>();
     builder.AddScoped<ReceiveOperation>();
-    
-    
+
     // POC: will likely need refactoring with our reporting pattern.
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
