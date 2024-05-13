@@ -42,6 +42,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
 #elif AUTOCAD2024
   public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
+#elif AUTOCAD2025
+  public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2025);
 #elif CIVIL2021
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
@@ -50,6 +52,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
 #elif CIVIL2024
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
+#elif CIVIL2025
+  public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2025);
 #elif ADVANCESTEEL2023
   public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #elif ADVANCESTEEL2024

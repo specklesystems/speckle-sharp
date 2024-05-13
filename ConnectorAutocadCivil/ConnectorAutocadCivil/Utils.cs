@@ -47,6 +47,10 @@ public static class Utils
   public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
   public static string AppName = HostApplications.AutoCAD.Name;
   public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2025
+  public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2025);
+  public static string AppName = HostApplications.AutoCAD.Name;
+  public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
   public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
   public static string AppName = HostApplications.Civil.Name;
@@ -61,6 +65,10 @@ public static class Utils
   public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2024
   public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
+  public static string AppName = HostApplications.Civil.Name;
+  public static string Slug = HostApplications.Civil.Slug;
+#elif CIVIL2025
+  public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2025);
   public static string AppName = HostApplications.Civil.Name;
   public static string Slug = HostApplications.Civil.Slug;
 #elif ADVANCESTEEL2023
