@@ -11,6 +11,7 @@ const string RESTORE = "restore";
 const string BUILD = "build";
 const string TEST = "test";
 const string FORMAT = "format";
+const string PACK = "pack";
 
 Target(
   CLEAN,
@@ -46,11 +47,11 @@ Target(
     Run("dotnet", "csharpier --check .");
   }
 );
-Target(RESTORE, DependsOn(FORMAT), Consts.SOLUTIONS, s => Run("dotnet", $"dotnet restore --locked-mode {s}"));
+Target(RESTORE, DependsOn(FORMAT), Consts.Solutions, s => Run("dotnet", $"dotnet restore --locked-mode {s}"));
 
 Target(
   BUILD,
-  Consts.SOLUTIONS,
+  Consts.Solutions,
   s =>
   {
     //Run("dotnet", $"build {s} -c Release --no-restore");
@@ -72,6 +73,16 @@ Target(
     {
       Run("dotnet", $"test {file} -c Release --no-restore --verbosity=normal");
     }
+  }
+);
+
+Target(
+  PACK,
+  Consts.Projects,
+  p =>
+  {
+    //Run("dotnet", $"build {p} -c Release --no-restore");
+    Run("dotnet", $"pack {p} -c Release --no-restore --no-build -o ./output");
   }
 );
 
