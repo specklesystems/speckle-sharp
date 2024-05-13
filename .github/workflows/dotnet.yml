@@ -10,6 +10,12 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        paths: [
+          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
+          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.Revit2023.csproj"
+          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,17 +31,31 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+      - name: Format
+        run: dotnet run --project Build/Build.csproj -- format
   
+      - name: Clean 
+        env:
+          TARGET_PATH: ${{ matrix.paths }}
+        run: dotnet run --project Build/Build.csproj -- clean
+
       - name: Restore
+        env:
+          TARGET_PATH: ${{ matrix.paths }}
         run: dotnet run --project Build/Build.csproj -- restore
 
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
       - name: Build
+        env:
+          TARGET_PATH: ${{ matrix.paths }}
         run: dotnet run --project Build/Build.csproj -- build
 
-      - name: Pack
-        run: dotnet run --project Build/Build.csproj -- pack
+      - name: Pack 
+        env:
+          TARGET_PATH: ${{ matrix.paths }}
+        run: dotnet run --project Build/Build.csproj -- zip
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

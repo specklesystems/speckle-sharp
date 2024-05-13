@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
@@ -12,11 +13,12 @@ const string RESTORE = "restore";
 const string BUILD = "build";
 const string TEST = "test";
 const string FORMAT = "format";
-const string PACK = "pack";
+const string ZIP = "zip";
+const string TRIGGER_WORKFLOW = "trigger-workflow";
 
 Target(
   CLEAN,
-  ForEach("**/bin", "**/obj"),
+  ForEach("**/output"),
   dir =>
   {
     IEnumerable<string> GetDirectories(string d)
@@ -48,15 +50,22 @@ Target(
     Run("dotnet", "csharpier --check .");
   }
 );
-Target(RESTORE, DependsOn(FORMAT), Consts.Solutions, s => Run("dotnet", $"dotnet restore --locked-mode {s}"));
+Target(
+  RESTORE,
+  DependsOn(FORMAT),
+  () =>
+  {
+    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    Run("dotnet", $"dotnet restore --locked-mode {path}");
+  }
+);
 
 Target(
   BUILD,
-  Consts.Solutions,
-  s =>
+  () =>
   {
-    //Run("dotnet", $"build {s} -c Release --no-restore");
-    Run("msbuild", $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
+    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    Run("msbuild", $"{path} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
   }
 );
 
@@ -78,16 +87,26 @@ Target(
 );
 
 Target(
-  PACK,
-  Consts.Projects,
-  x =>
+  ZIP,
+  Consts.Frameworks,
+  framework =>
   {
-    var fullPath = Path.Combine(Consts.Root, x.Item1, "bin", "Release", x.Item2);
-    var outputPath = Path.Combine(Consts.Root, "output", $"{new DirectoryInfo(x.Item1).Name}.zip");
+    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    var fullPath = Path.Combine(".", path, "bin", "Release", framework);
+    var outputPath = Path.Combine(".", "output", $"{new DirectoryInfo(path).Name}.zip");
+    Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
     ZipFile.CreateFromDirectory(fullPath, outputPath);
   }
 );
 
-Target("default", DependsOn(PACK), () => Console.WriteLine("Done!"));
+Target(
+  TRIGGER_WORKFLOW,
+  async () =>
+  {
+    await Task.CompletedTask;
+  }
+);
+
+Target("default", DependsOn(ZIP), () => Console.WriteLine("Done!"));
 
 await RunTargetsAndExitAsync(args).ConfigureAwait(true);
