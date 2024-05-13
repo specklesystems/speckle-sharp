@@ -35,8 +35,8 @@ public class AutofacRhinoModule : Module
     RegisterLoggerFactory(builder);
 
     // Register instances initialised by Rhino
-    builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
-    builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance);
+    builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance).SingleInstance();
+    builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance).SingleInstance();
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
@@ -45,7 +45,11 @@ public class AutofacRhinoModule : Module
 
     // Register other connector specific types
     builder.RegisterType<RhinoPlugin>().As<IRhinoPlugin>().SingleInstance();
-    builder.RegisterType<RhinoDocumentStore>().As<DocumentModelStore>().SingleInstance();
+    builder
+      .RegisterType<RhinoDocumentStore>()
+      .As<DocumentModelStore>()
+      .SingleInstance()
+      .WithParameter("writeToFileOnChange", true);
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
 
     // Register bindings

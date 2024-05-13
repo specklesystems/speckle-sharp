@@ -1,6 +1,5 @@
 using Rhino;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
@@ -10,11 +9,9 @@ public class RhinoDocumentStore : DocumentModelStore
   private const string SPECKLE_KEY = "Speckle_DUI3";
   public override bool IsDocumentInit { get; set; } = true; // Note: because of rhino implementation details regarding expiry checking of sender cards.
 
-  public RhinoDocumentStore(JsonSerializerSettings jsonSerializerSettings)
-    : base(jsonSerializerSettings)
+  public RhinoDocumentStore(JsonSerializerSettings jsonSerializerSettings, bool writeToFileOnChange)
+    : base(jsonSerializerSettings, writeToFileOnChange)
   {
-    RhinoDoc.BeginSaveDocument += (_, _) => WriteToFile();
-    RhinoDoc.CloseDocument += (_, _) => WriteToFile();
     RhinoDoc.BeginOpenDocument += (_, _) => IsDocumentInit = false;
     RhinoDoc.EndOpenDocument += (_, e) =>
     {
@@ -52,7 +49,7 @@ public class RhinoDocumentStore : DocumentModelStore
     string stateString = RhinoDoc.ActiveDoc.Strings.GetValue(SPECKLE_KEY, SPECKLE_KEY);
     if (stateString == null)
     {
-      Models = new List<ModelCard>();
+      Models = new();
       return;
     }
     Models = Deserialize(stateString);
