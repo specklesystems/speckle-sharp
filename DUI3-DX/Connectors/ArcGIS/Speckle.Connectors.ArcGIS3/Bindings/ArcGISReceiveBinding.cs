@@ -1,5 +1,4 @@
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;

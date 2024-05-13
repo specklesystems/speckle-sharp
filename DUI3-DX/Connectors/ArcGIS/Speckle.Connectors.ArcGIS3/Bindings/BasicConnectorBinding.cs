@@ -1,7 +1,6 @@
 using System.Reflection;
 using ArcGIS.Desktop.Core;
 using Speckle.Connectors.ArcGIS.HostApp;
-using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
