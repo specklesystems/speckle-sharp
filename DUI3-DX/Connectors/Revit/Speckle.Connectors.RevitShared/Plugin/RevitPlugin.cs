@@ -42,9 +42,10 @@ internal class RevitPlugin : IRevitPlugin
 
   public void Initialise()
   {
-    _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
-
+    // Create and register panels before app initialized. this is needed for double-click file open
     CreateTabAndRibbonPanel(_uIControlledApplication);
+    RegisterDockablePane();
+    _uIControlledApplication.ControlledApplication.ApplicationInitialized += OnApplicationInitialized;
   }
 
   public void Shutdown()
@@ -104,19 +105,14 @@ internal class RevitPlugin : IRevitPlugin
     // POC: might be worth to interface this out, we shall see...
     RevitTask.Initialize(uiApplication);
 
-    RegisterPanelAndInitializePlugin();
+    PostApplicationInit(); // for double-click file open
   }
 
-  private void RegisterPanelAndInitializePlugin()
+  /// <summary>
+  /// Actions to run after UiApplication initialized. This is needed for double-click file open issue.
+  /// </summary>
+  private void PostApplicationInit()
   {
-    CefSharpSettings.ConcurrentTaskExecution = true;
-
-    _uIControlledApplication.RegisterDockablePane(
-      RevitExternalApplication.DoackablePanelId,
-      _revitSettings.RevitPanelName,
-      _cefSharpPanel
-    );
-
     // binding the bindings to each bridge
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
@@ -165,6 +161,19 @@ internal class RevitPlugin : IRevitPlugin
               CefSharpPanel.Browser.Load("http://localhost:8082");
 #endif
     };
+  }
+
+  private void RegisterDockablePane()
+  {
+    CefSharpSettings.ConcurrentTaskExecution = true;
+
+    // Registering dockable pane should happen before UiApplication is initialized with RevitTask.
+    // Otherwise pane cannot be registered for double-click file open.
+    _uIControlledApplication.RegisterDockablePane(
+      RevitExternalApplication.DoackablePanelId,
+      _revitSettings.RevitPanelName,
+      _cefSharpPanel
+    );
   }
 
   private ImageSource? LoadPngImgSource(string sourceName, string path)
