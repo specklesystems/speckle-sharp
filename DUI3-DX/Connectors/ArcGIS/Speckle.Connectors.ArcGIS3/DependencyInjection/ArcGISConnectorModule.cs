@@ -10,6 +10,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Autofac;
 using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.DUI;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -27,7 +28,7 @@ public class ArcGISConnectorModule : ISpeckleModule
     builder.AddDUI();
     builder.AddDUIView();
 
-    builder.AddSingleton<ArcGISDocumentStore>();
+    builder.AddSingleton<DocumentModelStore, ArcGISDocumentStore>();
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();
