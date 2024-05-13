@@ -14,7 +14,7 @@ jobs:
       matrix:
         paths: [
           "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
-          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.Revit2023.csproj"
+          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj"
           ]
     steps:
       - name: Checkout
@@ -33,29 +33,18 @@ jobs:
 
       - name: Format
         run: dotnet run --project Build/Build.csproj -- format
-  
-      - name: Clean 
-        env:
-          TARGET_PATH: ${{ matrix.paths }}
-        run: dotnet run --project Build/Build.csproj -- clean
 
       - name: Restore
-        env:
-          TARGET_PATH: ${{ matrix.paths }}
-        run: dotnet run --project Build/Build.csproj -- restore
+        run: dotnet run --project Build/Build.csproj -- restore ${{ matrix.paths }}
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
       - name: Build
-        env:
-          TARGET_PATH: ${{ matrix.paths }}
-        run: dotnet run --project Build/Build.csproj -- build
+        run: dotnet run --project Build/Build.csproj -- build ${{ matrix.paths }}
 
-      - name: Pack 
-        env:
-          TARGET_PATH: ${{ matrix.paths }}
-        run: dotnet run --project Build/Build.csproj -- zip
+      - name: Pack
+        run: dotnet run --project Build/Build.csproj -- zip ${{ matrix.paths }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

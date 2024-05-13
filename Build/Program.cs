@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using Build;
 using GlobExpressions;
@@ -15,6 +16,14 @@ const string TEST = "test";
 const string FORMAT = "format";
 const string ZIP = "zip";
 const string TRIGGER_WORKFLOW = "trigger-workflow";
+
+var arguments = new List<string>();
+if (args.Length > 1)
+{
+  arguments = args.ToList();
+  args = new[] { arguments.First() };
+  arguments = arguments.Skip(1).ToList();
+}
 
 Target(
   CLEAN,
@@ -55,7 +64,7 @@ Target(
   DependsOn(FORMAT),
   () =>
   {
-    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    var path = arguments.First();
     Run("dotnet", $"dotnet restore --locked-mode {path}");
   }
 );
@@ -64,7 +73,7 @@ Target(
   BUILD,
   () =>
   {
-    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    var path = arguments.First();
     Run("msbuild", $"{path} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
   }
 );
@@ -91,7 +100,7 @@ Target(
   Consts.Frameworks,
   framework =>
   {
-    var path = Environment.GetEnvironmentVariable("TARGET_PATH");
+    var path = arguments.First();
     var fullPath = Path.Combine(".", path, "bin", "Release", framework);
     var outputPath = Path.Combine(".", "output", $"{new DirectoryInfo(path).Name}.zip");
     Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
