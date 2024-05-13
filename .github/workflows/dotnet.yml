@@ -11,20 +11,29 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
+
       - name: NuGet Cache
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+  
       - name: Restore
         run: dotnet run --project Build/Build.csproj -- restore
+
       - name: Build
         run: dotnet run --project Build/Build.csproj -- build
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
