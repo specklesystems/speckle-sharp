@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
-using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
 using static SimpleExec.Command;
@@ -97,12 +96,14 @@ Target(
 
 Target(
   ZIP,
-  Consts.Frameworks,
-  framework =>
+  () =>
   {
     var path = arguments.First();
+    var framework = arguments.Skip(1).First();
     var fullPath = Path.Combine(".", path, "bin", "Release", framework);
-    var outputPath = Path.Combine(".", "output", $"{new DirectoryInfo(path).Name}.zip");
+    var outputDir = Path.Combine(".", "output");
+    Directory.CreateDirectory(outputDir);
+    var outputPath = Path.Combine(outputDir, $"{new DirectoryInfo(path).Name}.zip");
     Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
     ZipFile.CreateFromDirectory(fullPath, outputPath);
   }
@@ -112,7 +113,7 @@ Target(
   TRIGGER_WORKFLOW,
   async () =>
   {
-    await Task.CompletedTask;
+    await Task.CompletedTask.ConfigureAwait(false);
   }
 );
 

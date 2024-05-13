@@ -12,10 +12,12 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        paths: [
-          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
-          "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj"
-          ]
+        include:
+          - path: "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj"
+            framework: net48
+          - path: "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj"
+            framework: net48
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,16 +37,16 @@ jobs:
         run: dotnet run --project Build/Build.csproj -- format
 
       - name: Restore
-        run: dotnet run --project Build/Build.csproj -- restore ${{ matrix.paths }}
+        run: dotnet run --project Build/Build.csproj -- restore ${{ matrix.path }}
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
       - name: Build
-        run: dotnet run --project Build/Build.csproj -- build ${{ matrix.paths }}
+        run: dotnet run --project Build/Build.csproj -- build ${{ matrix.path }}
 
       - name: Pack
-        run: dotnet run --project Build/Build.csproj -- zip ${{ matrix.paths }}
+        run: dotnet run --project Build/Build.csproj -- zip ${{ matrix.path }} ${{ matrix.framework }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
