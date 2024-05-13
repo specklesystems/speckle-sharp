@@ -53,7 +53,8 @@ Target(
   Consts.SOLUTIONS,
   s =>
   {
-    Run("dotnet", $"build {s} -c Release --no-restore");
+    //Run("dotnet", $"build {s} -c Release --no-restore");
+    Run("msbuild", $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
   }
 );
 
