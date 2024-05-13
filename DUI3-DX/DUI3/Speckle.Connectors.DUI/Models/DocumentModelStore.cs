@@ -10,16 +10,43 @@ namespace Speckle.Connectors.DUI.Models;
 /// </summary>
 public abstract class DocumentModelStore : DiscriminatedObject
 {
-  public ObservableCollection<ModelCard> Models { get; set; } = new ObservableCollection<ModelCard>();
+  private ObservableCollection<ModelCard> _models = new();
+
+  /// <summary>
+  /// Stores all the model cards in the current document/file.
+  /// </summary>
+  public ObservableCollection<ModelCard> Models
+  {
+    get => _models;
+    protected set
+    {
+      _models = value;
+      RegisterWriteOnChangeEvent();
+    }
+  }
 
   private readonly JsonSerializerSettings _serializerOptions;
 
+  private readonly bool _writeToFileOnChange;
+
+  /// <summary>
+  /// Base host app state class that controls the storage of the models in the file.
+  /// </summary>
+  /// <param name="serializerOptions">our custom serialiser that should be globally DI'ed in.</param>
+  /// <param name="writeToFileOnChange">Whether to store the models state in the file on any change. Defaults to false out of caution, but it's recommended to set to true, unless severe host app limitations.</param>
   protected DocumentModelStore(JsonSerializerSettings serializerOptions, bool writeToFileOnChange = false)
   {
     _serializerOptions = serializerOptions;
-    if (writeToFileOnChange)
+    _writeToFileOnChange = writeToFileOnChange;
+
+    RegisterWriteOnChangeEvent();
+  }
+
+  private void RegisterWriteOnChangeEvent()
+  {
+    if (_writeToFileOnChange)
     {
-      Models.CollectionChanged += (_, _) => WriteToFile();
+      _models.CollectionChanged += (_, _) => WriteToFile();
     }
   }
 
@@ -32,6 +59,8 @@ public abstract class DocumentModelStore : DiscriminatedObject
   public virtual bool IsDocumentInit { get; set; }
 
   // TODO: not sure about this, throwing an exception, needs some thought...
+  // Further note (dim): If we reach to the stage of throwing an exception here because a model is not found, there's a huge misalignment between the UI's list of model cards and the host app's.
+  // In theory this should never really happen, but if it does
   public ModelCard GetModelById(string id)
   {
     var model = Models.First(model => model.ModelCardId == id) ?? throw new ModelNotFoundException();
@@ -69,12 +98,13 @@ public abstract class DocumentModelStore : DiscriminatedObject
     return JsonConvert.DeserializeObject<ObservableCollection<ModelCard>>(models, _serializerOptions);
   }
 
+  /// <summary>
+  /// Implement this method according to the host app's specific ways of storing custom data in its file.
+  /// </summary>
   public abstract void WriteToFile();
 
   /// <summary>
-  /// Reads from file the existing speckle model cards and assigns it to Models.
-  /// Note: When implementing this, make sure Models gets set via assignment, and not via .Add as it will
-  /// trigger the OnCollectionChanged event.
+  /// Implement this method according to the host app's specific ways of reading custom data from its file.
   /// </summary>
   public abstract void ReadFromFile();
 }
