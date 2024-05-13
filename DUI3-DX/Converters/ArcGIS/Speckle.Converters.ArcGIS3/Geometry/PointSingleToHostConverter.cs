@@ -19,10 +19,7 @@ public class PointToHostConverter : IRawConversion<SOG.Point, ACG.MapPoint>
 
   public ACG.MapPoint RawConvert(SOG.Point target)
   {
-    double scaleFactor = Units.GetConversionFactor(
-      target.units,
-      _contextStack.Current.Document.SpatialReference.Unit.ToString()
-    );
+    double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
     return new ACG.MapPointBuilderEx(
       target.x * scaleFactor,
       target.y * scaleFactor,
