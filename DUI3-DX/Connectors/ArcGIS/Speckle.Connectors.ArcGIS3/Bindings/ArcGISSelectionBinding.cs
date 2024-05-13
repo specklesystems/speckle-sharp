@@ -2,7 +2,6 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -34,11 +33,6 @@ public class ArcGISSelectionBinding : ISelectionBinding
     List<MapMember> selectedMembers = new();
     selectedMembers.AddRange(mapView.GetSelectedLayers());
     selectedMembers.AddRange(mapView.GetSelectedStandaloneTables());
-
-    if (selectedMembers.Count == 0)
-    {
-      throw new SpeckleException("No data to send");
-    }
 
     List<string> objectTypes = selectedMembers
       .Select(o => o.GetType().ToString().Split(".").Last())
