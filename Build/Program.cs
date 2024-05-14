@@ -93,11 +93,11 @@ Target(
   {
     var (path, framework) = x;
 
-    var fullPath = Path.Combine(".", Path.GetDirectoryName(path), "bin", "Release", framework);
+    var fullPath = Path.Combine(".", path, "bin", "Release", framework);
     var outputDir = Path.Combine(".", "output");
     Directory.CreateDirectory(outputDir);
 
-    var outputPath = Path.Combine(outputDir, $"{Path.GetDirectoryName(path)}.zip");
+    var outputPath = Path.Combine(outputDir, $"{Path.GetFileName(path)}.zip");
 
     Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
     ZipFile.CreateFromDirectory(fullPath, outputPath);
