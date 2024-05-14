@@ -26,7 +26,7 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Speckle.Core.Logging;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
 
@@ -42,6 +42,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
 #elif AUTOCAD2024
   public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
+#elif AUTOCAD2025
+  public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2025);
 #elif CIVIL2021
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
@@ -50,6 +52,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
 #elif CIVIL2024
   public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
+#elif CIVIL2025
+  public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2025);
 #elif ADVANCESTEEL2023
   public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #elif ADVANCESTEEL2024
@@ -194,7 +198,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             case LayerTableRecord o:
               @base = LayerToSpeckle(o);
               break;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               break;
@@ -378,7 +382,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           break;
 
         case Mesh o:
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
           acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
 #else
           acadObj = MeshToNativeDB(o);
@@ -405,7 +409,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           acadObj = CollectionToNative(o);
           break;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
         case Alignment o:
           acadObj = AlignmentToNative(o);
           break;
@@ -515,7 +519,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           case LayerTableRecord:
             return true;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
           // NOTE: C3D pressure pipes and pressure fittings API under development
           case CivilDB.FeatureLine:
           case CivilDB.Corridor:

@@ -14,7 +14,7 @@ using Speckle.Core.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
 using Speckle.Core.Logging;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
@@ -47,6 +47,10 @@ public static class Utils
   public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
   public static string AppName = HostApplications.AutoCAD.Name;
   public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2025
+  public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2025);
+  public static string AppName = HostApplications.AutoCAD.Name;
+  public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
   public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
   public static string AppName = HostApplications.Civil.Name;
@@ -61,6 +65,10 @@ public static class Utils
   public static string Slug = HostApplications.Civil.Slug;
 #elif CIVIL2024
   public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
+  public static string AppName = HostApplications.Civil.Name;
+  public static string Slug = HostApplications.Civil.Slug;
+#elif CIVIL2025
+  public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2025);
   public static string AppName = HostApplications.Civil.Name;
   public static string Slug = HostApplications.Civil.Slug;
 #elif ADVANCESTEEL2023
@@ -307,7 +315,7 @@ public static class Utils
   #endregion
 
   #region property sets
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
   private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
   {
     switch (prop)
@@ -765,7 +773,7 @@ public static class Utils
     var insUnits = doc.Database.Insunits;
     string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
     if (units == Units.None)
     {
       // try to get the drawing unit instead
