@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ["dui3/alpha", "dui3/ci/github-actions-test"]
 permissions:
-  actions: write 
+  contents: write 
 jobs:
   build-and-publish:
     runs-on: windows-latest
