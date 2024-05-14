@@ -14,12 +14,6 @@
         "resolved": "1.1.9",
         "contentHash": "AfK5+ECWYTP7G3AAdnU8IfVj+QpGjrh9GC2mpdcJzCvtQ4pnerAGwHsxJ9D4/RnhDUz2DSzd951O/lQjQby2Sw=="
       },
-      "Octokit": {
-        "type": "Direct",
-        "requested": "[11.0.1, )",
-        "resolved": "11.0.1",
-        "contentHash": "fpwF/DxMJyGS+pIXDKQozx0wCIpOfG8VDr10ls+m9Gn9Lz8GslhhApxkKD9JCNO60HRUeMJsedsAS24gCjTD7Q=="
-      },
       "SimpleExec": {
         "type": "Direct",
         "requested": "[12.0.0, )",

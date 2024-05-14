@@ -1,25 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Octokit;
-using Octokit.Internal;
 
 namespace Build;
 
 public static class Github
 {
-  private static GitHubClient GetClient(string secret) =>
-    new(new ProductHeaderValue("Speckle.build"), new InMemoryCredentialStore(new Credentials(secret)));
-
   public static async Task BuildInstallers(string secret, string runId)
   {
-    var client = GetClient(secret);
-    await client.Actions.Workflows
-      .CreateDispatch(
-        "specklesystems",
-        "connector-installers",
-        "build_installers.yml",
-        new CreateWorkflowDispatch("main") { Inputs = new Dictionary<string, object>() { { "run_id", runId } } }
-      )
-      .ConfigureAwait(false);
+    using var client = new HttpClient();
+    var payload = new { event_type = "build-installers", client_payload = new { run_id = runId } };
+    var content = new StringContent(
+      JsonSerializer.Serialize(payload),
+      new MediaTypeHeaderValue(MediaTypeNames.Application.Json)
+    );
+
+    var request = new HttpRequestMessage()
+    {
+      RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
+      Headers = { Authorization = new AuthenticationHeaderValue($"Bearer {secret}") },
+      Content = content
+    };
+    request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+    var response = await client.SendAsync(request).ConfigureAwait(false);
+    if (!response.IsSuccessStatusCode)
+    {
+      throw new InvalidOperationException(response.StatusCode + response.ReasonPhrase);
+    }
   }
 }
