@@ -1,14 +1,11 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET Build and Publish
 
 on:
   pull_request:
     branches: ["dui3/alpha", "dui3/ci/github-actions-test"]
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: windows-latest
 
     steps:
@@ -27,19 +24,19 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
 
       - name: Format
-        run: dotnet run --project Build/Build.csproj -- format
+        run: ./build.sh format
 
       - name: Restore
-        run: dotnet run --project Build/Build.csproj -- restore
+        run: ./build.sh restore
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
       - name: Build
-        run: dotnet run --project Build/Build.csproj -- build
+        run: ./build.sh build
 
       - name: Pack
-        run: dotnet run --project Build/Build.csproj -- zip
+        run: ./build.sh zip
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
