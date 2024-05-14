@@ -12,11 +12,8 @@ public static class Github
   public static async Task TriggerWorkflow(string secret, string workflowFileName)
   {
     var client = GetClient(secret);
-    await client.Actions.Workflows.CreateDispatch(
-      "specklesystems",
-      "connector-installers",
-      workflowFileName,
-      new CreateWorkflowDispatch("main")
-    );
+    await client.Actions.Workflows
+      .CreateDispatch("specklesystems", "connector-installers", workflowFileName, new CreateWorkflowDispatch("main"))
+      .ConfigureAwait(false);
   }
 }
