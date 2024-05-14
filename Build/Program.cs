@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
@@ -14,7 +13,7 @@ const string BUILD = "build";
 const string TEST = "test";
 const string FORMAT = "format";
 const string ZIP = "zip";
-const string TRIGGER_WORKFLOW = "trigger-workflow";
+const string BUILD_INSTALLERS = "build-installers";
 
 Target(
   CLEAN,
@@ -105,10 +104,13 @@ Target(
 );
 
 Target(
-  TRIGGER_WORKFLOW,
+  BUILD_INSTALLERS,
   async () =>
   {
-    await Task.CompletedTask.ConfigureAwait(false);
+    var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+    var runId = Environment.GetEnvironmentVariable("RUN_ID");
+    Console.WriteLine($"Found: {runId} and {string.IsNullOrEmpty(token)}");
+    await Github.BuildInstallers(token, runId).ConfigureAwait(false);
   }
 );
 

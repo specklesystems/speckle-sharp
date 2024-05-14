@@ -3,7 +3,8 @@ name: .NET Build and Publish
 on:
   pull_request:
     branches: ["dui3/alpha", "dui3/ci/github-actions-test"]
-
+permissions:
+  actions: write 
 jobs:
   build-and-publish:
     runs-on: windows-latest
@@ -41,6 +42,12 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifact
+          name: output.zip
           path: output/*.*
           compression-level: 0 # no compression
+
+      - name: Build Installers
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: ./build.ps1 build-installers
