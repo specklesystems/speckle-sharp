@@ -38,10 +38,9 @@ public class ArcGISSelectionBinding : ISelectionBinding
       .Select(o => o.GetType().ToString().Split(".").Last())
       .Distinct()
       .ToList();
-    return new SelectionInfo
-    {
-      SelectedObjectIds = selectedMembers.Select(x => x.URI).ToList(),
-      Summary = $"{selectedMembers.Count} layers ({string.Join(", ", objectTypes)})"
-    };
+    return new SelectionInfo(
+      selectedMembers.Select(x => x.URI).ToList(),
+      $"{selectedMembers.Count} layers ({string.Join(", ", objectTypes)})"
+    );
   }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using Speckle.Connectors.Utils;
 using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.ArcGIS.HostApp;
@@ -10,7 +11,7 @@ public class ArcGISSettings
   {
     HostAppInfo = hostAppInfo;
     HostAppVersion = hostAppVersion;
-    Modules = new[] { new DirectoryInfo(typeof(ArcGISSettings).Assembly.Location).Parent!.FullName }; //poc: Net6 requires us to use this `location` property rather than ToString, should we use this everywhere?
+    Modules = new[] { new DirectoryInfo(typeof(ArcGISSettings).Assembly.Location).Parent.NotNull().FullName }; //poc: Net6 requires us to use this `location` property rather than ToString, should we use this everywhere?
   }
 
   public HostApplication HostAppInfo { get; private set; }

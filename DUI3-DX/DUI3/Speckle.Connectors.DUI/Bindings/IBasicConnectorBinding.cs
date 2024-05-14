@@ -9,7 +9,7 @@ public interface IBasicConnectorBinding : IBinding
   public string GetSourceApplicationName();
   public string GetSourceApplicationVersion();
   public string GetConnectorVersion();
-  public DocumentInfo GetDocumentInfo();
+  public DocumentInfo? GetDocumentInfo();
   public DocumentModelStore GetDocumentState();
   public void AddModel(ModelCard model);
   public void UpdateModel(ModelCard model);

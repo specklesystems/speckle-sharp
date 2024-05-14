@@ -24,6 +24,7 @@ public interface IBridge
   /// This method is called by the Frontend bridge when invoking any of the wrapped binding's methods.
   /// </summary>
   /// <param name="methodName"></param>
+  /// <param name="requestId"></param>
   /// <param name="args"></param>
   /// <returns></returns>
   public void RunMethod(string methodName, string requestId, string args);

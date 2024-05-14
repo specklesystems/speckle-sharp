@@ -6,6 +6,7 @@ using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -23,33 +24,33 @@ public class BrowserBridge : IBridge
   /// </summary>
 
   private readonly JsonSerializerSettings _serializerOptions;
-  private readonly Dictionary<string, string> _resultsStore = new();
+  private readonly Dictionary<string, string?> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
 
-  private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
-  private ActionBlock<RunMethodArgs> _actionBlock;
+  private Dictionary<string, MethodInfo> BindingMethodCache { get; set; } = new();
+  private ActionBlock<RunMethodArgs>? _actionBlock;
   private Action<string>? _scriptMethod;
 
-  private IBinding _binding;
-  private Type _bindingType;
+  private IBinding? _binding;
+  private Type? _bindingType;
 
   private readonly ILogger<BrowserBridge> _logger;
 
   /// <summary>
   /// Action that opens up the developer tools of the respective browser we're using. While webview2 allows for "right click, inspect", cefsharp does not - hence the need for this.
   /// </summary>
-  public Action ShowDevToolsAction { get; set; }
+  public Action? ShowDevToolsAction { get; set; }
 
-  public string FrontendBoundName { get; private set; }
+  public string FrontendBoundName { get; private set; } = "Unknown";
 
-  public object Browser { get; private set; }
+  public object? Browser { get; private set; }
 
-  public IBinding Binding
+  public IBinding? Binding
   {
     get => _binding;
     private set
     {
-      if (_binding != null || this != value.Parent)
+      if (_binding != null || this != value?.Parent)
       {
         throw new ArgumentException($"Binding: {FrontendBoundName} is already bound or does not match bridge");
       }
@@ -137,7 +138,7 @@ public class BrowserBridge : IBridge
   /// <param name="args"></param>
   public void RunMethod(string methodName, string requestId, string args)
   {
-    _actionBlock.Post(
+    _actionBlock?.Post(
       new RunMethodArgs
       {
         MethodName = methodName,
@@ -184,16 +185,16 @@ public class BrowserBridge : IBridge
       if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
       {
         throw new SpeckleException(
-          $"Cannot find method {methodName} in bindings class {_bindingType.AssemblyQualifiedName}."
+          $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}."
         );
       }
 
       var parameters = method.GetParameters();
       var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
-      if (parameters.Length != jsonArgsArray.Length)
+      if (parameters.Length != jsonArgsArray?.Length)
       {
         throw new SpeckleException(
-          $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray.Length}."
+          $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray?.Length}."
         );
       }
 
@@ -202,6 +203,10 @@ public class BrowserBridge : IBridge
       for (int i = 0; i < typedArgs.Length; i++)
       {
         var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
+        if (ccc is null)
+        {
+          continue;
+        }
         typedArgs[i] = ccc;
       }
 
@@ -222,7 +227,7 @@ public class BrowserBridge : IBridge
 
         // If has a "Result" property return the value otherwise null (Task<void> etc)
         PropertyInfo resultProperty = resultTypedTask.GetType().GetProperty("Result");
-        object taskResult = resultProperty?.GetValue(resultTypedTask);
+        object? taskResult = resultProperty?.GetValue(resultTypedTask);
         resultJson = JsonConvert.SerializeObject(taskResult, _serializerOptions);
       }
 
@@ -246,11 +251,11 @@ public class BrowserBridge : IBridge
   /// </summary>
   /// <param name="requestId"></param>
   /// <param name="serializedData"></param>
-  private void NotifyUIMethodCallResultReady(string requestId, string serializedData = null)
+  private void NotifyUIMethodCallResultReady(string requestId, string? serializedData = null)
   {
     _resultsStore[requestId] = serializedData;
     string script = $"{FrontendBoundName}.responseReady('{requestId}')";
-    _scriptMethod!(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 
   /// <summary>
@@ -258,7 +263,7 @@ public class BrowserBridge : IBridge
   /// </summary>
   /// <param name="requestId"></param>
   /// <returns></returns>
-  public string GetCallResult(string requestId)
+  public string? GetCallResult(string requestId)
   {
     var res = _resultsStore[requestId];
     _resultsStore.Remove(requestId);
@@ -271,7 +276,7 @@ public class BrowserBridge : IBridge
   /// </summary>
   public void ShowDevTools()
   {
-    ShowDevToolsAction();
+    ShowDevToolsAction?.Invoke();
   }
 
   public void OpenUrl(string url)
@@ -283,7 +288,7 @@ public class BrowserBridge : IBridge
   {
     var script = $"{FrontendBoundName}.emit('{eventName}')";
 
-    _scriptMethod!(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 
   public void Send<T>(string eventName, T data)
@@ -292,6 +297,6 @@ public class BrowserBridge : IBridge
     string payload = JsonConvert.SerializeObject(data, _serializerOptions);
     var script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
 
-    _scriptMethod!(script);
+    _scriptMethod.NotNull().Invoke(script);
   }
 }

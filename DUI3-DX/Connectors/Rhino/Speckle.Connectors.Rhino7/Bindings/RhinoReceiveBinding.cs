@@ -3,6 +3,7 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
@@ -52,11 +53,11 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
       // Receive host objects
       IEnumerable<string> receivedObjectIds = await unitOfWork.Service
         .Execute(
-          modelCard.AccountId, // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
-          modelCard.ProjectId,
-          modelCard.ProjectName,
-          modelCard.ModelName,
-          modelCard.SelectedVersionId,
+          modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
+          modelCard.ProjectId.NotNull(),
+          modelCard.ProjectName.NotNull(),
+          modelCard.ModelName.NotNull(),
+          modelCard.SelectedVersionId.NotNull(),
           cts.Token,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
@@ -73,7 +74,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);

@@ -48,7 +48,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
           case FieldType.Double:
             return (double)value;
           case FieldType.Date:
-            return DateTime.Parse((string)value);
+            return DateTime.Parse((string)value, null);
           case FieldType.DateOnly:
             return DateOnly.Parse((string)value);
           case FieldType.TimeOnly:

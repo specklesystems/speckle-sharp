@@ -5,6 +5,7 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Reflection;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
@@ -36,16 +37,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public string GetSourceApplicationVersion() => _settings.HostAppInfo.GetVersion(_settings.HostAppVersion);
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType())!.GetVersion();
+  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).NotNull().GetVersion();
 
   // TODO
-  public DocumentInfo GetDocumentInfo() =>
-    new()
-    {
-      Location = Project.Current.URI,
-      Name = Project.Current.Name,
-      Id = Project.Current.Name,
-    };
+  public DocumentInfo GetDocumentInfo() => new(Project.Current.URI, Project.Current.Name, Project.Current.Name);
 
   public DocumentModelStore GetDocumentState() => _store;
 

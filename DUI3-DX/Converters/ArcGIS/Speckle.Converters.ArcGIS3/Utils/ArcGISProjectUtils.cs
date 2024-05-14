@@ -60,7 +60,7 @@ public class ArcGISProjectUtils : IArcGISProjectUtils
     }
 
     string parentFolderPath = parentFolder.ToString();
-    var fGdbName = databasePath.Replace(parentFolderPath + "\\", "");
+    var fGdbName = databasePath.Replace(parentFolderPath + '\\', string.Empty, StringComparison.Ordinal);
 
     string fGdbPath = parentFolder.ToString();
     Item folderToAdd = ItemFactory.Instance.Create(fGdbPath);
@@ -68,7 +68,9 @@ public class ArcGISProjectUtils : IArcGISProjectUtils
     QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
 
     // Add a file geodatabase or a SQLite or enterprise database connection to a project
-    var gdbToAdd = folderToAdd.GetItems().FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName));
+    var gdbToAdd = folderToAdd
+      .GetItems()
+      .FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName, StringComparison.Ordinal));
     if (gdbToAdd is not null)
     {
       // POC: QueuedTask

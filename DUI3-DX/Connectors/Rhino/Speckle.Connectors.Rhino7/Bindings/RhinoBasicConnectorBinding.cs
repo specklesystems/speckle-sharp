@@ -8,6 +8,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -41,12 +42,7 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
   public string GetSourceApplicationVersion() => "7";
 
   public DocumentInfo GetDocumentInfo() =>
-    new()
-    {
-      Location = RhinoDoc.ActiveDoc.Path,
-      Name = RhinoDoc.ActiveDoc.Name,
-      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
-    };
+    new(RhinoDoc.ActiveDoc.Path, RhinoDoc.ActiveDoc.Name, RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString());
 
   public DocumentModelStore GetDocumentState() => _store;
 
@@ -63,12 +59,12 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
     if (myModel is SenderModelCard sender)
     {
-      objectIds = sender.SendFilter.GetObjectIds();
+      objectIds = sender.SendFilter.NotNull().GetObjectIds();
     }
 
     if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
     {
-      objectIds = receiver.ReceiveResult.BakedObjectIds;
+      objectIds = receiver.ReceiveResult.BakedObjectIds.NotNull();
     }
 
     if (objectIds.Count == 0)

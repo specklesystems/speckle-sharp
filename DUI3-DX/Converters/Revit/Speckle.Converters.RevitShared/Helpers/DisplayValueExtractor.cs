@@ -124,6 +124,7 @@ public sealed class DisplayValueExtractor
   /// <param name="solids"></param>
   /// <param name="meshes"></param>
   /// <param name="geom"></param>
+  /// <param name="inverseTransform"></param>
   private void SortGeometry(
     DB.Element element,
     List<DB.Solid> solids,

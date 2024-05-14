@@ -7,7 +7,7 @@ namespace Speckle.Connectors.Revit.Plugin;
 
 // POC: needs interface
 // is probably misnamed, perhaps OnIdleCallbackManager
-internal class RevitIdleManager : IRevitIdleManager
+internal sealed class RevitIdleManager : IRevitIdleManager
 {
   private readonly UIApplication _uiApplication;
 

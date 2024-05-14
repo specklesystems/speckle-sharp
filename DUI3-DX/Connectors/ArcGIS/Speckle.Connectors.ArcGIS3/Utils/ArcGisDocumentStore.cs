@@ -4,6 +4,7 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.ArcGIS.Utils;
@@ -102,7 +103,7 @@ public class ArcGISDocumentStore : DocumentModelStore
       }
 
       string modelsString = element.Value;
-      Models = Deserialize(modelsString);
+      Models = Deserialize(modelsString).NotNull();
     });
   }
 }

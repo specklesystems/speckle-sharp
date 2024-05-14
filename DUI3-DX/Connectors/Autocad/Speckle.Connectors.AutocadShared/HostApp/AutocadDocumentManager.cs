@@ -58,6 +58,7 @@ public class AutocadDocumentManager
   /// Writes the model cards to the current document.
   /// </summary>
   /// <param name="doc"></param>
+  /// <param name="modelCardsString"></param>
   public void WriteModelCards(Document doc, string modelCardsString)
   {
     if (doc == null)

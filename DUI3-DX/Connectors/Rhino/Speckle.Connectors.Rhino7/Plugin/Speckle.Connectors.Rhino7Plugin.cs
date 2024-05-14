@@ -32,11 +32,11 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
     Instance = this;
   }
 
-#nullable disable
   ///<summary>Gets the only instance of the Speckle_Connectors_Rhino7Plugin plug-in.</summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
   public static SpeckleConnectorsRhino7Plugin Instance { get; private set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-#nullable enable
   // You can override methods here to change the plug-in behavior on
   // loading and shut down, add options pages to the Rhino _Option command
   // and maintain plug-in wide options in a document.

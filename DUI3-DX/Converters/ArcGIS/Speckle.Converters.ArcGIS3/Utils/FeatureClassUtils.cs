@@ -95,46 +95,44 @@ public class FeatureClassUtils : IFeatureClassUtils
 
   public ACG.GeometryType GetGeometryTypeFromString(string target)
   {
-    string originalString = target.ToLower();
-
     // POC: find better pattern
-    if (originalString.Contains("none"))
+    if (target.Contains("none", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (originalString.Contains("pointcloud"))
+    else if (target.Contains("pointcloud", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Unknown;
     }
-    else if (originalString.Contains("point"))
+    else if (target.Contains("point", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipoint;
     }
     else if (
-      originalString.Contains("line")
-      || originalString.Contains("curve")
-      || originalString.Contains("arc")
-      || originalString.Contains("circle")
-      || originalString.Contains("ellipse")
+      target.Contains("line", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("curve", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("arc", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("circle", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("ellipse", StringComparison.OrdinalIgnoreCase)
     )
     {
       return ACG.GeometryType.Polyline;
     }
-    else if (originalString.Contains("polygon"))
+    else if (target.Contains("polygon", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Polygon;
     }
-    else if (originalString.Contains("multipatch"))
+    else if (target.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }
-    else if (originalString.Contains("mesh"))
+    else if (target.Contains("mesh", StringComparison.OrdinalIgnoreCase))
     {
       return ACG.GeometryType.Multipatch;
     }
     else
     {
-      throw new SpeckleConversionException($"Unknown geometry type {originalString}");
+      throw new SpeckleConversionException($"Unknown geometry type {target}");
     }
   }
 }

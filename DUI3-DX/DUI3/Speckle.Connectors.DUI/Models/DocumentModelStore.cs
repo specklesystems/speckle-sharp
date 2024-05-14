@@ -54,7 +54,7 @@ public abstract class DocumentModelStore
   /// This event is triggered by each specific host app implementation of the document model store.
   /// </summary>
   // POC: unsure about the PublicAPI annotation, unsure if this changed handle should live here on the store...  :/
-  public event EventHandler DocumentChanged;
+  public event EventHandler? DocumentChanged;
 
   public virtual bool IsDocumentInit { get; set; }
 
@@ -93,7 +93,7 @@ public abstract class DocumentModelStore
   }
 
   // POC: this seemms more like a IModelsDeserializer?, seems disconnected from this class
-  protected ObservableCollection<ModelCard> Deserialize(string models)
+  protected ObservableCollection<ModelCard>? Deserialize(string models)
   {
     return JsonConvert.DeserializeObject<ObservableCollection<ModelCard>>(models, _serializerOptions);
   }

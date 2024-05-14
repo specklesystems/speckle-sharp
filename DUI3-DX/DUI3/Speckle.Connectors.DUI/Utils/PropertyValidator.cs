@@ -1,3 +1,4 @@
+using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Utils;
@@ -5,7 +6,7 @@ namespace Speckle.Connectors.DUI.Utils;
 public class PropertyValidator : DiscriminatedObject
 {
   [JsonIgnore]
-  public List<string> JsonPropertyNames { get; set; }
+  public List<string>? JsonPropertyNames { get; set; }
 
   public bool InitializeNewProperties()
   {
@@ -36,7 +37,7 @@ public class PropertyValidator : DiscriminatedObject
     bool removedPropertiesExist = false;
     var currentPropertyNames = this.GetType().GetProperties().Select(p => p.Name).ToList();
 
-    foreach (var jsonPropName in JsonPropertyNames)
+    foreach (var jsonPropName in JsonPropertyNames.NotNull())
     {
       if (!currentPropertyNames.Contains(jsonPropName))
       {

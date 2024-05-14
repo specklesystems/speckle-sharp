@@ -52,6 +52,6 @@ public class RhinoDocumentStore : DocumentModelStore
       Models = new();
       return;
     }
-    Models = Deserialize(stateString);
+    Models = Deserialize(stateString) ?? new();
   }
 }

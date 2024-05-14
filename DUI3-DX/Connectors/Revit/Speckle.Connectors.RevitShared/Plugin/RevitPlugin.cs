@@ -14,7 +14,7 @@ using System.IO;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
-internal class RevitPlugin : IRevitPlugin
+internal sealed class RevitPlugin : IRevitPlugin
 {
   private readonly UIControlledApplication _uIControlledApplication;
   private readonly RevitSettings _revitSettings;
@@ -69,7 +69,7 @@ internal class RevitPlugin : IRevitPlugin
     }
 
     RibbonPanel specklePanel = application.CreateRibbonPanel(_revitSettings.RevitTabName, _revitSettings.RevitTabTitle);
-    PushButton dui3Button =
+    var dui3Button = (PushButton)
       specklePanel.AddItem(
         new PushButtonData(
           _revitSettings.RevitButtonName,
@@ -77,7 +77,7 @@ internal class RevitPlugin : IRevitPlugin
           typeof(RevitExternalApplication).Assembly.Location,
           typeof(SpeckleRevitCommand).FullName
         )
-      ) as PushButton;
+      );
 
     string path = typeof(RevitPlugin).Assembly.Location;
     dui3Button.Image = LoadPngImgSource(

@@ -6,6 +6,7 @@ using Autodesk.Revit.UI.Events;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
@@ -13,7 +14,7 @@ using Speckle.Newtonsoft.Json;
 namespace Speckle.Connectors.Revit.HostApp;
 
 // POC: should be interfaced out
-internal class RevitDocumentStore : DocumentModelStore
+internal sealed class RevitDocumentStore : DocumentModelStore
 {
   // POC: move to somewhere central?
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
@@ -38,7 +39,7 @@ internal class RevitDocumentStore : DocumentModelStore
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
 
-    UIApplication uiApplication = _revitContext.UIApplication;
+    UIApplication uiApplication = _revitContext.UIApplication.NotNull();
 
     uiApplication.ViewActivated += OnViewActivated;
 
@@ -109,7 +110,7 @@ internal class RevitDocumentStore : DocumentModelStore
   {
     try
     {
-      Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
+      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
         Models = new();
@@ -117,7 +118,7 @@ internal class RevitDocumentStore : DocumentModelStore
       }
 
       string modelsString = stateEntity.Get<string>("contents");
-      Models = Deserialize(modelsString);
+      Models = Deserialize(modelsString).NotNull();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
@@ -152,8 +153,12 @@ internal class RevitDocumentStore : DocumentModelStore
     return null;
   }
 
-  private Entity? GetSpeckleEntity(Document doc)
+  private Entity? GetSpeckleEntity(Document? doc)
   {
+    if (doc is null)
+    {
+      return null;
+    }
     using FilteredElementCollector collector = new(doc);
 
     FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));

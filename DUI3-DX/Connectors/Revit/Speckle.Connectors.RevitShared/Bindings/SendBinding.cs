@@ -15,7 +15,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
-internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
+internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 {
   // POC:does it need injecting?
   public CancellationManager CancellationManager { get; } = new();
@@ -46,10 +46,9 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     _unitOfWorkFactory = unitOfWorkFactory;
     _revitSettings = revitSettings;
     Commands = new SendBindingUICommands(bridge);
-
     // TODO expiry events
     // TODO filters need refresh events
-    revitContext.UIApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) => DocChangeHandler(e);
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -91,13 +90,17 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
         SendOperation<ElementId>
       >();
 
-      List<ElementId> revitObjects = modelCard.SendFilter.GetObjectIds().Select(id => ElementId.Parse(id)).ToList();
+      List<ElementId> revitObjects = modelCard.SendFilter
+        .NotNull()
+        .GetObjectIds()
+        .Select(id => ElementId.Parse(id))
+        .ToList();
 
       var sendInfo = new SendInfo(
-        modelCard.AccountId,
-        modelCard.ProjectId,
-        modelCard.ModelId,
-        _revitSettings.HostSlug,
+        modelCard.AccountId.NotNull(),
+        modelCard.ProjectId.NotNull(),
+        modelCard.ModelId.NotNull(),
+        _revitSettings.HostSlug.NotNull(),
         _convertedObjectReferences,
         modelCard.ChangedObjectIds
       );
@@ -134,7 +137,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   private bool HandleSpeckleException(SpeckleException spex)
@@ -196,11 +199,11 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
       bool isExpired = modelCard.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
-        expiredSenderIds.Add(modelCard.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
         modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }

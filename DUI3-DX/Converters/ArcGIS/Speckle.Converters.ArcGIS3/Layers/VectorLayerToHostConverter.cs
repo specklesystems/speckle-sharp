@@ -52,7 +52,5 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
     {
       return _tableConverter.RawConvert(target).GetName();
     }
-
-    throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
   }
 }

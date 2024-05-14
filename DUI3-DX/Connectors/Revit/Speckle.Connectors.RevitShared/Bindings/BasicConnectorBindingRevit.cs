@@ -6,19 +6,20 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
-internal class BasicConnectorBindingRevit : IBasicConnectorBinding
+internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   // POC: name and bridge might be better for them to be protected props?
   public string Name { get; private set; }
   public IBridge Parent { get; private set; }
 
-  protected readonly DocumentModelStore _store;
-  protected readonly RevitContext _revitContext;
+  private readonly DocumentModelStore _store;
+  private readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
 
   public BasicConnectorBindingRevit(
@@ -55,28 +56,25 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     return _revitSettings.HostAppVersion;
   }
 
-  public DocumentInfo GetDocumentInfo()
+  public DocumentInfo? GetDocumentInfo()
   {
     // POC: not sure why this would ever be null, is this needed?
-    if (_revitContext.UIApplication == null)
+    _revitContext.UIApplication.NotNull();
+
+    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+    if (doc is null)
     {
       return null;
     }
 
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
-
+    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString(), doc.PathName);
     if (doc.IsFamilyDocument)
     {
-      return new DocumentInfo { Message = "Family Environment files not supported by Speckle." };
+      info.Message = "Family Environment files not supported by Speckle.";
     }
 
     // POC: Notify user here if document is null.
-    return new DocumentInfo
-    {
-      Name = doc.Title,
-      Id = doc.GetHashCode().ToString(),
-      Location = doc.PathName
-    };
+    return info;
   }
 
   public DocumentModelStore GetDocumentState() => _store;
@@ -93,12 +91,11 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     var activeUIDoc =
       _revitContext.UIApplication?.ActiveUIDocument
       ?? throw new SpeckleException("Unable to retrieve active UI document");
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
-    var elementIds = model.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Count == 0)
+    var elementIds = model.SendFilter.NotNull().GetObjectIds().Select(ElementId.Parse).ToList();
+    if (elementIds.Any())
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;

@@ -12,6 +12,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -95,11 +96,11 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
       bool isExpired = intersection.Count != 0;
       if (isExpired)
       {
-        expiredSenderIds.Add(modelCard.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
         modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
@@ -132,16 +133,16 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
       // Get elements to convert
       List<(DBObject obj, string applicationId)> autocadObjects =
-        Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.GetObjectIds());
+        Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.NotNull().GetObjectIds());
       if (autocadObjects.Count == 0)
       {
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
       }
 
       var sendInfo = new SendInfo(
-        modelCard.AccountId,
-        modelCard.ProjectId,
-        modelCard.ModelId,
+        modelCard.AccountId.NotNull(),
+        modelCard.ProjectId.NotNull(),
+        modelCard.ModelId.NotNull(),
         _autocadSettings.HostAppInfo.Name,
         _convertedObjectReferences,
         modelCard.ChangedObjectIds
@@ -179,7 +180,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
