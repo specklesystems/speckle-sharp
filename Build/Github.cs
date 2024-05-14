@@ -24,6 +24,7 @@ public static class Github
       RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
       Headers =
       {
+        Accept = { new MediaTypeWithQualityHeaderValue("application/vnd.github+json") },
         Authorization = new AuthenticationHeaderValue("Bearer", token),
         UserAgent = { new ProductInfoHeaderValue("Speckle.build", "3.0.0") }
       },
