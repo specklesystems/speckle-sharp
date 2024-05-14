@@ -19,4 +19,4 @@ jobs:
           dotnet-version: 7.x.x
           
       - name: Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.GITHUB_TOKEN }} ${{ github.run_id }}
+        run: ./build.ps1 build-installers ${{ secrets.ADAM_BUILD_TOKEN }} ${{ github.run_id }}
