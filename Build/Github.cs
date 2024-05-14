@@ -23,7 +23,7 @@ public static class Github
       RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
       Headers =
       {
-        Authorization = new AuthenticationHeaderValue("Token", token),
+        Authorization = new AuthenticationHeaderValue("Bearer", token),
         UserAgent = { new ProductInfoHeaderValue("Speckle.build", "3.0.0") }
       },
       Content = content
