@@ -544,7 +544,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             }
 
             // add property sets if this is Civil3D
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
             if (obj["propertySets"] is IReadOnlyList<object> list)
             {
               List<Dictionary<string, object>> propertySets = new();

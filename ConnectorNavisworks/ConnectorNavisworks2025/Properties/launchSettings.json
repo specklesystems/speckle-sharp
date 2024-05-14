@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SpeckleNavisworks.2025": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Navisworks Manage 2025\\Roamer.exe",
+      "commandLineArgs": " -licensing AdLM"
+    }
+  }
+}

@@ -272,6 +272,9 @@ internal sealed class ElementTypeMapper
     var groupedElementTypeCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<List<ElementType>>();
     var elementTypeCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<ElementType>();
 
+    // add all element types from the document to the cache
+    groupedElementTypeCache.GetOrAddGroupOfTypes(RevitSharedResources.Helpers.Categories.Undefined);
+
     foreach (var @base in speckleElements)
     {
       var incomingType = typeRetriever.GetElementType(@base);

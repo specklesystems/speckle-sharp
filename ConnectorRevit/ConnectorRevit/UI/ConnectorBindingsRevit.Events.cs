@@ -64,7 +64,9 @@ public partial class ConnectorBindingsRevit
     RevitApp.Application.DocumentCreated += Application_DocumentCreated;
     RevitApp.Application.DocumentCreating += Application_DocumentCreating;
     RevitApp.Application.DocumentOpened += Application_DocumentOpened;
-    RevitApp.Application.DocumentOpening += Application_DocumentOpening;
+    // This code may fire during the DocumentOpening event, in which case an exception will be
+    // thrown about being unable to subscribe to an event during that event
+    //RevitApp.Application.DocumentOpening += Application_DocumentOpening;
     ;
     RevitApp.Application.DocumentClosed += Application_DocumentClosed;
     RevitApp.Application.DocumentSaved += Application_DocumentSaved;
