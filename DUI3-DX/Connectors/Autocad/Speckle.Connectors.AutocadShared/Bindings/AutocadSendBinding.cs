@@ -90,7 +90,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    var senders = _store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
