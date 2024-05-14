@@ -21,7 +21,7 @@ jobs:
       - name: Make envfile
         uses: SpicyPizza/create-envfile@v2.0
         with:
-          envkey_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          envkey_TOKEN: ${{ secrets.ADAM_BUILD_TOKEN }}
       - name: Build Installers
         env:
           RUN_ID: ${{ github.run_id }}

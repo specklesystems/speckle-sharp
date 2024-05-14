@@ -21,7 +21,7 @@ public static class Github
     var request = new HttpRequestMessage()
     {
       RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
-      Headers = { Authorization = new AuthenticationHeaderValue("Token", token) },
+      Headers = { Authorization = new AuthenticationHeaderValue("Bearer", token) },
       Content = content
     };
     request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
