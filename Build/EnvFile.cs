@@ -17,8 +17,7 @@ public static class EnvFile
     }
 
     using var reader = File.OpenText(path);
-    string? line;
-    while ((line = reader.ReadLine()) != null)
+    while (reader.ReadLine() is { } line)
     {
       var values = line.Split("=", StringSplitOptions.RemoveEmptyEntries);
       if (values.Length < 2)

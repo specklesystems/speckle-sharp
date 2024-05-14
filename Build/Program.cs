@@ -110,7 +110,11 @@ Target(
     var data = EnvFile.Parse(".env");
     var token = data["TOKEN"];
     var runId = Environment.GetEnvironmentVariable("RUN_ID");
-    Console.WriteLine($"Found: {runId} and {token.Length}");
+    if (runId is null)
+    {
+      throw new InvalidOperationException();
+    }
+    Console.WriteLine($"Found: {runId} and {token}");
     await Github.BuildInstallers(token, runId).ConfigureAwait(false);
   }
 );
