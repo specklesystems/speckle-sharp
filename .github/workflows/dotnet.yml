@@ -24,21 +24,16 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
 
       - name: Format
-        run: ./build.sh format
+        run: ./build.ps1 format
 
       - name: Restore
-        run: ./build.sh restore
+        run: ./build.ps1 restore
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
       - name: Build
-        run: ./build.sh build
+        run: ./build.ps1 build
 
-      - name: Pack
-        run: ./build.sh zip
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: output/*.*
+      - name: Pack And Upload
+        run: ./build.ps1 zip
