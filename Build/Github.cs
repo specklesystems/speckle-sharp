@@ -28,7 +28,9 @@ public static class Github
     var response = await client.SendAsync(request).ConfigureAwait(false);
     if (!response.IsSuccessStatusCode)
     {
-      throw new InvalidOperationException(response.StatusCode + response.ReasonPhrase);
+      throw new InvalidOperationException(
+        $"{response.StatusCode} {response.ReasonPhrase} {await response.Content.ReadAsStringAsync().ConfigureAwait(false)}"
+      );
     }
   }
 }
