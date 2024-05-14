@@ -1,12 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.BuiltElements;
 using Objects.Other;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
@@ -24,8 +25,6 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-using Speckle.Core.Logging;
-
 #if CIVIL
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -535,7 +534,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           default:
           {
 #if ADVANCESTEEL
-              return CanConvertASToSpeckle(o);
+            return CanConvertASToSpeckle(o);
 #else
             return false;
 #endif

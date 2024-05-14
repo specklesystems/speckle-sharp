@@ -39,7 +39,7 @@ public class Loader : GH_AssemblyPriority
   {
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
-        false;
+      false;
 #else
       true;
 #endif
@@ -243,7 +243,7 @@ public class Loader : GH_AssemblyPriority
           );
 
 #if MAC
-            path = @"/Applications/Manager for Speckle.app";
+          path = @"/Applications/Manager for Speckle.app";
 
 #else
           path = Path.Combine(
@@ -313,7 +313,7 @@ public class Loader : GH_AssemblyPriority
           Directory.CreateDirectory(path);
         }
 #if MAC
-          Process.Start("file://" + path);
+        Process.Start("file://" + path);
 #else
         Process.Start("explorer.exe", "/select, " + path);
 #endif
@@ -510,7 +510,8 @@ public class Loader : GH_AssemblyPriority
 
     _headlessDoc = RhinoDoc.CreateHeadless(null);
     Console.WriteLine(
-      $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+      $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}"
+    );
 #endif
   }
 
@@ -525,7 +526,8 @@ public class Loader : GH_AssemblyPriority
     if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null)
     {
       Console.WriteLine(
-        $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'"
+      );
       Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
       return _headlessDoc;
     }

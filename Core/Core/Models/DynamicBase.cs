@@ -270,19 +270,20 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     if (includeMembers.HasFlag(DynamicBaseMemberType.Instance))
     {
       PopulatePropInfoCache(GetType());
-      var pinfos = s_propInfoCache[GetType()].Where(x =>
-      {
-        var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
-        var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
+      var pinfos = s_propInfoCache[GetType()]
+        .Where(x =>
+        {
+          var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
+          var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
 
-        // If obsolete is false and prop has obsolete attr
-        // OR
-        // If schemaIgnored is true and prop has schemaIgnore attr
-        return !(
-          !includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored
-          || !includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete
-        );
-      });
+          // If obsolete is false and prop has obsolete attr
+          // OR
+          // If schemaIgnored is true and prop has schemaIgnore attr
+          return !(
+            !includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored
+            || !includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete
+          );
+        });
       foreach (var pi in pinfos)
       {
         if (!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!

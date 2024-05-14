@@ -90,12 +90,11 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     {
       mainParam = SelectedConstructor
         .GetParameters()
-        .FirstOrDefault(
-          cParam =>
-            CustomAttributeData
-              .GetCustomAttributes(cParam)
-              ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
-              ?.Count() > 0
+        .FirstOrDefault(cParam =>
+          CustomAttributeData
+            .GetCustomAttributes(cParam)
+            ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
+            ?.Count() > 0
         );
     }
     catch (Exception ex) when (!ex.IsFatal())

@@ -122,8 +122,8 @@ public sealed partial class Client : IDisposable
         (ex, timeout, context) =>
         {
           var graphqlEx = (SpeckleGraphQLException<T>)ex;
-          SpeckleLog.Logger
-            .ForContext("graphqlExtensions", graphqlEx.Extensions)
+          SpeckleLog
+            .Logger.ForContext("graphqlExtensions", graphqlEx.Extensions)
             .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
             .Warning(
               ex,
@@ -176,8 +176,8 @@ public sealed partial class Client : IDisposable
     // anything else related to graphql gets logged
     catch (SpeckleGraphQLException<T> gqlException)
     {
-      SpeckleLog.Logger
-        .ForContext("graphqlResponse", gqlException.Response)
+      SpeckleLog
+        .Logger.ForContext("graphqlResponse", gqlException.Response)
         .ForContext("graphqlExtensions", gqlException.Extensions)
         .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
         .Warning(
@@ -226,13 +226,12 @@ public sealed partial class Client : IDisposable
     {
       var errorMessages = errors.Select(e => e.Message);
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null
-            && (
-              e.Extensions.Contains(new KeyValuePair<string, object>("code", "FORBIDDEN"))
-              || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
-            )
+        errors.Any(e =>
+          e.Extensions != null
+          && (
+            e.Extensions.Contains(new KeyValuePair<string, object>("code", "FORBIDDEN"))
+            || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
+          )
         )
       )
       {
@@ -240,9 +239,8 @@ public sealed partial class Client : IDisposable
       }
 
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
+        errors.Any(e =>
+          e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
         )
       )
       {
@@ -250,10 +248,9 @@ public sealed partial class Client : IDisposable
       }
 
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null
-            && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
+        errors.Any(e =>
+          e.Extensions != null
+          && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
         )
       )
       {
@@ -319,8 +316,8 @@ public sealed partial class Client : IDisposable
               }
               else
               {
-                SpeckleLog.Logger
-                  .ForContext("graphqlResponse", response)
+                SpeckleLog
+                  .Logger.ForContext("graphqlResponse", response)
                   .Error("Cannot execute graphql callback for {resultType}, the response has no data.", typeof(T).Name);
               }
             }
@@ -332,8 +329,8 @@ public sealed partial class Client : IDisposable
             // anything else related to graphql gets logged
             catch (SpeckleGraphQLException<T> gqlException)
             {
-              SpeckleLog.Logger
-                .ForContext("graphqlResponse", gqlException.Response)
+              SpeckleLog
+                .Logger.ForContext("graphqlResponse", gqlException.Response)
                 .ForContext("graphqlExtensions", gqlException.Extensions)
                 .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
                 .Warning(

@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ConnectorArchicad.Communication.Commands;
+using Objects.BuiltElements.Archicad;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
-using ConnectorArchicad.Communication.Commands;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetElementBaseData : GetDataBase, ICommand<IEnumerable<DirectShape>>
+internal sealed class GetElementBaseData : GetDataBase, ICommand<IEnumerable<DirectShape>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   private sealed class Result

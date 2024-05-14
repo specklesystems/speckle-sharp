@@ -306,15 +306,12 @@ public class Element
       .GroupBy(property => property.ConcatenatedKey)
       .Where(group => group.Select(item => item.Value).Distinct().Count() == 1)
       .ToDictionary(group => group.Key, group => group.First().Value)
-      .Select(
-        kVp =>
-          new
-          {
-            Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)),
-            Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2),
-            kVp.Value
-          }
-      )
+      .Select(kVp => new
+      {
+        Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)),
+        Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2),
+        kVp.Value
+      })
       .Where(item => item.Category != "Internal")
       .GroupBy(item => item.Category)
       .ToDictionary(group => group.Key, group => group.ToDictionary(item => item.Property, item => item.Value));

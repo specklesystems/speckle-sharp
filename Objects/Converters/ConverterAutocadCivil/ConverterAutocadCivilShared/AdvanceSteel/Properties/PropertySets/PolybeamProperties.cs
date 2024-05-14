@@ -29,6 +29,5 @@ public class PolybeamProperties : ASBaseProperties<PolyBeam>, IASProperties
     var polyLine = beam.GetPolyline(true);
     return polyLine.Vertices.ToList();
   }
-
 }
 #endif

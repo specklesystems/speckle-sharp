@@ -27,9 +27,8 @@ public static class ModelConverter
       foreach (var poly in meshModel.polygons)
       {
         var meshIndex = poly.material;
-        meshes[meshIndex].vertices.AddRange(
-          poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
-        );
+        meshes[meshIndex]
+          .vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList());
         meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
         vertCount[meshIndex] += poly.pointIds.Count;
       }

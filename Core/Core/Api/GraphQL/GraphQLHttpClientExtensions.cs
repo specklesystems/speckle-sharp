@@ -1,8 +1,8 @@
-using GraphQL;
-using System.Threading.Tasks;
-using System.Threading;
-using GraphQL.Client.Http;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Client.Http;
 
 namespace Speckle.Core.Api.GraphQL;
 

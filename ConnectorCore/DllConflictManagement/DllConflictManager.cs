@@ -232,8 +232,8 @@ public sealed class DllConflictManager
     }
 
     var options = _optionsLoader.LoadOptions();
-    return _assemblyConflicts.Values.Where(
-      info => !options.DllsToIgnore.Contains(info.SpeckleDependencyAssemblyName.Name)
+    return _assemblyConflicts.Values.Where(info =>
+      !options.DllsToIgnore.Contains(info.SpeckleDependencyAssemblyName.Name)
     );
   }
 

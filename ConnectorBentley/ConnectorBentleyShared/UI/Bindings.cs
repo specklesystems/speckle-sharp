@@ -1,27 +1,24 @@
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
-using System.Collections.Concurrent;
-using System.Collections;
-
-using Speckle.Core.Api;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Speckle.Core.Transports;
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.MstnPlatformNET;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorBentley.Storage;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 #if (OPENBUILDINGS)
 using Bentley.Building.Api;
 #endif
@@ -212,7 +209,16 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
 
 #if (OPENROADS || OPENRAIL)
     var civilElementTypes = new List<string> { "Alignment" };
-    filterList.Add(new ListSelectionFilter { Slug = "civilElementType", Name = "Civil Features", Icon = "RailroadVariant", Description = "Selects civil features based on their type.", Values = civilElementTypes });
+    filterList.Add(
+      new ListSelectionFilter
+      {
+        Slug = "civilElementType",
+        Name = "Civil Features",
+        Icon = "RailroadVariant",
+        Description = "Selects civil features based on their type.",
+        Values = civilElementTypes
+      }
+    );
 #endif
 
     return filterList;
@@ -568,7 +574,8 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     {
       if (Control.InvokeRequired)
       {
-        civObjs = (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
+        civObjs =
+          (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
       }
       else
       {
@@ -653,8 +660,16 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
           var civilObj = civObjs[objs.IndexOf(obj)];
           if (Control.InvokeRequired)
           {
-            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { civilObj });
-            Control.Invoke((Action)(() => { containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name; }));
+            converted = (Base)
+              Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { civilObj });
+            Control.Invoke(
+              (Action)(
+                () =>
+                {
+                  containerName = civilObj.Name == "" ? "Unnamed" : civilObj.Name;
+                }
+              )
+            );
           }
           else
           {
@@ -666,7 +681,8 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         {
           if (Control.InvokeRequired)
           {
-            converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+            converted = (Base)
+              Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
           }
           else
           {
@@ -764,6 +780,7 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
 
 #if (OPENROADS || OPENRAIL)
   delegate List<NamedModelEntity> GetCivilObjectsDelegate(StreamState state);
+
   private List<NamedModelEntity> GetCivilObjects(StreamState state)
   {
     var civilObjs = new List<NamedModelEntity>();
@@ -800,7 +817,14 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
       ITFDrawingGrid drawingGrid = null;
       if (Control.InvokeRequired)
       {
-        Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+        Control.Invoke(
+          (Action)(
+            () =>
+            {
+              proj.GetDrawingGrid(false, 0, out drawingGrid);
+            }
+          )
+        );
       }
       else
       {
@@ -815,7 +839,8 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
 
       if (Control.InvokeRequired)
       {
-        converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+        converted = (Base)
+          Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
       }
       else
       {

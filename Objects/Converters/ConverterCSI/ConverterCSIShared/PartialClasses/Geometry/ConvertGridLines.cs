@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using Objects.BuiltElements;
 using Objects.Geometry;
 using Objects.Structural.CSI.Geometry;
-using Objects.BuiltElements;
 
 namespace Objects.Converter.CSI;
 

@@ -1,7 +1,6 @@
 using System;
 using Autodesk.AutoCAD.ApplicationServices;
 using Document = Autodesk.AutoCAD.ApplicationServices.Document;
-
 #if ADVANCESTEEL
 using Autodesk.AdvanceSteel.DocumentManagement;
 #else

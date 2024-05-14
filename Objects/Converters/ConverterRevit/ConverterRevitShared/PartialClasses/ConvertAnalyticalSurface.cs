@@ -226,16 +226,11 @@ public partial class ConverterRevit
 
     Element2DOutlineBuilder outlineBuilder = new(openings, edgePoints);
 
-    speckleElement2D.openings = openings.Select(polyLine => new Polycurve(ModelUnits)
-    {
-      segments = new() { polyLine }
-    })
-    .ToList();
-
-    speckleElement2D.topology = outlineBuilder
-      .GetOutline()
-      .Select(p => new Node(p))
+    speckleElement2D.openings = openings
+      .Select(polyLine => new Polycurve(ModelUnits) { segments = new() { polyLine } })
       .ToList();
+
+    speckleElement2D.topology = outlineBuilder.GetOutline().Select(p => new Node(p)).ToList();
 
     speckleElement2D.displayValue = GetElementDisplayValue(revitSurface);
 
@@ -256,7 +251,9 @@ public partial class ConverterRevit
     else if (structuralElement is DB.Wall)
     {
       var wall = structuralElement as DB.Wall;
-      structMaterial = wall.Document.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as DB.Material;
+      structMaterial =
+        wall.Document.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId())
+        as DB.Material;
       thickness = ScaleToSpeckle(wall.WallType.Width);
       memberType = MemberType2D.Wall;
     }

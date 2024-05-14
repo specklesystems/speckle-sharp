@@ -265,7 +265,8 @@ public class BaseObjectSerializerV2
       object? convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
 
       if (
-        convertedValue == null && prop.Value.Item2.JsonPropertyInfo is { NullValueHandling: NullValueHandling.Ignore }
+        convertedValue == null
+        && prop.Value.Item2.JsonPropertyInfo is { NullValueHandling: NullValueHandling.Ignore }
       )
       {
         continue;

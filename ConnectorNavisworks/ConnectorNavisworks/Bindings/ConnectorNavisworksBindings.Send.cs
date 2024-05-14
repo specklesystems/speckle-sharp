@@ -430,15 +430,15 @@ public partial class ConnectorBindingsNavisworks
     };
 
     string commitId =
-    // This block enables forcing a failed send to test the caching feature
-    // #if DEBUG
-    //     if (!isRetrying)
-    //       throw new SpeckleException("Debug mode: commit not created.");
-    // #endif
-    // Use the helper function to create the commit and retrieve the commit ID
-    await ConnectorHelpers
-      .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
-      .ConfigureAwait(false);
+      // This block enables forcing a failed send to test the caching feature
+      // #if DEBUG
+      //     if (!isRetrying)
+      //       throw new SpeckleException("Debug mode: commit not created.");
+      // #endif
+      // Use the helper function to create the commit and retrieve the commit ID
+      await ConnectorHelpers
+        .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
+        .ConfigureAwait(false);
 
     return commitId;
   }
@@ -505,8 +505,8 @@ public partial class ConnectorBindingsNavisworks
     {
       var selectionBuilder = new SelectionHandler(state, _progressViewModel) { ProgressBar = _progressBar };
 
-      var selectedViews = state.Filter.Selection
-        .Distinct()
+      var selectedViews = state
+        .Filter.Selection.Distinct()
         .Select(selectionBuilder.ResolveSavedViewpoint)
         .Select(_conversionInvoker.Convert)
         .Where(c => c != null)

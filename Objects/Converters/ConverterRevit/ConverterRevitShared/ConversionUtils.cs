@@ -498,8 +498,8 @@ public partial class ConverterRevit
     }
     else
     {
-      revitParameters = revitElement.ParametersMap
-        .Cast<DB.Parameter>()
+      revitParameters = revitElement
+        .ParametersMap.Cast<DB.Parameter>()
         .Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
     }
 
@@ -821,8 +821,8 @@ public partial class ConverterRevit
         // note that the project base (ui) rotation is registered on the survey pt, not on the base point
         // retrieve the survey point rotation from the project point
         var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
-        referencePointTransform = DB.Transform
-          .CreateTranslation(surveyPoint.Position)
+        referencePointTransform = DB
+          .Transform.CreateTranslation(surveyPoint.Position)
           .Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
         break;
       case InternalOrigin:
@@ -891,8 +891,8 @@ public partial class ConverterRevit
     }
 
     //list of shafts part of this conversion set
-    var shafts = ContextObjects.Values
-      .SelectMany(x => x.Converted.Where(y => y is RevitShaft).Cast<RevitShaft>())
+    var shafts = ContextObjects
+      .Values.SelectMany(x => x.Converted.Where(y => y is RevitShaft).Cast<RevitShaft>())
       .ToList();
 
     openings.AddRange(shafts);
@@ -1123,8 +1123,8 @@ public partial class ConverterRevit
         opacity = 1 - (revitMaterial.Transparency / 100d),
         //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
         //roughness = 1 - (revitMaterial.Smoothness / 100d),
-        diffuse = System.Drawing.Color
-          .FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue)
+        diffuse = System
+          .Drawing.Color.FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue)
           .ToArgb()
       };
 

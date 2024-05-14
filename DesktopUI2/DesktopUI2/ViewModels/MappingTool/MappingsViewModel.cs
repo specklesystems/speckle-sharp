@@ -627,8 +627,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     var ids = new List<string>();
     try
     {
-      var lBoxes = MappingsControl.Instance
-        .GetVisualDescendants()
+      var lBoxes = MappingsControl
+        .Instance.GetVisualDescendants()
         .OfType<ListBox>()
         .Where(x => x.Classes.Contains("ExistingMapping"));
       foreach (var lBox in lBoxes)

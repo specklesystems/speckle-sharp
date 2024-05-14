@@ -148,8 +148,8 @@ public class AccountViewModel : ReactiveObject
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger
-        .ForContext("imageUrl", url)
+      SpeckleLog
+        .Logger.ForContext("imageUrl", url)
         .Warning(
           ex,
           "Swallowing exception in {methodName}: {exceptionMessage}",

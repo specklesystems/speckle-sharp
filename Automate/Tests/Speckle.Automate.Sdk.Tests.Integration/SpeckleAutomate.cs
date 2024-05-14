@@ -140,8 +140,8 @@ public sealed class AutomationContextTest : IDisposable
 
     await automationContext.CreateNewVersionInProject(Utils.TestObject(), BRANCH_NAME, COMMIT_MSG);
 
-    Branch branch = await automationContext.SpeckleClient
-      .BranchGet(automationRunData.ProjectId, BRANCH_NAME, 1)
+    Branch branch = await automationContext
+      .SpeckleClient.BranchGet(automationRunData.ProjectId, BRANCH_NAME, 1)
       .ConfigureAwait(false);
 
     Assert.NotNull(branch);

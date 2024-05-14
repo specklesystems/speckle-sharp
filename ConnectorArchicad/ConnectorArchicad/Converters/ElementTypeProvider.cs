@@ -7,9 +7,9 @@ using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Archicad.ArchicadFloor;
 using Roof = Objects.BuiltElements.Archicad.ArchicadRoof;
 using Shell = Objects.BuiltElements.Archicad.ArchicadShell;
+using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
-using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 
 namespace Archicad;
 

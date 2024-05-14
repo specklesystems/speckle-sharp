@@ -271,8 +271,8 @@ public class Base : DynamicBase
       catch (Exception ex) when (!ex.IsFatal())
       {
         // avoids any last ditch unsettable or strange props.
-        SpeckleLog.Logger
-          .ForContext("canWrite", propertyInfo?.CanWrite)
+        SpeckleLog
+          .Logger.ForContext("canWrite", propertyInfo?.CanWrite)
           .ForContext("canRead", propertyInfo?.CanRead)
           .Warning(
             "Shallow copy of {type} failed to copy {propertyName} of type {propertyType} with value {valueType}",

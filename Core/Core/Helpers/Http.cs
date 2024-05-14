@@ -222,8 +222,8 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       timer.Stop();
       var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
       context.TryGetValue("retryCount", out var retryCount);
-      SpeckleLog.Logger
-        .ForContext("ExceptionType", policyResult.FinalException?.GetType())
+      SpeckleLog
+        .Logger.ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
           "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
           request.RequestUri.Scheme,

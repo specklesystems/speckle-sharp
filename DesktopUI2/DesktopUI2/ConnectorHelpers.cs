@@ -67,8 +67,8 @@ public static class ConnectorHelpers
     {
       if (state.CommitId == LatestCommitString) //if "latest", always make sure we get the latest commit
       {
-        var res = await state.Client
-          .BranchGet(state.StreamId, state.BranchName, 1, cancellationToken)
+        var res = await state
+          .Client.BranchGet(state.StreamId, state.BranchName, 1, cancellationToken)
           .ConfigureAwait(false);
         commit = res.commits.items.First();
       }
@@ -109,8 +109,8 @@ public static class ConnectorHelpers
     }
     catch (SpeckleException ex)
     {
-      SpeckleLog.Logger
-        .ForContext("commitReceivedInput", commitReceivedInput)
+      SpeckleLog
+        .Logger.ForContext("commitReceivedInput", commitReceivedInput)
         .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitReceived));
     }
   }
@@ -158,8 +158,8 @@ public static class ConnectorHelpers
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger
-        .ForContext("commitInput", commitInput)
+      SpeckleLog
+        .Logger.ForContext("commitInput", commitInput)
         .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitCreate));
       throw new SpeckleException("Failed to create commit object", ex);
     }

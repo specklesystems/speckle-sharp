@@ -1,9 +1,9 @@
-using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Dxf = Speckle.netDxf;
 using Line = Objects.Geometry.Line;
 using Mesh = Objects.Geometry.Mesh;

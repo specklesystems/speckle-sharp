@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Dynamo.Interfaces;
 using Dynamo.ViewModels;
-
 using ProtoCore.Mirror;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;

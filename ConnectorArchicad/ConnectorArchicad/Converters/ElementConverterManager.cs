@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -14,12 +15,11 @@ using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Fenestration = Objects.BuiltElements.Archicad.ArchicadFenestration;
 using Floor = Objects.BuiltElements.Floor;
+using GridLine = Objects.BuiltElements.GridLine;
 using Roof = Objects.BuiltElements.Roof;
+using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
-using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
-using GridLine = Objects.BuiltElements.GridLine;
-using DesktopUI2.Models;
 
 namespace Archicad;
 

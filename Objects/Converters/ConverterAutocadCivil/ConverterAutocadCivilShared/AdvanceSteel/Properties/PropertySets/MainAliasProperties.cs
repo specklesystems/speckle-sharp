@@ -37,6 +37,5 @@ public class MainAliasProperties : ASBaseProperties<MainAlias>, IASProperties
 
     return dictionary;
   }
-
 }
 #endif

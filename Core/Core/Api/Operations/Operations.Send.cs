@@ -129,8 +129,8 @@ public static partial class Operations
       }
 
       sendTimer.Stop();
-      SpeckleLog.Logger
-        .ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
+      SpeckleLog
+        .Logger.ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
         .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
         .ForContext("serializerElapsed", serializerV2.Elapsed)
         .Information(

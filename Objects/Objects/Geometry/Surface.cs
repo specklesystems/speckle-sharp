@@ -177,15 +177,14 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
     List<double> data = new();
     countU = value.Count;
     countV = value[0].Count;
-    value.ForEach(
-      row =>
-        row.ForEach(pt =>
-        {
-          data.Add(pt.x);
-          data.Add(pt.y);
-          data.Add(pt.z);
-          data.Add(pt.weight);
-        })
+    value.ForEach(row =>
+      row.ForEach(pt =>
+      {
+        data.Add(pt.x);
+        data.Add(pt.y);
+        data.Add(pt.z);
+        data.Add(pt.weight);
+      })
     );
     pointData = data;
   }

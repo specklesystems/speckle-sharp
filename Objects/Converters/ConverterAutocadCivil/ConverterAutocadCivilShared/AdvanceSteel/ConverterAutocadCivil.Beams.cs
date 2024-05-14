@@ -2,17 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
 using Autodesk.AdvanceSteel.Profiles;
-
 using Objects.BuiltElements.AdvanceSteel;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
 using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
-
 using Objects.Structural.Properties.Profiles;
 using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
@@ -60,7 +57,10 @@ public partial class ConverterAutocadCivil
     dynamic profType = beam.GetProfType();
     asteelBeam.profile = GetProfileSectionProperties(profType);
 
-    asteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
+    asteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(
+      beam.ProfSectionType,
+      beam.ProfSectionName
+    );
 
     asteelBeam.area = FromInternalUnits(beam.GetPaintArea(), eUnitType.kArea);
 
@@ -130,10 +130,7 @@ public partial class ConverterAutocadCivil
   private SectionProfile GetProfileSectionProperties(ProfileType profileType)
   {
     //Undefined
-    SectionProfile sectionProfile = new()
-    {
-      name = profileType.GetType().Name
-    };
+    SectionProfile sectionProfile = new() { name = profileType.GetType().Name };
 
     return sectionProfile;
   }
@@ -194,7 +191,6 @@ public partial class ConverterAutocadCivil
 
     return sectionProfileDB;
   }
-
 }
 
 #endif

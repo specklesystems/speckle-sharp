@@ -26,11 +26,11 @@ public enum SerializerVersion
 public static partial class Operations
 {
   private const string RECEIVE_DEPRECATION_MESSAGE = """
-                                                     This method overload is obsolete, consider using a non-obsolete overload.
-                                                     1.SerializerVersion selection will no longer be supported going foward (serializer v1 is now deprecated).
-                                                     2.Use of disposeTransports will no longer be supported going forward (you should dispose your own transports).
-                                                     3 OnErrorAction is no longer used (instead functions with throw exceptions for consistancy and clear stack trace)
-                                                     """;
+    This method overload is obsolete, consider using a non-obsolete overload.
+    1.SerializerVersion selection will no longer be supported going foward (serializer v1 is now deprecated).
+    2.Use of disposeTransports will no longer be supported going forward (you should dispose your own transports).
+    3 OnErrorAction is no longer used (instead functions with throw exceptions for consistancy and clear stack trace)
+    """;
 
   /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
   /// <returns></returns>
@@ -425,8 +425,8 @@ public static partial class Operations
         }
 
         timer.Stop();
-        SpeckleLog.Logger
-          .ForContext("deserializerElapsed", serializerV2?.Elapsed)
+        SpeckleLog
+          .Logger.ForContext("deserializerElapsed", serializerV2?.Elapsed)
           .ForContext(
             "transportElapsedBreakdown",
             new[] { localTransport, remoteTransport }
@@ -481,8 +481,8 @@ public static partial class Operations
         dr.Dispose();
       }
 
-      SpeckleLog.Logger
-        .ForContext("deserializerElapsed", serializerV2?.Elapsed)
+      SpeckleLog
+        .Logger.ForContext("deserializerElapsed", serializerV2?.Elapsed)
         .ForContext(
           "transportElapsedBreakdown",
           new[] { localTransport, remoteTransport }

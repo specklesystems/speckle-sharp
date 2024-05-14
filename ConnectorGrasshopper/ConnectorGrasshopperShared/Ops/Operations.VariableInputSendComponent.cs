@@ -101,8 +101,8 @@ public class NewVariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Va
 
   public void VariableParameterMaintenance()
   {
-    Params.Input
-      .Skip(2)
+    Params
+      .Input.Skip(2)
       .Where(param => !(param.Attributes is GenericAccessParamAttributes))
       .ToList()
       .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes));
@@ -678,8 +678,8 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
               };
 
               // Check to see if we have a previous commit; if so set it.
-              var prevCommit = prevCommits.FirstOrDefault(
-                c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
+              var prevCommit = prevCommits.FirstOrDefault(c =>
+                c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
               {

@@ -1,18 +1,18 @@
 using System;
-using System.Collections.Generic;
-using Tekla.Structures.Model;
-using System.Linq;
-using Objects.Geometry;
 using System.Collections;
-using Tekla.Structures.Solid;
-using Tekla.Structures.Catalogs;
-using TSG = Tekla.Structures.Geometry3d;
-using StructuralUtilities.PolygonMesher;
-using Speckle.Core.Models;
-using Objects.Structural.Properties.Profiles;
-using Tekla.Structures.Datatype;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.BuiltElements.TeklaStructures;
+using Objects.Geometry;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using StructuralUtilities.PolygonMesher;
+using Tekla.Structures.Catalogs;
+using Tekla.Structures.Datatype;
+using Tekla.Structures.Model;
+using Tekla.Structures.Solid;
+using TSG = Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures;
 

@@ -6,7 +6,6 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.Core.Logging;
-
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif

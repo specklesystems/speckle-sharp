@@ -71,9 +71,10 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
 
     Tracker.TrackNodeRun("Accounts list");
 
-    var valueItems = accounts.Select(
-      account => new GH_ValueListItem(account.ToString(), $"\"{AccountManager.GetLocalIdentifierForAccount(account)}\"")
-    );
+    var valueItems = accounts.Select(account => new GH_ValueListItem(
+      account.ToString(),
+      $"\"{AccountManager.GetLocalIdentifierForAccount(account)}\""
+    ));
     ListItems.AddRange(valueItems);
 
     if (_selectedAccountUrl == null)

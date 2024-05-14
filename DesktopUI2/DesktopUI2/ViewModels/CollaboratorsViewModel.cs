@@ -138,8 +138,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       //exclude existing ones
-      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
-        x => !AddedUsers.Any(u => u.Id == x.id)
+      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(x =>
+        !AddedUsers.Any(u => u.Id == x.id)
       );
       //exclude myself
       users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
@@ -253,8 +253,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCreate(
+            await _stream
+              .StreamState.Client.StreamInviteCreate(
                 new StreamInviteCreateInput
                 {
                   email = user.Name,
@@ -283,8 +283,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCreate(
+            await _stream
+              .StreamState.Client.StreamInviteCreate(
                 new StreamInviteCreateInput
                 {
                   userId = user.Id,
@@ -313,8 +313,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamUpdatePermission(
+            await _stream
+              .StreamState.Client.StreamUpdatePermission(
                 new StreamPermissionInput
                 {
                   userId = user.Id,
@@ -343,8 +343,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamRevokePermission(
+            await _stream
+              .StreamState.Client.StreamRevokePermission(
                 new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
               )
               .ConfigureAwait(true);
@@ -368,8 +368,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
+            await _stream
+              .StreamState.Client.StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -387,8 +387,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       try
       {
         _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
-        var pc = await _stream.StreamState.Client
-          .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
+        var pc = await _stream
+          .StreamState.Client.StreamGetPendingCollaborators(_stream.StreamState.StreamId)
           .ConfigureAwait(true);
         _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
         _stream.StreamState.CachedStream = _stream.Stream;
