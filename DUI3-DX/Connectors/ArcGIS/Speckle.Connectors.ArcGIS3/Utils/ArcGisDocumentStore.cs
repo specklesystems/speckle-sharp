@@ -46,21 +46,19 @@ public class ArcGISDocumentStore : DocumentModelStore
   /// </summary>
   private void OnMapViewChanged(ActiveMapViewChangedEventArgs args)
   {
-    if (args.OutgoingView is not null)
+    if (args.IncomingView is null)
     {
-      WriteToFileWithMap(args.OutgoingView.Map);
+      return;
     }
 
-    if (args.IncomingView is not null)
-    {
-      IsDocumentInit = true;
-      ReadFromFile();
-      OnDocumentChanged();
-    }
+    IsDocumentInit = true;
+    ReadFromFile();
+    OnDocumentChanged();
   }
 
-  private void WriteToFileWithMap(Map map)
+  public override void WriteToFile()
   {
+    Map map = MapView.Active.Map;
     QueuedTask.Run(() =>
     {
       // Read existing metadata - To prevent messing existing metadata. 🤞 Hope other add-in developers will do same :D
@@ -90,8 +88,6 @@ public class ArcGISDocumentStore : DocumentModelStore
     });
   }
 
-  public override void WriteToFile() => WriteToFileWithMap(MapView.Active.Map);
-
   public override void ReadFromFile()
   {
     Map map = MapView.Active.Map;
@@ -102,7 +98,7 @@ public class ArcGISDocumentStore : DocumentModelStore
       var element = root?.Element("SpeckleModelCards");
       if (element is null)
       {
-        Models = new List<ModelCard>();
+        Models = new();
         return;
       }
 
