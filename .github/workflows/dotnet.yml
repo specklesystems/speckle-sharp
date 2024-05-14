@@ -17,11 +17,11 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
-      - name: Set up secret file
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo $GITHUB_TOKEN >> secrets.txt
+          
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Installers
         env:
           RUN_ID: ${{ github.run_id }}
