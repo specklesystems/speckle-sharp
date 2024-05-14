@@ -34,6 +34,9 @@ public class MeshListToHostConverter : IRawConversion<List<SOG.Mesh>, ACG.Multip
         newPatch.AddPoint(
           _pointConverter.RawConvert(
             new SOG.Point(part.vertices[ptIndex * 3], part.vertices[ptIndex * 3 + 1], part.vertices[ptIndex * 3 + 2])
+            {
+              units = part.units
+            }
           )
         );
       }
