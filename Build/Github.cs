@@ -20,6 +20,7 @@ public static class Github
 
     var request = new HttpRequestMessage()
     {
+      Method = HttpMethod.Post,
       RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
       Headers =
       {
