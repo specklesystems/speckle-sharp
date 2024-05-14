@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Objects.Converter.Autocad2025</AssemblyName>
     <RootNamespace>Objects.Converter.Autocad</RootNamespace>
