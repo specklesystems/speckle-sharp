@@ -5,6 +5,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.Revit.Plugin;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
@@ -18,10 +19,12 @@ internal class RevitDocumentStore : DocumentModelStore
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
 
   private readonly RevitContext _revitContext;
+  private readonly IRevitIdleManager _idleManager;
   private readonly DocumentModelStorageSchema _documentModelStorageSchema;
   private readonly IdStorageSchema _idStorageSchema;
 
   public RevitDocumentStore(
+    IRevitIdleManager idleManager,
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
@@ -30,6 +33,7 @@ internal class RevitDocumentStore : DocumentModelStore
   )
     : base(serializerSettings, writeToFileOnChange)
   {
+    _idleManager = idleManager;
     _revitContext = revitContext;
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
@@ -66,8 +70,11 @@ internal class RevitDocumentStore : DocumentModelStore
     }
 
     IsDocumentInit = true;
-    ReadFromFile();
-    OnDocumentChanged();
+    _idleManager.SubscribeToIdle(() =>
+    {
+      ReadFromFile();
+      OnDocumentChanged();
+    });
   }
 
   private void WriteToFileWithDoc(Document doc)
