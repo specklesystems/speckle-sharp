@@ -114,7 +114,6 @@ Target(
     {
       throw new InvalidOperationException();
     }
-    Console.WriteLine($"Found: {runId} and {token}");
     await Github.BuildInstallers(token, runId).ConfigureAwait(false);
   }
 );
