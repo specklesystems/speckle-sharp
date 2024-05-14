@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Threading.Tasks;
+using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
 using static SimpleExec.Command;
@@ -15,14 +15,6 @@ const string TEST = "test";
 const string FORMAT = "format";
 const string ZIP = "zip";
 const string TRIGGER_WORKFLOW = "trigger-workflow";
-
-var arguments = new List<string>();
-if (args.Length > 1)
-{
-  arguments = args.ToList();
-  args = new[] { arguments.First() };
-  arguments = arguments.Skip(1).ToList();
-}
 
 Target(
   CLEAN,
@@ -61,19 +53,19 @@ Target(
 Target(
   RESTORE,
   DependsOn(FORMAT),
-  () =>
+  Consts.Solutions,
+  s =>
   {
-    var path = arguments.First();
-    Run("dotnet", $"dotnet restore --locked-mode {path}");
+    Run("dotnet", $"dotnet restore --locked-mode {s}");
   }
 );
 
 Target(
   BUILD,
-  () =>
+  Consts.Solutions,
+  s =>
   {
-    var path = arguments.First();
-    Run("msbuild", $"{path} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
+    Run("msbuild", $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m");
   }
 );
 
@@ -96,14 +88,16 @@ Target(
 
 Target(
   ZIP,
-  () =>
+  Consts.Projects,
+  x =>
   {
-    var path = arguments.First();
-    var framework = arguments.Skip(1).First();
-    var fullPath = Path.Combine(".", path, "bin", "Release", framework);
+    var (path, framework) = x;
+    
+    var fullPath = Path.Combine(".", 
+      Path.GetDirectoryName(path), "bin", "Release", framework);
     var outputDir = Path.Combine(".", "output");
     Directory.CreateDirectory(outputDir);
-    var outputPath = Path.Combine(outputDir, $"{new DirectoryInfo(path).Name}.zip");
+    var outputPath = Path.Combine(outputDir, Path.ChangeExtension(path, "zip"));
     Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
     ZipFile.CreateFromDirectory(fullPath, outputPath);
   }

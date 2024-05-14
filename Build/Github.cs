@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Build;
 
-public static class Http
+public static class Github
 {
   public static async Task TriggerWorkflow(string secret, string artifactId)
   {
