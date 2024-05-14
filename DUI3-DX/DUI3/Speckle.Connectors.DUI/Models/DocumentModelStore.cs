@@ -8,7 +8,7 @@ namespace Speckle.Connectors.DUI.Models;
 /// <summary>
 /// Encapsulates the state Speckle needs to persist in the host app's document.
 /// </summary>
-public abstract class DocumentModelStore : DiscriminatedObject
+public abstract class DocumentModelStore
 {
   private ObservableCollection<ModelCard> _models = new();
 

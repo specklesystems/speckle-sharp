@@ -5,8 +5,8 @@ namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGISDocumentStore : DocumentModelStore
 {
-  public ArcGISDocumentStore(JsonSerializerSettings serializerOption)
-    : base(serializerOption)
+  public ArcGISDocumentStore(JsonSerializerSettings serializerOption, bool writeToFileOnChange)
+    : base(serializerOption, writeToFileOnChange)
   {
     // POC: Subscribe here document related events like OnSave, OnClose, OnOpen etc...
   }

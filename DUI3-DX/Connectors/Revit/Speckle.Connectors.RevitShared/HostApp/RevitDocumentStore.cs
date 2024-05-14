@@ -73,7 +73,7 @@ internal class RevitDocumentStore : DocumentModelStore
 
   private void WriteToFileWithDoc(Document doc)
   {
-    // POC: this can happen?
+    // POC: this can happen? A: Not really, imho (dim)
     if (doc == null)
     {
       return;
