@@ -113,7 +113,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   /// </summary>
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    var senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
 
     foreach (var sender in senders)

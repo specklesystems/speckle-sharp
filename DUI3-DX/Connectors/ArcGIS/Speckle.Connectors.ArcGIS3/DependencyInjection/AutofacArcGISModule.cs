@@ -42,7 +42,11 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
     builder.RegisterType<DUI3ControlWebView>().SingleInstance();
-    builder.RegisterType<ArcGISDocumentStore>().As<DocumentModelStore>().SingleInstance();
+    builder
+      .RegisterType<ArcGISDocumentStore>()
+      .As<DocumentModelStore>()
+      .SingleInstance()
+      .WithParameter("writeToFileOnChange", true);
 
     // Register bindings
     builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
