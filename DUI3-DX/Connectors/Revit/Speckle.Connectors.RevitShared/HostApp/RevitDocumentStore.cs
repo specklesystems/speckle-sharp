@@ -77,8 +77,9 @@ internal class RevitDocumentStore : DocumentModelStore
     });
   }
 
-  private void WriteToFileWithDoc(Document doc)
+  public override void WriteToFile()
   {
+    var doc = _revitContext.UIApplication?.ActiveUIDocument.Document;
     // POC: this can happen? A: Not really, imho (dim)
     if (doc == null)
     {
@@ -103,8 +104,6 @@ internal class RevitDocumentStore : DocumentModelStore
       t.Commit();
     });
   }
-
-  public override void WriteToFile() => WriteToFileWithDoc(_revitContext.UIApplication.ActiveUIDocument.Document);
 
   public override void ReadFromFile()
   {
