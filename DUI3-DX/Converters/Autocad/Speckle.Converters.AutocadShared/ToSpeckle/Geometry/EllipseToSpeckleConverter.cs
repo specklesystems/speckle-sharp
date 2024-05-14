@@ -29,10 +29,14 @@ public class DBEllipseToSpeckleConverter : IHostObjectToSpeckleConversion
     SOG.Plane plane = _planeConverter.RawConvert(new AG.Plane(target.Center, target.MajorAxis, target.MinorAxis));
     SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
 
+    // the start and end param corresponds to start and end angle in radians
+    SOP.Interval trim = new(target.StartAngle, target.EndAngle);
+
     SOG.Ellipse ellipse =
       new(plane, target.MajorRadius, target.MinorRadius, _contextStack.Current.SpeckleUnits)
       {
-        domain = new SOP.Interval(target.StartParam, target.EndParam),
+        domain = new(0, Math.PI * 2),
+        trimDomain = trim,
         length = target.GetDistanceAtParameter(target.EndParam),
         bbox = bbox
       };

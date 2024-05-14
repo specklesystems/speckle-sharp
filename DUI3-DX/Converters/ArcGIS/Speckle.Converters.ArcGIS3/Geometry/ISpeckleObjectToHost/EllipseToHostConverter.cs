@@ -1,10 +1,11 @@
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
-[NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+//TODO: Ellipses don't convert correctly, see Autocad test stream
+// [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Ellipse, ACG.Polyline>
 {
   private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;

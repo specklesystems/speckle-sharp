@@ -42,8 +42,6 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
     builder.RegisterType<DUI3ControlWebView>().SingleInstance();
-    // NOTE: I've scaffolded the auto write to file on change here, but the actual doc store is not implemented, so this does nothing i suspect.
-    // The actual implementation is down to Kate :)
     builder
       .RegisterType<ArcGISDocumentStore>()
       .As<DocumentModelStore>()

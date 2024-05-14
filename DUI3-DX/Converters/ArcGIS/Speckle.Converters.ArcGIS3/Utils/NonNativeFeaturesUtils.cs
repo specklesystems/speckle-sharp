@@ -34,13 +34,13 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     _contextStack = contextStack;
   }
 
-  public List<(string, string)> WriteGeometriesToDatasets(
-    Dictionary<string, (string, ACG.Geometry, string?)> convertedObjs
+  public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
+    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId)> convertedObjs
   )
   {
     List<(string, string)> result = new();
     // 1. Sort features into groups by path and geom type
-    Dictionary<string, (List<ACG.Geometry>, string?)> geometryGroups = new();
+    Dictionary<string, (List<ACG.Geometry> geometries, string? parentId)> geometryGroups = new();
     foreach (var item in convertedObjs)
     {
       try
@@ -54,12 +54,12 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           geometryGroups[parentPath] = (new List<ACG.Geometry>(), parentId);
         }
 
-        geometryGroups[parentPath].Item1.Add(geom);
+        geometryGroups[parentPath].geometries.Add(geom);
       }
-      catch (Exception e) when (!e.IsFatal())
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // POC: report, etc.
-        Debug.WriteLine("conversion error happened.");
+        Debug.WriteLine($"conversion error happened. {ex.Message}");
       }
     }
 
@@ -70,7 +70,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       {
         string parentPath = item.Key;
         (List<ACG.Geometry> geomList, string? parentId) = item.Value;
-        ACG.GeometryType geomType = _featureClassUtils.GetGeometryTypeFromString(parentPath.Split("\\")[^1]);
+        ACG.GeometryType geomType = geomList[0].GeometryType;
         try
         {
           string converted = CreateDatasetInDatabase(geomType, geomList, parentId);

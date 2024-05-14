@@ -1,7 +1,7 @@
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
@@ -14,14 +14,14 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
 {
   public string Name { get; } = "receiveBinding";
   private readonly CancellationManager _cancellationManager;
-  private readonly ArcGISDocumentStore _store;
+  private readonly DocumentModelStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
   public ReceiveBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
   public ArcGISReceiveBinding(
-    ArcGISDocumentStore store,
+    DocumentModelStore store,
     IBridge parent,
     CancellationManager cancellationManager,
     IUnitOfWorkFactory unitOfWorkFactory

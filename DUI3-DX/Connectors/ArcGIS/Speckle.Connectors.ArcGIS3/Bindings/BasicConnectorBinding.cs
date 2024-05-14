@@ -1,7 +1,6 @@
 using System.Reflection;
 using ArcGIS.Desktop.Core;
 using Speckle.Connectors.ArcGIS.HostApp;
-using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -17,10 +16,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public IBridge Parent { get; }
 
   public BasicConnectorBindingCommands Commands { get; }
-  private readonly ArcGISDocumentStore _store;
+  private readonly DocumentModelStore _store;
   private readonly ArcGISSettings _settings;
 
-  public BasicConnectorBinding(ArcGISDocumentStore store, ArcGISSettings settings, IBridge parent)
+  public BasicConnectorBinding(DocumentModelStore store, ArcGISSettings settings, IBridge parent)
   {
     _store = store;
     _settings = settings;
