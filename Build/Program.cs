@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
@@ -14,6 +15,14 @@ const string TEST = "test";
 const string FORMAT = "format";
 const string ZIP = "zip";
 const string BUILD_INSTALLERS = "build-installers";
+
+var arguments = new List<string>();
+if (args.Length > 1)
+{
+  arguments = args.ToList();
+  args = new[] { arguments.First() };
+  arguments = arguments.Skip(1).ToList();
+}
 
 Target(
   CLEAN,
@@ -107,13 +116,8 @@ Target(
   BUILD_INSTALLERS,
   async () =>
   {
-    var data = EnvFile.Parse(".env");
-    var token = data["TOKEN"];
-    var runId = Environment.GetEnvironmentVariable("RUN_ID");
-    if (runId is null)
-    {
-      throw new InvalidOperationException();
-    }
+    var token = arguments.First();
+    var runId = arguments.Skip(1).First();
     await Github.BuildInstallers(token, runId).ConfigureAwait(false);
   }
 );

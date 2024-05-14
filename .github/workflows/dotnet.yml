@@ -18,11 +18,5 @@ jobs:
         with:
           dotnet-version: 7.x.x
           
-      - name: Make envfile
-        uses: SpicyPizza/create-envfile@v2.0
-        with:
-          envkey_TOKEN: ${{ secrets.ADAM_BUILD_TOKEN }}
       - name: Build Installers
-        env:
-          RUN_ID: ${{ github.run_id }}
-        run: ./build.ps1 build-installers
+        run: ./build.ps1 build-installers ${{ secrets.ADAM_BUILD_TOKEN }} ${{ github.run_id }}
