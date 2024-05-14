@@ -61,13 +61,32 @@ public class ArcGISDocumentStore : DocumentModelStore
 
   private void WriteToFileWithMap(Map map)
   {
-    string serializedModels = Serialize();
-
-    XDocument xmlDocument = new(new XElement("metadata", new XElement("SpeckleModelCards", serializedModels)));
-
     QueuedTask.Run(() =>
     {
-      map.SetMetadata(xmlDocument.ToString());
+      // Read existing metadata - To prevent messing existing metadata. 🤞 Hope other add-in developers will do same :D
+      var existingMetadata = map.GetMetadata();
+
+      // Parse existing metadata
+      XDocument existingXmlDocument = !string.IsNullOrEmpty(existingMetadata)
+        ? XDocument.Parse(existingMetadata)
+        : new XDocument(new XElement("metadata"));
+
+      string serializedModels = Serialize();
+
+      XElement xmlModelCards = new("SpeckleModelCards", serializedModels);
+
+      // Check if SpeckleModelCards element already exists at root and update it
+      var speckleModelCardsElement = existingXmlDocument.Root?.Element("SpeckleModelCards");
+      if (speckleModelCardsElement != null)
+      {
+        speckleModelCardsElement.ReplaceWith(xmlModelCards);
+      }
+      else
+      {
+        existingXmlDocument.Root?.Add(xmlModelCards);
+      }
+
+      map.SetMetadata(existingXmlDocument.ToString());
     });
   }
 
