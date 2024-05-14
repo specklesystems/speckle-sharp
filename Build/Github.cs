@@ -1,34 +1,22 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Octokit;
+using Octokit.Internal;
 
 namespace Build;
 
 public static class Github
 {
-  public static async Task TriggerWorkflow(string secret, string artifactId)
-  {
-    using var client = new HttpClient();
-    var payload = new { event_type = "trigger-workflow", client_payload = new { artifact_id = artifactId } };
-    var content = new StringContent(
-      JsonSerializer.Serialize(payload),
-      new MediaTypeHeaderValue(MediaTypeNames.Application.Json)
-    );
+  private static GitHubClient GetClient(string secret) =>
+    new(new Octokit.ProductHeaderValue("Speckle.build"), new InMemoryCredentialStore(new Credentials(secret)));
 
-    var request = new HttpRequestMessage()
-    {
-      RequestUri = new Uri("https://api.github.com/repos/specklesystems/connector-installers/dispatches"),
-      Headers = { Authorization = new AuthenticationHeaderValue($"Bearer {secret}") },
-      Content = content
-    };
-    request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
-    var response = await client.SendAsync(request).ConfigureAwait(false);
-    if (!response.IsSuccessStatusCode)
-    {
-      throw new InvalidOperationException(response.StatusCode + response.ReasonPhrase);
-    }
+  public static async Task TriggerWorkflow(string secret, string workflowFileName)
+  {
+    var client = GetClient(secret);
+    await client.Actions.Workflows.CreateDispatch(
+      "specklesystems",
+      "connector-installers",
+      workflowFileName,
+      new CreateWorkflowDispatch("main")
+    );
   }
 }
