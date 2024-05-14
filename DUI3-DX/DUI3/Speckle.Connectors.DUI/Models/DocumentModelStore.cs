@@ -93,7 +93,7 @@ public abstract class DocumentModelStore
   }
 
   // POC: this seemms more like a IModelsDeserializer?, seems disconnected from this class
-  protected ObservableCollection<ModelCard> Deserialize(string models)
+  protected ObservableCollection<ModelCard>? Deserialize(string models)
   {
     return JsonConvert.DeserializeObject<ObservableCollection<ModelCard>>(models, _serializerOptions);
   }

@@ -1,4 +1,5 @@
 using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Autocad.HostApp;

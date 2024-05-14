@@ -6,6 +6,7 @@ using Autodesk.Revit.UI.Events;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
@@ -38,7 +39,7 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
 
-    UIApplication uiApplication = _revitContext.UIApplication;
+    UIApplication uiApplication = _revitContext.UIApplication.NotNull();
 
     uiApplication.ViewActivated += OnViewActivated;
 
