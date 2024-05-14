@@ -21,7 +21,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="Clean">
