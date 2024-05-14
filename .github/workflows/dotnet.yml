@@ -17,6 +17,34 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
-          
-      - name: Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.GITHUB_TOKEN }} ${{ github.run_id }}
+
+      - name: NuGet Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+
+      - name: Format
+        run: ./build.ps1 format
+
+      - name: Restore
+        run: ./build.ps1 restore
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build
+        run: ./build.ps1 build
+
+      - name: Pack
+        run: ./build.ps1 zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: output.zip
+          path: output/*.*
+          compression-level: 0 # no compression
+  
+      - name: Trigger Build Installers
+        run: ./build.ps1 build-installers ${{ secrets.ADAM_BUILD_TOKEN }} ${{ github.run_id }}
