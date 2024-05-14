@@ -17,9 +17,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
-
+      - name: Set up secret file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo $GITHUB_TOKEN >> secrets.txt
       - name: Build Installers
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} | sed 's/./& /g'
           RUN_ID: ${{ github.run_id }}
         run: ./build.ps1 build-installers

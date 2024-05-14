@@ -107,9 +107,9 @@ Target(
   BUILD_INSTALLERS,
   async () =>
   {
-    var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+    var token = File.ReadAllText("secrets.txt");
     var runId = Environment.GetEnvironmentVariable("RUN_ID");
-    Console.WriteLine($"Found: {runId} and {string.IsNullOrEmpty(token)}");
+    Console.WriteLine($"Found: {runId} and {token.Length}");
     await Github.BuildInstallers(token, runId).ConfigureAwait(false);
   }
 );
