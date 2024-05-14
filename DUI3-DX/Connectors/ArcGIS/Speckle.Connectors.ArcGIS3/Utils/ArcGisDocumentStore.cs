@@ -4,7 +4,6 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.ArcGIS.Utils;
