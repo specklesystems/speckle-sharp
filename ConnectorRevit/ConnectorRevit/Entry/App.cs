@@ -76,7 +76,6 @@ public class App : IExternalApplication
       APIContext.Initialize(application);
 
       InitializeUiPanel(application);
-      conflictNotifier.WarnUserOfPossibleConflicts();
 
       return Result.Succeeded;
     }
