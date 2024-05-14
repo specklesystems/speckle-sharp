@@ -14,7 +14,7 @@ using Speckle.Core.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
 using Speckle.Core.Logging;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
@@ -315,7 +315,7 @@ public static class Utils
   #endregion
 
   #region property sets
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
   private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
   {
     switch (prop)
@@ -773,7 +773,7 @@ public static class Utils
     var insUnits = doc.Database.Insunits;
     string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
     if (units == Units.None)
     {
       // try to get the drawing unit instead
