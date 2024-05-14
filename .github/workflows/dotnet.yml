@@ -43,3 +43,4 @@ jobs:
         with:
           name: artifact
           path: output/*.*
+          compression-level: 0 # no compression
