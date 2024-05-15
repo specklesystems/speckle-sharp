@@ -56,7 +56,7 @@ Target(
   {
     var (output, _) = await ReadAsync("dotnet", "minver -v w").ConfigureAwait(false);
     Console.WriteLine($"Version: {output}");
-    Environment.SetEnvironmentVariable("VERSION", output);
+    Run("echo ", $"version={output} >> "$GITHUB_OUTPUT");
   }
 );
 Target(
