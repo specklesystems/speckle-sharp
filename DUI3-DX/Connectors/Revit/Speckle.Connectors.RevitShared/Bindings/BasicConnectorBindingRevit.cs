@@ -50,11 +50,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public string GetSourceApplicationName() => _revitSettings.HostSlug.ToLower(); // POC: maybe not right place but... // ANOTHER POC: We should align this naming from somewhere in common DUI projects instead old structs. I know there are other POC comments around this
 
-  public string GetSourceApplicationVersion()
-  {
-    // POC: maybe not right place but...
-    return _revitSettings.HostAppVersion;
-  }
+  public string GetSourceApplicationVersion() => _revitSettings.HostAppVersion; // POC: maybe not right place but...
 
   public DocumentInfo? GetDocumentInfo()
   {
@@ -67,13 +63,17 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
       return null;
     }
 
-    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString(), doc.PathName);
     if (doc.IsFamilyDocument)
     {
-      info.Message = "Family Environment files not supported by Speckle.";
+      return new DocumentInfo("", "", "") { Message = "Family environment files not supported by Speckle." };
     }
 
-    // POC: Notify user here if document is null.
+    var info = new DocumentInfo(
+      doc.Title,
+      doc.GetHashCode().ToString(),
+      string.IsNullOrEmpty(doc.PathName) ? "unsaved document" : doc.PathName // POC: for some reason, the FE is checking for a doc id to decide whether it's in a "I have a doc open" state or not.
+    );
+
     return info;
   }
 
