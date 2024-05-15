@@ -25,6 +25,20 @@ public class SpeckleRhinoPanelHost : RhinoWindows.Controls.WpfElementHost
   {
     if (e.PanelId == typeof(SpeckleRhinoPanelHost).GUID)
     {
+      // This check comes from behavioral difference on closing Rhino Panels.
+      // IsPanelVisible returns;
+      //  - True, when docked Panel closed from the list on right click on panel tab,
+      // whenever it is closed with this way, Rhino.Panels tries to reinit this object and expect the different UIElement, that's why we disconnect Child.
+      //  - False, when detached Panel is closed by 'X' close button.
+      // whenever it is closed with this way, Rhino.Panels don't create this object, that's why we do not disconnect Child UIElement.
+      if (!Panels.IsPanelVisible(typeof(SpeckleRhinoPanelHost).GUID))
+      {
+        return;
+      }
+
+      // Unsubscribe from the event to prevent growing registrations.
+      Panels.Closed -= PanelsOnClosed;
+
       // Disconnect UIElement from WpfElementHost. Otherwise, we can't reinit panel with same DUI3ControlWebView
       if (_webView != null)
       {
