@@ -1,13 +1,9 @@
 using System.Drawing;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.Files;
 using Speckle.Connectors.Autocad.HostApp;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
-using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.DUI.WebView;
 
@@ -19,7 +15,7 @@ public class AutocadCommand
   private static readonly Guid s_id = new("3223E594-1B09-4E54-B3DD-8EA0BECE7BA5");
   private IAutocadPlugin? _autocadPlugin;
 
-  public AutofacContainer? Container { get; private set; }
+  public SpeckleContainer? Container { get; private set; }
 
   [CommandMethod("SpeckleNewUI")]
   public void Command()
@@ -36,12 +32,11 @@ public class AutocadCommand
       DockEnabled = (DockSides)((int)DockSides.Left + (int)DockSides.Right)
     };
 
-    Container = new AutofacContainer(new StorageInfo());
-    Container.PreBuildEvent += ContainerPreBuildEvent;
+    var builder = SpeckleContainerBuilder.CreateInstance();
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
-    Container.LoadAutofacModules(autocadSettings.Modules).AddSingletonInstance(autocadSettings).Build();
+    Container = builder.LoadAutofacModules(autocadSettings.Modules).AddSingleton(autocadSettings).Build();
 
     // Resolve root plugin object and initialise.
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
@@ -61,12 +56,5 @@ public class AutocadCommand
       PaletteSet.KeepFocus = true;
       PaletteSet.Visible = true;
     }
-  }
-
-  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
-  {
-    containerBuilder.RegisterRawConversions();
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
-    containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
 }

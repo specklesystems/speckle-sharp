@@ -1,9 +1,7 @@
-// POC: not sure we should have this here as it attaches us to autofac, maybe a bit prematurely...
-
 using Autodesk.Revit.DB;
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
@@ -11,44 +9,44 @@ using Speckle.Converters.RevitShared.Services;
 using Speckle.Converters.RevitShared.ToSpeckle;
 
 namespace Speckle.Converters.Revit2023.DependencyInjection;
-
-public class AutofacRevitConverterModule : Module
+public class RevitConverterModule : ISpeckleModule
 {
-  protected override void Load(ContainerBuilder builder)
+  public void Load(SpeckleContainerBuilder builder)
   {
+    builder.AddConverterCommon();
+    builder.AddSingleton(new RevitContext());
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.RegisterType<RevitConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
+    builder.AddScoped<ISpeckleConverterToSpeckle, RevitConverterToSpeckle>();
 
     // factory for conversions
-    builder
-      .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
-      .As<IFactory<string, IHostObjectToSpeckleConversion>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<RecursiveConverterResolver<IHostObjectToSpeckleConversion>>()
-      .As<IConverterResolver<IHostObjectToSpeckleConversion>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<
+      IFactory<string, IHostObjectToSpeckleConversion>,
+      Factory<string, IHostObjectToSpeckleConversion>
+    >();
+    builder.AddScoped<
+      IConverterResolver<IHostObjectToSpeckleConversion>,
+      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+    >();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
-    builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
+    builder.AddScoped<ScalingServiceToSpeckle>();
 
     // POC: the concrete type can come out if we remove all the reference to it
-    builder.RegisterType<RevitConversionContextStack>().As<IRevitConversionContextStack>().InstancePerLifetimeScope();
+    builder.AddScoped<IRevitConversionContextStack, RevitConversionContextStack>();
 
-    builder
-      .RegisterType<RevitToSpeckleUnitConverter>()
-      .As<IHostToSpeckleUnitConverter<ForgeTypeId>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<IHostToSpeckleUnitConverter<ForgeTypeId>, RevitToSpeckleUnitConverter>();
 
-    builder.RegisterType<ReferencePointConverter>().As<IReferencePointConverter>().InstancePerLifetimeScope();
-    builder.RegisterType<RevitConversionSettings>().AsSelf().InstancePerLifetimeScope();
+    builder.AddScoped<IReferencePointConverter, ReferencePointConverter>();
+    builder.AddScoped<RevitConversionSettings>();
 
-    builder.RegisterType<RevitVersionConversionHelper>().As<IRevitVersionConversionHelper>().InstancePerLifetimeScope();
+    builder.AddScoped<IRevitVersionConversionHelper, RevitVersionConversionHelper>();
 
-    builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<HostedElementConversionToSpeckle>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<ParameterObjectAssigner>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<SlopeArrowExtractor>().As<ISlopeArrowExtractor>().InstancePerLifetimeScope();
+    builder.AddScoped<ParameterValueExtractor>();
+    builder.AddScoped<DisplayValueExtractor>();
+    builder.AddScoped<HostedElementConversionToSpeckle>();
+    builder.AddScoped<ParameterObjectAssigner>();
+    builder.AddScoped<ISlopeArrowExtractor, SlopeArrowExtractor>();
+    builder.AddScoped<SendSelection>();
+    builder.AddScoped<ToSpeckleConvertedObjectsCache>();
   }
 }

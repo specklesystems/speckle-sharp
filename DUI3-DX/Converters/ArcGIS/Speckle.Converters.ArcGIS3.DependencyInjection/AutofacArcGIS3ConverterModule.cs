@@ -1,52 +1,44 @@
-// POC: not sure we should have this here as it attaches us to autofac, maybe a bit prematurely...
-
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.DependencyInjection;
-
-public class AutofacArcGISConverterModule : Module
+public class ArcGISConverterModule : ISpeckleModule
 {
-  protected override void Load(ContainerBuilder builder)
+  public void Load(SpeckleContainerBuilder builder)
   {
+    builder.AddConverterCommon();
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
-    builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
-    builder.RegisterType<FeatureClassUtils>().As<IFeatureClassUtils>().InstancePerLifetimeScope();
-    builder.RegisterType<ArcGISFieldUtils>().As<IArcGISFieldUtils>().InstancePerLifetimeScope();
-    builder.RegisterType<CharacterCleaner>().As<ICharacterCleaner>().InstancePerLifetimeScope();
-    builder.RegisterType<ArcGISProjectUtils>().As<IArcGISProjectUtils>().InstancePerLifetimeScope();
-    builder.RegisterType<NonNativeFeaturesUtils>().As<INonNativeFeaturesUtils>().InstancePerLifetimeScope();
+    builder.AddScoped<ISpeckleConverterToSpeckle, ArcGISConverterToSpeckle>();
+    builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
+    builder.AddScoped<IFeatureClassUtils, FeatureClassUtils>();
+    builder.AddScoped<IArcGISFieldUtils, ArcGISFieldUtils>();
+    builder.AddScoped<ICharacterCleaner, CharacterCleaner>();
+    builder.AddScoped<IArcGISProjectUtils, ArcGISProjectUtils>();
+    builder.AddScoped<INonNativeFeaturesUtils, NonNativeFeaturesUtils>();
 
-    builder
-      .RegisterType<ArcGISToSpeckleUnitConverter>()
-      .As<IHostToSpeckleUnitConverter<Unit>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<IHostToSpeckleUnitConverter<Unit>, ArcGISToSpeckleUnitConverter>();
 
     // single stack per conversion
-    builder
-      .RegisterType<ArcGISConversionContextStack>()
-      .As<IConversionContextStack<Map, Unit>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<IConversionContextStack<Map, Unit>, ArcGISConversionContextStack>();
 
     // factory for conversions
-    builder
-      .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
-      .As<IFactory<string, IHostObjectToSpeckleConversion>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
-      .As<IFactory<string, ISpeckleObjectToHostConversion>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<RecursiveConverterResolver<ISpeckleObjectToHostConversion>>()
-      .As<IConverterResolver<ISpeckleObjectToHostConversion>>()
-      .InstancePerLifetimeScope();
+    builder.AddScoped<
+      IFactory<string, IHostObjectToSpeckleConversion>,
+      Factory<string, IHostObjectToSpeckleConversion>
+    >();
+    builder.AddScoped<
+      IConverterResolver<IHostObjectToSpeckleConversion>,
+      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+    >();
+    builder.AddScoped<
+      IConverterResolver<ISpeckleObjectToHostConversion>,
+      RecursiveConverterResolver<ISpeckleObjectToHostConversion>
+    >();
   }
 }
