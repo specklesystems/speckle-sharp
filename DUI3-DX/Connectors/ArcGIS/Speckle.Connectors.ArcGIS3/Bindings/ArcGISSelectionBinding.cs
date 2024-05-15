@@ -7,8 +7,6 @@ namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public class ArcGISSelectionBinding : ISelectionBinding
 {
-  private const string SELECTION_EVENT = "setSelection";
-
   public string Name { get; } = "selectionBinding";
   public IBridge Parent { get; set; }
 
@@ -24,7 +22,7 @@ public class ArcGISSelectionBinding : ISelectionBinding
   private void OnSelectionChanged(MapViewEventArgs args)
   {
     SelectionInfo selInfo = GetSelection();
-    Parent?.Send(SELECTION_EVENT, selInfo);
+    Parent?.Send(SelectionBindingEvents.SET_SELECTION, selInfo);
   }
 
   public SelectionInfo GetSelection()

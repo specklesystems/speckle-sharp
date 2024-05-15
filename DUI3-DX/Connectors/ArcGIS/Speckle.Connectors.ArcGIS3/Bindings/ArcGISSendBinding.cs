@@ -13,6 +13,7 @@ using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
+using Speckle.Connectors.ArcGIS.Filters;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -64,7 +65,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     {
       ChangedObjectIds.Add(layer.URI);
     }
-    RunExpirationChecks();
+    RunExpirationChecks(true);
   }
 
   private void GetIdsForStandaloneTablesRemovedEvent(StandaloneTableEventArgs args)
@@ -73,7 +74,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     {
       ChangedObjectIds.Add(table.URI);
     }
-    RunExpirationChecks();
+    RunExpirationChecks(true);
   }
 
   private void GetIdsForMapPropertyChangedEvent(MapPropertyChangedEventArgs args)
@@ -85,7 +86,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         ChangedObjectIds.Add(member.URI);
       }
     }
-    RunExpirationChecks();
+    RunExpirationChecks(false);
   }
 
   private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
@@ -94,7 +95,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     {
       ChangedObjectIds.Add(member.URI);
     }
-    RunExpirationChecks();
+    RunExpirationChecks(false);
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
@@ -162,7 +163,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   /// <summary>
   /// Checks if any sender model cards contain any of the changed objects. If so, also updates the changed objects hashset for each model card - this last part is important for on send change detection.
   /// </summary>
-  private void RunExpirationChecks()
+  private void RunExpirationChecks(bool idsDeleted)
   {
     var senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
@@ -170,12 +171,20 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard sender in senders)
     {
-      var intersection = sender.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
+      var objIds = sender.SendFilter.NotNull().GetObjectIds();
+      var intersection = objIds.Intersect(objectIdsList).ToList();
       bool isExpired = sender.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
         expiredSenderIds.Add(sender.ModelCardId.NotNull());
         sender.ChangedObjectIds.UnionWith(intersection.NotNull());
+
+        // Update the model card object Ids
+        if (idsDeleted && sender.SendFilter is ArcGISSelectionFilter filter)
+        {
+          List<string> remainingObjIds = objIds.SkipWhile(x => intersection.Contains(x)).ToList();
+          filter.SelectedObjectIds = remainingObjIds;
+        }
       }
     }
 
