@@ -1,36 +1,16 @@
 using System.Reflection;
 using Autofac;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Logging;
 
 namespace Speckle.Converters.Common.DependencyInjection;
 
 public static class ConversionTypesInjector
 {
-  public static ContainerBuilder InjectNamedTypes<T>(this ContainerBuilder containerBuilder)
+  public static void InjectNamedTypes<T>(this SpeckleContainerBuilder containerBuilder)
     where T : notnull
   {
-    List<Type> types = new();
-
-    // POC: hard-coding speckle... :/
-    foreach (
-      var asm in AppDomain.CurrentDomain
-        .GetAssemblies()
-        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
-    )
-    {
-      try
-      {
-        var asmTypes = asm.GetTypes();
-
-        // POC: IsAssignableFrom()
-        types.AddRange(asmTypes.Where(y => y.GetInterface(typeof(T).Name) != null));
-      }
-      catch (Exception ex) when (!ex.IsFatal())
-      {
-        // POC: be more specific
-      }
-    }
+    var types = containerBuilder.SpeckleTypes;
 
     // we only care about named types
     var byName = types
@@ -53,7 +33,7 @@ public static class ConversionTypesInjector
       var first = namedTypes[0];
 
       // POC: may need to be instance per lifecycle scope
-      containerBuilder.RegisterType(first.type).Keyed<T>(first.name).InstancePerLifetimeScope();
+      containerBuilder.ContainerBuilder.RegisterType(first.type).Keyed<T>(first.name).InstancePerLifetimeScope();
 
       // POC: not sure yet if...
       // * This should be an array of types
@@ -64,7 +44,7 @@ public static class ConversionTypesInjector
       // POC: should we explode if no found?
       if (secondaryType != null)
       {
-        containerBuilder
+        containerBuilder.ContainerBuilder
           .RegisterType(first.type)
           .As(secondaryType)
           .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
@@ -76,7 +56,7 @@ public static class ConversionTypesInjector
       foreach (var other in namedTypes)
       {
         // POC: is this the right scope?
-        containerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
+        containerBuilder.ContainerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
 
         // POC: not sure yet if...
         // * This should be an array of types
@@ -84,15 +64,13 @@ public static class ConversionTypesInjector
         // * Whether this is in the write project... hmmm
         // POC: IsAssignableFrom()
         // NOT very DRY
-        secondaryType = secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+        secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
         // POC: should we explode if no found?
         if (secondaryType != null)
         {
-          containerBuilder.RegisterType(first.type).As(secondaryType).InstancePerLifetimeScope();
+          containerBuilder.ContainerBuilder.RegisterType(first.type).As(secondaryType).InstancePerLifetimeScope();
         }
       }
     }
-
-    return containerBuilder;
   }
 }
