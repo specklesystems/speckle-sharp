@@ -63,7 +63,6 @@ public class AutofacRhinoModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
-    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
