@@ -14,10 +14,10 @@
         "husky"
       ]
     },
-    "minver-cli": {
-      "version": "5.0.0",
+    "gitversion.tool": {
+      "version": "5.12.0",
       "commands": [
-        "minver"
+        "dotnet-gitversion"
       ]
     }
   }
