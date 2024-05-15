@@ -11,6 +11,8 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
+using ArcGIS.Desktop.Mapping.Events;
+using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -45,6 +47,54 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
+    SubscribeToArcGISEvents();
+  }
+
+  private void SubscribeToArcGISEvents()
+  {
+    LayersRemovedEvent.Subscribe(GetIdsForLayersRemovedEvent, true);
+    StandaloneTablesRemovedEvent.Subscribe(GetIdsForStandaloneTablesRemovedEvent, true);
+    MapPropertyChangedEvent.Subscribe(GetIdsForMapPropertyChangedEvent, true); // Map units, CRS etc.
+    MapMemberPropertiesChangedEvent.Subscribe(GetIdsForMapMemberPropertiesChangedEvent, true); // e.g. Layer name
+  }
+
+  private void GetIdsForLayersRemovedEvent(LayerEventsArgs args)
+  {
+    foreach (Layer layer in args.Layers)
+    {
+      ChangedObjectIds.Add(layer.URI);
+    }
+    RunExpirationChecks();
+  }
+
+  private void GetIdsForStandaloneTablesRemovedEvent(StandaloneTableEventArgs args)
+  {
+    foreach (StandaloneTable table in args.Tables)
+    {
+      ChangedObjectIds.Add(table.URI);
+    }
+    RunExpirationChecks();
+  }
+
+  private void GetIdsForMapPropertyChangedEvent(MapPropertyChangedEventArgs args)
+  {
+    foreach (Map map in args.Maps)
+    {
+      foreach (MapMember member in map.Layers)
+      {
+        ChangedObjectIds.Add(member.URI);
+      }
+    }
+    RunExpirationChecks();
+  }
+
+  private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
+  {
+    foreach (MapMember member in args.MapMembers)
+    {
+      ChangedObjectIds.Add(member.URI);
+    }
+    RunExpirationChecks();
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
@@ -116,13 +166,16 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   {
     var senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
+    string[] objectIdsList = ChangedObjectIds.ToArray();
 
-    foreach (var sender in senders)
+    foreach (SenderModelCard sender in senders)
     {
+      var intersection = sender.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
       bool isExpired = sender.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
         expiredSenderIds.Add(sender.ModelCardId.NotNull());
+        sender.ChangedObjectIds.UnionWith(intersection.NotNull());
       }
     }
 
