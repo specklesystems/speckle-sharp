@@ -64,7 +64,7 @@ Target(
   Consts.Solutions,
   s =>
   {
-    Run("dotnet", $"dotnet restore --locked-mode {s}");
+    Run("dotnet", $"dotnet restore {s}");
   }
 );
 
