@@ -133,7 +133,8 @@ Target(
   {
     var token = arguments.First();
     var runId = arguments.Skip(1).First();
-    await Github.BuildInstallers(token, runId).ConfigureAwait(false);
+    var version = arguments.Skip(2).First();
+    await Github.BuildInstallers(token, runId, version).ConfigureAwait(false);
   }
 );
 

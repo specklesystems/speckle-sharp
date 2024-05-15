@@ -53,3 +53,15 @@ jobs:
           VERSION: ${{ env.fullSemVer }}
         run: ./build.ps1 build
 
+      - name: Pack
+        run: ./build.ps1 zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: output.zip
+          path: output/*.*
+          compression-level: 0 # no compression
+  
+      - name: Trigger Build Installers
+        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}

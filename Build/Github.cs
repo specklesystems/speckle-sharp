@@ -9,10 +9,10 @@ namespace Build;
 
 public static class Github
 {
-  public static async Task BuildInstallers(string token, string runId)
+  public static async Task BuildInstallers(string token, string runId, string version)
   {
     using var client = new HttpClient();
-    var payload = new { event_type = "build-installers", client_payload = new { run_id = runId } };
+    var payload = new { event_type = "build-installers", client_payload = new { run_id = runId, version } };
     var content = new StringContent(
       JsonSerializer.Serialize(payload),
       new MediaTypeHeaderValue(MediaTypeNames.Application.Json)
