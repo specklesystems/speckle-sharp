@@ -20,6 +20,12 @@
           "Microsoft.Extensions.Options": "7.0.0"
         }
       },
+      "PolySharp": {
+        "type": "Direct",
+        "requested": "[1.14.1, )",
+        "resolved": "1.14.1",
+        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
+      },
       "Serilog.Extensions.Logging": {
         "type": "Direct",
         "requested": "[7.0.0, )",
@@ -376,6 +382,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
+          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
@@ -383,6 +390,7 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
+          "PolySharp": "[1.14.1, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
           "Speckle.Core": "[2.0.999-local, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
@@ -392,12 +400,14 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Web.WebView2": "[1.0.1823.32, )",
+          "PolySharp": "[1.14.1, )",
           "Speckle.Connectors.DUI": "[2.0.999-local, )"
         }
       },
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
+          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
@@ -405,6 +415,7 @@
         "type": "Project",
         "dependencies": {
           "Esri.ArcGISPro.Extensions30": "[3.2.0.49743, )",
+          "PolySharp": "[1.14.1, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
@@ -412,6 +423,7 @@
         "type": "Project",
         "dependencies": {
           "Autofac": "[5.2.0, )",
+          "PolySharp": "[1.14.1, )",
           "Speckle.Converters.ArcGIS3": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
@@ -419,6 +431,7 @@
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
+          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[2.0.999-local, )"
         }
@@ -426,6 +439,7 @@
       "speckle.converters.common.dependencyinjection": {
         "type": "Project",
         "dependencies": {
+          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }

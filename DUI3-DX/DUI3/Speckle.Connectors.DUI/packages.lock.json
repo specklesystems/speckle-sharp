@@ -21,6 +21,12 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
+      "PolySharp": {
+        "type": "Direct",
+        "requested": "[1.14.1, )",
+        "resolved": "1.14.1",
+        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
+      },
       "System.Threading.Tasks.Dataflow": {
         "type": "Direct",
         "requested": "[6.0.0, )",
@@ -440,6 +446,7 @@
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
+          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
