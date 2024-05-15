@@ -39,7 +39,6 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).NotNull().GetVersion();
 
-  // TODO
   public DocumentInfo GetDocumentInfo() => new(Project.Current.URI, Project.Current.Name, Project.Current.Name);
 
   public DocumentModelStore GetDocumentState() => _store;

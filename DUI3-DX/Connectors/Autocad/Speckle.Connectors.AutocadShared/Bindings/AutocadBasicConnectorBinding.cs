@@ -50,8 +50,8 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     {
       return null;
     }
-    string name = doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
-    return new DocumentInfo(doc.Name, name, doc.Name);
+    string name = doc.Name.Split(System.IO.Path.PathSeparator).Last();
+    return new DocumentInfo(doc.Name, name, doc.GetHashCode().ToString());
   }
 
   public DocumentModelStore GetDocumentState() => _store;
