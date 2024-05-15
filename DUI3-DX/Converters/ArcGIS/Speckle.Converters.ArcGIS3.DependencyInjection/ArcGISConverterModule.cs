@@ -8,6 +8,7 @@ using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.DependencyInjection;
+
 public class ArcGISConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)

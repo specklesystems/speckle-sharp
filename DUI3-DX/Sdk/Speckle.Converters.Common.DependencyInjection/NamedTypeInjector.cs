@@ -56,7 +56,10 @@ public static class ConversionTypesInjector
       foreach (var other in namedTypes)
       {
         // POC: is this the right scope?
-        containerBuilder.ContainerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
+        containerBuilder.ContainerBuilder
+          .RegisterType(other.type)
+          .Keyed<T>($"{other.name}|{other.rank}")
+          .InstancePerLifetimeScope();
 
         // POC: not sure yet if...
         // * This should be an array of types

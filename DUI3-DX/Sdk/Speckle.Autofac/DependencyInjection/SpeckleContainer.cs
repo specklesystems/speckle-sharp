@@ -1,6 +1,7 @@
 using Autofac;
 
 namespace Speckle.Autofac.DependencyInjection;
+
 public class SpeckleContainer
 {
   private readonly IContainer _container;

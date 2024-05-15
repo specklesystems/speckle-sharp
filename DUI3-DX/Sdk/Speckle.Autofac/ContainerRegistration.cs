@@ -2,7 +2,6 @@
 
 namespace Speckle.Autofac;
 
-
 public static class ContainerRegistration
 {
   public static void AddAutofac(this SpeckleContainerBuilder builder)
