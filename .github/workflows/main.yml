@@ -2,9 +2,13 @@ name: .NET Build and Publish
 
 on:
   pull_request:
-    branches: ["dui3/alpha", "dui3/ci/github-actions-test"]
+    branches: ["dui3/alpha"]
+  push:
+    branches: ["main"]
+
 permissions:
-  contents: write 
+  contents: write
+
 jobs:
   build-and-publish:
     runs-on: windows-latest
@@ -12,6 +16,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

@@ -17,6 +17,12 @@
           "System.ValueTuple": "4.5.0"
         }
       },
+      "MinVer": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "ybkgpQMtt0Fo91l5rYtE3TZtD+Nmy5Ko091xvfXXOosQdMi30XO2EZ2+ShZt89gdu7RMmJqZaJ+e1q6d+6+KNw=="
+      },
       "PolySharp": {
         "type": "Direct",
         "requested": "[1.14.1, )",
@@ -438,7 +444,6 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
@@ -446,7 +451,6 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "PolySharp": "[1.14.1, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
           "Speckle.Core": "[2.0.999-local, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
@@ -456,21 +460,18 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Web.WebView2": "[1.0.1823.32, )",
-          "PolySharp": "[1.14.1, )",
           "Speckle.Connectors.DUI": "[2.0.999-local, )"
         }
       },
       "speckle.connectors.utils": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.converters.autocad2023": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.AutoCAD.API": "[2023.0.0, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
@@ -479,7 +480,6 @@
         "type": "Project",
         "dependencies": {
           "Autofac": "[5.2.0, )",
-          "PolySharp": "[1.14.1, )",
           "Speckle.Converters.Autocad2023": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
@@ -487,7 +487,6 @@
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[2.0.999-local, )"
         }
@@ -495,7 +494,6 @@
       "speckle.converters.common.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }

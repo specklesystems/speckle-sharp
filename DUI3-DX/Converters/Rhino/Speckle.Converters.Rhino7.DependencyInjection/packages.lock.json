@@ -11,6 +11,12 @@
           "Microsoft.Bcl.AsyncInterfaces": "1.1.0"
         }
       },
+      "MinVer": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "ybkgpQMtt0Fo91l5rYtE3TZtD+Nmy5Ko091xvfXXOosQdMi30XO2EZ2+ShZt89gdu7RMmJqZaJ+e1q6d+6+KNw=="
+      },
       "PolySharp": {
         "type": "Direct",
         "requested": "[1.14.1, )",
@@ -358,14 +364,12 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "PolySharp": "[1.14.1, )",
           "Speckle.Core": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[2.0.999-local, )"
         }
@@ -373,7 +377,6 @@
       "speckle.converters.common.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
@@ -381,7 +384,6 @@
       "speckle.converters.rhino7": {
         "type": "Project",
         "dependencies": {
-          "PolySharp": "[1.14.1, )",
           "RhinoCommon": "[7.13.21348.13001, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
