@@ -7,11 +7,6 @@
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <ConnectorSlug>acad</ConnectorSlug>
-    <ConnectorVersion>2023</ConnectorVersion>
-  </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\Converters\Autocad\Speckle.Converters.Autocad2023.DependencyInjection\Speckle.Converters.Autocad2023.DependencyInjection.csproj" />

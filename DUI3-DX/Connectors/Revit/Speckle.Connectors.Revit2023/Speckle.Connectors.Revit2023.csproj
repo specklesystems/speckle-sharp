@@ -6,11 +6,6 @@
   </PropertyGroup>
 
   <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
-
-  <PropertyGroup>
-    <ConnectorSlug>revit</ConnectorSlug>
-    <ConnectorVersion>2023</ConnectorVersion>
-  </PropertyGroup>
   
   <ItemGroup>
     <Reference Include="PresentationCore" />

@@ -6,11 +6,6 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
   
-  <PropertyGroup>
-    <ConnectorSlug>rhino</ConnectorSlug>
-    <ConnectorVersion>7</ConnectorVersion>
-  </PropertyGroup>
-  
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*" />
     <EmbeddedResource Include="Resources\**\*.ico" />

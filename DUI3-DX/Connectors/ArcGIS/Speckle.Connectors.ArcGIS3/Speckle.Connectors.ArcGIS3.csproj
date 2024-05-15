@@ -8,11 +8,6 @@
     <RootNameSpace>Speckle.Connectors.ArcGIS</RootNameSpace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <ConnectorSlug>arcgis</ConnectorSlug>
-    <ConnectorVersion>3</ConnectorVersion>
-  </PropertyGroup>
   
   <ItemGroup>
     <Content Include="Config.daml" />
