@@ -5,7 +5,7 @@ on:
     branches: ["dui3/alpha"]
 
 jobs:
-  build-and-publish:
+  test:
     runs-on: windows-latest
 
     steps:
