@@ -1,0 +1,208 @@
+# This file contains the individual jobs each connector must run to build/deploy.
+# Each application should have its own entry as a list of jobs.
+# These jobs will be pulled into the 'config-template.yml' file when needed.
+# The name of each build step will be set using the "slug"
+
+rhino:
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: rhino
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorRhino
+      dllname: SpeckleConnectorRhino.rhp
+      slug: grasshopper
+      context:
+        - digicert-keylocker
+  - build-connector-dotnet-mac:
+      name: rhino-build-mac
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      installername: SpeckleRhinoInstall
+      build-config: Release Mac
+      slug: rhino
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
+  - build-connector-dotnet-mac:
+      name: grasshopper-build-mac
+      slnname: ConnectorRhino
+      projname: ConnectorRhino7
+      build-config: Release Mac
+      installername: SpeckleGHInstall
+      slug: grasshopper
+      converter-files: "
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterRhino6/bin/Release/netstandard2.0/Objects.Converter.Rhino6.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
+        Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
+        "
+dynamo:
+  - build-connector:
+      slnname: ConnectorDynamo
+      dllname: SpeckleConnectorDynamo.dll
+      slug: dynamo
+      context:
+        - digicert-keylocker
+
+revit:
+  - build-connector:
+      slnname: ConnectorRevit
+      dllname: SpeckleConnectorRevit.dll
+      slug: revit
+      context:
+        - digicert-keylocker
+
+autocadcivil:
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: autocad
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: civil3d
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: advancesteel
+      context:
+        - digicert-keylocker
+bentley:
+  - build-connector:
+      slnname: ConnectorBentley
+      dllname: SpeckleConnectorMicroStation.dll
+      slug: microstation
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorBentley
+      dllname: SpeckleConnectorOpenBuildings.dll
+      slug: openbuildings
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorBentley
+      dllname: SpeckleConnectorOpenRail.dll
+      slug: openrail
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorBentley
+      dllname: SpeckleConnectorOpenRoads.dll
+      slug: openroads
+      context:
+        - digicert-keylocker
+
+teklastructures:
+  - build-connector:
+      slnname: ConnectorTeklaStructures
+      dllname: SpeckleConnectorTeklaStructures.dll
+      slug: teklastructures
+      context:
+        - digicert-keylocker
+csi:
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: etabs
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: sap2000
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: safe
+      context:
+        - digicert-keylocker
+  - build-connector:
+      slnname: ConnectorCSI
+      dllname: SpeckleConnectorCSI.dll
+      slug: csibridge
+      context:
+        - digicert-keylocker
+
+archicad:
+  - build-archicad-add-on:
+      archicadversion: "25"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-25
+  - build-archicad-add-on:
+      archicadversion: "26"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-26
+  - build-archicad-add-on:
+      archicadversion: "27"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-27
+  - build-connector:
+      requires:
+        - build-archicad-add-on-25
+        - build-archicad-add-on-26
+        - build-archicad-add-on-27
+      slnname: ConnectorArchicad
+      projname: ConnectorArchicad
+      dllname: ConnectorArchicad.dll
+      slug: archicad
+      build-with-msbuild: false
+      context:
+        - digicert-keylocker
+  - build-archicad-add-on-mac:
+      archicadversion: "25"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-25-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
+  - build-archicad-add-on-mac:
+      archicadversion: "26"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-26-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
+  - build-archicad-add-on-mac:
+      archicadversion: "27"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-27-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
+  - build-connector-mac:
+      name: archicad-build-mac
+      requires:
+        - build-archicad-add-on-25-mac
+        - build-archicad-add-on-26-mac
+        - build-archicad-add-on-27-mac
+      slnname: ConnectorArchicad
+      projname: ConnectorArchicad
+      slug: archicad
+      build-with-mono: false
+      installername: SpeckleArchicadInstall
+
+navisworks:
+  - build-connector:
+      slnname: ConnectorNavisworks
+      dllname: SpeckleConnectorNavisworks.dll
+      slug: navisworks
+      context:
+        - digicert-keylocker
