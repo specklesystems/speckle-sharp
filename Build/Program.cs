@@ -55,6 +55,7 @@ Target(
   async () =>
   {
     var (output, _) = await ReadAsync("dotnet", "minver -v w").ConfigureAwait(false);
+    output = output.Trim();
     Console.WriteLine($"Version: {output}");
     Run("echo ", $"\"version={output}\" >> \"$GITHUB_OUTPUT\"");
   }
