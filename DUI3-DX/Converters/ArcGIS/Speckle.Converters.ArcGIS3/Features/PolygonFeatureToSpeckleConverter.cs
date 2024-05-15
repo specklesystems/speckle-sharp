@@ -4,7 +4,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IReadOnlyList<GisPolygonGeometry>>
+public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IReadOnlyList<PolygonGeometry>>
 {
   private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
@@ -13,10 +13,10 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
     _segmentConverter = segmentConverter;
   }
 
-  public IReadOnlyList<GisPolygonGeometry> RawConvert(ACG.Polygon target)
+  public IReadOnlyList<PolygonGeometry> RawConvert(ACG.Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
-    List<GisPolygonGeometry> polygonList = new();
+    List<PolygonGeometry> polygonList = new();
     int partCount = target.PartCount;
 
     if (partCount == 0)
@@ -24,7 +24,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
       throw new SpeckleConversionException("ArcGIS Polygon contains no parts");
     }
 
-    GisPolygonGeometry? polygon = null;
+    PolygonGeometry? polygon = null;
 
     // test each part for "exterior ring"
     for (int idx = 0; idx < partCount; idx++)

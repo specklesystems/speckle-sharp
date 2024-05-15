@@ -21,14 +21,7 @@ public class NurbsCurveToHostConverter : IRawConversion<SOG.Curve, RG.NurbsCurve
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.NurbsCurve RawConvert(SOG.Curve target)
   {
-    RG.NurbsCurve? nurbsCurve = new(target.degree, target.points.Count / 3);
-
-#pragma warning disable CA1508
-    if (nurbsCurve == null) // POC: CNX-9272 Nullability is wrong here, cannot remove this warning but code is required.
-#pragma warning restore CA1508
-    {
-      throw new SpeckleConversionException("Attempt to create Nurbs Curve failed with no explanation from Rhino");
-    }
+    RG.NurbsCurve nurbsCurve = new(target.degree, target.points.Count / 3);
 
     // Hyper optimised curve control point conversion
     for (int i = 2, j = 0; i < target.points.Count; i += 3, j++)

@@ -1,6 +1,5 @@
 using Microsoft.Data.Sqlite;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Unit.Transports;

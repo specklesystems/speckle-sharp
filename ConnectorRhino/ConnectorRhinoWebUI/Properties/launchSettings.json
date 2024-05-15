@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConnectorRhinoWebUI": {
-      "commandName": "Project",
-      "nativeDebugging": false
-    }
-  }
-}

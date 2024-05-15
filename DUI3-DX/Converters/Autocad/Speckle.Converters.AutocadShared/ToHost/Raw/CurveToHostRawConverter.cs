@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Raw;
@@ -36,7 +34,7 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
     if (target.knots.Count == points.Count + target.degree - 1) // handles rhino format curves
     {
       knotList.Insert(0, knotList[0]);
-      knotList.Insert(knotList.Count - 1, knotList[knotList.Count - 1]);
+      knotList.Insert(knotList.Count - 1, knotList[^1]);
     }
     if (target.closed && target.periodic) // handles closed periodic curves
     {

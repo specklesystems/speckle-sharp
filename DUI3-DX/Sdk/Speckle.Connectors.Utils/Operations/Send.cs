@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Serilog.Context;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -25,7 +20,11 @@ public static class SendHelper
   /// </summary>
   /// <remarks/>
   /// <inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/>
+  /// <param name="transport"></param>
   /// <param name="useDefaultCache">When <see langword="true"/>, an additional <see cref="SQLiteTransport"/> will be included</param>
+  /// <param name="value"></param>
+  /// <param name="onProgressAction"></param>
+  /// <param name="cancellationToken"></param>
   /// <exception cref="ArgumentNullException">The <paramref name="transport"/> or <paramref name="value"/> was <see langword="null"/></exception>
   /// <example><code>
   /// using ServerTransport destination = new(account, streamId);
@@ -160,7 +159,7 @@ public static class SendHelper
     await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
     var parsed = JObject.Parse(obj);
-    JToken? idToken = parsed.GetValue("id");
+    JToken? idToken = parsed.GetValue("id", StringComparison.Ordinal);
 
     if (idToken == null)
     {

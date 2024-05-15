@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common.Objects;
+﻿using System.Diagnostics.CodeAnalysis;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common.DependencyInjection.ToHost;
@@ -22,12 +23,12 @@ public sealed class ToHostConverterWithoutFallback : ISpeckleConverterToHost
   {
     if (TryConvert(target, out object? result))
     {
-      return result!;
+      return result;
     }
     throw new NotSupportedException($"No conversion found for {target.GetType()}");
   }
 
-  internal bool TryConvert(Base target, out object? result)
+  internal bool TryConvert(Base target, [NotNullWhen(true)] out object? result)
   {
     // Direct conversion if a converter is found
     var objectConverter = _toHost.GetConversionForType(target.GetType());

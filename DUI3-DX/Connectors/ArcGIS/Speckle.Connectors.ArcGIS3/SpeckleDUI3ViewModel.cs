@@ -3,7 +3,7 @@ using ArcGIS.Desktop.Framework.Contracts;
 
 namespace Speckle.Connectors.ArcGIS;
 
-internal class SpeckleDUI3ViewModel : DockPane
+internal sealed class SpeckleDUI3ViewModel : DockPane
 {
   private const string DOCKPANE_ID = "SpeckleDUI3_SpeckleDUI3";
 
@@ -33,7 +33,7 @@ internal class SpeckleDUI3ViewModel : DockPane
 /// <summary>
 /// Button implementation to create a new instance of the pane and activate it.
 /// </summary>
-internal class SpeckleDUI3OpenButton : Button
+internal sealed class SpeckleDUI3OpenButton : Button
 {
   protected override void OnClick()
   {

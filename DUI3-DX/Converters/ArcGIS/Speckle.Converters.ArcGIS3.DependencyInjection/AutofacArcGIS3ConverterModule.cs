@@ -6,6 +6,7 @@ using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.DependencyInjection;
@@ -16,11 +17,12 @@ public class AutofacArcGISConverterModule : Module
   {
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
-    builder.RegisterType<ArcGISConverterToHost>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
+    builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
     builder.RegisterType<FeatureClassUtils>().As<IFeatureClassUtils>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISFieldUtils>().As<IArcGISFieldUtils>().InstancePerLifetimeScope();
     builder.RegisterType<CharacterCleaner>().As<ICharacterCleaner>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISProjectUtils>().As<IArcGISProjectUtils>().InstancePerLifetimeScope();
+    builder.RegisterType<NonNativeFeaturesUtils>().As<INonNativeFeaturesUtils>().InstancePerLifetimeScope();
 
     builder
       .RegisterType<ArcGISToSpeckleUnitConverter>()
@@ -41,6 +43,10 @@ public class AutofacArcGISConverterModule : Module
     builder
       .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
       .As<IFactory<string, ISpeckleObjectToHostConversion>>()
+      .InstancePerLifetimeScope();
+    builder
+      .RegisterType<RecursiveConverterResolver<ISpeckleObjectToHostConversion>>()
+      .As<IConverterResolver<ISpeckleObjectToHostConversion>>()
       .InstancePerLifetimeScope();
   }
 }

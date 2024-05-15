@@ -40,7 +40,7 @@ public class PolyCurveToSpeckleConverter : IRawConversion<RG.PolyCurve, SOG.Poly
       domain = _intervalConverter.RawConvert(target.Domain),
       length = target.GetLength(),
       bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))),
-      segments = target.DuplicateSegments().Select(CurveConverter!.RawConvert).ToList(),
+      segments = target.DuplicateSegments().Select(x => CurveConverter.NotNull().RawConvert(x)).ToList(),
       units = _contextStack.Current.SpeckleUnits
     };
     return myPoly;

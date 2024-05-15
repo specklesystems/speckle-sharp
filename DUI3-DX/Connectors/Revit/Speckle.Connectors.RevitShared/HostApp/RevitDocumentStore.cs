@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Revit.Async;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
@@ -14,37 +14,44 @@ using Speckle.Newtonsoft.Json;
 namespace Speckle.Connectors.Revit.HostApp;
 
 // POC: should be interfaced out
-internal class RevitDocumentStore : DocumentModelStore
+internal sealed class RevitDocumentStore : DocumentModelStore
 {
   // POC: move to somewhere central?
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
 
   private readonly RevitContext _revitContext;
+  private readonly IRevitIdleManager _idleManager;
   private readonly DocumentModelStorageSchema _documentModelStorageSchema;
   private readonly IdStorageSchema _idStorageSchema;
 
   public RevitDocumentStore(
+    IRevitIdleManager idleManager,
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
-    IdStorageSchema idStorageSchema
+    IdStorageSchema idStorageSchema,
+    bool writeToFileOnChange
   )
-    : base(serializerSettings)
+    : base(serializerSettings, writeToFileOnChange)
   {
+    _idleManager = idleManager;
     _revitContext = revitContext;
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
 
-    UIApplication uiApplication = _revitContext.UIApplication;
-    uiApplication.ApplicationClosing += (_, _) => WriteToFile(); // POC: Not sure why we would need it since we have save and clos events
-    uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile(); // POC: Not sure why we have it
+    UIApplication uiApplication = _revitContext.UIApplication.NotNull();
 
     uiApplication.ViewActivated += OnViewActivated;
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
     uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+
+    Models.CollectionChanged += (_, _) => WriteToFile();
+
+    // There is no event that we can hook here for double-click file open...
+    // It is kind of harmless since we create this object as "SingleInstance".
+    ReadFromFile();
+    OnDocumentChanged();
   }
 
   /// <summary>
@@ -63,61 +70,59 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    if (e.PreviousActiveView?.Document != null)
-    {
-      WriteToFileWithDoc(e.PreviousActiveView.Document);
-    }
-
     IsDocumentInit = true;
-    ReadFromFile();
-    OnDocumentChanged();
+    _idleManager.SubscribeToIdle(() =>
+    {
+      ReadFromFile();
+      OnDocumentChanged();
+    });
   }
 
-  private void WriteToFileWithDoc(Document doc)
+  public override void WriteToFile()
   {
-    // POC: this can happen?
+    var doc = _revitContext.UIApplication?.ActiveUIDocument.Document;
+    // POC: this can happen? A: Not really, imho (dim)
     if (doc == null)
     {
       return;
     }
 
-    string serializedModels = Serialize();
+    RevitTask.RunAsync(() =>
+    {
+      using Transaction t = new(doc, "Speckle Write State");
+      t.Start();
+      using DataStorage ds = GetSettingsDataStorage(doc) ?? DataStorage.Create(doc);
 
-    using Transaction t = new(doc, "Speckle Write State");
-    t.Start();
-    using DataStorage ds = GetSettingsDataStorage(doc) ?? DataStorage.Create(doc);
+      using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
+      string serializedModels = Serialize();
+      stateEntity.Set("contents", serializedModels);
 
-    using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
-    // string serializedModels = Serialize();
-    stateEntity.Set("contents", serializedModels);
+      using Entity idEntity = new(_idStorageSchema.GetSchema());
+      idEntity.Set("Id", s_revitDocumentStoreId);
 
-    using Entity idEntity = new(_idStorageSchema.GetSchema());
-    idEntity.Set("Id", s_revitDocumentStoreId);
-
-    ds.SetEntity(idEntity);
-    ds.SetEntity(stateEntity);
-    t.Commit();
+      ds.SetEntity(idEntity);
+      ds.SetEntity(stateEntity);
+      t.Commit();
+    });
   }
-
-  public override void WriteToFile() => WriteToFileWithDoc(_revitContext.UIApplication.ActiveUIDocument.Document);
 
   public override void ReadFromFile()
   {
     try
     {
-      Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
+      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
-        Models = new List<ModelCard>();
+        Models = new();
         return;
       }
 
       string modelsString = stateEntity.Get<string>("contents");
-      Models = Deserialize(modelsString);
+      Models = Deserialize(modelsString).NotNull();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      Models = new List<ModelCard>();
+      Models = new();
       Debug.WriteLine(ex.Message); // POC: Log here error and notify UI that cards not read succesfully
     }
   }
@@ -148,8 +153,12 @@ internal class RevitDocumentStore : DocumentModelStore
     return null;
   }
 
-  private Entity? GetSpeckleEntity(Document doc)
+  private Entity? GetSpeckleEntity(Document? doc)
   {
+    if (doc is null)
+    {
+      return null;
+    }
     using FilteredElementCollector collector = new(doc);
 
     FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));

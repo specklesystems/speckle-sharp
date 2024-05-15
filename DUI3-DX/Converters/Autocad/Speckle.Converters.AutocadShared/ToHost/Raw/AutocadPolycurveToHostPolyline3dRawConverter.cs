@@ -1,5 +1,4 @@
 using Speckle.Converters.Autocad.Extensions;
-using System.Collections.Generic;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common;

@@ -24,7 +24,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch
   {
     List<Base> converted = new();
     // placeholder, needs to be declared in order to be used in the Ring patch type
-    SGIS.GisPolygonGeometry3d polygonGeom = new() { };
+    SGIS.PolygonGeometry3d polygonGeom = new() { };
 
     // convert and store all multipatch points per Part
     List<List<SOG.Point>> allPoints = new();
@@ -65,7 +65,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch
         multipatch.units = _contextStack.Current.SpeckleUnits;
         converted.Add(multipatch);
       }
-      // in case of RingMultipatch - return GisPolygonGeometry3d
+      // in case of RingMultipatch - return PolygonGeometry3d
       // the following Patch Parts cannot be pushed to external method, as they will possibly, add voids/rings to the same GisPolygon
       else if (patchType == ACG.PatchType.FirstRing)
       {
@@ -75,7 +75,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch
           converted.Add(polygonGeom);
         }
 
-        // first ring means a start of a new GisPolygonGeometry3d
+        // first ring means a start of a new PolygonGeometry3d
         polygonGeom = new() { voids = new List<SOG.Polyline>() };
         List<double> pointCoords = allPoints[idx].SelectMany(x => new List<double>() { x.x, x.y, x.z }).ToList();
 

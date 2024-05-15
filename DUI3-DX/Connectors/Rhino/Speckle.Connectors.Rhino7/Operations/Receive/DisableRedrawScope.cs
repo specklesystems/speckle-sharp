@@ -1,5 +1,4 @@
-﻿using System;
-using Rhino.DocObjects.Tables;
+﻿using Rhino.DocObjects.Tables;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 

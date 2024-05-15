@@ -50,7 +50,7 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
     // add extra knots at start & end  because Rhino's knot multiplicity standard is (# control points + degree - 1)
     var knots = nurbsCurve.Knots.ToList();
     knots.Insert(0, knots[0]);
-    knots.Insert(knots.Count - 1, knots[knots.Count - 1]);
+    knots.Insert(knots.Count - 1, knots[^1]);
 
     var myCurve = new SOG.Curve(displayValue, _contextStack.Current.SpeckleUnits)
     {

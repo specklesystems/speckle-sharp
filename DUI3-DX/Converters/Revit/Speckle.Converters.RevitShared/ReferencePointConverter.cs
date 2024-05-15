@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.RevitShared.Helpers;
+﻿using System.Diagnostics.CodeAnalysis;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared;
 
@@ -53,18 +54,17 @@ public class ReferencePointConverter : IReferencePointConverter
     return _docTransforms[id];
   }
 
+  [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
   public DB.Transform GetReferencePointTransform(string referencePointSetting)
   {
     // first get the main doc base points and reference setting transform
     var referencePointTransform = DB.Transform.Identity;
 
     // POC: bogus disposal below
-#pragma warning disable CA2000
     var points = new DB.FilteredElementCollector(_contextStack.Current.Document)
       .OfClass(typeof(DB.BasePoint))
       .Cast<DB.BasePoint>()
       .ToList();
-#pragma warning restore CA2000
 
     var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
     var surveyPoint = points.FirstOrDefault(o => o.IsShared);
@@ -84,11 +84,9 @@ public class ReferencePointConverter : IReferencePointConverter
         var angle = projectPoint.get_Parameter(DB.BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
 
         // POC: following disposed incorrectly or early or maybe a false negative?
-#pragma warning disable CA2000
         referencePointTransform = DB.Transform
           .CreateTranslation(surveyPoint.Position)
           .Multiply(DB.Transform.CreateRotation(DB.XYZ.BasisZ, angle));
-#pragma warning restore CA2000
 
         break;
 

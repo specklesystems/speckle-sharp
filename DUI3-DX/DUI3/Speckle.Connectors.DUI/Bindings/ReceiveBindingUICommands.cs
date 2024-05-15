@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models.Card;
 

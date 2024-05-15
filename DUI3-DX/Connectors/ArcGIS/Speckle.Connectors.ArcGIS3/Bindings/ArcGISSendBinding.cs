@@ -6,10 +6,11 @@ using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using Speckle.Connectors.ArcGIS.Utils;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Settings;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -19,7 +20,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public SendBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
-  private readonly ArcGISDocumentStore _store;
+  private readonly DocumentModelStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
@@ -30,7 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   public ArcGISSendBinding(
-    ArcGISDocumentStore store,
+    DocumentModelStore store,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,
@@ -85,10 +86,10 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
       string versionId = await unitOfWork.Service
         .Execute(
-          modelCard.SendFilter,
-          modelCard.AccountId,
-          modelCard.ProjectId,
-          modelCard.ModelId,
+          modelCard.SendFilter.NotNull(),
+          modelCard.AccountId.NotNull(),
+          modelCard.ProjectId.NotNull(),
+          modelCard.ModelId.NotNull(),
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
           cts.Token
         )
@@ -113,15 +114,15 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   /// </summary>
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    var senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
 
     foreach (var sender in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      bool isExpired = sender.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(sender.ModelCardId.NotNull());
       }
     }
 
@@ -131,7 +132,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void Dispose()

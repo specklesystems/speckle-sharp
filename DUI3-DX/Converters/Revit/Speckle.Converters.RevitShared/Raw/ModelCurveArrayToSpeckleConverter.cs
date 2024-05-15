@@ -6,7 +6,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-internal class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.ModelCurveArray, SOG.Polycurve>
+internal sealed class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.ModelCurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ScalingServiceToSpeckle _scalingService;
@@ -34,7 +34,7 @@ internal class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.ModelCurveA
     }
 
     var start = curves[0].GetEndPoint(0);
-    var end = curves[curves.Length - 1].GetEndPoint(1);
+    var end = curves[^1].GetEndPoint(1);
     polycurve.units = _contextStack.Current.SpeckleUnits;
     polycurve.closed = start.DistanceTo(end) < RevitConversionContextStack.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));

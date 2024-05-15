@@ -1,5 +1,5 @@
 // POC: why is SpeckleException in this namespace? :8
-using System;
+
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Utils;

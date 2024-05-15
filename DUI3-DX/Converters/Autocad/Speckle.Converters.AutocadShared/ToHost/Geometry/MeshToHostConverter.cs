@@ -2,9 +2,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Objects.Utils;
-using System.Linq;
 using Speckle.Core.Logging;
-using System.Collections.Generic;
 
 namespace Speckle.Converters.Autocad.Geometry;
 

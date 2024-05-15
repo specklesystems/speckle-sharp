@@ -5,7 +5,7 @@ using Autodesk.Revit.UI;
 namespace Speckle.Connectors.Revit.Plugin;
 
 [Transaction(TransactionMode.Manual)]
-internal class SpeckleRevitCommand : IExternalCommand
+internal sealed class SpeckleRevitCommand : IExternalCommand
 {
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {

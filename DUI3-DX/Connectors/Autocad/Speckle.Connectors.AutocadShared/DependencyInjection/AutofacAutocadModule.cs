@@ -43,7 +43,11 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadPlugin>().As<IAutocadPlugin>().SingleInstance();
     builder.RegisterType<TransactionContext>().InstancePerDependency();
     builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
-    builder.RegisterType<AutocadDocumentStore>().As<DocumentModelStore>().SingleInstance();
+    builder
+      .RegisterType<AutocadDocumentStore>()
+      .As<DocumentModelStore>()
+      .SingleInstance()
+      .WithParameter("writeToFileOnChange", true);
     builder.RegisterType<AutocadContext>().SingleInstance();
     builder.RegisterType<AutocadLayerManager>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();

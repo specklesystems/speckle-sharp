@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -11,6 +8,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -44,28 +42,15 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
   public string GetSourceApplicationVersion() => "7";
 
   public DocumentInfo GetDocumentInfo() =>
-    new()
-    {
-      Location = RhinoDoc.ActiveDoc.Path,
-      Name = RhinoDoc.ActiveDoc.Name,
-      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
-    };
+    new(RhinoDoc.ActiveDoc.Path, RhinoDoc.ActiveDoc.Name, RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString());
 
   public DocumentModelStore GetDocumentState() => _store;
 
   public void AddModel(ModelCard model) => _store.Models.Add(model);
 
-  public void UpdateModel(ModelCard model)
-  {
-    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
-    _store.Models[idx] = model;
-  }
+  public void UpdateModel(ModelCard model) => _store.UpdateModel(model);
 
-  public void RemoveModel(ModelCard model)
-  {
-    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
-    _store.Models.RemoveAt(index);
-  }
+  public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
   public void HighlightModel(string modelCardId)
   {
@@ -74,12 +59,12 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
     if (myModel is SenderModelCard sender)
     {
-      objectIds = sender.SendFilter.GetObjectIds();
+      objectIds = sender.SendFilter.NotNull().GetObjectIds();
     }
 
     if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
     {
-      objectIds = receiver.ReceiveResult.BakedObjectIds;
+      objectIds = receiver.ReceiveResult.BakedObjectIds.NotNull();
     }
 
     if (objectIds.Count == 0)

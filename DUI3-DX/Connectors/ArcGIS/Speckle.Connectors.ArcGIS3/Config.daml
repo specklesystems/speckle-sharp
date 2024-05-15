@@ -47,19 +47,19 @@
 			</groups>
 			<controls>
 				<!-- add your controls here -->
-				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="Speckle"
+				<button id="SpeckleDUI3_SpeckleDUI3OpenButton" caption="SpeckleNewUI"
 						className="SpeckleDUI3OpenButton" loadOnClick="true"
 						keytip="B1"
-						smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/MarsCat16.png"
-						largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/MarsCat32.png">
+						smallImage="Images/s2logo_16.png"
+						largeImage="Images/s2logo_32.png">
 					<tooltip heading="Speckle Connector for ArcGIS">
-						Open Pane to test WebView2 browser control<disabledText />
+                        <disabledText />
 					</tooltip>
 				</button>
 			</controls>
 
             <dockPanes>
-                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
+                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="SpeckleNewUI" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
                     <content className="SpeckleDUI3Wrapper" />
                 </dockPane>
             </dockPanes>

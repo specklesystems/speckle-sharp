@@ -1,4 +1,3 @@
-using System;
 using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
@@ -24,11 +23,10 @@ public class SpeckleConnectorsRhino7Command : Command
     );
   }
 
-#nullable disable
   ///<summary>The only instance of this command.</summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
   public static SpeckleConnectorsRhino7Command Instance { get; private set; }
-
-#nullable enable
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
   ///<returns>The command name as it appears on the Rhino command line.</returns>
   public override string EnglishName => "SpeckleNewUI";

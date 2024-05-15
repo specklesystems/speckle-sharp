@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Speckle.Connectors.DUI.Bridge;
 
 namespace Speckle.Connectors.DUI.Bindings;

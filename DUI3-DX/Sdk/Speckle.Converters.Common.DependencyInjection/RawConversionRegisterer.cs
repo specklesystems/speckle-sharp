@@ -11,7 +11,11 @@ public static class RawConversionRegisterer
   public static ContainerBuilder RegisterRawConversions(this ContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/
-    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
+    foreach (
+      var asm in AppDomain.CurrentDomain
+        .GetAssemblies()
+        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
+    )
     {
       foreach (var type in asm.GetTypes())
       {

@@ -2,9 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net4.8;net6.0-windows</TargetFrameworks>
-    <Nullable>enable</Nullable>
     <UseWpf>true</UseWpf>
-    <RootNamespace>Speckle.Connectors.DUI.WebView</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

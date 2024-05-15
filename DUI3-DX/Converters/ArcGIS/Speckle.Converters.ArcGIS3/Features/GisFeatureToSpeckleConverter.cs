@@ -20,7 +20,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     List<Base> displayVal = new();
     foreach (var shp in speckleShapes)
     {
-      if (shp is SGIS.GisPolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
+      if (shp is SGIS.PolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
       {
         try
         {
@@ -53,6 +53,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     // get attributes
     var attributes = new Base();
     bool hasGeometry = false;
+    string geometryField = "Shape";
     IReadOnlyList<Field> fields = target.GetFields();
     foreach (Field field in fields)
     {
@@ -61,6 +62,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
       if (field.FieldType == FieldType.Geometry) // ignore the field with geometry itself
       {
         hasGeometry = true;
+        geometryField = name;
       }
       // Raster FieldType is not properly supported through API
       else if (
@@ -91,13 +93,13 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     }
     else
     {
-      var shape = (ACG.Geometry)target["Shape"];
+      var shape = (ACG.Geometry)target[geometryField];
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
       // if geometry is primitive
       if (
         speckleShapes.Count > 0
-        && speckleShapes[0] is not SGIS.GisPolygonGeometry
+        && speckleShapes[0] is not SGIS.PolygonGeometry
         && speckleShapes[0] is not SGIS.GisMultipatchGeometry
       )
       {

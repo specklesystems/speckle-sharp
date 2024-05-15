@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Autocad.Extensions;
 using Speckle.Converters.Common;
@@ -73,12 +71,12 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
       {
         if (i < 2)
         {
-          knots.Insert(knots.Count, knots[knots.Count - 1] + interval);
+          knots.Insert(knots.Count, knots[^1] + interval);
           knots.Insert(0, knots[0] - interval);
         }
         else
         {
-          knots.Insert(knots.Count, knots[knots.Count - 1]);
+          knots.Insert(knots.Count, knots[^1]);
           knots.Insert(0, knots[0]);
         }
       }

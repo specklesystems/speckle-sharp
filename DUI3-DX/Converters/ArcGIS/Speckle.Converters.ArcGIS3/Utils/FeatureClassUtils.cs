@@ -55,46 +55,84 @@ public class FeatureClassUtils : IFeatureClassUtils
     }
   }
 
+  public void AddNonGISFeaturesToFeatureClass(
+    FeatureClass newFeatureClass,
+    List<ACG.Geometry> features,
+    List<FieldDescription> fields
+  )
+  {
+    foreach (ACG.Geometry geom in features)
+    {
+      using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
+      {
+        ACG.Geometry newGeom = geom;
+        if (geom is ACG.MapPoint pointGeom)
+        {
+          newGeom = new ACG.MultipointBuilderEx(
+            new List<ACG.MapPoint>() { pointGeom },
+            ACG.AttributeFlags.HasZ
+          ).ToGeometry();
+        }
+        rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = newGeom;
+
+        // TODO: get attributes
+        // newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
+        newFeatureClass.CreateRow(rowBuffer).Dispose();
+      }
+    }
+  }
+
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
     string? originalGeomType = target.geomType != null ? target.geomType : target.nativeGeomType;
-    ACG.GeometryType geomType;
 
     if (string.IsNullOrEmpty(originalGeomType))
     {
       throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
+    return GetGeometryTypeFromString(originalGeomType.ToLower());
+  }
 
+  public ACG.GeometryType GetGeometryTypeFromString(string target)
+  {
     // POC: find better pattern
-    if (originalGeomType.ToLower().Contains("none"))
+    if (target.Contains("none", StringComparison.OrdinalIgnoreCase))
     {
-      geomType = ACG.GeometryType.Unknown;
+      return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("pointcloud"))
+    else if (target.Contains("pointcloud", StringComparison.OrdinalIgnoreCase))
     {
-      geomType = ACG.GeometryType.Unknown;
+      return ACG.GeometryType.Unknown;
     }
-    else if (originalGeomType.ToLower().Contains("point"))
+    else if (target.Contains("point", StringComparison.OrdinalIgnoreCase))
     {
-      geomType = ACG.GeometryType.Multipoint;
+      return ACG.GeometryType.Multipoint;
     }
-    else if (originalGeomType.ToLower().Contains("polyline"))
+    else if (
+      target.Contains("line", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("curve", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("arc", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("circle", StringComparison.OrdinalIgnoreCase)
+      || target.Contains("ellipse", StringComparison.OrdinalIgnoreCase)
+    )
     {
-      geomType = ACG.GeometryType.Polyline;
+      return ACG.GeometryType.Polyline;
     }
-    else if (originalGeomType.ToLower().Contains("polygon"))
+    else if (target.Contains("polygon", StringComparison.OrdinalIgnoreCase))
     {
-      geomType = ACG.GeometryType.Polygon;
+      return ACG.GeometryType.Polygon;
     }
-    else if (originalGeomType.ToLower().Contains("multipatch"))
+    else if (target.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
     {
-      geomType = ACG.GeometryType.Multipatch;
+      return ACG.GeometryType.Multipatch;
+    }
+    else if (target.Contains("mesh", StringComparison.OrdinalIgnoreCase))
+    {
+      return ACG.GeometryType.Multipatch;
     }
     else
     {
-      throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
+      throw new SpeckleConversionException($"Unknown geometry type {target}");
     }
-
-    return geomType;
   }
 }
