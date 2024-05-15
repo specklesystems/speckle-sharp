@@ -51,6 +51,7 @@ jobs:
       - name: Build
         env:
           VERSION: ${{ env.fullSemVer }}
+          FILE_VERSION: ${{ env.assemblySemFileVer }}
         run: ./build.ps1 build
 
       - name: Pack
