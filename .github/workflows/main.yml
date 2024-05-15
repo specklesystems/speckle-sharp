@@ -6,9 +6,6 @@ on:
   push:
     branches: ["main"]
 
-permissions:
-  contents: write
-
 jobs:
   build-and-publish:
     runs-on: windows-latest
@@ -60,7 +57,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: output.zip
+          name: output-${{ env.fullSemVer }}.zip
           path: output/*.*
           compression-level: 0 # no compression
   
