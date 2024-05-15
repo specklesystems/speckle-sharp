@@ -20,12 +20,6 @@
           "Microsoft.Extensions.Options": "7.0.0"
         }
       },
-      "MinVer": {
-        "type": "Direct",
-        "requested": "[5.0.0, )",
-        "resolved": "5.0.0",
-        "contentHash": "ybkgpQMtt0Fo91l5rYtE3TZtD+Nmy5Ko091xvfXXOosQdMi30XO2EZ2+ShZt89gdu7RMmJqZaJ+e1q6d+6+KNw=="
-      },
       "PolySharp": {
         "type": "Direct",
         "requested": "[1.14.1, )",

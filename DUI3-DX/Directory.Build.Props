@@ -9,6 +9,5 @@
 
     <ItemGroup>
         <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="All" />
-        <PackageReference Include="MinVer" Version="5.0.0" PrivateAssets="All" />
     </ItemGroup>
 </Project>
