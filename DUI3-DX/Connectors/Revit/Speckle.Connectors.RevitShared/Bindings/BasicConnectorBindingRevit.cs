@@ -68,11 +68,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
       return new DocumentInfo("", "", "") { Message = "Family environment files not supported by Speckle." };
     }
 
-    var info = new DocumentInfo(
-      doc.Title,
-      doc.GetHashCode().ToString(),
-      string.IsNullOrEmpty(doc.PathName) ? "unsaved document" : doc.PathName // POC: for some reason, the FE is checking for a doc id to decide whether it's in a "I have a doc open" state or not.
-    );
+    var info = new DocumentInfo(doc.PathName, doc.Title, doc.GetHashCode().ToString());
 
     return info;
   }
