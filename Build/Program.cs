@@ -87,7 +87,7 @@ Target(
     Console.WriteLine($"Version: {version}");
     Run(
       "msbuild",
-      $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false /p:Version='{version}' -v:m"
+      $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false /p:Version={version} /p:FileVersion={version} -v:m"
     );
   }
 );
