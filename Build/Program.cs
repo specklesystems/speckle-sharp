@@ -54,9 +54,9 @@ Target(
   VERSION,
   async () =>
   {
-   var (output, _) = await ReadAsync("dotnet", "minver -v w").ConfigureAwait(false);
-   Console.WriteLine($"Version: {output}");
-   Environment.SetEnvironmentVariable("VERSION", output);
+    var (output, _) = await ReadAsync("dotnet", "minver -v w").ConfigureAwait(false);
+    Console.WriteLine($"Version: {output}");
+    Environment.SetEnvironmentVariable("VERSION", output);
   }
 );
 Target(
@@ -84,7 +84,10 @@ Target(
   {
     var version = Environment.GetEnvironmentVariable("VERSION");
     Console.WriteLine($"Version: {version}");
-    Run("msbuild", $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false /p:Version='{version}' -v:m");
+    Run(
+      "msbuild",
+      $"{s} /p:Configuration=Release /p:IsDesktopBuild=false /p:NuGetRestorePackages=false /p:Version='{version}' -v:m"
+    );
   }
 );
 
