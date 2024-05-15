@@ -1,4 +1,0 @@
-core:
-  - test-core:
-      requires:
-        - build-sdk

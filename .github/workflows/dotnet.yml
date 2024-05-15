@@ -1,26 +1,50 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET Build and Publish
 
 on:
   pull_request:
-    branches: ["dui3/alpha"]
-
+    branches: ["dui3/alpha", "dui3/ci/github-actions-test"]
+permissions:
+  contents: write 
 jobs:
-  build:
+  build-and-publish:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
-      - name: Restore projects
-        run: dotnet restore DUI3-DX.slnf
+
+      - name: NuGet Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+
+      - name: Format
+        run: ./build.ps1 format
+
+      - name: Restore
+        run: ./build.ps1 restore
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
       - name: Build
-        run: msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false -v:m
+        run: ./build.ps1 build
+
+      - name: Pack
+        run: ./build.ps1 zip
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: dist/**/*.*
+          name: output.zip
+          path: output/*.*
+          compression-level: 0 # no compression
+  
+      - name: Trigger Build Installers
+        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }}

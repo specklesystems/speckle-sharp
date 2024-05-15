@@ -2,6 +2,7 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "Build\\Build.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Performance\\Speckle.Core.Tests.Performance.csproj",
