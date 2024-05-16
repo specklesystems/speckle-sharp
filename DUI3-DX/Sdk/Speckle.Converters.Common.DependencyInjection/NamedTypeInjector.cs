@@ -10,7 +10,7 @@ public static class ConversionTypesInjector
   public static void InjectNamedTypes<T>(this SpeckleContainerBuilder containerBuilder)
     where T : notnull
   {
-    var types = containerBuilder.SpeckleTypes;
+    var types = containerBuilder.SpeckleTypes.Where(x => x.GetInterfaces().Contains(typeof(T)));
 
     // we only care about named types
     var byName = types
