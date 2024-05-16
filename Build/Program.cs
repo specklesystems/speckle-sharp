@@ -118,6 +118,17 @@ Target(
     var (path, framework) = x;
 
     var fullPath = Path.Combine(".", path, "bin", "Release", framework);
+    if (Directory.Exists(fullPath))
+    {
+      foreach (var file in Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories))
+      {
+        Console.WriteLine(file);
+      }
+    }
+    else
+    {
+      throw new InvalidOperationException("Could not find: " + fullPath);
+    }
     var outputDir = Path.Combine(".", "output");
     Directory.CreateDirectory(outputDir);
 
