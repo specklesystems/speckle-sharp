@@ -37,7 +37,10 @@ public class AutocadCommand
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
-    Container = builder.LoadAutofacModules(Assembly.GetExecutingAssembly(), autocadSettings.Modules).AddSingleton(autocadSettings).Build();
+    Container = builder
+      .LoadAutofacModules(Assembly.GetExecutingAssembly(), autocadSettings.Modules)
+      .AddSingleton(autocadSettings)
+      .Build();
 
     // Resolve root plugin object and initialise.
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();

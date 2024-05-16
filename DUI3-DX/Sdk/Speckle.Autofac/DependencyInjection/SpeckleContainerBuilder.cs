@@ -47,7 +47,7 @@ public class SpeckleContainerBuilder
     return this;
   }
 
-  private Assembly? LoadAssemblyFile(string file) 
+  private Assembly? LoadAssemblyFile(string file)
   {
     try
     {
@@ -61,14 +61,11 @@ public class SpeckleContainerBuilder
     {
       return null;
     }
-    
   }
 
   private void LoadAssembly(Assembly assembly)
   {
-    var moduleClasses = assembly.GetTypes()
-      .Where(x => x.GetInterfaces().Contains(s_moduleType))
-      .ToList();
+    var moduleClasses = assembly.GetTypes().Where(x => x.GetInterfaces().Contains(s_moduleType)).ToList();
 
     // create each module
     // POC: could look for some attribute here
@@ -77,7 +74,7 @@ public class SpeckleContainerBuilder
       var module = (ISpeckleModule)Activator.CreateInstance(moduleClass);
       ContainerBuilder.RegisterModule(new ModuleAdapter(module));
     }
-  } 
+  }
 
   private readonly Lazy<IReadOnlyList<Type>> _types =
     new(() =>

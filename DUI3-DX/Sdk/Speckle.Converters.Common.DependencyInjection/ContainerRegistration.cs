@@ -20,7 +20,7 @@ public static class ContainerRegistration
       IConverterResolver<IHostObjectToSpeckleConversion>,
       RecursiveConverterResolver<IHostObjectToSpeckleConversion>
     >();
-    
+
     builder.AddScoped<
       IFactory<string, ISpeckleObjectToHostConversion>,
       Factory<string, ISpeckleObjectToHostConversion>
@@ -29,9 +29,9 @@ public static class ContainerRegistration
       IConverterResolver<ISpeckleObjectToHostConversion>,
       RecursiveConverterResolver<ISpeckleObjectToHostConversion>
     >();
-    
+
     builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
-    
+
     builder.RegisterRawConversions();
     builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
