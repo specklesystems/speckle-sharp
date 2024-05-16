@@ -37,11 +37,6 @@ public class SpeckleContainerBuilder
       {
         LoadAssembly(pluginAssembly);
       }
-      else
-      {
-        var x = assemblies.First(x => x == pluginAssembly);
-        Console.WriteLine(x);
-      }
     }
 
     return this;
