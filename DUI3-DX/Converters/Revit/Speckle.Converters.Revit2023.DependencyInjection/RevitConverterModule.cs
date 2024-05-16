@@ -2,7 +2,6 @@ using Autodesk.Revit.DB;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
@@ -18,16 +17,6 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddSingleton(new RevitContext());
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.AddScoped<ISpeckleConverterToSpeckle, RevitConverterToSpeckle>();
-
-    // factory for conversions
-    builder.AddScoped<
-      IFactory<string, IHostObjectToSpeckleConversion>,
-      Factory<string, IHostObjectToSpeckleConversion>
-    >();
-    builder.AddScoped<
-      IConverterResolver<IHostObjectToSpeckleConversion>,
-      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
-    >();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.AddScoped<ScalingServiceToSpeckle>();

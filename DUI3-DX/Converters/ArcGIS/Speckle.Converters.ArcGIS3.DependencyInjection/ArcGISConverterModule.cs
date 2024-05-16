@@ -4,8 +4,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.DependencyInjection.ToHost;
-using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.DependencyInjection;
 
@@ -16,7 +14,6 @@ public class ArcGISConverterModule : ISpeckleModule
     builder.AddConverterCommon();
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.AddScoped<ISpeckleConverterToSpeckle, ArcGISConverterToSpeckle>();
-    builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
     builder.AddScoped<IFeatureClassUtils, FeatureClassUtils>();
     builder.AddScoped<IArcGISFieldUtils, ArcGISFieldUtils>();
     builder.AddScoped<ICharacterCleaner, CharacterCleaner>();
@@ -27,19 +24,5 @@ public class ArcGISConverterModule : ISpeckleModule
 
     // single stack per conversion
     builder.AddScoped<IConversionContextStack<Map, Unit>, ArcGISConversionContextStack>();
-
-    // factory for conversions
-    builder.AddScoped<
-      IFactory<string, IHostObjectToSpeckleConversion>,
-      Factory<string, IHostObjectToSpeckleConversion>
-    >();
-    builder.AddScoped<
-      IConverterResolver<IHostObjectToSpeckleConversion>,
-      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
-    >();
-    builder.AddScoped<
-      IConverterResolver<ISpeckleObjectToHostConversion>,
-      RecursiveConverterResolver<ISpeckleObjectToHostConversion>
-    >();
   }
 }
