@@ -16,7 +16,7 @@ using Speckle.Connectors.Utils.Operations;
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
 // POC: should interface out things that are not
-public class RevitConnectorShared : ISpeckleModule
+public class RevitConnectorModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {

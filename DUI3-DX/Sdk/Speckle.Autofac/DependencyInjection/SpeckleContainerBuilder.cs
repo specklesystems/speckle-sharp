@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Autofac;
-using Autofac.Core;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
@@ -10,6 +9,7 @@ namespace Speckle.Autofac.DependencyInjection;
 
 public class SpeckleContainerBuilder
 {
+  private static readonly Type s_moduleType = typeof(ISpeckleModule);
   private readonly IStorageInfo _storageInfo;
 
   private SpeckleContainerBuilder(IStorageInfo storageInfo, ContainerBuilder? containerBuilder)
@@ -32,31 +32,52 @@ public class SpeckleContainerBuilder
       // POC: naming conventions
       // find assemblies
       var assembliesInPath = _storageInfo.GetFilenamesInDirectory(path, "Speckle*.dll");
-
-      foreach (var file in assembliesInPath)
+      var assemblies = assembliesInPath.Select(LoadAssemblyFile).ToList();
+      if (assemblies.All(x => x != Assembly.GetEntryAssembly()))
       {
-        // POC: ignore already loaded? Or just get that instead of loading it?
-        try
-        {
-          // inspect the assemblies for Autofac.Module
-          var assembly = Assembly.LoadFrom(file);
-          var moduleClasses = assembly.GetTypes().Where(x => x.BaseType == typeof(IModule));
-
-          // create each module
-          // POC: could look for some attribute here
-          foreach (var moduleClass in moduleClasses)
-          {
-            var module = (IModule)Activator.CreateInstance(moduleClass);
-            ContainerBuilder.RegisterModule(module);
-          }
-        }
-        // POC: catch only certain exceptions
-        catch (Exception ex) when (!ex.IsFatal()) { }
+        LoadAssembly(Assembly.GetExecutingAssembly());
+      }
+      else
+      {
+        var x = assemblies.First(x => x == Assembly.GetEntryAssembly());
+        Console.WriteLine(x);
       }
     }
 
     return this;
   }
+
+  private Assembly? LoadAssemblyFile(string file) 
+  {
+    try
+    {
+      // inspect the assemblies for Autofac.Module
+      var assembly = Assembly.LoadFrom(file);
+      LoadAssembly(assembly);
+      return assembly;
+    }
+    // POC: catch only certain exceptions
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      return null;
+    }
+    
+  }
+
+  private void LoadAssembly(Assembly assembly)
+  {
+    var moduleClasses = assembly.GetTypes()
+      .Where(x => x.GetInterfaces().Contains(s_moduleType))
+      .ToList();
+
+    // create each module
+    // POC: could look for some attribute here
+    foreach (var moduleClass in moduleClasses)
+    {
+      var module = (ISpeckleModule)Activator.CreateInstance(moduleClass);
+      ContainerBuilder.RegisterModule(new ModuleAdapter(module));
+    }
+  } 
 
   private readonly Lazy<IReadOnlyList<Type>> _types =
     new(() =>
