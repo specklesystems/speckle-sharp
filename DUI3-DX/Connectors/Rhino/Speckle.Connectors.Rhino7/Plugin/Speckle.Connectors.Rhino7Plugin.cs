@@ -2,7 +2,6 @@
 using System.Reflection;
 using Rhino.PlugIns;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Core.Kits;
@@ -54,8 +53,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       // POC: We must load the Rhino connector module manually because we only search for DLL files when calling `LoadAutofacModules`,
       // but the Rhino connector has `.rhp` as it's extension.
       Container = builder
-        .AddModule(new RhinoConnectorModule())
-        .LoadAutofacModules(rhinoSettings.Modules)
+        .LoadAutofacModules(Assembly.GetExecutingAssembly(), rhinoSettings.Modules)
         .AddSingleton(rhinoSettings)
         .Build();
 

@@ -48,7 +48,7 @@ internal sealed class RevitExternalApplication : IExternalApplication
 
       // init DI
       _container = containerBuilder
-        .LoadAutofacModules(_revitSettings.ModuleFolders.NotNull())
+        .LoadAutofacModules(Assembly.GetExecutingAssembly(), _revitSettings.ModuleFolders.NotNull())
         .AddSingleton(_revitSettings) // apply revit settings into DI
         .AddSingleton(application) // inject UIControlledApplication application
         .Build();

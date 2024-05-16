@@ -24,7 +24,7 @@ public class SpeckleContainerBuilder
     new(new StorageInfo(), containerBuilder);
 
   // POC: HOW TO GET TYPES loaded, this feels a bit heavy handed and relies on Autofac where we can probably do something different
-  public SpeckleContainerBuilder LoadAutofacModules(IEnumerable<string> dependencyPaths)
+  public SpeckleContainerBuilder LoadAutofacModules(Assembly pluginAssembly, IEnumerable<string> dependencyPaths)
   {
     // look for assemblies in these paths that offer autofac modules
     foreach (string path in dependencyPaths)
@@ -33,13 +33,13 @@ public class SpeckleContainerBuilder
       // find assemblies
       var assembliesInPath = _storageInfo.GetFilenamesInDirectory(path, "Speckle*.dll");
       var assemblies = assembliesInPath.Select(LoadAssemblyFile).ToList();
-      if (assemblies.All(x => x != Assembly.GetEntryAssembly()))
+      if (assemblies.All(x => x != pluginAssembly))
       {
-        LoadAssembly(Assembly.GetExecutingAssembly());
+        LoadAssembly(pluginAssembly);
       }
       else
       {
-        var x = assemblies.First(x => x == Assembly.GetEntryAssembly());
+        var x = assemblies.First(x => x == pluginAssembly);
         Console.WriteLine(x);
       }
     }

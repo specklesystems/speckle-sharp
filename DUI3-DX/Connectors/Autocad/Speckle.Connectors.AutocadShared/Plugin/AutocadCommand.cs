@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Reflection;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
 using Speckle.Autofac.DependencyInjection;
@@ -36,7 +37,7 @@ public class AutocadCommand
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
-    Container = builder.LoadAutofacModules(autocadSettings.Modules).AddSingleton(autocadSettings).Build();
+    Container = builder.LoadAutofacModules(Assembly.GetExecutingAssembly(), autocadSettings.Modules).AddSingleton(autocadSettings).Build();
 
     // Resolve root plugin object and initialise.
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
