@@ -29,10 +29,9 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
-    IdStorageSchema idStorageSchema,
-    bool writeToFileOnChange
+    IdStorageSchema idStorageSchema
   )
-    : base(serializerSettings, writeToFileOnChange)
+    : base(serializerSettings, true)
   {
     _idleManager = idleManager;
     _revitContext = revitContext;
