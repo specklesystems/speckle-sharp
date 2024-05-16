@@ -2,7 +2,7 @@ name: Tester
 
 on:
   pull_request:
-    branches: ["dui3/alpha"]
+    branches: ["dui3/alpha2"]
 
 jobs:
   test:
