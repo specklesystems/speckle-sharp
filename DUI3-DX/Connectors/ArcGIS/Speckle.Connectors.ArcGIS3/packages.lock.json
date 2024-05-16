@@ -464,6 +464,18 @@
           "Speckle.Core": "[2.0.999-local, )"
         }
       }
+    },
+    "net6.0-windows7.0/win-x64": {
+      "Microsoft.Web.WebView2": {
+        "type": "Transitive",
+        "resolved": "1.0.1823.32",
+        "contentHash": "ppRcWBUNggFIqyJp7PfgS4Oe8/7yli/mHcTNDOaqo3ZzJWnv9AOr0WE9ceEP5SPs1M7CQ3QvdGMR7KNz0v09EA=="
+      },
+      "SQLitePCLRaw.lib.e_sqlite3": {
+        "type": "Transitive",
+        "resolved": "2.1.4",
+        "contentHash": "2C9Q9eX7CPLveJA0rIhf9RXAvu+7nWZu1A2MdG6SD/NOu26TakGgL1nsbc0JAspGijFOo3HoN79xrx8a368fBg=="
+      }
     }
   }
 }
