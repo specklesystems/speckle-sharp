@@ -97,7 +97,7 @@ internal sealed class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     // POC: tight binding to files
     Assembly? assembly = null;
@@ -114,6 +114,6 @@ internal sealed class RevitExternalApplication : IExternalApplication
       }
     }
 
-    return assembly.NotNull();
+    return assembly;
   }
 }
