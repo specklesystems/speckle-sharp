@@ -14,6 +14,8 @@ using Speckle.Connectors.Utils;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.Filters;
+using ArcGIS.Desktop.Editing.Events;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -57,6 +59,10 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     StandaloneTablesRemovedEvent.Subscribe(GetIdsForStandaloneTablesRemovedEvent, true);
     MapPropertyChangedEvent.Subscribe(GetIdsForMapPropertyChangedEvent, true); // Map units, CRS etc.
     MapMemberPropertiesChangedEvent.Subscribe(GetIdsForMapMemberPropertiesChangedEvent, true); // e.g. Layer name
+    ActiveMapViewChangedEvent.Subscribe(SubscribeToLayersDataSourceChange, true);
+
+    LayersAddedEvent.Subscribe(GetIdsForLayersAddedEvent, true);
+    // StandaloneTablesAddedEvent.Subscribe(GetIdsForStandaloneTablesAddedEvent, true);
   }
 
   private void GetIdsForLayersRemovedEvent(LayerEventsArgs args)
@@ -97,6 +103,70 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     }
     RunExpirationChecks(false);
   }
+
+  private void SubscribeToLayersDataSourceChange(ActiveMapViewChangedEventArgs args)
+  {
+    var task = QueuedTask.Run(() =>
+    {
+      if (MapView.Active == null)
+      {
+        return;
+      }
+      foreach (Layer layer in MapView.Active.Map.Layers)
+      {
+        if (layer is FeatureLayer featureLayer)
+        {
+          SubscribeToFeatureLayerDataSourceChange(featureLayer);
+        }
+      }
+    });
+    task.Wait();
+  }
+
+  private void SubscribeToFeatureLayerDataSourceChange(FeatureLayer layer)
+  {
+    var layerTable = layer.GetTable();
+
+    //subscribe to row events
+    var rowCreateToken = RowCreatedEvent.Subscribe(OnRowChanged, layerTable);
+    var rowChangeToken = RowChangedEvent.Subscribe(OnRowChanged, layerTable);
+    var rowDeleteToken = RowDeletedEvent.Subscribe(OnRowChanged, layerTable);
+  }
+
+#pragma warning disable CS0628 // New protected member declared in sealed type
+  protected void OnRowChanged(RowChangedEventArgs args)
+#pragma warning restore CS0628 // New protected member declared in sealed type
+  {
+    if (args == null)
+    {
+      return;
+    }
+    return;
+    //args.
+    //ChangedObjectIds.Add(args..URI);
+  }
+
+  private void GetIdsForLayersAddedEvent(LayerEventsArgs args)
+  {
+    foreach (Layer layer in args.Layers)
+    {
+      if (layer is FeatureLayer featureLayer)
+      {
+        SubscribeToFeatureLayerDataSourceChange(featureLayer);
+      }
+    }
+  }
+
+  /*
+  private void GetIdsForStandaloneTablesAddedEvent(StandaloneTableEventArgs args)
+  {
+    foreach (StandaloneTable table in args.Tables)
+    {
+      SubscribeToSingleLayerDataSourceChange(table);
+    }
+  }
+  */
+
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
 
