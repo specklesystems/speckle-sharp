@@ -41,12 +41,23 @@ public sealed class ReceiveOperation
 
     cancellationToken.ThrowIfCancellationRequested();
 
+    try
+    {
     // 4 - Convert objects
-    return await _syncToMainThread
-      .RunOnThread(() =>
-      {
-        return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);
-      })
-      .ConfigureAwait(false);
+      var x = await _syncToMainThread
+        .RunOnThread(() =>
+        {
+          return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);
+        })
+        .ConfigureAwait(false);
+
+      return x ?? new List<string>();
+
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      throw;
+    }
   }
 }

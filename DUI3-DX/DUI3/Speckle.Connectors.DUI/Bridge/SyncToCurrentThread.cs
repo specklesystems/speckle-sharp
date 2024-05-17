@@ -1,4 +1,4 @@
-﻿using Speckle.Connectors.Utils.Operations;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -13,5 +13,5 @@ public class SyncToCurrentThread : ISyncToMainThread
   /// <typeparam name="T">The return type of the function.</typeparam>
   /// <param name="func">The function to execute.</param>
   /// <returns>A Task object representing the asynchronous operation.</returns>
-  public Task<T> RunOnThread<T>(Func<T> func) => Task.FromResult(func.Invoke());
+  public Task<T?> RunOnThread<T>(Func<T> func) => Task.FromResult<T?>(func.Invoke());
 }

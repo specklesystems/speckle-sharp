@@ -113,17 +113,19 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
           cts.Token
         )
         .ConfigureAwait(false);
-
-      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.convertedReferences)
+      if (sendResult is not null)
       {
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+        // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+        foreach (var kvp in sendResult.Value.convertedReferences)
+        {
+          _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+        }
+
+        // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+        modelCard.ChangedObjectIds = new();
+
+        Commands.SetModelCreatedVersionId(modelCardId, sendResult.Value.rootObjId);
       }
-
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      modelCard.ChangedObjectIds = new();
-
-      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
