@@ -1,33 +1,17 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Timer = System.Timers.Timer;
 
 namespace Speckle.Core.Transports;
 
-public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
+public sealed class SQLiteTransport : BatchingWriteTransport, ITransport, IBlobCapableTransport
 {
-  private bool _isWriting;
-  private const int MAX_TRANSACTION_SIZE = 1000;
-  private const int POLL_INTERVAL = 500;
-
-  private ConcurrentQueue<(string id, string serializedObject, int byteCount)> _queue = new();
-
-  /// <summary>
-  /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
-  /// </summary>
-  private readonly Timer _writeTimer;
 
   /// <summary>
   /// Connects to an SQLite DB at {<paramref name="basePath"/>}/{<paramref name="applicationName"/>}/{<paramref name="scope"/>}.db
@@ -39,6 +23,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <exception cref="SqliteException">Failed to initialize a connection to the db</exception>
   /// <exception cref="TransportException">Path was invalid or could not be created</exception>
   public SQLiteTransport(string? basePath = null, string? applicationName = null, string? scope = null)
+  
   {
     _basePath = basePath ?? SpecklePathProvider.UserApplicationDataPath();
     _applicationName = applicationName ?? "Speckle";
@@ -60,14 +45,6 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     _connectionString = $"Data Source={_rootPath};";
 
     Initialize();
-
-    _writeTimer = new Timer
-    {
-      AutoReset = true,
-      Enabled = false,
-      Interval = POLL_INTERVAL
-    };
-    _writeTimer.Elapsed += WriteTimerElapsed;
   }
 
   private readonly string _rootPath;
@@ -98,17 +75,20 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     };
   }
 
-  public void Dispose()
+  protected override void Dispose(bool disposing)
   {
-    // TODO: Check if it's still writing?
-    Connection.Close();
-    Connection.Dispose();
-    _writeTimer.Dispose();
+    base.Dispose(disposing);
+    if (disposing)
+    {
+      // TODO: Check if it's still writing?
+      Connection.Close();
+      Connection.Dispose();
+    }
   }
 
-  public string TransportName { get; set; } = "SQLite";
+  public override string TransportName { get; set; } = "SQLite";
 
-  public Dictionary<string, object> TransportContext =>
+  public override Dictionary<string, object> TransportContext =>
     new()
     {
       { "name", TransportName },
@@ -119,25 +99,9 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       { "blobStorageFolder", BlobStorageFolder }
     };
 
-  public CancellationToken CancellationToken { get; set; }
 
-  public Action<string, int>? OnProgressAction { get; set; }
 
-  [Obsolete("Transports will now throw exceptions")]
-  public Action<string, Exception>? OnErrorAction { get; set; }
-  public int SavedObjectCount { get; private set; }
-
-  public TimeSpan Elapsed { get; private set; }
-
-  public void BeginWrite()
-  {
-    _queue = new();
-    SavedObjectCount = 0;
-  }
-
-  public void EndWrite() { }
-
-  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public override Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
@@ -243,7 +207,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// Deletes an object. Note: do not use for any speckle object transport, as it will corrupt the database.
   /// </summary>
   /// <param name="hash"></param>
-  public void DeleteObject(string hash)
+  public override void DeleteObject(string hash)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -257,7 +221,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// </summary>
   /// <param name="hash"></param>
   /// <param name="serializedObject"></param>
-  public void UpdateObject(string hash, string serializedObject)
+  public override void UpdateObject(string hash, string serializedObject)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -277,133 +241,13 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   #region Writes
 
-  /// <summary>
-  /// Awaits untill write completion (ie, the current queue is fully consumed).
-  /// </summary>
-  /// <returns></returns>
-  public async Task WriteComplete()
-  {
-    await Utilities.WaitUntil(() => WriteCompletionStatus, 500).ConfigureAwait(false);
-  }
-
-  /// <summary>
-  /// Returns true if the current write queue is empty and comitted.
-  /// </summary>
-  /// <returns></returns>
-  public bool WriteCompletionStatus => _queue.IsEmpty && !_isWriting;
-
-  private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
-  {
-    _writeTimer.Enabled = false;
-
-    if (CancellationToken.IsCancellationRequested)
-    {
-      _queue = new ConcurrentQueue<(string, string, int)>();
-      return;
-    }
-
-    if (!_isWriting && !_queue.IsEmpty)
-    {
-      ConsumeQueue();
-    }
-  }
-
-  private void ConsumeQueue()
-  {
-    var stopwatch = Stopwatch.StartNew();
-    _isWriting = true;
-    try
-    {
-      CancellationToken.ThrowIfCancellationRequested();
-
-      var i = 0; //BUG: This never gets incremented!
-
-      var saved = 0;
-
-      using (var c = new SqliteConnection(_connectionString))
-      {
-        c.Open();
-        using var t = c.BeginTransaction();
-        const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
-
-        while (i < MAX_TRANSACTION_SIZE && _queue.TryPeek(out var result))
-        {
-          using var command = new SqliteCommand(COMMAND_TEXT, c, t);
-          _queue.TryDequeue(out result);
-          command.Parameters.AddWithValue("@hash", result.id);
-          command.Parameters.AddWithValue("@content", result.serializedObject);
-          command.ExecuteNonQuery();
-
-          saved++;
-        }
-
-        t.Commit();
-        CancellationToken.ThrowIfCancellationRequested();
-      }
-
-      OnProgressAction?.Invoke(TransportName, saved);
-
-      CancellationToken.ThrowIfCancellationRequested();
-
-      if (!_queue.IsEmpty)
-      {
-        ConsumeQueue();
-      }
-    }
-    catch (SqliteException ex)
-    {
-      throw new TransportException(this, "SQLite Command Failed", ex);
-    }
-    catch (OperationCanceledException)
-    {
-      _queue = new();
-    }
-    finally
-    {
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
-      _isWriting = false;
-    }
-  }
-
-  /// <summary>
-  /// Adds an object to the saving queue.
-  /// </summary>
-  /// <param name="id"></param>
-  /// <param name="serializedObject"></param>
-  public void SaveObject(string id, string serializedObject)
-  {
-    CancellationToken.ThrowIfCancellationRequested();
-    _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
-
-    _writeTimer.Enabled = true;
-    _writeTimer.Start();
-  }
-
-  public void SaveObject(string id, ITransport sourceTransport)
-  {
-    CancellationToken.ThrowIfCancellationRequested();
-
-    var serializedObject = sourceTransport.GetObject(id);
-
-    if (serializedObject is null)
-    {
-      throw new TransportException(
-        this,
-        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
-      );
-    }
-
-    //Should this just call SaveObject... do we not want the write timers?
-    _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
-  }
 
   /// <summary>
   /// Directly saves the object in the db.
   /// </summary>
   /// <param name="hash"></param>
   /// <param name="serializedObject"></param>
-  public void SaveObjectSync(string hash, string serializedObject)
+  public override void SaveObjectSync(string hash, string serializedObject)
   {
     const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
@@ -420,6 +264,25 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
   }
 
+  protected override void WriteBatch(List<WriteItem> batch)
+  {
+    using var c = new SqliteConnection(_connectionString);
+    c.Open();
+    using var t = c.BeginTransaction();
+    const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+
+    foreach(var item in batch)
+    {
+      using var command = new SqliteCommand(COMMAND_TEXT, c, t);
+      command.Parameters.AddWithValue("@hash", item.Id);
+      command.Parameters.AddWithValue("@content", item.SerializedObject);
+      command.ExecuteNonQuery();
+    }
+
+    t.Commit();
+    CancellationToken.ThrowIfCancellationRequested();
+  }
+  
   #endregion
 
   #region Reads
@@ -429,7 +292,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  public string? GetObject(string id)
+  public override string? GetObject(string id)
   {
     CancellationToken.ThrowIfCancellationRequested();
     lock (ConnectionLock)
@@ -449,30 +312,6 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
     return null; // pass on the duty of null checks to consumers
   }
-
-  public Task<string> CopyObjectAndChildren(
-    string id,
-    ITransport targetTransport,
-    Action<int>? onTotalChildrenCountKnown = null
-  )
-  {
-    string res = TransportHelpers.CopyObjectAndChildrenSync(
-      id,
-      this,
-      targetTransport,
-      onTotalChildrenCountKnown,
-      CancellationToken
-    );
-    return Task.FromResult(res);
-  }
-
-  #endregion
-
-  #region Deprecated
-
-  [Obsolete("Use " + nameof(WriteCompletionStatus))]
-  [SuppressMessage("Design", "CA1024:Use properties where appropriate")]
-  public bool GetWriteCompletionStatus() => WriteCompletionStatus;
 
   #endregion
 }
