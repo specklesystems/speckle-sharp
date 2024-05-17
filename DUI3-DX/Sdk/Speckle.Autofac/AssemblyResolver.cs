@@ -6,7 +6,6 @@ public static class AssemblyResolver
 {
   public static Assembly? OnAssemblyResolve<T>(object? sender, ResolveEventArgs args)
   {
-    // POC: dupe code
     // POC: tight binding to files
     string name = args.Name.Split(',')[0];
     string? path = Path.GetDirectoryName(typeof(T).Assembly.Location);
