@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -10,11 +11,17 @@ public sealed class ReceiveOperation
 {
   private readonly IHostObjectBuilder _hostObjectBuilder;
   private readonly ISyncToMainThread _syncToMainThread;
+  private readonly ILogger<ReceiveOperation> _logger;
 
-  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ISyncToMainThread syncToMainThread)
+  public ReceiveOperation(
+    IHostObjectBuilder hostObjectBuilder,
+    ISyncToMainThread syncToMainThread,
+    ILogger<ReceiveOperation> logger
+  )
   {
     _hostObjectBuilder = hostObjectBuilder;
     _syncToMainThread = syncToMainThread;
+    _logger = logger;
   }
 
   public async Task<IEnumerable<string>> Execute(
@@ -43,20 +50,25 @@ public sealed class ReceiveOperation
 
     try
     {
-    // 4 - Convert objects
+      // 4 - Convert objects
       var x = await _syncToMainThread
         .RunOnThread(() =>
         {
-          return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);
+          return _hostObjectBuilder.Build(
+            commitObject,
+            projectName,
+            modelName,
+            onOperationProgressed,
+            cancellationToken
+          );
         })
         .ConfigureAwait(false);
 
       return x ?? new List<string>();
-
     }
     catch (Exception e)
     {
-      Console.WriteLine(e);
+      _logger.LogError(e, "Error while receiving.");
       throw;
     }
   }

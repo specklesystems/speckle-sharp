@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
 using Speckle.Core.Logging;
@@ -180,6 +182,12 @@ public class SpeckleContainerBuilder
     where T : class
   {
     ContainerBuilder.RegisterType<T>().AsSelf().InstancePerDependency();
+    return this;
+  }
+
+  public SpeckleContainerBuilder Populate(IServiceCollection serviceCollection)
+  {
+    ContainerBuilder.Populate(serviceCollection);
     return this;
   }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Cancellation;
@@ -20,7 +20,8 @@ public static class ContainerRegistration
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
       .CreateLogger();
 
-    ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
-    builder.AddSingleton(loggerFactory);
+    var serviceCollection = new ServiceCollection();
+    serviceCollection.AddLogging(x => x.AddSerilog(serilogLogger));
+    builder.Populate(serviceCollection);
   }
 }
