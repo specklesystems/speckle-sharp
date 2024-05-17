@@ -6,7 +6,7 @@ namespace Speckle.Connectors.Autocad.Plugin;
 
 public class AutocadExtensionApplication : IExtensionApplication
 {
-  public void Initialize() => AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+  public void Initialize() => AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
   public void Terminate() { }
 
@@ -14,7 +14,11 @@ public class AutocadExtensionApplication : IExtensionApplication
   {
     Assembly? a = null;
     string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(AutocadExtensionApplication).Assembly.Location);
+    var path = Path.GetDirectoryName(typeof(AutocadExtensionApplication).Assembly.Location);
+    if (path is null)
+    {
+      return null;
+    }
 
     string assemblyFile = Path.Combine(path, name + ".dll");
 

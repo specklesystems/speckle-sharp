@@ -66,14 +66,15 @@ internal sealed class SpeckleModule : Module
     string name = args.Name.Split(',')[0];
     string? path = Path.GetDirectoryName(typeof(SpeckleModule).Assembly.Location);
 
-    if (path != null)
+    if (path == null)
     {
-      string assemblyFile = Path.Combine(path, name + ".dll");
+      return assembly;
+    }
+    string assemblyFile = Path.Combine(path, name + ".dll");
 
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
+    if (File.Exists(assemblyFile))
+    {
+      assembly = Assembly.LoadFrom(assemblyFile);
     }
 
     return assembly;

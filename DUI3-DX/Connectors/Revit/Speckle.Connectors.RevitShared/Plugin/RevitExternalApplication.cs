@@ -97,23 +97,25 @@ internal sealed class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  //this nullable is okay!
+  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     // POC: tight binding to files
     Assembly? assembly = null;
     string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
+    string? path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
 
-    if (path != null)
+    if (path == null)
     {
-      string assemblyFile = Path.Combine(path, name + ".dll");
+      return null;
+    }
+    string assemblyFile = Path.Combine(path, name + ".dll");
 
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
+    if (File.Exists(assemblyFile))
+    {
+      assembly = Assembly.LoadFrom(assemblyFile);
     }
 
-    return assembly.NotNull();
+    return assembly;
   }
 }
