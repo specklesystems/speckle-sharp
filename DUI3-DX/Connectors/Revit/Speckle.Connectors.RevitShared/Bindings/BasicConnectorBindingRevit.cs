@@ -35,6 +35,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     _revitContext = revitContext;
     _revitSettings = revitSettings;
     Commands = new BasicConnectorBindingCommands(parent);
+
     // POC: event binding?
     _store.DocumentChanged += (_, _) =>
     {
@@ -49,11 +50,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public string GetSourceApplicationName() => _revitSettings.HostSlug.ToLower(); // POC: maybe not right place but... // ANOTHER POC: We should align this naming from somewhere in common DUI projects instead old structs. I know there are other POC comments around this
 
-  public string GetSourceApplicationVersion()
-  {
-    // POC: maybe not right place but...
-    return _revitSettings.HostAppVersion;
-  }
+  public string GetSourceApplicationVersion() => _revitSettings.HostAppVersion; // POC: maybe not right place but...
 
   public DocumentInfo? GetDocumentInfo()
   {
@@ -66,34 +63,23 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
       return null;
     }
 
-    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString(), doc.PathName);
     if (doc.IsFamilyDocument)
     {
-      info.Message = "Family Environment files not supported by Speckle.";
+      return new DocumentInfo("", "", "") { Message = "Family environment files not supported by Speckle." };
     }
 
-    // POC: Notify user here if document is null.
+    var info = new DocumentInfo(doc.PathName, doc.Title, doc.GetHashCode().ToString());
+
     return info;
   }
 
   public DocumentModelStore GetDocumentState() => _store;
 
-  public void AddModel(ModelCard model)
-  {
-    _store.Models.Add(model);
-  }
+  public void AddModel(ModelCard model) => _store.Models.Add(model);
 
-  public void UpdateModel(ModelCard model)
-  {
-    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
-    _store.Models[idx] = model;
-  }
+  public void UpdateModel(ModelCard model) => _store.UpdateModel(model);
 
-  public void RemoveModel(ModelCard model)
-  {
-    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
-    _store.Models.RemoveAt(index);
-  }
+  public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
   public void HighlightModel(string modelCardId)
   {

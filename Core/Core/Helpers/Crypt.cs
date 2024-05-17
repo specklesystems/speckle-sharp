@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -20,12 +18,11 @@ public static class Crypt
   [Pure]
   public static string Sha256(string input, string? format = "x2", int startIndex = 0, int length = 64)
   {
-    using MemoryStream ms = new();
+    var inputBytes = Encoding.UTF8.GetBytes(input);
 
-    new BinaryFormatter().Serialize(ms, input);
+    using var sha256 = SHA256.Create();
+    byte[] hash = sha256.ComputeHash(inputBytes);
 
-    using SHA256 sha = SHA256.Create();
-    var hash = sha.ComputeHash(ms.ToArray());
     StringBuilder sb = new(64);
     foreach (byte b in hash)
     {

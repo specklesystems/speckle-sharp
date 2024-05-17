@@ -204,7 +204,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// </summary>
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = _store.GetSenders();
+    var senders = _store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 

@@ -50,25 +50,17 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     {
       return null;
     }
-    string name = doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
-    return new DocumentInfo(doc.Name, name, doc.Name);
+    string name = doc.Name.Split(System.IO.Path.PathSeparator).Last();
+    return new DocumentInfo(doc.Name, name, doc.GetHashCode().ToString());
   }
 
   public DocumentModelStore GetDocumentState() => _store;
 
   public void AddModel(ModelCard model) => _store.Models.Add(model);
 
-  public void UpdateModel(ModelCard model)
-  {
-    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
-    _store.Models[idx] = model;
-  }
+  public void UpdateModel(ModelCard model) => _store.UpdateModel(model);
 
-  public void RemoveModel(ModelCard model)
-  {
-    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
-    _store.Models.RemoveAt(index);
-  }
+  public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
   public void HighlightModel(string modelCardId)
   {

@@ -2,7 +2,7 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public interface INonNativeFeaturesUtils
 {
-  public List<Tuple<string, string>> WriteGeometriesToDatasets(
-    Dictionary<string, Tuple<List<string>, ACG.Geometry>> target
+  public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
+    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId)> convertedObjs
   );
 }

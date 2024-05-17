@@ -21,11 +21,13 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using ArcGIS.Core.Geometry;
 using Speckle.Connectors.ArcGIS.Filters;
+using Speckle.Connectors.DUI.Models;
 
 // POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
 // This should go whenever it is aligned.
 using IRootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.IRootObjectSender;
 using RootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.RootObjectSender;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -40,7 +42,11 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
     builder.RegisterType<DUI3ControlWebView>().SingleInstance();
-    builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
+    builder
+      .RegisterType<ArcGISDocumentStore>()
+      .As<DocumentModelStore>()
+      .SingleInstance()
+      .WithParameter("writeToFileOnChange", true);
 
     // Register bindings
     builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
@@ -73,6 +79,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
+    builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
 
     //POC: how tf does this work?
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();

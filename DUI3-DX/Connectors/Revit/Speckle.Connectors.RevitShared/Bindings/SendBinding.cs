@@ -193,7 +193,7 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private void RunExpirationChecks()
   {
-    List<SenderModelCard> senders = Store.GetSenders();
+    var senders = Store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
