@@ -1,4 +1,4 @@
-using InterfaceGenerator;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Autofac.Files;
 

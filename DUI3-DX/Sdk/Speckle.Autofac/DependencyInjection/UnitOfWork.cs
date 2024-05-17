@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using InterfaceGenerator;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Autofac.DependencyInjection;
 
