@@ -1,7 +1,6 @@
-using System.IO;
-using System.Reflection;
 using ArcGIS.Desktop.Framework;
 using Autofac;
+using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.HostApp;
@@ -29,7 +28,7 @@ internal sealed class SpeckleModule : Module
 
   public SpeckleModule()
   {
-    AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+    AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<SpeckleModule>;
 
     Container = new AutofacContainer(new StorageInfo());
     Container.PreBuildEvent += Container_PreBuildEvent;
@@ -56,27 +55,5 @@ internal sealed class SpeckleModule : Module
     containerBuilder.RegisterRawConversions();
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
-  }
-
-  private static Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)
-  {
-    // POC: dupe code
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string? path = Path.GetDirectoryName(typeof(SpeckleModule).Assembly.Location);
-
-    if (path == null)
-    {
-      return assembly;
-    }
-    string assemblyFile = Path.Combine(path, name + ".dll");
-
-    if (File.Exists(assemblyFile))
-    {
-      assembly = Assembly.LoadFrom(assemblyFile);
-    }
-
-    return assembly;
   }
 }
