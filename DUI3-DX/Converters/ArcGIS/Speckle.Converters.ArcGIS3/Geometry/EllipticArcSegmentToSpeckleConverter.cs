@@ -1,24 +1,17 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegment, SOG.Polyline>
+public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegment, List<SOG.Point>>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
-  public EllipticArcToSpeckleConverter(
-    IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
-  )
+  public EllipticArcToSpeckleConverter(IRawConversion<ACG.MapPoint, SOG.Point> pointConverter)
   {
-    _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.EllipticArcSegment target)
+  public List<SOG.Point> RawConvert(ACG.EllipticArcSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -55,13 +48,6 @@ public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegme
       points.Add(_pointConverter.RawConvert(pointOnArc));
     }
 
-    // create Speckle Polyline
-    SOG.Polyline polyline =
-      new(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), _contextStack.Current.SpeckleUnits)
-      {
-        // bbox = box,
-        length = target.Length
-      };
-    return polyline;
+    return points;
   }
 }
