@@ -18,35 +18,21 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
 
   public ACG.Polyline RawConvert(SOG.Circle target)
   {
-    // Determine the number of vertices to create along the cirlce
-    int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
-    List<SOG.Point> pointsOriginal = new();
-
     if (target.radius == null)
     {
       throw new SpeckleConversionException("Conversion failed: Circle doesn't have a radius");
     }
 
-    // Calculate the vertices along the arc
-    for (int i = 0; i <= numVertices; i++)
-    {
-      // Calculate the point along the arc
-      double angle = 2 * Math.PI * (i / (double)numVertices);
-      SOG.Point pointOnCircle =
-        new(
-          target.plane.origin.x + (double)target.radius * Math.Cos(angle),
-          target.plane.origin.y + (double)target.radius * Math.Sin(angle),
-          target.plane.origin.z
-        );
+    // create a native ArcGIS circle segment, turn into a native Polyline
+    ACG.MapPoint centerPt = _pointConverter.RawConvert(target.plane.origin);
+    ACG.EllipticArcSegment circleSegment = ACG.EllipticArcBuilderEx.CreateCircle(
+      new ACG.Coordinate2D(centerPt.X, centerPt.Y),
+      (double)target.radius,
+      ACG.ArcOrientation.ArcClockwise
+    );
 
-      pointsOriginal.Add(pointOnCircle);
-    }
-    if (pointsOriginal[0] != pointsOriginal[^1])
-    {
-      pointsOriginal.Add(pointsOriginal[0]);
-    }
+    var circlePolyline = new ACG.PolylineBuilderEx(circleSegment, ACG.AttributeFlags.HasZ).ToGeometry();
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
-    return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
+    return circlePolyline;
   }
 }
