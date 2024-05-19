@@ -27,9 +27,11 @@ public class PolyineFeatureToSpeckleConverter : IRawConversion<ACG.Polyline, IRe
     // segmentize the polylines with curves using precision value of the Map's Spatial Reference
     if (target.HasCurves is true)
     {
+      double tolerance = _contextStack.Current.Document.SpatialReference.XYTolerance;
+      double conversionFactorToMeter = _contextStack.Current.Document.SpatialReference.Unit.ConversionFactor;
       var densifiedPolyline = ACG.GeometryEngine.Instance.DensifyByDeviation(
         target,
-        _contextStack.Current.Document.SpatialReference.XYTolerance
+        tolerance * conversionFactorToMeter
       );
       polylineToConvert = (ACG.Polyline)densifiedPolyline;
       if (densifiedPolyline == null)
