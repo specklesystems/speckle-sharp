@@ -6,6 +6,7 @@ using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.ArcGIS3.Utils;
+using ArcGIS.Core.CIM;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -35,26 +36,18 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     return RawConvert((FeatureLayer)target);
   }
 
-  private string SpeckleGeometryType(string nativeGeometryType)
+  private string AssignSpeckleGeometryType(esriGeometryType nativeGeometryType)
   {
-    string spekleGeometryType = "None";
-    if (nativeGeometryType.Contains("point", StringComparison.OrdinalIgnoreCase))
+    return nativeGeometryType switch
     {
-      spekleGeometryType = "Point";
-    }
-    else if (nativeGeometryType.Contains("polyline", StringComparison.OrdinalIgnoreCase))
-    {
-      spekleGeometryType = "Polyline";
-    }
-    else if (nativeGeometryType.Contains("polygon", StringComparison.OrdinalIgnoreCase))
-    {
-      spekleGeometryType = "Polygon";
-    }
-    else if (nativeGeometryType.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
-    {
-      spekleGeometryType = "Multipatch";
-    }
-    return spekleGeometryType;
+      esriGeometryType.esriGeometryMultipoint => GISLayerGeometryType.POINT,
+      esriGeometryType.esriGeometryPoint => GISLayerGeometryType.POINT,
+      esriGeometryType.esriGeometryLine => GISLayerGeometryType.POLYLINE,
+      esriGeometryType.esriGeometryPolyline => GISLayerGeometryType.POLYLINE,
+      esriGeometryType.esriGeometryPolygon => GISLayerGeometryType.POLYGON,
+      esriGeometryType.esriGeometryMultiPatch => GISLayerGeometryType.MULTIPATCH,
+      _ => GISLayerGeometryType.NONE,
+    };
   }
 
   public VectorLayer RawConvert(FeatureLayer target)
@@ -98,10 +91,9 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
       }
     }
     speckleLayer.attributes = allLayerAttributes;
-    speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
     // get a simple geometry type
-    string spekleGeometryType = SpeckleGeometryType(speckleLayer.nativeGeomType);
+    string spekleGeometryType = AssignSpeckleGeometryType(target.ShapeType);
     speckleLayer.geomType = spekleGeometryType;
 
     // search the rows

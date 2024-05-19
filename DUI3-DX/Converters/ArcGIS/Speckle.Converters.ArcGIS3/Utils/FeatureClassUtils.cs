@@ -85,54 +85,15 @@ public class FeatureClassUtils : IFeatureClassUtils
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
     string? originalGeomType = target.geomType != null ? target.geomType : target.nativeGeomType;
-
-    if (string.IsNullOrEmpty(originalGeomType))
+    return originalGeomType switch
     {
-      throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
-    }
-    return GetGeometryTypeFromString(originalGeomType.ToLower());
-  }
-
-  public ACG.GeometryType GetGeometryTypeFromString(string target)
-  {
-    // POC: find better pattern
-    if (target.Contains("none", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Unknown;
-    }
-    else if (target.Contains("pointcloud", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Unknown;
-    }
-    else if (target.Contains("point", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Multipoint;
-    }
-    else if (
-      target.Contains("line", StringComparison.OrdinalIgnoreCase)
-      || target.Contains("curve", StringComparison.OrdinalIgnoreCase)
-      || target.Contains("arc", StringComparison.OrdinalIgnoreCase)
-      || target.Contains("circle", StringComparison.OrdinalIgnoreCase)
-      || target.Contains("ellipse", StringComparison.OrdinalIgnoreCase)
-    )
-    {
-      return ACG.GeometryType.Polyline;
-    }
-    else if (target.Contains("polygon", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Polygon;
-    }
-    else if (target.Contains("multipatch", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Multipatch;
-    }
-    else if (target.Contains("mesh", StringComparison.OrdinalIgnoreCase))
-    {
-      return ACG.GeometryType.Multipatch;
-    }
-    else
-    {
-      throw new SpeckleConversionException($"Unknown geometry type {target}");
-    }
+      GISLayerGeometryType.NONE => ACG.GeometryType.Unknown,
+      GISLayerGeometryType.POINT => ACG.GeometryType.Multipoint,
+      GISLayerGeometryType.POLYGON => ACG.GeometryType.Polygon,
+      GISLayerGeometryType.POLYLINE => ACG.GeometryType.Polyline,
+      GISLayerGeometryType.MULTIPATCH => ACG.GeometryType.Multipatch,
+      GISLayerGeometryType.POLYGON3D => ACG.GeometryType.Multipatch,
+      _ => throw new ArgumentOutOfRangeException(nameof(target)),
+    };
   }
 }
