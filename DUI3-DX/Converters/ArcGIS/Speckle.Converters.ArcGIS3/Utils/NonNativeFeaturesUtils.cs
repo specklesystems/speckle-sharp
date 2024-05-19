@@ -71,12 +71,13 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     {
       try
       {
-        string uniqueKey = item.Key;
+        string uniqueKey = item.Key; // parentId_parentPath
         string parentPath = uniqueKey.Split('_', 2)[^1];
+        string speckle_type = parentPath.Split("\\")[^1];
         (List<ACG.Geometry> geomList, string? parentId) = item.Value;
         try
         {
-          string converted = CreateDatasetInDatabase(parentPath, geomList, parentId);
+          string converted = CreateDatasetInDatabase(speckle_type, geomList, parentId);
           result.Add((parentPath, converted));
         }
         catch (GeodatabaseGeometryException)
@@ -93,7 +94,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     return result;
   }
 
-  private string CreateDatasetInDatabase(string parentPath, List<ACG.Geometry> geomList, string? parentId)
+  private string CreateDatasetInDatabase(string speckle_type, List<ACG.Geometry> geomList, string? parentId)
   {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
@@ -107,7 +108,6 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // TODO: generate meaningful name
-    string speckle_type = parentPath.Split("\\")[^1];
     string featureClassName = $"speckleTYPE_{speckle_type}_speckleID_{parentId}";
 
     // delete FeatureClass if already exists
