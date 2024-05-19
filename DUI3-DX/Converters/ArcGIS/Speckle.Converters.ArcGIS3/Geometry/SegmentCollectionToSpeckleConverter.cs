@@ -7,15 +7,15 @@ namespace Speckle.Converters.ArcGIS3.Geometry;
 public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.LineSegment, List<SOG.Point>> _lineConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.LineSegment, List<SOG.Point>> lineConverter
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
-    _lineConverter = lineConverter;
+    _pointConverter = pointConverter;
   }
 
   public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
@@ -32,7 +32,14 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySe
       switch (segment.SegmentType)
       {
         case ACG.SegmentType.Line:
-          points = AddPtsToPolyline(points, _lineConverter.RawConvert((ACG.LineSegment)segment));
+          points = AddPtsToPolylinePts(
+            points,
+            new List<SOG.Point>()
+            {
+              _pointConverter.RawConvert(segment.StartPoint),
+              _pointConverter.RawConvert(segment.EndPoint)
+            }
+          );
           break;
         default:
           throw new SpeckleConversionException($"Segment of type '{segment.SegmentType}' cannot be converted");
@@ -44,7 +51,7 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySe
     return polyline;
   }
 
-  private List<SOG.Point> AddPtsToPolyline(List<SOG.Point> points, List<SOG.Point> newSegmentPts)
+  private List<SOG.Point> AddPtsToPolylinePts(List<SOG.Point> points, List<SOG.Point> newSegmentPts)
   {
     if (points.Count == 0 || points[^1] != newSegmentPts[0])
     {

@@ -22,8 +22,6 @@ public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
     _unitMapping[LinearUnit.Yards.FactoryCode] = Units.Yards;
     _unitMapping[LinearUnit.Miles.FactoryCode] = Units.Miles;
     _unitMapping[9003] = Units.USFeet;
-    //_unitMapping[LinearUnit.Decimeters] = Units.;
-    //_unitMapping[LinearUnit.NauticalMiles] = Units.;
   }
 
   public string ConvertOrThrow(Unit hostUnit)
