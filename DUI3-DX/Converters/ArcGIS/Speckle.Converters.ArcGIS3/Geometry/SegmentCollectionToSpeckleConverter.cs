@@ -40,12 +40,8 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySe
         case ACG.SegmentType.Line:
           points = AddPtsToPolyline(points, _lineConverter.RawConvert((ACG.LineSegment)segment));
           break;
-        case ACG.SegmentType.Bezier:
-          points = AddPtsToPolyline(points, _bezierConverter.RawConvert((ACG.CubicBezierSegment)segment));
-          break;
-        case ACG.SegmentType.EllipticArc:
-          points = AddPtsToPolyline(points, _arcConverter.RawConvert((ACG.EllipticArcSegment)segment));
-          break;
+        default:
+          throw new SpeckleConversionException($"Segment of type '{segment.SegmentType}' cannot be converted");
       }
     }
     SOG.Polyline polyline =
