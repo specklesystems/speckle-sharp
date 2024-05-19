@@ -8,20 +8,14 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySe
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly IRawConversion<ACG.LineSegment, List<SOG.Point>> _lineConverter;
-  private readonly IRawConversion<ACG.EllipticArcSegment, List<SOG.Point>> _arcConverter;
-  private readonly IRawConversion<ACG.CubicBezierSegment, List<SOG.Point>> _bezierConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.LineSegment, List<SOG.Point>> lineConverter,
-    IRawConversion<ACG.EllipticArcSegment, List<SOG.Point>> arcConverter,
-    IRawConversion<ACG.CubicBezierSegment, List<SOG.Point>> bezierConverter
+    IRawConversion<ACG.LineSegment, List<SOG.Point>> lineConverter
   )
   {
     _contextStack = contextStack;
     _lineConverter = lineConverter;
-    _arcConverter = arcConverter;
-    _bezierConverter = bezierConverter;
   }
 
   public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
