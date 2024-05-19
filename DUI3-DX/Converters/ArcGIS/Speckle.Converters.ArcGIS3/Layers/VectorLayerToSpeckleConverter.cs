@@ -87,7 +87,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
           continue;
         }
         addedFieldDescriptions.Add(field);
-        allLayerAttributes[name] = (int)field.Type;
+        allLayerAttributes[name] = GISAttributeFieldType.FieldTypeToSpeckle(field.Type);
       }
     }
     speckleLayer.attributes = allLayerAttributes;
