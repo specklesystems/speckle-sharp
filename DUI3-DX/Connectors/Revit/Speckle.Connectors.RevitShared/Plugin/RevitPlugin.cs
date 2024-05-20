@@ -127,8 +127,10 @@ internal sealed class RevitPlugin : IRevitPlugin
 
     _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      // Not needed now, as we should be able to correctly open dev tools via user interaction
-      // _cefSharpPanel.ShowDevTools();
+      if (e.NewValue is false)
+      {
+        return;
+      }
 
       foreach (IBinding binding in _bindings.Select(x => x.Value))
       {
