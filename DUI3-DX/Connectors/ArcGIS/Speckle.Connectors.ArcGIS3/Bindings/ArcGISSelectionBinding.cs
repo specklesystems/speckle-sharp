@@ -7,8 +7,6 @@ namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public class ArcGISSelectionBinding : ISelectionBinding
 {
-  private const string SELECTION_EVENT = "setSelection";
-
   public string Name { get; } = "selectionBinding";
   public IBridge Parent { get; set; }
 
@@ -17,14 +15,14 @@ public class ArcGISSelectionBinding : ISelectionBinding
     Parent = parent;
 
     // example: https://github.com/Esri/arcgis-pro-sdk-community-samples/blob/master/Map-Authoring/QueryBuilderControl/DefinitionQueryDockPaneViewModel.cs
-    MapViewEventArgs args = new(MapView.Active);
+    // MapViewEventArgs args = new(MapView.Active);
     TOCSelectionChangedEvent.Subscribe(OnSelectionChanged, true);
   }
 
   private void OnSelectionChanged(MapViewEventArgs args)
   {
     SelectionInfo selInfo = GetSelection();
-    Parent?.Send(SELECTION_EVENT, selInfo);
+    Parent?.Send(SelectionBindingEvents.SET_SELECTION, selInfo);
   }
 
   public SelectionInfo GetSelection()

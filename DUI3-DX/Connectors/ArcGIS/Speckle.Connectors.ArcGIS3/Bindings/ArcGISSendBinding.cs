@@ -58,6 +58,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private void SubscribeToArcGISEvents()
   {
+    LayersRemovedEvent.Subscribe(GetIdsForLayersRemovedEvent, true);
+    StandaloneTablesRemovedEvent.Subscribe(GetIdsForStandaloneTablesRemovedEvent, true);
+    MapPropertyChangedEvent.Subscribe(GetIdsForMapPropertyChangedEvent, true); // Map units, CRS etc.
+    MapMemberPropertiesChangedEvent.Subscribe(GetIdsForMapMemberPropertiesChangedEvent, true); // e.g. Layer name
+
     ActiveMapViewChangedEvent.Subscribe(SubscribeToMapMembersDataSourceChange, true);
     LayersAddedEvent.Subscribe(GetIdsForLayersAddedEvent, true);
     StandaloneTablesAddedEvent.Subscribe(GetIdsForStandaloneTablesAddedEvent, true);
@@ -161,6 +166,35 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         ChangedObjectIds.Add(table.URI);
       }
     }
+  }
+
+  private void GetIdsForLayersRemovedEvent(LayerEventsArgs args)
+  {
+    foreach (Layer layer in args.Layers)
+    {
+      ChangedObjectIds.Add(layer.URI);
+    }
+    RunExpirationChecks(true);
+  }
+
+  private void GetIdsForStandaloneTablesRemovedEvent(StandaloneTableEventArgs args)
+  {
+    foreach (StandaloneTable table in args.Tables)
+    {
+      ChangedObjectIds.Add(table.URI);
+    }
+    RunExpirationChecks(true);
+  }
+
+  private void GetIdsForMapPropertyChangedEvent(MapPropertyChangedEventArgs args)
+  {
+    foreach (Map map in args.Maps)
+    {
+      foreach (MapMember member in map.Layers)
+      {
+        ChangedObjectIds.Add(member.URI);
+      }
+    }
     RunExpirationChecks(false);
   }
 
@@ -181,6 +215,15 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     {
       SubscribeToTableDataSourceChange(table);
     }
+  }
+  
+  private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
+  {
+    foreach (MapMember member in args.MapMembers)
+    {
+      ChangedObjectIds.Add(member.URI);
+    }
+    RunExpirationChecks(false);
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;

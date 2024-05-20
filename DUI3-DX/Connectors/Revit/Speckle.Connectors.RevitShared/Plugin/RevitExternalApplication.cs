@@ -1,9 +1,9 @@
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using System.Reflection;
 using System.IO;
 using Autofac;
+using Speckle.Autofac;
 using Speckle.Connectors.Utils;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
@@ -47,15 +47,16 @@ internal sealed class RevitExternalApplication : IExternalApplication
     try
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
-      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<RevitExternalApplication>;
+
       _container = new AutofacContainer(new StorageInfo());
       _container.PreBuildEvent += ContainerPreBuildEvent;
 
       // init DI
       _container
         .LoadAutofacModules(_revitSettings.ModuleFolders.NotNull())
-        .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
-        .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
+        .AddSingletonInstance(_revitSettings) // apply revit settings into DI
+        .AddSingletonInstance(application) // inject UIControlledApplication application
         .Build();
 
       // resolve root object
@@ -95,25 +96,5 @@ internal sealed class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
-  }
-
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly.NotNull();
   }
 }
