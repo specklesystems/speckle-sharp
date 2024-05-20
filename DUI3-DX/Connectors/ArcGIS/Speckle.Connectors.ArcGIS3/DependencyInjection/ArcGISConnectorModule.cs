@@ -47,5 +47,6 @@ public class ArcGISConnectorModule : ISpeckleModule
     // register send operation and dependencies
     builder.AddScoped<SendOperation>();
     builder.AddScoped<RootObjectBuilder>();
+    builder.AddScoped<IRootObjectSender, RootObjectSender>();
   }
 }
