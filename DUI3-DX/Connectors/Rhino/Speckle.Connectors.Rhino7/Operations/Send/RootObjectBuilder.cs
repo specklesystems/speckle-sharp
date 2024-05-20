@@ -12,11 +12,11 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// <summary>
 /// Stateless builder object to turn an <see cref="ISendFilter"/> into a <see cref="Base"/> object
 /// </summary>
-public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
+public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
+  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
   }
