@@ -41,7 +41,7 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton<AutocadIdleManager>();
 
     // Operations
-    builder.AddScoped<SendOperation<(DBObject obj, string applicationId)>>();
+    builder.AddScoped<SendOperation<AutocadRootObject>>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // Object Builders

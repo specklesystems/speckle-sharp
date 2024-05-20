@@ -8,6 +8,7 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
@@ -121,7 +122,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   {
     try
     {
-      using var uow = _unitOfWorkFactory.Resolve<SendOperation<(DBObject obj, string applicationId)>>();
+      using var uow = _unitOfWorkFactory.Resolve<SendOperation<AutocadRootObject>>();
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
@@ -132,7 +133,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       }
 
       // Get elements to convert
-      List<(DBObject obj, string applicationId)> autocadObjects =
+      List<AutocadRootObject> autocadObjects =
         Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.NotNull().GetObjectIds());
       if (autocadObjects.Count == 0)
       {
