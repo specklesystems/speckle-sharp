@@ -16,7 +16,7 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddConverterCommon();
     builder.AddSingleton(new RevitContext());
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.AddScoped<IRootToSpeckleConverter, RevitConverter>();
+    builder.AddScoped<IRootToSpeckleConverter, RevitRootToHostConverter>();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.AddScoped<ScalingServiceToSpeckle>();

@@ -16,6 +16,6 @@ public class RhinoConverterModule : ISpeckleModule
 
     // To Speckle
     builder.AddScoped<IHostToSpeckleUnitConverter<UnitSystem>, RhinoToSpeckleUnitConverter>();
-    builder.AddScoped<IRootToSpeckleConverter, RhinoConverter>();
+    builder.AddScoped<IRootToSpeckleConverter, RhinoRootToHostConverter>();
   }
 }

@@ -13,7 +13,7 @@ public class ArcGISConverterModule : ISpeckleModule
   {
     builder.AddConverterCommon();
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.AddScoped<IRootToSpeckleConverter, ArcGisConverter>();
+    builder.AddScoped<IRootToSpeckleConverter, ArcGISRootToHostConverter>();
     builder.AddScoped<IFeatureClassUtils, FeatureClassUtils>();
     builder.AddScoped<IArcGISFieldUtils, ArcGISFieldUtils>();
     builder.AddScoped<ICharacterCleaner, CharacterCleaner>();

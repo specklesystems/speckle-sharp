@@ -6,12 +6,12 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad;
 
-public class AutocadConverter : IRootToSpeckleConverter
+public class AutocadRootToHostConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public AutocadConverter(
+  public AutocadRootToHostConverter(
     IFactory<string, IToSpeckleTopLevelConverter> toSpeckle,
     IConversionContextStack<Document, UnitsValue> contextStack
   )

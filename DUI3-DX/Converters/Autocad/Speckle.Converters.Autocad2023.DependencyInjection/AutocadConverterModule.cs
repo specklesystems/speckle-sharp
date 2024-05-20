@@ -14,7 +14,7 @@ public class AutocadConverterModule : ISpeckleModule
     builder.AddConverterCommon();
     // POC: below comment maybe incorrect (sorry if I wrote that!) stateless services
     // can be injected as Singleton(), only where we have state we wish to wrap in a unit of work
-    builder.AddScoped<IRootToSpeckleConverter, AutocadConverter>();
+    builder.AddScoped<IRootToSpeckleConverter, AutocadRootToHostConverter>();
 
     // single stack per conversion
     builder.AddScoped<IConversionContextStack<Document, UnitsValue>, AutocadConversionContextStack>();

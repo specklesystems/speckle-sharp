@@ -9,7 +9,7 @@
     <Import_RootNamespace>Speckle.Converters.AutocadShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AutocadConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AutocadRootToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EntityExtensions.cs" />
