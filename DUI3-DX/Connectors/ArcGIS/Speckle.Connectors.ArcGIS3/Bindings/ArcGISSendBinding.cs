@@ -166,6 +166,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         ChangedObjectIds.Add(table.URI);
       }
     }
+    RunExpirationChecks(false);
   }
 
   private void GetIdsForLayersRemovedEvent(LayerEventsArgs args)
@@ -216,7 +217,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       SubscribeToTableDataSourceChange(table);
     }
   }
-  
+
   private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
   {
     foreach (MapMember member in args.MapMembers)
