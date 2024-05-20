@@ -12,6 +12,5 @@ public class PointToSpeckleRawConverter : ITypedConverter<AG.Point3d, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public SOG.Point Convert(AG.Point3d target) =>
-    new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
+  public SOG.Point Convert(AG.Point3d target) => new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
 }

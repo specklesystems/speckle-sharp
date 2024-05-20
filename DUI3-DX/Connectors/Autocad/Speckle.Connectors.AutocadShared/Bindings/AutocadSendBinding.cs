@@ -133,8 +133,9 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       }
 
       // Get elements to convert
-      List<AutocadRootObject> autocadObjects =
-        Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.NotNull().GetObjectIds());
+      List<AutocadRootObject> autocadObjects = Application.DocumentManager.CurrentDocument.GetObjects(
+        modelCard.SendFilter.NotNull().GetObjectIds()
+      );
       if (autocadObjects.Count == 0)
       {
         throw new InvalidOperationException("No objects were found. Please update your send filter!");

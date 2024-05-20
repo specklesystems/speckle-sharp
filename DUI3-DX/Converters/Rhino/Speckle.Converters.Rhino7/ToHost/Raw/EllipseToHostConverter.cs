@@ -33,11 +33,7 @@ public class EllipseToHostConverter
       throw new InvalidOperationException($"Ellipses cannot have null radii");
     }
 
-    return new RG.Ellipse(
-      _planeConverter.Convert(target.plane),
-      target.firstRadius.Value,
-      target.secondRadius.Value
-    );
+    return new RG.Ellipse(_planeConverter.Convert(target.plane), target.firstRadius.Value, target.secondRadius.Value);
   }
 
   /// <summary>

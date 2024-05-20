@@ -5,7 +5,8 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.Autocad2023.ToHost.Raw;
 
-public class AutocadPolycurveToHostPolyline3dRawConverter : ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d>
+public class AutocadPolycurveToHostPolyline3dRawConverter
+  : ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 

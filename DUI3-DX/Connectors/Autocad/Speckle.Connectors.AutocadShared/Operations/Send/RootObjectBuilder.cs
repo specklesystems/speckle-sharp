@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 namespace Speckle.Connectors.Autocad.Operations.Send;
 
 public record AutocadRootObject(DBObject Root, string ApplicationId);
+
 public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
 {
   private readonly IRootToSpeckleConverter _converter;

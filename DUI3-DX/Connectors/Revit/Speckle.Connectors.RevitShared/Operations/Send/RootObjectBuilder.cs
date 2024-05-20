@@ -16,10 +16,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
 
-  public RevitRootObjectBuilder(
-    IRootToSpeckleConverter converter,
-    IRevitConversionContextStack contextStack
-  )
+  public RevitRootObjectBuilder(IRootToSpeckleConverter converter, IRevitConversionContextStack contextStack)
   {
     _converter = converter;
     _contextStack = contextStack;
