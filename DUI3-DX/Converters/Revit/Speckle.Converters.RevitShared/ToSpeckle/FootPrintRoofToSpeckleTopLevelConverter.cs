@@ -11,7 +11,7 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.FootPrintRoof), 0)]
-public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
+public class FootPrintRoofToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
 {
   private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly ITypedConverter<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;

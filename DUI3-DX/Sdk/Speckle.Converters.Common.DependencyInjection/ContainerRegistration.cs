@@ -13,12 +13,12 @@ public static class ContainerRegistration
       This will require consolidating across other connectors.
     */
     builder.AddScoped<
-      IFactory<string, IHostObjectToSpeckleConversion>,
-      Factory<string, IHostObjectToSpeckleConversion>
+      IFactory<string, IToSpeckleTopLevelConverter>,
+      Factory<string, IToSpeckleTopLevelConverter>
     >();
     builder.AddScoped<
-      IConverterResolver<IHostObjectToSpeckleConversion>,
-      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+      IConverterResolver<IToSpeckleTopLevelConverter>,
+      RecursiveConverterResolver<IToSpeckleTopLevelConverter>
     >();
 
     builder.AddScoped<
@@ -33,7 +33,7 @@ public static class ContainerRegistration
     builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
 
     builder.RegisterRawConversions();
-    builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();
     builder.InjectNamedTypes<IToHostTopLevelConverter>();
   }
 }

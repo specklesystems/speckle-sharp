@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBEllipseToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBEllipseToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
   private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;

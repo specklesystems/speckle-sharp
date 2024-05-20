@@ -12,10 +12,10 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.FitCurvePoly"/> will have only <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// The IToSpeckleTopLevelConverter inheritance should only expect database-resident <see cref="ADB.Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline2d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
+public class Polyline2dToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<ADB.Arc, SOG.Arc> _arcConverter;
   private readonly ITypedConverter<ADB.Line, SOG.Line> _lineConverter;

@@ -10,7 +10,7 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(StandaloneTable), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class StandaloneTableToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
+  : IToSpeckleTopLevelConverter,
     ITypedConverter<StandaloneTable, VectorLayer>
 {
   private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;

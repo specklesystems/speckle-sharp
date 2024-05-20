@@ -8,12 +8,12 @@ namespace Speckle.Converters.RevitShared;
 // POC: maybe possible to restrict the access so this cannot be created directly?
 public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 {
-  private readonly IConverterResolver<IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IConverterResolver<IToSpeckleTopLevelConverter> _toSpeckle;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public RevitConverterToSpeckle(
-    IConverterResolver<IHostObjectToSpeckleConversion> toSpeckle,
+    IConverterResolver<IToSpeckleTopLevelConverter> toSpeckle,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     ParameterValueExtractor parameterValueExtractor
   )

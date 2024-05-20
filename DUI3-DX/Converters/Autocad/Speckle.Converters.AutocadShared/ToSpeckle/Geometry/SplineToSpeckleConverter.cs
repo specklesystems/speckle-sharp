@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Spline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<ADB.Spline, SOG.Curve>
+public class SplineToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<ADB.Spline, SOG.Curve>
 {
   private readonly ITypedConverter<AG.Interval, SOP.Interval> _intervalConverter;
   private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;

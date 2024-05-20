@@ -9,10 +9,10 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// The <see cref="ADB.PolyFaceMesh"/> class converter. Converts to <see cref="SOG.Mesh"/>.
 /// </summary>
 /// <remarks>
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// The IToSpeckleTopLevelConverter inheritance should only expect database-resident <see cref="ADB.PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBPolyfaceMeshToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
   private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;

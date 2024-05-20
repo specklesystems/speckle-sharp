@@ -10,7 +10,7 @@ using Speckle.Converters.ArcGIS3.Utils;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<FeatureLayer, VectorLayer>
+public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<FeatureLayer, VectorLayer>
 {
   private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;
   private readonly IFeatureClassUtils _featureClassUtils;

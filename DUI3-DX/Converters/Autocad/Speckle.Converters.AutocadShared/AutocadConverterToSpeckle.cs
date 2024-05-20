@@ -8,11 +8,11 @@ namespace Speckle.Converters.Autocad;
 
 public class AutocadConverterToSpeckle : ISpeckleConverterToSpeckle
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
   public AutocadConverterToSpeckle(
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IFactory<string, IToSpeckleTopLevelConverter> toSpeckle,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
   {

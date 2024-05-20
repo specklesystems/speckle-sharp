@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DBA.Room), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class RoomConversionToSpeckle : BaseConversionToSpeckle<DBA.Room, SOBE.Room>
+public class RoomTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DBA.Room, SOBE.Room>
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
@@ -16,7 +16,7 @@ public class RoomConversionToSpeckle : BaseConversionToSpeckle<DBA.Room, SOBE.Ro
   private readonly ITypedConverter<DB.Location, Base> _locationConverter;
   private readonly ITypedConverter<IList<DB.BoundarySegment>, SOG.Polycurve> _boundarySegmentConverter;
 
-  public RoomConversionToSpeckle(
+  public RoomTopLevelConverterToSpeckle(
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
     ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,

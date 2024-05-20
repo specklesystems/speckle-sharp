@@ -8,7 +8,7 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: ModelCurve looks a bit bogus and we may wish to revise what that is and how it inherits
 // see https://spockle.atlassian.net/browse/CNX-9381
 [NameAndRankValue(nameof(DB.ModelCurve), 0)]
-public class ModelCurveToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.ModelCurve, SOBR.Curve.ModelCurve>
+public class ModelCurveToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeckle<DB.ModelCurve, SOBR.Curve.ModelCurve>
 {
   private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
   private readonly IRevitConversionContextStack _conversionContext;

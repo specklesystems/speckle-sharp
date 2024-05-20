@@ -12,7 +12,7 @@ namespace Speckle.Converters.Common;
 // clould be anywhere or all in once place - rooting through box 274 for something you need, when said box has a miriad different
 // and unrelated items, is no fun. Plus when you need that item, you end up bringing out the whole box/
 [NameAndRankValue(nameof(DB.Floor), 0)]
-public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.RevitFloor>
+public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Floor, SOBR.RevitFloor>
 {
   private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
@@ -21,7 +21,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ISlopeArrowExtractor _slopeArrowExtractor;
 
-  public FloorConversionToSpeckle(
+  public FloorTopLevelConverterToSpeckle(
     ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
     ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,

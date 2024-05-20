@@ -11,7 +11,7 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(RasterLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class RasterLayerToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
+  : IToSpeckleTopLevelConverter,
     ITypedConverter<RasterLayer, SGIS.RasterLayer>
 {
   private readonly ITypedConverter<Raster, RasterElement> _gisRasterConverter;

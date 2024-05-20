@@ -9,7 +9,7 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.Ceiling), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-internal sealed class CeilingConversionToSpeckle : BaseConversionToSpeckle<DB.Ceiling, SOBR.RevitCeiling>
+internal sealed class CeilingTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Ceiling, SOBR.RevitCeiling>
 {
   private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
@@ -19,7 +19,7 @@ internal sealed class CeilingConversionToSpeckle : BaseConversionToSpeckle<DB.Ce
 
   //private readonly HostedElementConversionToSpeckle _hostedElementConverter;
 
-  public CeilingConversionToSpeckle(
+  public CeilingTopLevelConverterToSpeckle(
     ITypedConverter<CurveArrArray, List<Polycurve>> curveArrArrayConverter,
     ITypedConverter<DB.Level, RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,

@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.DBPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToSpeckleConverter : IHostObjectToSpeckleConversion
+public class PointToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
 

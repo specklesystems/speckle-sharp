@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBCircleToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBCircleToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
   private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;

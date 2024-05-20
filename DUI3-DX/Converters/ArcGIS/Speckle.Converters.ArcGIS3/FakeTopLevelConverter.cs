@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3;
 
 [NameAndRankValue(nameof(String), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class FakeConversion : IHostObjectToSpeckleConversion, ITypedConverter<String, Point>
+public class FakeTopLevelConverter : IToSpeckleTopLevelConverter, ITypedConverter<String, Point>
 {
   public Base Convert(object target) => Convert((String)target);
 

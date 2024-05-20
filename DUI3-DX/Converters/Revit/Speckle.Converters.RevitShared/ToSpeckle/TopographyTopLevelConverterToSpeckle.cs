@@ -6,12 +6,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
 [NameAndRankValue(nameof(DBA.TopographySurface), 0)]
-public class TopographyConversionToSpeckle : BaseConversionToSpeckle<DBA.TopographySurface, SOBR.RevitTopography>
+public class TopographyTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DBA.TopographySurface, SOBR.RevitTopography>
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
-  public TopographyConversionToSpeckle(
+  public TopographyTopLevelConverterToSpeckle(
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner
   )

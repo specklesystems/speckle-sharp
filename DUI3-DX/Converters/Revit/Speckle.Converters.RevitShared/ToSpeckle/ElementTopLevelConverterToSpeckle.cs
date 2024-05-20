@@ -6,11 +6,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: not currently used? clearly some missing pieces
 [NameAndRankValue(nameof(DB.Element), 0)]
-public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, RevitElement>
+public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Element, RevitElement>
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
 
-  public ElementConversionToSpeckle(DisplayValueExtractor displayValueExtractor)
+  public ElementTopLevelConverterToSpeckle(DisplayValueExtractor displayValueExtractor)
   {
     _displayValueExtractor = displayValueExtractor;
   }

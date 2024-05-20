@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 [NameAndRankValue(nameof(ExtrusionObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ExtrusionObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleConversion
+public class ExtrusionObjectToSpeckleTopLevelConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<RG.Brep, SOG.Brep> _curveConverter;
 

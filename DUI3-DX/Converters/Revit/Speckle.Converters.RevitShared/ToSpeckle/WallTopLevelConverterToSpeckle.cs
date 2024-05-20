@@ -12,7 +12,7 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
 [NameAndRankValue(nameof(DB.Wall), 0)]
-public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.RevitWall>
+public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Wall, SOBR.RevitWall>
 {
   private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
   private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
@@ -23,7 +23,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly ISpeckleConverterToSpeckle _converter;
 
-  public WallConversionToSpeckle(
+  public WallTopLevelConverterToSpeckle(
     ITypedConverter<DB.Curve, ICurve> curveConverter,
     ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,

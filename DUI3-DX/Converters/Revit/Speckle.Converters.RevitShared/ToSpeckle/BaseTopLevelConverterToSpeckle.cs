@@ -6,8 +6,8 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: maybe but could be generic abstract Converters.Common?
 // or maybe it's not actually doing very much now and can come out
-public abstract class BaseConversionToSpeckle<THost, TSpeckle>
-  : IHostObjectToSpeckleConversion,
+public abstract class BaseTopLevelConverterToSpeckle<THost, TSpeckle>
+  : IToSpeckleTopLevelConverter,
     // POC: why do we need to do this for each base conversion?
     ITypedConverter<THost, TSpeckle>
   where TSpeckle : Base
