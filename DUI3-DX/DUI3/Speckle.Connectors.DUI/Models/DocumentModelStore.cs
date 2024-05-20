@@ -34,7 +34,7 @@ public abstract class DocumentModelStore
   /// </summary>
   /// <param name="serializerOptions">our custom serialiser that should be globally DI'ed in.</param>
   /// <param name="writeToFileOnChange">Whether to store the models state in the file on any change. Defaults to false out of caution, but it's recommended to set to true, unless severe host app limitations.</param>
-  protected DocumentModelStore(JsonSerializerSettings serializerOptions, bool writeToFileOnChange = false)
+  protected DocumentModelStore(JsonSerializerSettings serializerOptions, bool writeToFileOnChange)
   {
     _serializerOptions = serializerOptions;
     _writeToFileOnChange = writeToFileOnChange;
