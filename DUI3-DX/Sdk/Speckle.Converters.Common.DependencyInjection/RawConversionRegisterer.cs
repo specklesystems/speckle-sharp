@@ -1,5 +1,4 @@
 using Autofac;
-using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 
@@ -12,7 +11,10 @@ public static class RawConversionRegisterer
   public static void RegisterRawConversions(this SpeckleContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/
-    containerBuilder.SpeckleTypes.ForEach(x => RegisterRawConversionsForType(containerBuilder.ContainerBuilder, x));
+    foreach (Type speckleType in containerBuilder.SpeckleTypes)
+    {
+      RegisterRawConversionsForType(containerBuilder.ContainerBuilder, speckleType);
+    }
   }
 
   private static void RegisterRawConversionsForType(ContainerBuilder containerBuilder, Type type)
