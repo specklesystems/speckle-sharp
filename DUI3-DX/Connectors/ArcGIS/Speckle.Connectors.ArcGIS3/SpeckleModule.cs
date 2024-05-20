@@ -1,5 +1,5 @@
+using System.Reflection;
 using ArcGIS.Desktop.Framework;
-using Autofac;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.HostApp;

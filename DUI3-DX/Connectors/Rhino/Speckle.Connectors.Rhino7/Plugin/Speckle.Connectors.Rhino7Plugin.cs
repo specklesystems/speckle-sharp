@@ -1,4 +1,5 @@
-﻿using Rhino.PlugIns;
+﻿using System.Reflection;
+using Rhino.PlugIns;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
