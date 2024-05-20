@@ -7,7 +7,7 @@ namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 // POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
 /// <summary>
 /// Provides an implementation for <see cref="IRootToHostConverter"/>
-/// that resolves a <see cref="IToHostTopLevelConverter"/> via the injected <see cref="RecursiveConverterResolver{TConverter}"/>
+/// that resolves a <see cref="IToHostTopLevelConverter"/> via the injected <see cref="IConverterResolver{TConverter}"/>
 /// </summary>
 /// <seealso cref="ConverterWithFallback"/>
 public sealed class ConverterWithoutFallback : IRootToHostConverter

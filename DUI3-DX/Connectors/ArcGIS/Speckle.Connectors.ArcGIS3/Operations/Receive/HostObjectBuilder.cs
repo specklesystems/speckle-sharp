@@ -12,7 +12,7 @@ using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
-public class HostObjectBuilder : IHostObjectBuilder
+public class ArcGISHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
@@ -22,7 +22,7 @@ public class HostObjectBuilder : IHostObjectBuilder
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly GraphTraversal _traverseFunction;
 
-  public HostObjectBuilder(
+  public ArcGISHostObjectBuilder(
     IRootToHostConverter converter,
     IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<Map, Unit> contextStack,

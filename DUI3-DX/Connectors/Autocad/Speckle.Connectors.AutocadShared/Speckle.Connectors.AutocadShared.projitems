@@ -26,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EntityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\HostObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\AutocadHostObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadExtensionApplication.cs" />

@@ -45,7 +45,7 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // Object Builders
-    builder.AddScoped<IHostObjectBuilder, HostObjectBuilder>();
+    builder.AddScoped<IHostObjectBuilder, AutocadHostObjectBuilder>();
     builder.AddSingleton<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
 
     // Register bindings

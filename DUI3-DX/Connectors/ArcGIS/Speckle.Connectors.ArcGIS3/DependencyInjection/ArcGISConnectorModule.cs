@@ -41,7 +41,7 @@ public class ArcGISConnectorModule : ISpeckleModule
     builder.AddSingleton<IBinding, ArcGISReceiveBinding>();
 
     builder.AddTransient<ISendFilter, ArcGISSelectionFilter>();
-    builder.AddScoped<IHostObjectBuilder, HostObjectBuilder>();
+    builder.AddScoped<IHostObjectBuilder, ArcGISHostObjectBuilder>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // register send operation and dependencies

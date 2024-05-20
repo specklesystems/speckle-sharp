@@ -10,13 +10,13 @@ using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
-public class HostObjectBuilder : IHostObjectBuilder
+public class AutocadHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
   private readonly AutocadLayerManager _autocadLayerManager;
   private readonly GraphTraversal _traversalFunction;
 
-  public HostObjectBuilder(
+  public AutocadHostObjectBuilder(
     IRootToHostConverter converter,
     AutocadLayerManager autocadLayerManager,
     GraphTraversal traversalFunction

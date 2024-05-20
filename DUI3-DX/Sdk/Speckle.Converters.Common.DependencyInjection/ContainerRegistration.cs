@@ -15,14 +15,11 @@ public static class ContainerRegistration
     builder.AddScoped<IFactory<IToSpeckleTopLevelConverter>, Factory<IToSpeckleTopLevelConverter>>();
     builder.AddScoped<
       IConverterResolver<IToSpeckleTopLevelConverter>,
-      RecursiveConverterResolver<IToSpeckleTopLevelConverter>
+      ConverterResolver<IToSpeckleTopLevelConverter>
     >();
 
     builder.AddScoped<IFactory<IToHostTopLevelConverter>, Factory<IToHostTopLevelConverter>>();
-    builder.AddScoped<
-      IConverterResolver<IToHostTopLevelConverter>,
-      RecursiveConverterResolver<IToHostTopLevelConverter>
-    >();
+    builder.AddScoped<IConverterResolver<IToHostTopLevelConverter>, ConverterResolver<IToHostTopLevelConverter>>();
 
     builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 

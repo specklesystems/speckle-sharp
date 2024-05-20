@@ -1,14 +1,15 @@
 ﻿using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common.Objects;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Converters.Common;
 
-public sealed class RecursiveConverterResolver<TConverter> : IConverterResolver<TConverter>
+[GenerateAutoInterface]
+public sealed class ConverterResolver<TConverter> : IConverterResolver<TConverter>
   where TConverter : class
 {
   private readonly IFactory<TConverter> _factory;
 
-  public RecursiveConverterResolver(IFactory<TConverter> factory)
+  public ConverterResolver(IFactory<TConverter> factory)
   {
     _factory = factory;
   }

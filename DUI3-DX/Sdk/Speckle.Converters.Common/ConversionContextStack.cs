@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Converters.Common;
 
@@ -8,7 +9,8 @@ namespace Speckle.Converters.Common;
   "CA1711:Identifiers should not have incorrect suffix",
   Justification = "Name ends in Stack but it is in fact a Stack, just not inheriting from `System.Collections.Stack`"
 )]
-public class ConversionContextStack<TDocument, THostUnit> : IConversionContextStack<TDocument, THostUnit>
+[GenerateAutoInterface]
+public abstract class ConversionContextStack<TDocument, THostUnit> : IConversionContextStack<TDocument, THostUnit>
   where TDocument : class
 {
   private readonly IHostToSpeckleUnitConverter<THostUnit> _unitConverter;
