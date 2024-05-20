@@ -6,14 +6,14 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7;
 
-public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleObjectToHostConversion
+public abstract class SpeckleToHostGeometryBaseTopLevelConverter<TIn, TOut> : IToHostTopLevelConverter
   where TIn : Base
   where TOut : RG.GeometryBase
 {
   protected IConversionContextStack<RhinoDoc, UnitSystem> ContextStack { get; private set; }
   private readonly ITypedConverter<TIn, TOut> _geometryBaseConverter;
 
-  protected SpeckleToHostGeometryBaseConversion(
+  protected SpeckleToHostGeometryBaseTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     ITypedConverter<TIn, TOut> geometryBaseConverter
   )

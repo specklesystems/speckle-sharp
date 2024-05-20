@@ -22,18 +22,18 @@ public static class ContainerRegistration
     >();
 
     builder.AddScoped<
-      IFactory<string, ISpeckleObjectToHostConversion>,
-      Factory<string, ISpeckleObjectToHostConversion>
+      IFactory<string, IToHostTopLevelConverter>,
+      Factory<string, IToHostTopLevelConverter>
     >();
     builder.AddScoped<
-      IConverterResolver<ISpeckleObjectToHostConversion>,
-      RecursiveConverterResolver<ISpeckleObjectToHostConversion>
+      IConverterResolver<IToHostTopLevelConverter>,
+      RecursiveConverterResolver<IToHostTopLevelConverter>
     >();
 
     builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
 
     builder.RegisterRawConversions();
     builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
-    builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
+    builder.InjectNamedTypes<IToHostTopLevelConverter>();
   }
 }

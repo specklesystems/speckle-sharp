@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class FallbackToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<DisplayableObject, ACG.Geometry>
+public class FallbackToHostConverter : IToHostTopLevelConverter, ITypedConverter<DisplayableObject, ACG.Geometry>
 {
   private readonly ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> _meshListConverter;
   private readonly ITypedConverter<List<SOG.Polyline>, ACG.Polyline> _polylineListConverter;

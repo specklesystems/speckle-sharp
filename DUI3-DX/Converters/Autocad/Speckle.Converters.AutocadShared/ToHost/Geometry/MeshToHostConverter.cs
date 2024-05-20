@@ -7,7 +7,7 @@ using Speckle.Core.Logging;
 namespace Speckle.Converters.Autocad.Geometry;
 
 [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Mesh, ADB.PolyFaceMesh>
+public class MeshToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Mesh, ADB.PolyFaceMesh>
 {
   private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;

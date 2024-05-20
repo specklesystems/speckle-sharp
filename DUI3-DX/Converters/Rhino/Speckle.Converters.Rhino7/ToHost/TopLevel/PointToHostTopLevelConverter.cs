@@ -5,7 +5,7 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Point), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion<SOG.Point, RG.Point>
+public class PointToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Point, RG.Point>
 {
   public PointToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,

@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(RasterLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class RasterLayerToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<RasterLayer, string>
+public class RasterLayerToHostConverter : IToHostTopLevelConverter, ITypedConverter<RasterLayer, string>
 {
   public object Convert(Base target) => Convert((RasterLayer)target);
 

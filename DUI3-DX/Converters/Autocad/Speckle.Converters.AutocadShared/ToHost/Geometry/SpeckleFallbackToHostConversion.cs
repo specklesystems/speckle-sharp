@@ -5,15 +5,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class SpeckleFallbackToAutocadConversion
-  : ISpeckleObjectToHostConversion,
+public class SpeckleFallbackToAutocadTopLevelConverter
+  : IToHostTopLevelConverter,
     ITypedConverter<DisplayableObject, List<ADB.Entity>>
 {
   private readonly ITypedConverter<SOG.Line, ADB.Line> _lineConverter;
   private readonly ITypedConverter<SOG.Polyline, ADB.Polyline3d> _polylineConverter;
   private readonly ITypedConverter<SOG.Mesh, ADB.PolyFaceMesh> _meshConverter;
 
-  public SpeckleFallbackToAutocadConversion(
+  public SpeckleFallbackToAutocadTopLevelConverter(
     ITypedConverter<SOG.Line, ADB.Line> lineConverter,
     ITypedConverter<SOG.Polyline, ADB.Polyline3d> polylineConverter,
     ITypedConverter<SOG.Mesh, ADB.PolyFaceMesh> meshConverter

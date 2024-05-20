@@ -8,7 +8,7 @@ namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class FallbackToHostTopLevelConverter
-  : ISpeckleObjectToHostConversion,
+  : IToHostTopLevelConverter,
     ITypedConverter<DisplayableObject, List<RG.GeometryBase>>
 {
   private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;

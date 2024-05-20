@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Mesh, ACG.Multipatch>
+public class MeshToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Mesh, ACG.Multipatch>
 {
   private readonly ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> _meshConverter;
 

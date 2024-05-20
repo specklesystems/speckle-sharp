@@ -10,7 +10,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(VectorLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<VectorLayer, string>
+public class VectorLayerToHostConverter : IToHostTopLevelConverter, ITypedConverter<VectorLayer, string>
 {
   private readonly ITypedConverter<VectorLayer, FeatureClass> _featureClassConverter;
   private readonly ITypedConverter<VectorLayer, Table> _tableConverter;

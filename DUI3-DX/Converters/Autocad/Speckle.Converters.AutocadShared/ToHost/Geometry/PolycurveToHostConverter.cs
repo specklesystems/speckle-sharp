@@ -10,7 +10,7 @@ namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 /// Otherwise we convert it as spline (list of ADB.Entity) that switch cases according to each segment type.
 /// </summary>
 [NameAndRankValue(nameof(SOG.Polycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
+public class PolycurveToHostConverter : IToHostTopLevelConverter
 {
   private readonly ITypedConverter<SOG.Polycurve, ADB.Polyline> _polylineConverter;
   private readonly ITypedConverter<SOG.Polycurve, List<ADB.Entity>> _splineConverter;

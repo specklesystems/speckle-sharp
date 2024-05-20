@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class LineSingleToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Line, ACG.Polyline>
+public class LineSingleToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Line, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 

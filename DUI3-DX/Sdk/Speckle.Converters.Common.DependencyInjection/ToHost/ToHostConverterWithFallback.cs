@@ -14,10 +14,10 @@ namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 /// <seealso cref="ToHostConverterWithoutFallback"/>
 public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
 {
-  private readonly IConverterResolver<ISpeckleObjectToHostConversion> _toHost;
+  private readonly IConverterResolver<IToHostTopLevelConverter> _toHost;
   private readonly ToHostConverterWithoutFallback _baseConverter;
 
-  public ToHostConverterWithFallback(IConverterResolver<ISpeckleObjectToHostConversion> toHost)
+  public ToHostConverterWithFallback(IConverterResolver<IToHostTopLevelConverter> toHost)
   {
     _toHost = toHost;
     _baseConverter = new ToHostConverterWithoutFallback(toHost);
