@@ -55,7 +55,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public async void HighlightModel(string modelCardId)
   {
-    MapView mapView = MapView.Active.NotNull(); // Not sure here we should throw?
+    MapView mapView = MapView.Active;
 
     var model = _store.GetModelById(modelCardId);
 
