@@ -29,7 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\HostObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObjectBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadExtensionApplication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
