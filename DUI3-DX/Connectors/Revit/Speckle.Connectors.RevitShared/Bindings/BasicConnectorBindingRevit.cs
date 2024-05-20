@@ -57,7 +57,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     // POC: not sure why this would ever be null, is this needed?
     _revitContext.UIApplication.NotNull();
 
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+    var doc = _revitContext.UIApplication.ActiveUIDocument?.Document;
     if (doc is null)
     {
       return null;
