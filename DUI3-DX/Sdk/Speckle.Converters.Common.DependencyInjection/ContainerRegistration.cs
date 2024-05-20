@@ -30,7 +30,7 @@ public static class ContainerRegistration
       RecursiveConverterResolver<IToHostTopLevelConverter>
     >();
 
-    builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
+    builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 
     builder.RegisterRawConversions();
     builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();

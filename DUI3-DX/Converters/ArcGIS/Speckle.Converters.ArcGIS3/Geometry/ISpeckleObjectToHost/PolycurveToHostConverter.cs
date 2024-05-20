@@ -8,15 +8,15 @@ namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 public class PolycurveToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Polycurve, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
-  private readonly ISpeckleConverterToHost _toHostConverter;
+  private readonly IRootToHostConverter _converter;
 
   public PolycurveToHostConverter(
     ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
-    ISpeckleConverterToHost toHostConverter
+    IRootToHostConverter converter
   )
   {
     _pointConverter = pointConverter;
-    _toHostConverter = toHostConverter;
+    _converter = converter;
   }
 
   public object Convert(Base target) => Convert((SOG.Polycurve)target);
@@ -30,7 +30,7 @@ public class PolycurveToHostConverter : IToHostTopLevelConverter, ITypedConverte
       {
         throw new NotImplementedException("Polycurves with arc segments are not supported");
       }
-      ACG.Polyline converted = (ACG.Polyline)_toHostConverter.Convert((Base)segment);
+      ACG.Polyline converted = (ACG.Polyline)_converter.Convert((Base)segment);
       List<ACG.MapPoint> newPts = converted.Points.ToList();
 
       // reverse new segment if needed

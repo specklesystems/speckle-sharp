@@ -12,12 +12,12 @@ namespace Speckle.Connectors.Autocad.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly ISpeckleConverterToHost _converter;
+  private readonly IRootToHostConverter _converter;
   private readonly AutocadLayerManager _autocadLayerManager;
   private readonly GraphTraversal _traversalFunction;
 
   public HostObjectBuilder(
-    ISpeckleConverterToHost converter,
+    IRootToHostConverter converter,
     AutocadLayerManager autocadLayerManager,
     GraphTraversal traversalFunction
   )
