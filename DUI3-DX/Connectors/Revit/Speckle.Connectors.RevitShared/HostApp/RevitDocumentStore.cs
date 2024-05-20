@@ -109,7 +109,7 @@ internal sealed class RevitDocumentStore : DocumentModelStore
   {
     try
     {
-      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
+      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument?.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
         Models = new();

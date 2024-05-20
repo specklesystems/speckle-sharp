@@ -1,7 +1,9 @@
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
-using System.Reflection;
+using Speckle.Autofac.Files;
 using System.IO;
+using Autofac;
+using Speckle.Autofac;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Logging;
 
@@ -43,9 +45,8 @@ internal sealed class RevitExternalApplication : IExternalApplication
     try
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
-      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<RevitExternalApplication>;
       var containerBuilder = SpeckleContainerBuilder.CreateInstance();
-
       // init DI
       _container = containerBuilder
         .LoadAutofacModules(Assembly.GetExecutingAssembly(), _revitSettings.ModuleFolders.NotNull())
@@ -82,25 +83,5 @@ internal sealed class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
-  }
-
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly.NotNull();
   }
 }
