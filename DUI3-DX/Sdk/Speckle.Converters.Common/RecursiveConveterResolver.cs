@@ -6,9 +6,9 @@ namespace Speckle.Converters.Common;
 public sealed class RecursiveConverterResolver<TConverter> : IConverterResolver<TConverter>
   where TConverter : class
 {
-  private readonly IFactory<string, TConverter> _factory;
+  private readonly IFactory<TConverter> _factory;
 
-  public RecursiveConverterResolver(IFactory<string, TConverter> factory)
+  public RecursiveConverterResolver(IFactory<TConverter> factory)
   {
     _factory = factory;
   }

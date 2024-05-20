@@ -7,9 +7,9 @@ namespace Speckle.Converters.Rhino7.ToSpeckle;
 
 public class RhinoRootToHostConverter : IRootToSpeckleConverter
 {
-  private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
+  private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public RhinoRootToHostConverter(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
+  public RhinoRootToHostConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }

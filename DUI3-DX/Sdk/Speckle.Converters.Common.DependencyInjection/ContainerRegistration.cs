@@ -13,8 +13,8 @@ public static class ContainerRegistration
       This will require consolidating across other connectors.
     */
     builder.AddScoped<
-      IFactory<string, IToSpeckleTopLevelConverter>,
-      Factory<string, IToSpeckleTopLevelConverter>
+      IFactory<IToSpeckleTopLevelConverter>,
+      Factory<IToSpeckleTopLevelConverter>
     >();
     builder.AddScoped<
       IConverterResolver<IToSpeckleTopLevelConverter>,
@@ -22,8 +22,8 @@ public static class ContainerRegistration
     >();
 
     builder.AddScoped<
-      IFactory<string, IToHostTopLevelConverter>,
-      Factory<string, IToHostTopLevelConverter>
+      IFactory<IToHostTopLevelConverter>,
+      Factory<IToHostTopLevelConverter>
     >();
     builder.AddScoped<
       IConverterResolver<IToHostTopLevelConverter>,

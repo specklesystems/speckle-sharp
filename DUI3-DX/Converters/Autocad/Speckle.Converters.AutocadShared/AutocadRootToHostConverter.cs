@@ -8,11 +8,11 @@ namespace Speckle.Converters.Autocad;
 
 public class AutocadRootToHostConverter : IRootToSpeckleConverter
 {
-  private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
+  private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
   public AutocadRootToHostConverter(
-    IFactory<string, IToSpeckleTopLevelConverter> toSpeckle,
+    IFactory<IToSpeckleTopLevelConverter> toSpeckle,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
   {

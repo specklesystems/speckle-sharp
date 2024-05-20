@@ -8,9 +8,9 @@ namespace Speckle.Converters.ArcGIS3;
 //poc: dupe code from rhino
 public class ArcGISRootToHostConverter : IRootToSpeckleConverter
 {
-  private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
+  private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public ArcGISRootToHostConverter(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
+  public ArcGISRootToHostConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }

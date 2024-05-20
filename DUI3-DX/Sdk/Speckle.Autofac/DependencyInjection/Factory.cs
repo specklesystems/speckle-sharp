@@ -4,17 +4,17 @@ using Speckle.InterfaceGenerator;
 namespace Speckle.Autofac.DependencyInjection;
 
 [GenerateAutoInterface]
-public class Factory<TKey, TValue> : IFactory<TKey, TValue>
+public class Factory<TValue> : IFactory<TValue>
   where TValue : class
 {
-  private readonly IIndex<TKey, TValue> _types;
+  private readonly IIndex<string, TValue> _types;
 
-  public Factory(IIndex<TKey, TValue> types)
+  public Factory(IIndex<string, TValue> types)
   {
     _types = types;
   }
 
-  public TValue? ResolveInstance(TKey strongName)
+  public TValue? ResolveInstance(string strongName)
   {
     if (_types.TryGetValue(strongName, out TValue value))
     {
