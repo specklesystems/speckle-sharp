@@ -16,7 +16,10 @@ public class Factory<TKey, TValue> : IFactory<TKey, TValue>
 
   public TValue? ResolveInstance(TKey strongName)
   {
-    _types.TryGetValue(strongName, out TValue value);
-    return value;
+    if (_types.TryGetValue(strongName, out TValue value))
+    {
+      return value;
+    }
+    return null;
   }
 }

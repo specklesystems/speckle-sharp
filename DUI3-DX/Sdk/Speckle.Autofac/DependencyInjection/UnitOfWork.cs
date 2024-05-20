@@ -19,7 +19,7 @@ public sealed class UnitOfWork<TService> : IUnitOfWork<TService>
     Service = service;
   }
 
-  public TService Service { get; private set; }
+  public TService Service { get; }
 
   [AutoInterfaceIgnore]
   public void Dispose() => Disposing(true);
