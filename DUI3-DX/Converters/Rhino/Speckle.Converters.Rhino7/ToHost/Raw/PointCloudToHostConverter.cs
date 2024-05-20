@@ -4,11 +4,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class PointCloudToHostConverter : IRawConversion<SOG.Pointcloud, RG.PointCloud>
+public class PointCloudToHostConverter : ITypedConverter<SOG.Pointcloud, RG.PointCloud>
 {
-  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
+  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
 
-  public PointCloudToHostConverter(IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter)
+  public PointCloudToHostConverter(ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
   }

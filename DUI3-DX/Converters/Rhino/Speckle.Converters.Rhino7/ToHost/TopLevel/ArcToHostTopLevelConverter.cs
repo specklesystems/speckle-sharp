@@ -9,7 +9,7 @@ public class ArcToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion<SO
 {
   public ArcToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Arc, RG.ArcCurve> geometryBaseConverter
+    ITypedConverter<SOG.Arc, RG.ArcCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

@@ -9,7 +9,7 @@ public class MeshToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion<S
 {
   public MeshToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Mesh, RG.Mesh> geometryBaseConverter
+    ITypedConverter<SOG.Mesh, RG.Mesh> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

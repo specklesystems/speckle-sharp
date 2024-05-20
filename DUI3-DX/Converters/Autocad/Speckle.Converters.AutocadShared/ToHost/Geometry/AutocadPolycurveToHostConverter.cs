@@ -7,14 +7,14 @@ namespace Speckle.Converters.Autocad2023.ToHost.Geometry;
 [NameAndRankValue(nameof(SOG.Autocad.AutocadPolycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class AutocadPolycurveToHostConverter : ISpeckleObjectToHostConversion
 {
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline> _polylineConverter;
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> _polyline2dConverter;
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> _polyline3dConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline> _polylineConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> _polyline2dConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> _polyline3dConverter;
 
   public AutocadPolycurveToHostConverter(
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline> polylineConverter,
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> polyline2dConverter,
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> polyline3dConverter
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline> polylineConverter,
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> polyline2dConverter,
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> polyline3dConverter
   )
   {
     _polylineConverter = polylineConverter;

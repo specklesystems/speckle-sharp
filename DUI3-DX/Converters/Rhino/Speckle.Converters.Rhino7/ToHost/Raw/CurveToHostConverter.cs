@@ -3,26 +3,26 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class CurveToHostConverter : IRawConversion<ICurve, RG.Curve>
+public class CurveToHostConverter : ITypedConverter<ICurve, RG.Curve>
 {
-  private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
-  private readonly IRawConversion<SOG.Arc, RG.ArcCurve> _arcConverter;
-  private readonly IRawConversion<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
-  private readonly IRawConversion<SOG.Spiral, RG.PolylineCurve> _spiralConverter;
-  private readonly IRawConversion<SOG.Circle, RG.ArcCurve> _circleConverter;
-  private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
-  private readonly IRawConversion<SOG.Polycurve, RG.PolyCurve> _polyCurveConverter;
-  private readonly IRawConversion<SOG.Curve, RG.NurbsCurve> _nurbsCurveConverter;
+  private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;
+  private readonly ITypedConverter<SOG.Arc, RG.ArcCurve> _arcConverter;
+  private readonly ITypedConverter<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
+  private readonly ITypedConverter<SOG.Spiral, RG.PolylineCurve> _spiralConverter;
+  private readonly ITypedConverter<SOG.Circle, RG.ArcCurve> _circleConverter;
+  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, RG.PolyCurve> _polyCurveConverter;
+  private readonly ITypedConverter<SOG.Curve, RG.NurbsCurve> _nurbsCurveConverter;
 
   public CurveToHostConverter(
-    IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
-    IRawConversion<SOG.Arc, RG.ArcCurve> arcConverter,
-    IRawConversion<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
-    IRawConversion<SOG.Spiral, RG.PolylineCurve> spiralConverter,
-    IRawConversion<SOG.Circle, RG.ArcCurve> circleConverter,
-    IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
-    IRawConversion<SOG.Polycurve, RG.PolyCurve> polyCurveConverter,
-    IRawConversion<SOG.Curve, RG.NurbsCurve> nurbsCurveConverter
+    ITypedConverter<SOG.Line, RG.LineCurve> lineConverter,
+    ITypedConverter<SOG.Arc, RG.ArcCurve> arcConverter,
+    ITypedConverter<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
+    ITypedConverter<SOG.Spiral, RG.PolylineCurve> spiralConverter,
+    ITypedConverter<SOG.Circle, RG.ArcCurve> circleConverter,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
+    ITypedConverter<SOG.Polycurve, RG.PolyCurve> polyCurveConverter,
+    ITypedConverter<SOG.Curve, RG.NurbsCurve> nurbsCurveConverter
   )
   {
     _lineConverter = lineConverter;

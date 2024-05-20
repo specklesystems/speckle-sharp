@@ -11,15 +11,15 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 [NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointCloudToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
+    ITypedConverter<LasDatasetLayer, SGIS.VectorLayer>
 {
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ACG.Envelope, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.Envelope, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public PointCloudToSpeckleConverter(
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
-    IRawConversion<ACG.Envelope, SOG.Box> boxConverter,
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter,
+    ITypedConverter<ACG.Envelope, SOG.Box> boxConverter,
     IConversionContextStack<Map, ACG.Unit> contextStack
   )
   {

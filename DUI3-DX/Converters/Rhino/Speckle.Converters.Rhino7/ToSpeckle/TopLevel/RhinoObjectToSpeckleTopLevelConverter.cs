@@ -9,9 +9,9 @@ public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw,
   where TInRaw : RG.GeometryBase
   where TOutRaw : Base
 {
-  public IRawConversion<TInRaw, TOutRaw> Conversion { get; }
+  public ITypedConverter<TInRaw, TOutRaw> Conversion { get; }
 
-  protected RhinoObjectToSpeckleTopLevelConverter(IRawConversion<TInRaw, TOutRaw> conversion)
+  protected RhinoObjectToSpeckleTopLevelConverter(ITypedConverter<TInRaw, TOutRaw> conversion)
   {
     Conversion = conversion;
   }

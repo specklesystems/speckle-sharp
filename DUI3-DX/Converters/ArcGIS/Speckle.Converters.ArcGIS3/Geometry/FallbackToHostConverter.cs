@@ -5,16 +5,16 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class FallbackToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<DisplayableObject, ACG.Geometry>
+public class FallbackToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<DisplayableObject, ACG.Geometry>
 {
-  private readonly IRawConversion<List<SOG.Mesh>, ACG.Multipatch> _meshListConverter;
-  private readonly IRawConversion<List<SOG.Polyline>, ACG.Polyline> _polylineListConverter;
-  private readonly IRawConversion<List<SOG.Point>, ACG.Multipoint> _pointListConverter;
+  private readonly ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> _meshListConverter;
+  private readonly ITypedConverter<List<SOG.Polyline>, ACG.Polyline> _polylineListConverter;
+  private readonly ITypedConverter<List<SOG.Point>, ACG.Multipoint> _pointListConverter;
 
   public FallbackToHostConverter(
-    IRawConversion<List<SOG.Mesh>, ACG.Multipatch> meshListConverter,
-    IRawConversion<List<SOG.Polyline>, ACG.Polyline> polylineListConverter,
-    IRawConversion<List<SOG.Point>, ACG.Multipoint> pointListConverter
+    ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> meshListConverter,
+    ITypedConverter<List<SOG.Polyline>, ACG.Polyline> polylineListConverter,
+    ITypedConverter<List<SOG.Point>, ACG.Multipoint> pointListConverter
   )
   {
     _meshListConverter = meshListConverter;

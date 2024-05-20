@@ -10,18 +10,18 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 [NameAndRankValue(nameof(DB.ExtrusionRoof), 0)]
 public class ExtrusionRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
 {
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _pointConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public ExtrusionRoofToSpeckleTopLevelConverter(
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
-    IRawConversion<DB.ModelCurveArray, SOG.Polycurve> modelCurveArrayConverter,
-    IRawConversion<DB.XYZ, SOG.Point> pointConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.ModelCurveArray, SOG.Polycurve> modelCurveArrayConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> pointConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     HostedElementConversionToSpeckle hostedElementConverter,

@@ -10,15 +10,15 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureClass>
+public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureClass>
 {
-  private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
+  private readonly ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public FeatureClassToHostConverter(
-    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
+    ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISFieldUtils fieldsUtils,
     IArcGISProjectUtils arcGISProjectUtils

@@ -5,11 +5,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Circle, ACG.Polyline>
+public class CircleToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Circle, ACG.Polyline>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public CircleToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public CircleToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }

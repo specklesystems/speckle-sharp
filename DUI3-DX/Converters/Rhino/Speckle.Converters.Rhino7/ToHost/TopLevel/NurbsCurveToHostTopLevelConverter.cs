@@ -9,7 +9,7 @@ public class NurbsCurveToHostTopLevelConverter : SpeckleToHostGeometryBaseConver
 {
   public NurbsCurveToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Curve, RG.NurbsCurve> geometryBaseConverter
+    ITypedConverter<SOG.Curve, RG.NurbsCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

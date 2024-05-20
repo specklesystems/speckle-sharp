@@ -9,7 +9,7 @@ public class EllipseToHostTopLevelConverter : SpeckleToHostGeometryBaseConversio
 {
   public EllipseToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Ellipse, RG.NurbsCurve> geometryBaseConverter
+    ITypedConverter<SOG.Ellipse, RG.NurbsCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

@@ -5,14 +5,14 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 /// <summary>
 /// Converts a SpeckleArcRaw object to a Rhino.Geometry.Arc object or Rhino.Geometry.ArcCurve object.
 /// </summary>
-public class ArcToHostConverter : IRawConversion<SOG.Arc, RG.Arc>, IRawConversion<SOG.Arc, RG.ArcCurve>
+public class ArcToHostConverter : ITypedConverter<SOG.Arc, RG.Arc>, ITypedConverter<SOG.Arc, RG.ArcCurve>
 {
-  private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public ArcToHostConverter(
-    IRawConversion<SOG.Point, RG.Point3d> pointConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
+    ITypedConverter<SOG.Point, RG.Point3d> pointConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _pointConverter = pointConverter;
@@ -45,7 +45,7 @@ public class ArcToHostConverter : IRawConversion<SOG.Arc, RG.Arc>, IRawConversio
   /// <returns>The converted <see cref="RG.ArcCurve"/> object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   /// <remarks><br/>⚠️ Converting to <see cref="RG.ArcCurve"/> instead of <see cref="RG.Arc"/> preserves the domain of the curve.</remarks>
-  RG.ArcCurve IRawConversion<SOG.Arc, RG.ArcCurve>.RawConvert(SOG.Arc target)
+  RG.ArcCurve ITypedConverter<SOG.Arc, RG.ArcCurve>.RawConvert(SOG.Arc target)
   {
     var rhinoArc = RawConvert(target);
     var arcCurve = new RG.ArcCurve(rhinoArc) { Domain = _intervalConverter.RawConvert(target.domain) };

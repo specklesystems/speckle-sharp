@@ -5,20 +5,20 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 // POC: CNX-9278 This converter decides which specific curve conversion to use. IIndex may be a better choice.
-public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>, IRawConversion<RG.Curve, Base>
+public class CurveToSpeckleConverter : ITypedConverter<RG.Curve, ICurve>, ITypedConverter<RG.Curve, Base>
 {
-  private readonly IRawConversion<RG.PolyCurve, SOG.Polycurve> _polyCurveConverter;
-  private readonly IRawConversion<RG.ArcCurve, ICurve> _arcCurveConverter;
-  private readonly IRawConversion<RG.PolylineCurve, SOG.Polyline> _polylineConverter;
-  private readonly IRawConversion<RG.NurbsCurve, SOG.Curve> _nurbsCurveConverter;
-  private readonly IRawConversion<RG.LineCurve, SOG.Line> _lineCurveConverter;
+  private readonly ITypedConverter<RG.PolyCurve, SOG.Polycurve> _polyCurveConverter;
+  private readonly ITypedConverter<RG.ArcCurve, ICurve> _arcCurveConverter;
+  private readonly ITypedConverter<RG.PolylineCurve, SOG.Polyline> _polylineConverter;
+  private readonly ITypedConverter<RG.NurbsCurve, SOG.Curve> _nurbsCurveConverter;
+  private readonly ITypedConverter<RG.LineCurve, SOG.Line> _lineCurveConverter;
 
   public CurveToSpeckleConverter(
-    IRawConversion<RG.PolyCurve, SOG.Polycurve> polyCurveConverter,
-    IRawConversion<RG.ArcCurve, ICurve> arcCurveConverter,
-    IRawConversion<RG.PolylineCurve, SOG.Polyline> polylineConverter,
-    IRawConversion<RG.NurbsCurve, SOG.Curve> nurbsCurveConverter,
-    IRawConversion<RG.LineCurve, SOG.Line> lineCurveConverter
+    ITypedConverter<RG.PolyCurve, SOG.Polycurve> polyCurveConverter,
+    ITypedConverter<RG.ArcCurve, ICurve> arcCurveConverter,
+    ITypedConverter<RG.PolylineCurve, SOG.Polyline> polylineConverter,
+    ITypedConverter<RG.NurbsCurve, SOG.Curve> nurbsCurveConverter,
+    ITypedConverter<RG.LineCurve, SOG.Line> lineCurveConverter
   )
   {
     _polyCurveConverter = polyCurveConverter;
@@ -47,5 +47,5 @@ public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>, IRawCon
       _ => _nurbsCurveConverter.RawConvert(target.ToNurbsCurve())
     };
 
-  Base IRawConversion<RG.Curve, Base>.RawConvert(RG.Curve target) => (Base)RawConvert(target);
+  Base ITypedConverter<RG.Curve, Base>.RawConvert(RG.Curve target) => (Base)RawConvert(target);
 }

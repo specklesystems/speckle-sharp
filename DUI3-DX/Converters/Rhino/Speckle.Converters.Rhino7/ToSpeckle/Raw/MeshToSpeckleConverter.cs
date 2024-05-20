@@ -5,15 +5,15 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 [NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
+public class MeshToSpeckleConverter : ITypedConverter<RG.Mesh, SOG.Mesh>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public MeshToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

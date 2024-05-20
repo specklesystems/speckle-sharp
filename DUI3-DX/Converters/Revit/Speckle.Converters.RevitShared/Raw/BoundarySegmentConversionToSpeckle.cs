@@ -3,11 +3,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class BoundarySegmentConversionToSpeckle : IRawConversion<IList<DB.BoundarySegment>, SOG.Polycurve>
+public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<DB.BoundarySegment>, SOG.Polycurve>
 {
-  private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
-  public BoundarySegmentConversionToSpeckle(IRawConversion<DB.Curve, ICurve> curveConverter)
+  public BoundarySegmentConversionToSpeckle(ITypedConverter<DB.Curve, ICurve> curveConverter)
   {
     _curveConverter = curveConverter;
   }

@@ -5,20 +5,20 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class BrepToHostConverter : IRawConversion<SOG.Brep, RG.Brep>
+public class BrepToHostConverter : ITypedConverter<SOG.Brep, RG.Brep>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
-  private readonly IRawConversion<ICurve, RG.Curve> _curveConverter;
-  private readonly IRawConversion<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
-  private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<ICurve, RG.Curve> _curveConverter;
+  private readonly ITypedConverter<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
+  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public BrepToHostConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<ICurve, RG.Curve> curveConverter,
-    IRawConversion<SOG.Surface, RG.NurbsSurface> surfaceConverter,
-    IRawConversion<SOG.Point, RG.Point3d> pointConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
+    ITypedConverter<ICurve, RG.Curve> curveConverter,
+    ITypedConverter<SOG.Surface, RG.NurbsSurface> surfaceConverter,
+    ITypedConverter<SOG.Point, RG.Point3d> pointConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _contextStack = contextStack;

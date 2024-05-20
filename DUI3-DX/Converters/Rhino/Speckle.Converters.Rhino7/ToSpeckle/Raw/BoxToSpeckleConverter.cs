@@ -4,15 +4,15 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class BoxToSpeckleConverter : IRawConversion<RG.Box, SOG.Box>
+public class BoxToSpeckleConverter : ITypedConverter<RG.Box, SOG.Box>
 {
-  private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public BoxToSpeckleConverter(
-    IRawConversion<RG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

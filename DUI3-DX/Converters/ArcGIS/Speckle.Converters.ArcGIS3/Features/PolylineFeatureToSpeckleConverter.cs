@@ -2,11 +2,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolyineFeatureToSpeckleConverter : IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>>
+public class PolyineFeatureToSpeckleConverter : ITypedConverter<ACG.Polyline, IReadOnlyList<SOG.Polyline>>
 {
-  private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
+  private readonly ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
-  public PolyineFeatureToSpeckleConverter(IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
+  public PolyineFeatureToSpeckleConverter(ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
   {
     _segmentConverter = segmentConverter;
   }

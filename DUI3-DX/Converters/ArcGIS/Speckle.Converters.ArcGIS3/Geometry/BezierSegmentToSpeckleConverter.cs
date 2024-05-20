@@ -4,14 +4,14 @@ using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class BezierSegmentToSpeckleConverter : IRawConversion<ACG.CubicBezierSegment, SOG.Polyline>
+public class BezierSegmentToSpeckleConverter : ITypedConverter<ACG.CubicBezierSegment, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public BezierSegmentToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;

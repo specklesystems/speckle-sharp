@@ -4,11 +4,11 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IReadOnlyList<PolygonGeometry>>
+public class PolygonFeatureToSpeckleConverter : ITypedConverter<ACG.Polygon, IReadOnlyList<PolygonGeometry>>
 {
-  private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
+  private readonly ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
-  public PolygonFeatureToSpeckleConverter(IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
+  public PolygonFeatureToSpeckleConverter(ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
   {
     _segmentConverter = segmentConverter;
   }

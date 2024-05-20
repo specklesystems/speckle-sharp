@@ -9,7 +9,7 @@ public class PointCloudToHostTopLevelConverter : SpeckleToHostGeometryBaseConver
 {
   public PointCloudToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Pointcloud, RG.PointCloud> geometryBaseConverter
+    ITypedConverter<SOG.Pointcloud, RG.PointCloud> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

@@ -9,17 +9,17 @@ namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class FallbackToHostTopLevelConverter
   : ISpeckleObjectToHostConversion,
-    IRawConversion<DisplayableObject, List<RG.GeometryBase>>
+    ITypedConverter<DisplayableObject, List<RG.GeometryBase>>
 {
-  private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
-  private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
-  private readonly IRawConversion<SOG.Mesh, RG.Mesh> _meshConverter;
+  private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;
+  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOG.Mesh, RG.Mesh> _meshConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public FallbackToHostTopLevelConverter(
-    IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
-    IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
-    IRawConversion<SOG.Mesh, RG.Mesh> meshConverter,
+    ITypedConverter<SOG.Line, RG.LineCurve> lineConverter,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
+    ITypedConverter<SOG.Mesh, RG.Mesh> meshConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

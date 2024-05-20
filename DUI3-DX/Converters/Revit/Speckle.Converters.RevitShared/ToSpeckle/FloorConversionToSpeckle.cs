@@ -14,16 +14,16 @@ namespace Speckle.Converters.Common;
 [NameAndRankValue(nameof(DB.Floor), 0)]
 public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.RevitFloor>
 {
-  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ISlopeArrowExtractor _slopeArrowExtractor;
 
   public FloorConversionToSpeckle(
-    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
     DisplayValueExtractor displayValueExtractor,

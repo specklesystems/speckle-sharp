@@ -31,7 +31,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
     List<FieldDescription> fields,
-    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
+    ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
     foreach (GisFeature feat in gisFeatures)

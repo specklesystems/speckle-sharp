@@ -4,7 +4,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class PointToSpeckleConverter : IRawConversion<RG.Point3d, SOG.Point>, IRawConversion<RG.Point, SOG.Point>
+public class PointToSpeckleConverter : ITypedConverter<RG.Point3d, SOG.Point>, ITypedConverter<RG.Point, SOG.Point>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 

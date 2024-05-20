@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3;
 
 [NameAndRankValue(nameof(String), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class FakeConversion : IHostObjectToSpeckleConversion, IRawConversion<String, Point>
+public class FakeConversion : IHostObjectToSpeckleConversion, ITypedConverter<String, Point>
 {
   public Base Convert(object target) => RawConvert((String)target);
 

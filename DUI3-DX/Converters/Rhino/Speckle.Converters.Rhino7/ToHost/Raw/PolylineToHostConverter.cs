@@ -4,15 +4,15 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class PolylineToHostConverter
-  : IRawConversion<SOG.Polyline, RG.Polyline>,
-    IRawConversion<SOG.Polyline, RG.PolylineCurve>
+  : ITypedConverter<SOG.Polyline, RG.Polyline>,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve>
 {
-  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public PolylineToHostConverter(
-    IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
+    ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _pointListConverter = pointListConverter;
@@ -52,7 +52,7 @@ public class PolylineToHostConverter
   /// <param name="target">The Speckle polyline object to be converted.</param>
   /// <returns>The converted Rhino Polyline object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  RG.PolylineCurve IRawConversion<SOG.Polyline, RG.PolylineCurve>.RawConvert(SOG.Polyline target)
+  RG.PolylineCurve ITypedConverter<SOG.Polyline, RG.PolylineCurve>.RawConvert(SOG.Polyline target)
   {
     var poly = RawConvert(target).ToPolylineCurve();
     poly.Domain = _intervalConverter.RawConvert(target.domain);

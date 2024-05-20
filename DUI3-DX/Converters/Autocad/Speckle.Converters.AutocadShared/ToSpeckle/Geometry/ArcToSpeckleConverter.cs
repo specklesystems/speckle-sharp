@@ -5,17 +5,17 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Arc, SOG.Arc>
+public class DBArcToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<ADB.Arc, SOG.Arc>
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBArcToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<AG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

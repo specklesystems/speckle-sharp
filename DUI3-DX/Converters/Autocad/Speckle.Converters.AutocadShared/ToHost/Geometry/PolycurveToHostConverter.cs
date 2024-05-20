@@ -12,12 +12,12 @@ namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 [NameAndRankValue(nameof(SOG.Polycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
 {
-  private readonly IRawConversion<SOG.Polycurve, ADB.Polyline> _polylineConverter;
-  private readonly IRawConversion<SOG.Polycurve, List<ADB.Entity>> _splineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, ADB.Polyline> _polylineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, List<ADB.Entity>> _splineConverter;
 
   public PolycurveToHostConverter(
-    IRawConversion<SOG.Polycurve, ADB.Polyline> polylineConverter,
-    IRawConversion<SOG.Polycurve, List<ADB.Entity>> splineConverter
+    ITypedConverter<SOG.Polycurve, ADB.Polyline> polylineConverter,
+    ITypedConverter<SOG.Polycurve, List<ADB.Entity>> splineConverter
   )
   {
     _polylineConverter = polylineConverter;

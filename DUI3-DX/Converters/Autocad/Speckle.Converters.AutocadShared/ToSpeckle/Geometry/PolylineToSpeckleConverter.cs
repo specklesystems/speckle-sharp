@@ -13,19 +13,19 @@ namespace Speckle.Converters.Autocad.Geometry;
 [NameAndRankValue(nameof(ADB.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolylineToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve>
+    ITypedConverter<ADB.Polyline, SOG.Autocad.AutocadPolycurve>
 {
-  private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;
-  private readonly IRawConversion<AG.CircularArc3d, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.LineSegment3d, SOG.Line> _lineConverter;
+  private readonly ITypedConverter<AG.CircularArc3d, SOG.Arc> _arcConverter;
+  private readonly ITypedConverter<AG.Vector3d, SOG.Vector> _vectorConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public PolylineToSpeckleConverter(
-    IRawConversion<AG.LineSegment3d, SOG.Line> lineConverter,
-    IRawConversion<AG.CircularArc3d, SOG.Arc> arcConverter,
-    IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.LineSegment3d, SOG.Line> lineConverter,
+    ITypedConverter<AG.CircularArc3d, SOG.Arc> arcConverter,
+    ITypedConverter<AG.Vector3d, SOG.Vector> vectorConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

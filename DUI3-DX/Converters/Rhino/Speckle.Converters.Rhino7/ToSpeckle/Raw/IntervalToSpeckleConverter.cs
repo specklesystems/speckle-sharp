@@ -2,7 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class IntervalToSpeckleConverter : IRawConversion<RG.Interval, SOP.Interval>
+public class IntervalToSpeckleConverter : ITypedConverter<RG.Interval, SOP.Interval>
 {
   /// <summary>
   /// Converts a Rhino Interval object to a Speckle Interval object.

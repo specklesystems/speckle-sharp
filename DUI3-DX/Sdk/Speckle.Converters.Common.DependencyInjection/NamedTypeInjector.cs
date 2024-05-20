@@ -60,7 +60,7 @@ public static class ConversionTypesInjector
       // * Whether the scope should be modified or modifiable
       // * Whether this is in the write project... hmmm
       // POC: IsAssignableFrom()
-      var secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+      var secondaryType = first.type.GetInterface(typeof(ITypedConverter<,>).Name);
       // POC: should we explode if no found?
       if (secondaryType != null)
       {
@@ -84,7 +84,7 @@ public static class ConversionTypesInjector
         // * Whether this is in the write project... hmmm
         // POC: IsAssignableFrom()
         // NOT very DRY
-        secondaryType = secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+        secondaryType = secondaryType = first.type.GetInterface(typeof(ITypedConverter<,>).Name);
         // POC: should we explode if no found?
         if (secondaryType != null)
         {

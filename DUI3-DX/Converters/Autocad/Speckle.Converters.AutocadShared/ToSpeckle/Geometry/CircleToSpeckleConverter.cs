@@ -7,13 +7,13 @@ namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 [NameAndRankValue(nameof(ADB.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DBCircleToSpeckleConverter : IHostObjectToSpeckleConversion
 {
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBCircleToSpeckleConverter(
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

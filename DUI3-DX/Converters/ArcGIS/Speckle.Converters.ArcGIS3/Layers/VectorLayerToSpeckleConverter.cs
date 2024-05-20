@@ -10,15 +10,15 @@ using Speckle.Converters.ArcGIS3.Utils;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
+public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<FeatureLayer, VectorLayer>
 {
-  private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
+  private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
-    IRawConversion<Row, GisFeature> gisFeatureConverter,
+    ITypedConverter<Row, GisFeature> gisFeatureConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISFieldUtils fieldsUtils,
     IConversionContextStack<Map, Unit> contextStack

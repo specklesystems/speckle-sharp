@@ -16,15 +16,15 @@ namespace Speckle.Converters.Autocad.Geometry;
 [NameAndRankValue(nameof(ADB.Polyline3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ADB.Spline, SOG.Curve> _splineConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ADB.Spline, SOG.Curve> _splineConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public Polyline3dToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<ADB.Spline, SOG.Curve> splineConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<ADB.Spline, SOG.Curve> splineConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

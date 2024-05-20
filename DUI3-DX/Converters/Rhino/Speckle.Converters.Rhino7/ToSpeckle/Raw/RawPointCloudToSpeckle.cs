@@ -4,14 +4,14 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class RawPointCloudToSpeckle : IRawConversion<RG.PointCloud, SOG.Pointcloud>
+public class RawPointCloudToSpeckle : ITypedConverter<RG.PointCloud, SOG.Pointcloud>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
 
   public RawPointCloudToSpeckle(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    ITypedConverter<RG.Box, SOG.Box> boxConverter
   )
   {
     _contextStack = contextStack;

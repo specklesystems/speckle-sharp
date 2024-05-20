@@ -8,7 +8,7 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
+public class TableLayerToHostConverter : ITypedConverter<VectorLayer, Table>
 {
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;

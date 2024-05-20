@@ -3,16 +3,16 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class PlaneToSpeckleConverter : IRawConversion<DB.Plane, SOG.Plane>
+public class PlaneToSpeckleConverter : ITypedConverter<DB.Plane, SOG.Plane>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.XYZ, SOG.Vector> _xyzToVectorConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Vector> _xyzToVectorConverter;
 
   public PlaneToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    IRawConversion<DB.XYZ, SOG.Vector> xyzToVectorConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Vector> xyzToVectorConverter
   )
   {
     _contextStack = contextStack;

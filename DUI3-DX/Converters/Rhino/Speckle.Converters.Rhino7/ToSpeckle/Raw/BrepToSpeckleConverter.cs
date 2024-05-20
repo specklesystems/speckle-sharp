@@ -7,23 +7,23 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
+public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Curve, ICurve> _curveConverter;
-  private readonly IRawConversion<RG.NurbsSurface, SOG.Surface> _surfaceConverter;
-  private readonly IRawConversion<RG.Mesh, SOG.Mesh> _meshConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<RG.NurbsSurface, SOG.Surface> _surfaceConverter;
+  private readonly ITypedConverter<RG.Mesh, SOG.Mesh> _meshConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public BrepToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Curve, ICurve> curveConverter,
-    IRawConversion<RG.NurbsSurface, SOG.Surface> surfaceConverter,
-    IRawConversion<RG.Mesh, SOG.Mesh> meshConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Curve, ICurve> curveConverter,
+    ITypedConverter<RG.NurbsSurface, SOG.Surface> surfaceConverter,
+    ITypedConverter<RG.Mesh, SOG.Mesh> meshConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

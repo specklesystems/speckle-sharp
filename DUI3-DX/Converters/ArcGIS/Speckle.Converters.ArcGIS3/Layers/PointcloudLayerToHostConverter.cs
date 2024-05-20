@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-public class PointcloudLayerToHostConverter : IRawConversion<VectorLayer, LasDatasetLayer>
+public class PointcloudLayerToHostConverter : ITypedConverter<VectorLayer, LasDatasetLayer>
 {
   public object Convert(Base target) => RawConvert((VectorLayer)target);
 

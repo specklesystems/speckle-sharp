@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class MaterialConversionToSpeckle : IRawConversion<DB.Material, RenderMaterial>
+public class MaterialConversionToSpeckle : ITypedConverter<DB.Material, RenderMaterial>
 {
   public RenderMaterial RawConvert(DB.Material target) =>
     // POC: not sure we should be pulling in System.Drawing -

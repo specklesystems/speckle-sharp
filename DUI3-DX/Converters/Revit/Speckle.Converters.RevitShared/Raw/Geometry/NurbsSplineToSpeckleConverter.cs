@@ -5,17 +5,17 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, SOG.Curve>
+public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.Curve>
 {
   private readonly IRevitVersionConversionHelper _conversionHelper;
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public NurbsSplineToSpeckleConverter(
     IRevitVersionConversionHelper conversionHelper,
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
     ScalingServiceToSpeckle scalingService
   )
   {

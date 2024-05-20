@@ -4,18 +4,18 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
+public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> _arcConverter;
-  private readonly IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> _bezierConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.EllipticArcSegment, SOG.Polyline> _arcConverter;
+  private readonly ITypedConverter<ACG.CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
-    IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> arcConverter,
-    IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> bezierConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter,
+    ITypedConverter<ACG.EllipticArcSegment, SOG.Polyline> arcConverter,
+    ITypedConverter<ACG.CubicBezierSegment, SOG.Polyline> bezierConverter
   )
   {
     _contextStack = contextStack;

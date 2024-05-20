@@ -4,15 +4,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class CircleToSpeckleConverter : IRawConversion<DB.Arc, SOG.Circle>
+public class CircleToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Circle>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public CircleToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
     ScalingServiceToSpeckle scalingService
   )
   {

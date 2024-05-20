@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class ControlPointToSpeckleConverter : IRawConversion<RG.ControlPoint, SOG.ControlPoint>
+public class ControlPointToSpeckleConverter : ITypedConverter<RG.ControlPoint, SOG.ControlPoint>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 

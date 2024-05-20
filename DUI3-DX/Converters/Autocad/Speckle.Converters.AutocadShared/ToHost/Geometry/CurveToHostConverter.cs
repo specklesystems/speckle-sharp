@@ -5,11 +5,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Curve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Curve, ADB.Curve>
+public class CurveToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Curve, ADB.Curve>
 {
-  private readonly IRawConversion<SOG.Curve, AG.NurbCurve3d> _curveConverter;
+  private readonly ITypedConverter<SOG.Curve, AG.NurbCurve3d> _curveConverter;
 
-  public CurveToHostConverter(IRawConversion<SOG.Curve, AG.NurbCurve3d> curveConverter)
+  public CurveToHostConverter(ITypedConverter<SOG.Curve, AG.NurbCurve3d> curveConverter)
   {
     _curveConverter = curveConverter;
   }

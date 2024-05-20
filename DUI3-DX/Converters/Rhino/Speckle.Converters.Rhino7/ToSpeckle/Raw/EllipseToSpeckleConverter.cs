@@ -4,15 +4,15 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class EllipseToSpeckleConverter : IRawConversion<RG.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : ITypedConverter<RG.Ellipse, SOG.Ellipse>
 {
-  private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public EllipseToSpeckleConverter(
-    IRawConversion<RG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

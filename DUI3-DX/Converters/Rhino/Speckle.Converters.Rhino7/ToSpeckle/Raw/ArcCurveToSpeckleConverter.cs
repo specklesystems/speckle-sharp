@@ -6,17 +6,17 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class ArcCurveToSpeckleConverter : IRawConversion<RG.ArcCurve, ICurve>, IRawConversion<RG.ArcCurve, Base>
+public class ArcCurveToSpeckleConverter : ITypedConverter<RG.ArcCurve, ICurve>, ITypedConverter<RG.ArcCurve, Base>
 {
-  private readonly IRawConversion<RG.Circle, SOG.Circle> _circleConverter;
-  private readonly IRawConversion<RG.Arc, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Circle, SOG.Circle> _circleConverter;
+  private readonly ITypedConverter<RG.Arc, SOG.Arc> _arcConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public ArcCurveToSpeckleConverter(
-    IRawConversion<RG.Circle, SOG.Circle> circleConverter,
-    IRawConversion<RG.Arc, SOG.Arc> arcConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.Circle, SOG.Circle> circleConverter,
+    ITypedConverter<RG.Arc, SOG.Arc> arcConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
@@ -57,5 +57,5 @@ public class ArcCurveToSpeckleConverter : IRawConversion<RG.ArcCurve, ICurve>, I
   //      This also causes us to have to force cast ICurve to Base as a result, which is expected to always succeed but not nice.
   /// <inheritdoc cref="RawConvert"/>
   /// <returns> The converted ICurve with a cast to <see cref="Base"/> object</returns>
-  Base IRawConversion<RG.ArcCurve, Base>.RawConvert(RG.ArcCurve target) => (Base)RawConvert(target);
+  Base ITypedConverter<RG.ArcCurve, Base>.RawConvert(RG.ArcCurve target) => (Base)RawConvert(target);
 }

@@ -4,7 +4,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class XyzConversionToPoint : IRawConversion<DB.XYZ, SOG.Point>
+public class XyzConversionToPoint : ITypedConverter<DB.XYZ, SOG.Point>
 {
   private readonly ScalingServiceToSpeckle _toSpeckleScalingService;
   private readonly IRevitConversionContextStack _contextStack;

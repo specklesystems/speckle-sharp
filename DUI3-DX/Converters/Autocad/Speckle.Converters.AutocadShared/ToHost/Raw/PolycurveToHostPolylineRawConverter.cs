@@ -6,14 +6,14 @@ namespace Speckle.Converters.AutocadShared.ToHost.Raw;
 /// <summary>
 /// If polycurve segments consist of only with Line and Arc, we convert it as ADB.Polyline.
 /// </summary>
-public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve, ADB.Polyline>
+public class PolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Polycurve, ADB.Polyline>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
 
   public PolycurveToHostPolylineRawConverter(
     IConversionContextStack<Document, ADB.UnitsValue> contextStack,
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter
   )
   {
     _contextStack = contextStack;

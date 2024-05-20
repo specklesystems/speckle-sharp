@@ -3,15 +3,15 @@
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class EllipseToHostConverter
-  : IRawConversion<SOG.Ellipse, RG.Ellipse>,
-    IRawConversion<SOG.Ellipse, RG.NurbsCurve>
+  : ITypedConverter<SOG.Ellipse, RG.Ellipse>,
+    ITypedConverter<SOG.Ellipse, RG.NurbsCurve>
 {
-  private readonly IRawConversion<SOG.Plane, RG.Plane> _planeConverter;
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<SOG.Plane, RG.Plane> _planeConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public EllipseToHostConverter(
-    IRawConversion<SOG.Plane, RG.Plane> planeConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
+    ITypedConverter<SOG.Plane, RG.Plane> planeConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _planeConverter = planeConverter;
@@ -47,7 +47,7 @@ public class EllipseToHostConverter
   /// <returns>
   /// A <see cref="RG.NurbsCurve"/> that represents the provided <see cref="SOG.Ellipse"/>.
   /// </returns>
-  RG.NurbsCurve IRawConversion<SOG.Ellipse, RG.NurbsCurve>.RawConvert(SOG.Ellipse target)
+  RG.NurbsCurve ITypedConverter<SOG.Ellipse, RG.NurbsCurve>.RawConvert(SOG.Ellipse target)
   {
     var rhinoEllipse = RawConvert(target);
     var rhinoNurbsEllipse = rhinoEllipse.ToNurbsCurve();

@@ -17,21 +17,21 @@ namespace Speckle.Converters.Autocad.Geometry;
 [NameAndRankValue(nameof(ADB.Polyline2d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
 {
-  private readonly IRawConversion<ADB.Arc, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<ADB.Line, SOG.Line> _lineConverter;
-  private readonly IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve> _polylineConverter;
-  private readonly IRawConversion<ADB.Spline, SOG.Curve> _splineConverter;
-  private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<ADB.Arc, SOG.Arc> _arcConverter;
+  private readonly ITypedConverter<ADB.Line, SOG.Line> _lineConverter;
+  private readonly ITypedConverter<ADB.Polyline, SOG.Autocad.AutocadPolycurve> _polylineConverter;
+  private readonly ITypedConverter<ADB.Spline, SOG.Curve> _splineConverter;
+  private readonly ITypedConverter<AG.Vector3d, SOG.Vector> _vectorConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public Polyline2dToSpeckleConverter(
-    IRawConversion<ADB.Arc, SOG.Arc> arcConverter,
-    IRawConversion<ADB.Line, SOG.Line> lineConverter,
-    IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve> polylineConverter,
-    IRawConversion<ADB.Spline, SOG.Curve> splineConverter,
-    IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<ADB.Arc, SOG.Arc> arcConverter,
+    ITypedConverter<ADB.Line, SOG.Line> lineConverter,
+    ITypedConverter<ADB.Polyline, SOG.Autocad.AutocadPolycurve> polylineConverter,
+    ITypedConverter<ADB.Spline, SOG.Curve> splineConverter,
+    ITypedConverter<AG.Vector3d, SOG.Vector> vectorConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

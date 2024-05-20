@@ -9,7 +9,7 @@ public class PolycurveToHostTopLevelConverter : SpeckleToHostGeometryBaseConvers
 {
   public PolycurveToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Polycurve, RG.PolyCurve> geometryBaseConverter
+    ITypedConverter<SOG.Polycurve, RG.PolyCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

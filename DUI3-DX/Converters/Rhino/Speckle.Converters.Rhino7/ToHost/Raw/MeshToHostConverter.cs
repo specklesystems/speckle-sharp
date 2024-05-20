@@ -5,11 +5,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class MeshToHostConverter : IRawConversion<SOG.Mesh, RG.Mesh>
+public class MeshToHostConverter : ITypedConverter<SOG.Mesh, RG.Mesh>
 {
-  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
+  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
 
-  public MeshToHostConverter(IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter)
+  public MeshToHostConverter(ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
   }

@@ -4,11 +4,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class MeshListToHostConverter : IRawConversion<List<SOG.Mesh>, ACG.Multipatch>
+public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multipatch>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public MeshListToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public MeshListToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }

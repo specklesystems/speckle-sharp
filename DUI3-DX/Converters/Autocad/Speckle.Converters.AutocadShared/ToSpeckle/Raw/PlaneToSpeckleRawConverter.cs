@@ -4,15 +4,15 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Plane, SOG.Plane>
+public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, ITypedConverter<AG.Plane, SOG.Plane>
 {
-  private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<AG.Vector3d, SOG.Vector> _vectorConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public PlaneToSpeckleRawConverter(
-    IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<AG.Vector3d, SOG.Vector> vectorConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

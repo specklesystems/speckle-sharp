@@ -2,7 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SurfaceToHostConverter : IRawConversion<SOG.Surface, RG.NurbsSurface>
+public class SurfaceToHostConverter : ITypedConverter<SOG.Surface, RG.NurbsSurface>
 {
   /// <summary>
   /// Converts a raw Speckle surface to a Rhino NURBS surface.

@@ -9,7 +9,7 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public abstract class BaseConversionToSpeckle<THost, TSpeckle>
   : IHostObjectToSpeckleConversion,
     // POC: why do we need to do this for each base conversion?
-    IRawConversion<THost, TSpeckle>
+    ITypedConverter<THost, TSpeckle>
   where TSpeckle : Base
 {
   public Base Convert(object target)

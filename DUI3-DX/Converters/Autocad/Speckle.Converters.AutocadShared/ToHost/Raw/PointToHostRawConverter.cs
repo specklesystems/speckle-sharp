@@ -4,7 +4,7 @@ using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Autocad.ToHost.Raw;
 
-public class PointToHostRawConverter : IRawConversion<SOG.Point, AG.Point3d>
+public class PointToHostRawConverter : ITypedConverter<SOG.Point, AG.Point3d>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 

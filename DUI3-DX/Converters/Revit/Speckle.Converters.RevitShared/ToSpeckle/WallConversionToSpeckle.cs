@@ -14,9 +14,9 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 [NameAndRankValue(nameof(DB.Wall), 0)]
 public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.RevitWall>
 {
-  private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
@@ -24,9 +24,9 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
   private readonly ISpeckleConverterToSpeckle _converter;
 
   public WallConversionToSpeckle(
-    IRawConversion<DB.Curve, ICurve> curveConverter,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
-    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    ITypedConverter<DB.Curve, ICurve> curveConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
     IRevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,

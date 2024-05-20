@@ -5,19 +5,19 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 public class PolylineToSpeckleConverter
-  : IRawConversion<RG.Polyline, SOG.Polyline>,
-    IRawConversion<RG.PolylineCurve, SOG.Polyline>
+  : ITypedConverter<RG.Polyline, SOG.Polyline>,
+    ITypedConverter<RG.PolylineCurve, SOG.Polyline>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public PolylineToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter
   )
   {
     _pointConverter = pointConverter;

@@ -6,14 +6,14 @@ using Objects.Primitive;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class EnvelopToSpeckleConverter : IRawConversion<Envelope, SOG.Box>
+public class EnvelopToSpeckleConverter : ITypedConverter<Envelope, SOG.Box>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<MapPoint, SOG.Point> _pointConverter;
 
   public EnvelopToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter
+    ITypedConverter<MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;

@@ -5,15 +5,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class EllipseToSpeckleConverter : IRawConversion<DB.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : ITypedConverter<DB.Ellipse, SOG.Ellipse>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public EllipseToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
     ScalingServiceToSpeckle scalingService
   )
   {

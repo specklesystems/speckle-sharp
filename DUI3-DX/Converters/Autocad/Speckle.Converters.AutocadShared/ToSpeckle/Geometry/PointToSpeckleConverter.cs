@@ -7,9 +7,9 @@ namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 [NameAndRankValue(nameof(ADB.DBPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointToSpeckleConverter : IHostObjectToSpeckleConversion
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
 
-  public PointToSpeckleConverter(IRawConversion<AG.Point3d, SOG.Point> pointConverter)
+  public PointToSpeckleConverter(ITypedConverter<AG.Point3d, SOG.Point> pointConverter)
   {
     _pointConverter = pointConverter;
   }

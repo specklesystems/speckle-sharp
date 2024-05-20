@@ -9,7 +9,7 @@ public class CircleToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion
 {
   public CircleToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Circle, RG.ArcCurve> geometryBaseConverter
+    ITypedConverter<SOG.Circle, RG.ArcCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

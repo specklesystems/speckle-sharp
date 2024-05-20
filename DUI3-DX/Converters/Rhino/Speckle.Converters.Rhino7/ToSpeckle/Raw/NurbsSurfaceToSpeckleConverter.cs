@@ -5,17 +5,17 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SOG.Surface>
+public class NurbsSurfaceToSpeckleConverter : ITypedConverter<RG.NurbsSurface, SOG.Surface>
 {
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IRawConversion<RG.ControlPoint, SOG.ControlPoint> _controlPointConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.ControlPoint, SOG.ControlPoint> _controlPointConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsSurfaceToSpeckleConverter(
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.ControlPoint, SOG.ControlPoint> controlPointConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.ControlPoint, SOG.ControlPoint> controlPointConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

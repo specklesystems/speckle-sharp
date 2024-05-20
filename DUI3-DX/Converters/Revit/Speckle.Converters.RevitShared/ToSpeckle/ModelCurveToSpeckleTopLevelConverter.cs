@@ -10,11 +10,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 [NameAndRankValue(nameof(DB.ModelCurve), 0)]
 public class ModelCurveToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.ModelCurve, SOBR.Curve.ModelCurve>
 {
-  private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
   private readonly IRevitConversionContextStack _conversionContext;
 
   public ModelCurveToSpeckleTopLevelConverter(
-    IRawConversion<DB.Curve, ICurve> curveConverter,
+    ITypedConverter<DB.Curve, ICurve> curveConverter,
     IRevitConversionContextStack conversionContext
   )
   {

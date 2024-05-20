@@ -6,7 +6,7 @@ using ArcGIS.Desktop.Mapping;
 namespace Speckle.Converters.ArcGIS3.Features;
 
 [NameAndRankValue(nameof(ACG.MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ACG.MapPoint, Base>
+public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<ACG.MapPoint, Base>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 

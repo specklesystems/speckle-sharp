@@ -7,15 +7,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Spline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Spline, SOG.Curve>
+public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConverter<ADB.Spline, SOG.Curve>
 {
-  private readonly IRawConversion<AG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public SplineToSpeckleConverter(
-    IRawConversion<AG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

@@ -11,18 +11,18 @@ public class RoomConversionToSpeckle : BaseConversionToSpeckle<DBA.Room, SOBE.Ro
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly IRawConversion<DB.Location, Base> _locationConverter;
-  private readonly IRawConversion<IList<DB.BoundarySegment>, SOG.Polycurve> _boundarySegmentConverter;
+  private readonly ITypedConverter<DB.Location, Base> _locationConverter;
+  private readonly ITypedConverter<IList<DB.BoundarySegment>, SOG.Polycurve> _boundarySegmentConverter;
 
   public RoomConversionToSpeckle(
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
-    IRawConversion<DB.Location, Base> locationConverter,
-    IRawConversion<IList<DB.BoundarySegment>, SOG.Polycurve> boundarySegmentConverter
+    ITypedConverter<DB.Location, Base> locationConverter,
+    ITypedConverter<IList<DB.BoundarySegment>, SOG.Polycurve> boundarySegmentConverter
   )
   {
     _displayValueExtractor = displayValueExtractor;

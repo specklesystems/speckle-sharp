@@ -4,17 +4,17 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
+public class NurbsCurveConverter : ITypedConverter<RG.NurbsCurve, SOG.Curve>
 {
-  private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Polyline, SOG.Polyline> _polylineConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsCurveConverter(
-    IRawConversion<RG.Polyline, SOG.Polyline> polylineConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Polyline, SOG.Polyline> polylineConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

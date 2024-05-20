@@ -4,17 +4,17 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class ArcToSpeckleConverter : IRawConversion<RG.Arc, SOG.Arc>
+public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public ArcToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

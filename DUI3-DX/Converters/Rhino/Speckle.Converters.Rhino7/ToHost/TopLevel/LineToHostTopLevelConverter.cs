@@ -9,7 +9,7 @@ public class LineToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion<S
 {
   public LineToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Line, RG.LineCurve> geometryBaseConverter
+    ITypedConverter<SOG.Line, RG.LineCurve> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

@@ -9,7 +9,7 @@ public class BrepToHostTopLevelConverter : SpeckleToHostGeometryBaseConversion<S
 {
   public BrepToHostTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<SOG.Brep, RG.Brep> geometryBaseConverter
+    ITypedConverter<SOG.Brep, RG.Brep> geometryBaseConverter
   )
     : base(contextStack, geometryBaseConverter) { }
 }

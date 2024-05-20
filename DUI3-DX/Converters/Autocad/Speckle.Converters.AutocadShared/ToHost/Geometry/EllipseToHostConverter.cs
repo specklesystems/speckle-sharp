@@ -6,15 +6,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Ellipse, ADB.Ellipse>
+public class EllipseToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Ellipse, ADB.Ellipse>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public EllipseToHostConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter,
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

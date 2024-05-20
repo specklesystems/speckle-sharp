@@ -8,9 +8,9 @@ namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 [NameAndRankValue(nameof(BrepObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class BrepObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleConversion
 {
-  private readonly IRawConversion<RG.Brep, SOG.Brep> _curveConverter;
+  private readonly ITypedConverter<RG.Brep, SOG.Brep> _curveConverter;
 
-  public BrepObjectToSpeckleTopLevelConverter(IRawConversion<RG.Brep, SOG.Brep> curveConverter)
+  public BrepObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Brep, SOG.Brep> curveConverter)
   {
     _curveConverter = curveConverter;
   }

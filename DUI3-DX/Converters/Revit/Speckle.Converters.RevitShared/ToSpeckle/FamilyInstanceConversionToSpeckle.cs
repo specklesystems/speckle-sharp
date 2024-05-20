@@ -9,16 +9,16 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 [NameAndRankValue(nameof(DB.FamilyInstance), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<DB.FamilyInstance, Base>
 {
-  private readonly IRawConversion<DB.Element, SOBR.RevitElement> _elementConverter;
-  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> _beamConversion;
-  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> _columnConversion;
-  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBrace> _braceConversion;
+  private readonly ITypedConverter<DB.Element, SOBR.RevitElement> _elementConverter;
+  private readonly ITypedConverter<DB.FamilyInstance, SOBR.RevitBeam> _beamConversion;
+  private readonly ITypedConverter<DB.FamilyInstance, SOBR.RevitColumn> _columnConversion;
+  private readonly ITypedConverter<DB.FamilyInstance, SOBR.RevitBrace> _braceConversion;
 
   public FamilyInstanceConversionToSpeckle(
-    IRawConversion<DB.Element, SOBR.RevitElement> elementConverter,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> beamConversion,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> columnConversion,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitBrace> braceConversion
+    ITypedConverter<DB.Element, SOBR.RevitElement> elementConverter,
+    ITypedConverter<DB.FamilyInstance, SOBR.RevitBeam> beamConversion,
+    ITypedConverter<DB.FamilyInstance, SOBR.RevitColumn> columnConversion,
+    ITypedConverter<DB.FamilyInstance, SOBR.RevitBrace> braceConversion
   )
   {
     _elementConverter = elementConverter;

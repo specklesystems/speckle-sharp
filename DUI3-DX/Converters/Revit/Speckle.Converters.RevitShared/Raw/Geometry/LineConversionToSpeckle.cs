@@ -5,15 +5,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
+public class LineConversionToSpeckle : ITypedConverter<DB.Line, SOG.Line>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
     ScalingServiceToSpeckle scalingService
   )
   {

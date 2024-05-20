@@ -5,13 +5,13 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class CircleToSpeckleConverter : IRawConversion<RG.Circle, SOG.Circle>
+public class CircleToSpeckleConverter : ITypedConverter<RG.Circle, SOG.Circle>
 {
-  private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public CircleToSpeckleConverter(
-    IRawConversion<RG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

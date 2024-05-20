@@ -4,16 +4,16 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class BoundingBoxXYZToSpeckleConverter : IRawConversion<DB.BoundingBoxXYZ, SOG.Box>
+public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<DB.BoundingBoxXYZ, SOG.Box>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
 
   public BoundingBoxXYZToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    IRawConversion<DB.Plane, SOG.Plane> planeConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter
   )
   {
     _contextStack = contextStack;

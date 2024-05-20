@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class VectorToSpeckleRawConverter : IRawConversion<AG.Vector3d, SOG.Vector>
+public class VectorToSpeckleRawConverter : ITypedConverter<AG.Vector3d, SOG.Vector>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 

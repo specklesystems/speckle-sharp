@@ -10,11 +10,11 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // did it go away?
 public sealed class ParameterObjectAssigner
 {
-  private readonly IRawConversion<Parameter, SOBR.Parameter> _paramConverter;
+  private readonly ITypedConverter<Parameter, SOBR.Parameter> _paramConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public ParameterObjectAssigner(
-    IRawConversion<Parameter, SOBR.Parameter> paramConverter,
+    ITypedConverter<Parameter, SOBR.Parameter> paramConverter,
     ParameterValueExtractor parameterValueExtractor
   )
   {

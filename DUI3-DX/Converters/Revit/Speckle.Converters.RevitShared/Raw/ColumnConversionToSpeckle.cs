@@ -10,18 +10,18 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: There is no validation on this converter to prevent conversion from "not a Revit Beam" to a Speckle Beam.
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
-public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, RevitColumn>
+public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, RevitColumn>
 {
-  private readonly IRawConversion<Location, Base> _locationConverter;
-  private readonly IRawConversion<Level, RevitLevel> _levelConverter;
+  private readonly ITypedConverter<Location, Base> _locationConverter;
+  private readonly ITypedConverter<Level, RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public ColumnConversionToSpeckle(
-    IRawConversion<Location, Base> locationConverter,
-    IRawConversion<Level, RevitLevel> levelConverter,
+    ITypedConverter<Location, Base> locationConverter,
+    ITypedConverter<Level, RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     IRevitConversionContextStack contextStack,

@@ -6,14 +6,14 @@ using Speckle.Converters.ArcGIS3.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch, IReadOnlyList<Base>>
+public class MultipatchFeatureToSpeckleConverter : ITypedConverter<ACG.Multipatch, IReadOnlyList<Base>>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public MultipatchFeatureToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;

@@ -5,14 +5,14 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Raw;
 
 [NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToHostRowConverter : IRawConversion<SOG.Arc, AG.CircularArc3d>
+public class ArcToHostRowConverter : ITypedConverter<SOG.Arc, AG.CircularArc3d>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
 
   public ArcToHostRowConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter
   )
   {
     _pointConverter = pointConverter;

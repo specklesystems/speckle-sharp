@@ -11,11 +11,11 @@ public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleO
   where TOut : RG.GeometryBase
 {
   protected IConversionContextStack<RhinoDoc, UnitSystem> ContextStack { get; private set; }
-  private readonly IRawConversion<TIn, TOut> _geometryBaseConverter;
+  private readonly ITypedConverter<TIn, TOut> _geometryBaseConverter;
 
   protected SpeckleToHostGeometryBaseConversion(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<TIn, TOut> geometryBaseConverter
+    ITypedConverter<TIn, TOut> geometryBaseConverter
   )
   {
     ContextStack = contextStack;

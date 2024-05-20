@@ -4,13 +4,13 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class BoxToSpeckleRawConverter : IRawConversion<ADB.Extents3d, SOG.Box>
+public class BoxToSpeckleRawConverter : ITypedConverter<ADB.Extents3d, SOG.Box>
 {
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public BoxToSpeckleRawConverter(
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<AG.Plane, SOG.Plane> planeConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {

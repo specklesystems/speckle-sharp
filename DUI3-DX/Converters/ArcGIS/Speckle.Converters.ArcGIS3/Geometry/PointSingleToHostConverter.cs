@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class PointToHostConverter : IRawConversion<SOG.Point, ACG.MapPoint>
+public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 

@@ -10,17 +10,17 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(VectorLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<VectorLayer, string>
+public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<VectorLayer, string>
 {
-  private readonly IRawConversion<VectorLayer, FeatureClass> _featureClassConverter;
-  private readonly IRawConversion<VectorLayer, Table> _tableConverter;
-  private readonly IRawConversion<VectorLayer, LasDatasetLayer> _pointcloudLayerConverter;
+  private readonly ITypedConverter<VectorLayer, FeatureClass> _featureClassConverter;
+  private readonly ITypedConverter<VectorLayer, Table> _tableConverter;
+  private readonly ITypedConverter<VectorLayer, LasDatasetLayer> _pointcloudLayerConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
 
   public VectorLayerToHostConverter(
-    IRawConversion<VectorLayer, FeatureClass> featureClassConverter,
-    IRawConversion<VectorLayer, Table> tableConverter,
-    IRawConversion<VectorLayer, LasDatasetLayer> pointcloudLayerConverter,
+    ITypedConverter<VectorLayer, FeatureClass> featureClassConverter,
+    ITypedConverter<VectorLayer, Table> tableConverter,
+    ITypedConverter<VectorLayer, LasDatasetLayer> pointcloudLayerConverter,
     IFeatureClassUtils featureClassUtils
   )
   {

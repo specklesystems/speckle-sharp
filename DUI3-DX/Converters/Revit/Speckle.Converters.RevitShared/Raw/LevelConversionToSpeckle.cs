@@ -3,7 +3,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class LevelConversionToSpeckle : IRawConversion<DB.Level, SOBR.RevitLevel>
+public class LevelConversionToSpeckle : ITypedConverter<DB.Level, SOBR.RevitLevel>
 {
   private readonly ScalingServiceToSpeckle _scalingService;
 

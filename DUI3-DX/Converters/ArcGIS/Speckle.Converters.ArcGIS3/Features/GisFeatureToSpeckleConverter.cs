@@ -6,11 +6,11 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
+public class GisFeatureToSpeckleConverter : ITypedConverter<Row, SGIS.GisFeature>
 {
-  private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly ITypedConverter<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
 
-  public GisFeatureToSpeckleConverter(IRawConversion<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
+  public GisFeatureToSpeckleConverter(ITypedConverter<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
   {
     _geometryConverter = geometryConverter;
   }

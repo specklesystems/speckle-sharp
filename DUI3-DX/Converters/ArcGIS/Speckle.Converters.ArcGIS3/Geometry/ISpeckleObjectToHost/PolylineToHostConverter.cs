@@ -5,11 +5,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolylineToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Polyline, ACG.Polyline>
+public class PolylineToHostConverter : ISpeckleObjectToHostConversion, ITypedConverter<SOG.Polyline, ACG.Polyline>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public PolylineToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public PolylineToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }

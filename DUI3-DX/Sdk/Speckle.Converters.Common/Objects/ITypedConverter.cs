@@ -1,6 +1,6 @@
 namespace Speckle.Converters.Common.Objects;
 
-public interface IRawConversion<TIn, TOut>
+public interface ITypedConverter<TIn, TOut>
 {
   TOut RawConvert(TIn target);
 }

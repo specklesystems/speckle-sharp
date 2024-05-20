@@ -4,20 +4,20 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.Geometry>
+public class GeometryToHostConverter : ITypedConverter<IReadOnlyList<Base>, ACG.Geometry>
 {
-  private readonly IRawConversion<List<SOG.Polyline>, ACG.Polyline> _polylineConverter;
-  private readonly IRawConversion<List<SOG.Point>, ACG.Multipoint> _multipointConverter;
-  private readonly IRawConversion<List<SGIS.PolygonGeometry3d>, ACG.Multipatch> _polygon3dConverter;
-  private readonly IRawConversion<List<SGIS.PolygonGeometry>, ACG.Polygon> _polygonConverter;
-  private readonly IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> _multipatchConverter;
+  private readonly ITypedConverter<List<SOG.Polyline>, ACG.Polyline> _polylineConverter;
+  private readonly ITypedConverter<List<SOG.Point>, ACG.Multipoint> _multipointConverter;
+  private readonly ITypedConverter<List<SGIS.PolygonGeometry3d>, ACG.Multipatch> _polygon3dConverter;
+  private readonly ITypedConverter<List<SGIS.PolygonGeometry>, ACG.Polygon> _polygonConverter;
+  private readonly ITypedConverter<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> _multipatchConverter;
 
   public GeometryToHostConverter(
-    IRawConversion<List<SOG.Polyline>, ACG.Polyline> polylineConverter,
-    IRawConversion<List<SOG.Point>, ACG.Multipoint> multipointConverter,
-    IRawConversion<List<SGIS.PolygonGeometry3d>, ACG.Multipatch> polygon3dConverter,
-    IRawConversion<List<SGIS.PolygonGeometry>, ACG.Polygon> polygonConverter,
-    IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> multipatchConverter
+    ITypedConverter<List<SOG.Polyline>, ACG.Polyline> polylineConverter,
+    ITypedConverter<List<SOG.Point>, ACG.Multipoint> multipointConverter,
+    ITypedConverter<List<SGIS.PolygonGeometry3d>, ACG.Multipatch> polygon3dConverter,
+    ITypedConverter<List<SGIS.PolygonGeometry>, ACG.Polygon> polygonConverter,
+    ITypedConverter<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> multipatchConverter
   )
   {
     _polylineConverter = polylineConverter;

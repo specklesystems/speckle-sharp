@@ -12,13 +12,13 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 [NameAndRankValue(nameof(RasterLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class RasterLayerToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<RasterLayer, SGIS.RasterLayer>
+    ITypedConverter<RasterLayer, SGIS.RasterLayer>
 {
-  private readonly IRawConversion<Raster, RasterElement> _gisRasterConverter;
+  private readonly ITypedConverter<Raster, RasterElement> _gisRasterConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public RasterLayerToSpeckleConverter(
-    IRawConversion<Raster, RasterElement> gisRasterConverter,
+    ITypedConverter<Raster, RasterElement> gisRasterConverter,
     IConversionContextStack<Map, Unit> contextStack
   )
   {

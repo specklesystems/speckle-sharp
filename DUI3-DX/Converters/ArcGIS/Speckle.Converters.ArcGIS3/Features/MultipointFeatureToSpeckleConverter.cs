@@ -2,11 +2,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipointFeatureToSpeckleConverter : IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>>
+public class MultipointFeatureToSpeckleConverter : ITypedConverter<ACG.Multipoint, IReadOnlyList<SOG.Point>>
 {
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
-  public MultipointFeatureToSpeckleConverter(IRawConversion<ACG.MapPoint, SOG.Point> pointConverter)
+  public MultipointFeatureToSpeckleConverter(ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter)
   {
     _pointConverter = pointConverter;
   }

@@ -8,13 +8,13 @@ using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
+public class GisRasterToSpeckleConverter : ITypedConverter<Raster, RasterElement>
 {
-  private readonly IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public GisRasterToSpeckleConverter(
-    IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter,
+    ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter,
     IConversionContextStack<Map, Unit> contextStack
   )
   {

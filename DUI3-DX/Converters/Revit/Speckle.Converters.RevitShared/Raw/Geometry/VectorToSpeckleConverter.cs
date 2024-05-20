@@ -3,7 +3,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class VectorToSpeckleConverter : IRawConversion<DB.XYZ, SOG.Vector>
+public class VectorToSpeckleConverter : ITypedConverter<DB.XYZ, SOG.Vector>
 {
   private readonly IReferencePointConverter _referencePointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;

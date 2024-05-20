@@ -4,11 +4,11 @@ namespace Speckle.Converters.RevitShared.Helpers;
 
 public class SlopeArrowExtractor : ISlopeArrowExtractor
 {
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _pointConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public SlopeArrowExtractor(
-    IRawConversion<DB.XYZ, SOG.Point> pointConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> pointConverter,
     ParameterValueExtractor parameterValueExtractor
   )
   {
