@@ -13,18 +13,14 @@ public class RevitConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon();
+    builder.AddConverterCommon<RootToSpeckleConverter, RevitToSpeckleUnitConverter, ForgeTypeId>();
     builder.AddSingleton(new RevitContext());
-    // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.AddScoped<IRootToSpeckleConverter, RevitRootToHostConverter>();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.AddScoped<ScalingServiceToSpeckle>();
 
     // POC: the concrete type can come out if we remove all the reference to it
     builder.AddScoped<IRevitConversionContextStack, RevitConversionContextStack>();
-
-    builder.AddScoped<IHostToSpeckleUnitConverter<ForgeTypeId>, RevitToSpeckleUnitConverter>();
 
     builder.AddScoped<IReferencePointConverter, ReferencePointConverter>();
     builder.AddScoped<RevitConversionSettings>();

@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;
@@ -16,8 +15,6 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Autocad;
-using Speckle.Converters.Common;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
@@ -58,8 +55,6 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton<IBinding, AutocadSelectionBinding>();
     builder.AddSingleton<IBinding, AutocadSendBinding>();
     builder.AddSingleton<IBinding, AutocadReceiveBinding>();
-
-    builder.AddSingleton<IHostToSpeckleUnitConverter<UnitsValue>, AutocadToSpeckleUnitConverter>();
 
     // register send filters
     builder.AddTransient<ISendFilter, AutocadSelectionFilter>();
