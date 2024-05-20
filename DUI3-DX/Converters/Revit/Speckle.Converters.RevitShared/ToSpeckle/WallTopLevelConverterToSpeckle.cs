@@ -21,7 +21,7 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.
   private readonly IRevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IRootToSpeckleConverter _converter;
 
   public WallTopLevelConverterToSpeckle(
     ITypedConverter<DB.Curve, ICurve> curveConverter,
@@ -31,7 +31,7 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
-    ISpeckleConverterToSpeckle converter
+    IRootToSpeckleConverter converter
   )
   {
     _curveConverter = curveConverter;

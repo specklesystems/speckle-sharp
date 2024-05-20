@@ -5,11 +5,11 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle;
 
-public class RhinoConverterToSpeckle : ISpeckleConverterToSpeckle
+public class RhinoConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public RhinoConverterToSpeckle(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
+  public RhinoConverter(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }

@@ -10,10 +10,10 @@ namespace Speckle.Connectors.Autocad.Operations.Send;
 
 public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applicationId)>
 {
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
 
-  public RootObjectBuilder(ISpeckleConverterToSpeckle converter)
+  public RootObjectBuilder(IRootToSpeckleConverter converter)
   {
     _converter = converter;
   }

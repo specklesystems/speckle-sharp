@@ -28,7 +28,7 @@ public class TopographyTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeck
       elementId = target.Id.ToString()
     };
 
-    // POC: shouldn't we just do this in the RevitConverterToSpeckle ?
+    // POC: shouldn't we just do this in the RevitConverter ?
     _parameterObjectAssigner.AssignParametersToBase(target, speckleTopo);
 
     return speckleTopo;

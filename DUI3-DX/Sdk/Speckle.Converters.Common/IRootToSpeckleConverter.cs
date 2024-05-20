@@ -2,7 +2,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common;
 
-public interface ISpeckleConverterToSpeckle
+public interface IRootToSpeckleConverter
 {
   Base Convert(object target);
 }

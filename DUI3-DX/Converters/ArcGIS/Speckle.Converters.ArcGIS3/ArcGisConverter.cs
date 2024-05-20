@@ -6,11 +6,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3;
 
 //poc: dupe code from rhino
-public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
+public class ArcGisConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<string, IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public ArcGISConverterToSpeckle(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
+  public ArcGisConverter(IFactory<string, IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }
