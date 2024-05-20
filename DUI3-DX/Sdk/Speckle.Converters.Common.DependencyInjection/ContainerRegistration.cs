@@ -6,9 +6,11 @@ namespace Speckle.Converters.Common.DependencyInjection;
 
 public static class ContainerRegistration
 {
-  public static void AddConverterCommon<TRootToSpeckleConverter, THostToSpeckleUnitConverter, THostUnit>(this SpeckleContainerBuilder builder)
+  public static void AddConverterCommon<TRootToSpeckleConverter, THostToSpeckleUnitConverter, THostUnit>(
+    this SpeckleContainerBuilder builder
+  )
     where TRootToSpeckleConverter : class, IRootToSpeckleConverter
-  where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
+    where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
   {
     builder.AddScoped<IRootToSpeckleConverter, TRootToSpeckleConverter>();
     builder.AddScoped<IHostToSpeckleUnitConverter<THostUnit>, THostToSpeckleUnitConverter>();
