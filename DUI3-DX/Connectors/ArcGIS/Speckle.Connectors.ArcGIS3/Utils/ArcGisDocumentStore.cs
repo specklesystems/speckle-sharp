@@ -11,8 +11,8 @@ namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGISDocumentStore : DocumentModelStore
 {
-  public ArcGISDocumentStore(JsonSerializerSettings serializerOption, bool writeToFileOnChange)
-    : base(serializerOption, writeToFileOnChange)
+  public ArcGISDocumentStore(JsonSerializerSettings serializerOption)
+    : base(serializerOption, true)
   {
     ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
     ProjectSavingEvent.Subscribe(OnProjectSaving);
