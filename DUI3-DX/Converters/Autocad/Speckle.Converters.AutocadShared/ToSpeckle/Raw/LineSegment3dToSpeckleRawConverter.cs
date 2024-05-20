@@ -17,10 +17,10 @@ public class LineSegment3dToSpeckleRawConverter : ITypedConverter<AG.LineSegment
     _contextStack = contextStack;
   }
 
-  public SOG.Line RawConvert(AG.LineSegment3d target) =>
+  public SOG.Line Convert(AG.LineSegment3d target) =>
     new(
-      _pointConverter.RawConvert(target.StartPoint),
-      _pointConverter.RawConvert(target.EndPoint),
+      _pointConverter.Convert(target.StartPoint),
+      _pointConverter.Convert(target.EndPoint),
       _contextStack.Current.SpeckleUnits
     )
     {

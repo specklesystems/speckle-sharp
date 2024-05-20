@@ -12,7 +12,7 @@ public class LevelConversionToSpeckle : ITypedConverter<DB.Level, SOBR.RevitLeve
     _scalingService = scalingService;
   }
 
-  public SOBR.RevitLevel RawConvert(DB.Level target)
+  public SOBR.RevitLevel Convert(DB.Level target)
   {
     SOBR.RevitLevel level =
       new()

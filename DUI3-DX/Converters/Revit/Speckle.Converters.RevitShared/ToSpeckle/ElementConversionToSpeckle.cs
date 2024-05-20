@@ -15,7 +15,7 @@ public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, Re
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override RevitElement RawConvert(DB.Element target)
+  public override RevitElement Convert(DB.Element target)
   {
     RevitElement speckleElement = new();
 

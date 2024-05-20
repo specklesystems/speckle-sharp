@@ -72,7 +72,7 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
     return gisFeatures;
   }
 
-  public FeatureClass RawConvert(VectorLayer target)
+  public FeatureClass Convert(VectorLayer target)
   {
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
 

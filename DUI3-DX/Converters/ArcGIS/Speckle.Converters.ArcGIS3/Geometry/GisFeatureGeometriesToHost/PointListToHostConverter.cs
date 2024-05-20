@@ -12,7 +12,7 @@ public class PointListToHostConverter : ITypedConverter<List<SOG.Point>, ACG.Mul
     _pointConverter = pointConverter;
   }
 
-  public ACG.Multipoint RawConvert(List<SOG.Point> target)
+  public ACG.Multipoint Convert(List<SOG.Point> target)
   {
     if (target.Count == 0)
     {
@@ -21,7 +21,7 @@ public class PointListToHostConverter : ITypedConverter<List<SOG.Point>, ACG.Mul
     List<ACG.MapPoint> pointList = new();
     foreach (SOG.Point pt in target)
     {
-      pointList.Add(_pointConverter.RawConvert(pt));
+      pointList.Add(_pointConverter.Convert(pt));
     }
     return new ACG.MultipointBuilderEx(pointList, ACG.AttributeFlags.HasZ).ToGeometry();
   }

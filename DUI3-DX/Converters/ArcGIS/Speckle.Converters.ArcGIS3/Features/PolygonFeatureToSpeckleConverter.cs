@@ -13,7 +13,7 @@ public class PolygonFeatureToSpeckleConverter : ITypedConverter<ACG.Polygon, IRe
     _segmentConverter = segmentConverter;
   }
 
-  public IReadOnlyList<PolygonGeometry> RawConvert(ACG.Polygon target)
+  public IReadOnlyList<PolygonGeometry> Convert(ACG.Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
     List<PolygonGeometry> polygonList = new();
@@ -30,7 +30,7 @@ public class PolygonFeatureToSpeckleConverter : ITypedConverter<ACG.Polygon, IRe
     for (int idx = 0; idx < partCount; idx++)
     {
       ACG.ReadOnlySegmentCollection segmentCollection = target.Parts[idx];
-      SOG.Polyline polyline = _segmentConverter.RawConvert(segmentCollection);
+      SOG.Polyline polyline = _segmentConverter.Convert(segmentCollection);
 
       bool isExteriorRing = target.IsExteriorRing(idx);
       if (isExteriorRing is true)

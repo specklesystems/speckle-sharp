@@ -14,12 +14,12 @@ public class PolylineToHostConverter : ISpeckleObjectToHostConversion, ITypedCon
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Polyline)target);
+  public object Convert(Base target) => Convert((SOG.Polyline)target);
 
-  public ADB.Polyline3d RawConvert(SOG.Polyline target)
+  public ADB.Polyline3d Convert(SOG.Polyline target)
   {
     AG.Point3dCollection vertices = new();
-    target.GetPoints().ForEach(o => vertices.Add(_pointConverter.RawConvert(o)));
+    target.GetPoints().ForEach(o => vertices.Add(_pointConverter.Convert(o)));
     return new(ADB.Poly3dType.SimplePoly, vertices, target.closed);
   }
 }

@@ -30,7 +30,7 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<RG.NurbsSurface, S
   /// </summary>
   /// <param name="target">The NurbsSurface object to convert.</param>
   /// <returns>A Surface object representing the converted NurbsSurface.</returns>
-  public SOG.Surface RawConvert(RG.NurbsSurface target)
+  public SOG.Surface Convert(RG.NurbsSurface target)
   {
     var result = new SOG.Surface
     {
@@ -39,12 +39,12 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<RG.NurbsSurface, S
       rational = target.IsRational,
       closedU = target.IsClosed(0),
       closedV = target.IsClosed(1),
-      domainU = _intervalConverter.RawConvert(target.Domain(0)),
-      domainV = _intervalConverter.RawConvert(target.Domain(1)),
+      domainU = _intervalConverter.Convert(target.Domain(0)),
+      domainV = _intervalConverter.Convert(target.Domain(1)),
       knotsU = target.KnotsU.ToList(),
       knotsV = target.KnotsV.ToList(),
       units = _contextStack.Current.SpeckleUnits,
-      bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true)))
+      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(true)))
     };
 
     result.SetControlPoints(ControlPointsToSpeckle(target.Points));
@@ -61,7 +61,7 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<RG.NurbsSurface, S
       for (var j = 0; j < controlPoints.CountV; j++)
       {
         var pt = controlPoints.GetControlPoint(i, j);
-        row.Add(_controlPointConverter.RawConvert(pt));
+        row.Add(_controlPointConverter.Convert(pt));
       }
 
       points.Add(row);

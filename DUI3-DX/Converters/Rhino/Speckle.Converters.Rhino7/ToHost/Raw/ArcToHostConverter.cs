@@ -26,12 +26,12 @@ public class ArcToHostConverter : ITypedConverter<SOG.Arc, RG.Arc>, ITypedConver
   /// <returns>The converted <see cref="RG.Arc"/> object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   /// <remarks><br/>⚠️ This method does not preserve the original curve domain</remarks>
-  public RG.Arc RawConvert(SOG.Arc target)
+  public RG.Arc Convert(SOG.Arc target)
   {
     var rhinoArc = new RG.Arc(
-      _pointConverter.RawConvert(target.startPoint),
-      _pointConverter.RawConvert(target.midPoint),
-      _pointConverter.RawConvert(target.endPoint)
+      _pointConverter.Convert(target.startPoint),
+      _pointConverter.Convert(target.midPoint),
+      _pointConverter.Convert(target.endPoint)
     );
     return rhinoArc;
   }
@@ -45,10 +45,10 @@ public class ArcToHostConverter : ITypedConverter<SOG.Arc, RG.Arc>, ITypedConver
   /// <returns>The converted <see cref="RG.ArcCurve"/> object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   /// <remarks><br/>⚠️ Converting to <see cref="RG.ArcCurve"/> instead of <see cref="RG.Arc"/> preserves the domain of the curve.</remarks>
-  RG.ArcCurve ITypedConverter<SOG.Arc, RG.ArcCurve>.RawConvert(SOG.Arc target)
+  RG.ArcCurve ITypedConverter<SOG.Arc, RG.ArcCurve>.Convert(SOG.Arc target)
   {
-    var rhinoArc = RawConvert(target);
-    var arcCurve = new RG.ArcCurve(rhinoArc) { Domain = _intervalConverter.RawConvert(target.domain) };
+    var rhinoArc = Convert(target);
+    var arcCurve = new RG.ArcCurve(rhinoArc) { Domain = _intervalConverter.Convert(target.domain) };
     return arcCurve;
   }
 }

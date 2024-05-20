@@ -11,12 +11,12 @@ public class MultipointFeatureToSpeckleConverter : ITypedConverter<ACG.Multipoin
     _pointConverter = pointConverter;
   }
 
-  public IReadOnlyList<SOG.Point> RawConvert(ACG.Multipoint target)
+  public IReadOnlyList<SOG.Point> Convert(ACG.Multipoint target)
   {
     List<SOG.Point> multipoint = new();
     foreach (ACG.MapPoint point in target.Points)
     {
-      multipoint.Add(_pointConverter.RawConvert(point));
+      multipoint.Add(_pointConverter.Convert(point));
     }
 
     return multipoint;

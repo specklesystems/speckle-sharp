@@ -14,9 +14,9 @@ public class VectorToHostRawConverter : ITypedConverter<SOG.Vector, AG.Vector3d>
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Vector)target);
+  public object Convert(Base target) => Convert((SOG.Vector)target);
 
-  public AG.Vector3d RawConvert(SOG.Vector target)
+  public AG.Vector3d Convert(SOG.Vector target)
   {
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
     return new(target.x * f, target.y * f, target.z * f);

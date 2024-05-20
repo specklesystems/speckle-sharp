@@ -12,7 +12,7 @@ public class MultipatchListToHostConverter : ITypedConverter<List<SGIS.GisMultip
     _pointConverter = pointConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SGIS.GisMultipatchGeometry> target)
+  public ACG.Multipatch Convert(List<SGIS.GisMultipatchGeometry> target)
   {
     if (target.Count == 0)
     {
@@ -25,7 +25,7 @@ public class MultipatchListToHostConverter : ITypedConverter<List<SGIS.GisMultip
       for (int i = 0; i < part.vertices.Count / 3; i++)
       {
         newPatch.AddPoint(
-          _pointConverter.RawConvert(
+          _pointConverter.Convert(
             new SOG.Point(part.vertices[i * 3], part.vertices[i * 3 + 1], part.vertices[i * 3 + 2])
           )
         );

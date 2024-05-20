@@ -22,9 +22,9 @@ public class FallbackToHostConverter : ISpeckleObjectToHostConversion, ITypedCon
     _pointListConverter = pointListConverter;
   }
 
-  public object Convert(Base target) => RawConvert((DisplayableObject)target);
+  public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public ACG.Geometry RawConvert(DisplayableObject target)
+  public ACG.Geometry Convert(DisplayableObject target)
   {
     if (!target.displayValue.Any())
     {
@@ -35,9 +35,9 @@ public class FallbackToHostConverter : ISpeckleObjectToHostConversion, ITypedCon
 
     return first switch
     {
-      SOG.Polyline => _polylineListConverter.RawConvert(target.displayValue.Cast<SOG.Polyline>().ToList()),
-      SOG.Mesh => _meshListConverter.RawConvert(target.displayValue.Cast<SOG.Mesh>().ToList()),
-      SOG.Point => _pointListConverter.RawConvert(target.displayValue.Cast<SOG.Point>().ToList()),
+      SOG.Polyline => _polylineListConverter.Convert(target.displayValue.Cast<SOG.Polyline>().ToList()),
+      SOG.Mesh => _meshListConverter.Convert(target.displayValue.Cast<SOG.Mesh>().ToList()),
+      SOG.Point => _pointListConverter.Convert(target.displayValue.Cast<SOG.Point>().ToList()),
       _ => throw new NotSupportedException($"Found unsupported fallback geometry: {first.GetType()}")
     };
   }

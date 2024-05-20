@@ -36,9 +36,9 @@ public class PolylineToSpeckleConverter
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ADB.Polyline)target);
+  public Base Convert(object target) => Convert((ADB.Polyline)target);
 
-  public SOG.Autocad.AutocadPolycurve RawConvert(ADB.Polyline target)
+  public SOG.Autocad.AutocadPolycurve Convert(ADB.Polyline target)
   {
     List<double> value = new(target.NumberOfVertices * 3);
     List<double> bulges = new(target.NumberOfVertices);
@@ -58,11 +58,11 @@ public class PolylineToSpeckleConverter
       {
         case ADB.SegmentType.Line:
           AG.LineSegment3d line = target.GetLineSegmentAt(i);
-          segments.Add(_lineConverter.RawConvert(line));
+          segments.Add(_lineConverter.Convert(line));
           break;
         case ADB.SegmentType.Arc:
           AG.CircularArc3d arc = target.GetArcSegmentAt(i);
-          segments.Add(_arcConverter.RawConvert(arc));
+          segments.Add(_arcConverter.Convert(arc));
           break;
         default:
           // we are skipping segments of type Empty, Point, and Coincident
@@ -70,8 +70,8 @@ public class PolylineToSpeckleConverter
       }
     }
 
-    SOG.Vector normal = _vectorConverter.RawConvert(target.Normal);
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Vector normal = _vectorConverter.Convert(target.Normal);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Autocad.AutocadPolycurve polycurve =
       new()

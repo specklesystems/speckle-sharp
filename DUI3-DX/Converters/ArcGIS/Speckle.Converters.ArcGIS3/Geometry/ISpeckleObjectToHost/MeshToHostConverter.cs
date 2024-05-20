@@ -14,10 +14,10 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, ITypedConvert
     _meshConverter = meshConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Mesh)target);
+  public object Convert(Base target) => Convert((SOG.Mesh)target);
 
-  public ACG.Multipatch RawConvert(SOG.Mesh target)
+  public ACG.Multipatch Convert(SOG.Mesh target)
   {
-    return _meshConverter.RawConvert(new List<SOG.Mesh> { target });
+    return _meshConverter.Convert(new List<SOG.Mesh> { target });
   }
 }

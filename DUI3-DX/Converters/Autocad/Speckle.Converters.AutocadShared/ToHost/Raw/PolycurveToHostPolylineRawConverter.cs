@@ -20,7 +20,7 @@ public class PolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Polycurve
     _pointConverter = pointConverter;
   }
 
-  public ADB.Polyline RawConvert(SOG.Polycurve target)
+  public ADB.Polyline Convert(SOG.Polycurve target)
   {
     ADB.Polyline polyline = new() { Closed = target.closed };
     AG.Plane plane =
@@ -35,10 +35,10 @@ public class PolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Polycurve
       switch (segment)
       {
         case SOG.Line o:
-          polyline.AddVertexAt(count, _pointConverter.RawConvert(o.start).Convert2d(plane), 0, 0, 0);
+          polyline.AddVertexAt(count, _pointConverter.Convert(o.start).Convert2d(plane), 0, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)
           {
-            polyline.AddVertexAt(count + 1, _pointConverter.RawConvert(o.end).Convert2d(plane), 0, 0, 0);
+            polyline.AddVertexAt(count + 1, _pointConverter.Convert(o.end).Convert2d(plane), 0, 0, 0);
           }
 
           count++;
@@ -53,16 +53,16 @@ public class PolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Polycurve
           }
 
           var bulge = Math.Tan((double)angle / 4) * BulgeDirection(arc.startPoint, arc.midPoint, arc.endPoint);
-          polyline.AddVertexAt(count, _pointConverter.RawConvert(arc.startPoint).Convert2d(plane), bulge, 0, 0);
+          polyline.AddVertexAt(count, _pointConverter.Convert(arc.startPoint).Convert2d(plane), bulge, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)
           {
-            polyline.AddVertexAt(count + 1, _pointConverter.RawConvert(arc.endPoint).Convert2d(plane), 0, 0, 0);
+            polyline.AddVertexAt(count + 1, _pointConverter.Convert(arc.endPoint).Convert2d(plane), 0, 0, 0);
           }
 
           count++;
           break;
         case SOG.Spiral o:
-          List<AG.Point3d> vertices = o.displayValue.GetPoints().Select(_pointConverter.RawConvert).ToList();
+          List<AG.Point3d> vertices = o.displayValue.GetPoints().Select(_pointConverter.Convert).ToList();
           foreach (AG.Point3d vertex in vertices)
           {
             polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);

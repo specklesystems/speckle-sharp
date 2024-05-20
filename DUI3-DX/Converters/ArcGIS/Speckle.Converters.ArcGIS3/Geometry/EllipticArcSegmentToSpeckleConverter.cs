@@ -18,7 +18,7 @@ public class EllipticArcToSpeckleConverter : ITypedConverter<ACG.EllipticArcSegm
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.EllipticArcSegment target)
+  public SOG.Polyline Convert(ACG.EllipticArcSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -52,7 +52,7 @@ public class EllipticArcToSpeckleConverter : ITypedConverter<ACG.EllipticArcSegm
         target.SpatialReference
       );
 
-      points.Add(_pointConverter.RawConvert(pointOnArc));
+      points.Add(_pointConverter.Convert(pointOnArc));
     }
 
     // create Speckle Polyline

@@ -14,8 +14,8 @@ public class LineToHostConverter : ISpeckleObjectToHostConversion, ITypedConvert
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Line)target);
+  public object Convert(Base target) => Convert((SOG.Line)target);
 
-  public ADB.Line RawConvert(SOG.Line target) =>
-    new(_pointConverter.RawConvert(target.start), _pointConverter.RawConvert(target.end));
+  public ADB.Line Convert(SOG.Line target) =>
+    new(_pointConverter.Convert(target.start), _pointConverter.Convert(target.end));
 }

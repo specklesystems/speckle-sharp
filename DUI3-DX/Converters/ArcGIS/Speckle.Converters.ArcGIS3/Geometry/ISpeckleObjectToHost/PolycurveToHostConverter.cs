@@ -19,9 +19,9 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion, ITypedCo
     _toHostConverter = toHostConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Polycurve)target);
+  public object Convert(Base target) => Convert((SOG.Polycurve)target);
 
-  public ACG.Polyline RawConvert(SOG.Polycurve target)
+  public ACG.Polyline Convert(SOG.Polycurve target)
   {
     List<ACG.MapPoint> points = new();
     foreach (var segment in target.segments)

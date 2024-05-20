@@ -14,12 +14,12 @@ public class LineSingleToHostConverter : ISpeckleObjectToHostConversion, ITypedC
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Line)target);
+  public object Convert(Base target) => Convert((SOG.Line)target);
 
-  public ACG.Polyline RawConvert(SOG.Line target)
+  public ACG.Polyline Convert(SOG.Line target)
   {
     List<SOG.Point> originalPoints = new() { target.start, target.end };
-    IEnumerable<ACG.MapPoint> points = originalPoints.Select(x => _pointConverter.RawConvert(x));
+    IEnumerable<ACG.MapPoint> points = originalPoints.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

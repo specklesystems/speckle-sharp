@@ -14,7 +14,7 @@ public class ParameterConversionToSpeckle : ITypedConverter<Parameter, SOBR.Para
     _valueExtractor = valueExtractor;
   }
 
-  public SOBR.Parameter RawConvert(Parameter target)
+  public SOBR.Parameter Convert(Parameter target)
   {
     string internalName = target.GetInternalName();
     ForgeTypeId? unitTypeId = null;

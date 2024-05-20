@@ -14,7 +14,7 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, ITypedConver
     _curveConverter = curveConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Curve)target);
+  public object Convert(Base target) => Convert((SOG.Curve)target);
 
-  public ADB.Curve RawConvert(SOG.Curve target) => ADB.Curve.CreateFromGeCurve(_curveConverter.RawConvert(target));
+  public ADB.Curve Convert(SOG.Curve target) => ADB.Curve.CreateFromGeCurve(_curveConverter.Convert(target));
 }

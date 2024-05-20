@@ -33,19 +33,19 @@ public class RoomConversionToSpeckle : BaseConversionToSpeckle<DBA.Room, SOBE.Ro
     _boundarySegmentConverter = boundarySegmentConverter;
   }
 
-  public override SOBE.Room RawConvert(DBA.Room target)
+  public override SOBE.Room Convert(DBA.Room target)
   {
     var number = target.Number;
     var name = _parameterValueExtractor.GetValueAsString(target, DB.BuiltInParameter.ROOM_NAME);
     var area = _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.ROOM_AREA);
 
     var displayValue = _displayValueExtractor.GetDisplayValue(target);
-    var basePoint = (SOG.Point)_locationConverter.RawConvert(target.Location);
-    var level = _levelConverter.RawConvert(target.Level);
+    var basePoint = (SOG.Point)_locationConverter.Convert(target.Location);
+    var level = _levelConverter.Convert(target.Level);
 
     var profiles = target
       .GetBoundarySegments(new DB.SpatialElementBoundaryOptions())
-      .Select(c => (ICurve)_boundarySegmentConverter.RawConvert(c))
+      .Select(c => (ICurve)_boundarySegmentConverter.Convert(c))
       .ToList();
 
     var outline = profiles.First();

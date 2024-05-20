@@ -21,14 +21,14 @@ public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, ITyped
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((AG.Plane)target);
+  public Base Convert(object target) => Convert((AG.Plane)target);
 
-  public SOG.Plane RawConvert(AG.Plane target) =>
+  public SOG.Plane Convert(AG.Plane target) =>
     new(
-      _pointConverter.RawConvert(target.PointOnPlane),
-      _vectorConverter.RawConvert(target.Normal),
-      _vectorConverter.RawConvert(target.GetCoordinateSystem().Xaxis),
-      _vectorConverter.RawConvert(target.GetCoordinateSystem().Yaxis),
+      _pointConverter.Convert(target.PointOnPlane),
+      _vectorConverter.Convert(target.Normal),
+      _vectorConverter.Convert(target.GetCoordinateSystem().Xaxis),
+      _vectorConverter.Convert(target.GetCoordinateSystem().Yaxis),
       _contextStack.Current.SpeckleUnits
     );
 }

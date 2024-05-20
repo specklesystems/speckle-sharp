@@ -17,8 +17,8 @@ public class PlaneToHostRawConverter : ITypedConverter<SOG.Plane, AG.Plane>
     _vectorConverter = vectorConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Plane)target);
+  public object Convert(Base target) => Convert((SOG.Plane)target);
 
-  public AG.Plane RawConvert(SOG.Plane target) =>
-    new(_pointConverter.RawConvert(target.origin), _vectorConverter.RawConvert(target.normal));
+  public AG.Plane Convert(SOG.Plane target) =>
+    new(_pointConverter.Convert(target.origin), _vectorConverter.Convert(target.normal));
 }

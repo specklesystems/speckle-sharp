@@ -36,26 +36,26 @@ public class ArcCurveToSpeckleConverter : ITypedConverter<RG.ArcCurve, ICurve>, 
   /// Otherwise, the output will be a Speckle Arc. <br/>
   /// ✅ This method preserves the domain of the original ArcCurve.<br/>
   /// </remarks>
-  public ICurve RawConvert(RG.ArcCurve target)
+  public ICurve Convert(RG.ArcCurve target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
 
     if (target.IsCompleteCircle)
     {
       target.TryGetCircle(out var getObj, tolerance);
-      var cir = _circleConverter.RawConvert(getObj);
-      cir.domain = _intervalConverter.RawConvert(target.Domain);
+      var cir = _circleConverter.Convert(getObj);
+      cir.domain = _intervalConverter.Convert(target.Domain);
       return cir;
     }
 
-    var arc = _arcConverter.RawConvert(target.Arc);
-    arc.domain = _intervalConverter.RawConvert(target.Domain);
+    var arc = _arcConverter.Convert(target.Arc);
+    arc.domain = _intervalConverter.Convert(target.Domain);
     return arc;
   }
 
   // POC: CNX-9275 Need to implement this because ICurve and Base are not related, this one is needed at the top-level, the other is for better typed experience.
   //      This also causes us to have to force cast ICurve to Base as a result, which is expected to always succeed but not nice.
-  /// <inheritdoc cref="RawConvert"/>
+  /// <inheritdoc cref="Convert"/>
   /// <returns> The converted ICurve with a cast to <see cref="Base"/> object</returns>
-  Base ITypedConverter<RG.ArcCurve, Base>.RawConvert(RG.ArcCurve target) => (Base)RawConvert(target);
+  Base ITypedConverter<RG.ArcCurve, Base>.Convert(RG.ArcCurve target) => (Base)Convert(target);
 }

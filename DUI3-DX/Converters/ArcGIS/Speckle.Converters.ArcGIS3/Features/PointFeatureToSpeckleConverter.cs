@@ -15,9 +15,9 @@ public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IT
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ACG.MapPoint)target);
+  public Base Convert(object target) => Convert((ACG.MapPoint)target);
 
-  public Base RawConvert(ACG.MapPoint target)
+  public Base Convert(ACG.MapPoint target)
   {
     if (
       ACG.GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)

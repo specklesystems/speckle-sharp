@@ -22,13 +22,13 @@ public class LineToHostConverter : ITypedConverter<SOG.Line, RG.LineCurve>, ITyp
   /// If you need it preserved you must request a conversion to
   /// <see cref="RG.LineCurve"/> conversion instead
   /// </remarks>
-  public RG.Line RawConvert(SOG.Line target) =>
-    new(_pointConverter.RawConvert(target.start), _pointConverter.RawConvert(target.end));
+  public RG.Line Convert(SOG.Line target) =>
+    new(_pointConverter.Convert(target.start), _pointConverter.Convert(target.end));
 
   /// <summary>
   /// Converts a Speckle Line object to a Rhino LineCurve object.
   /// </summary>
   /// <param name="target">The Speckle Line object to convert.</param>
   /// <returns>Returns the resulting Rhino LineCurve object.</returns>
-  RG.LineCurve ITypedConverter<SOG.Line, RG.LineCurve>.RawConvert(SOG.Line target) => new(RawConvert(target));
+  RG.LineCurve ITypedConverter<SOG.Line, RG.LineCurve>.Convert(SOG.Line target) => new(Convert(target));
 }

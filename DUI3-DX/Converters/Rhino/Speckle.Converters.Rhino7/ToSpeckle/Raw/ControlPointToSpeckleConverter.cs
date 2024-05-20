@@ -19,8 +19,8 @@ public class ControlPointToSpeckleConverter : ITypedConverter<RG.ControlPoint, S
   /// </summary>
   /// <param name="target">The ControlPoint object to convert.</param>
   /// <returns>The converted Speckle ControlPoint object.</returns>
-  public SOG.ControlPoint RawConvert(RG.ControlPoint target) =>
+  public SOG.ControlPoint Convert(RG.ControlPoint target) =>
     new(target.Location.X, target.Location.Y, target.Location.Z, target.Weight, _contextStack.Current.SpeckleUnits);
 
-  public Base Convert(object target) => RawConvert((RG.ControlPoint)target);
+  public Base Convert(object target) => Convert((RG.ControlPoint)target);
 }

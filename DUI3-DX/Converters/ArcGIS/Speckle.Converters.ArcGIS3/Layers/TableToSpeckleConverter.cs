@@ -27,10 +27,10 @@ public class StandaloneTableToSpeckleConverter
 
   public Base Convert(object target)
   {
-    return RawConvert((StandaloneTable)target);
+    return Convert((StandaloneTable)target);
   }
 
-  public VectorLayer RawConvert(StandaloneTable target)
+  public VectorLayer Convert(StandaloneTable target)
   {
     VectorLayer speckleLayer = new() { name = target.Name, };
 
@@ -57,7 +57,7 @@ public class StandaloneTableToSpeckleConverter
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          GisFeature element = _gisFeatureConverter.RawConvert(row);
+          GisFeature element = _gisFeatureConverter.Convert(row);
 
           // replace "attributes", to remove non-visible layer attributes
           Base elementAttributes = new();

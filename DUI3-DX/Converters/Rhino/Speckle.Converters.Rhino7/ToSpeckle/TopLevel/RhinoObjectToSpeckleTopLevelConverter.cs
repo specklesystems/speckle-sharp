@@ -24,7 +24,7 @@ public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw,
     var typedTarget = (TTopLevelIn)target;
     var typedGeometry = GetTypedGeometry(typedTarget);
 
-    var result = Conversion.RawConvert(typedGeometry);
+    var result = Conversion.Convert(typedGeometry);
 
     // POC: Any common operations for all RhinoObjects should be done here, not on the specific implementer
     // Things like user-dictionaries and other user-defined metadata.

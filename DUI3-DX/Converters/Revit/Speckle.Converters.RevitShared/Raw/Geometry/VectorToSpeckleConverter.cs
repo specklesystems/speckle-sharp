@@ -17,7 +17,7 @@ public class VectorToSpeckleConverter : ITypedConverter<DB.XYZ, SOG.Vector>
     _scalingService = scalingService;
   }
 
-  public SOG.Vector RawConvert(DB.XYZ target)
+  public SOG.Vector Convert(DB.XYZ target)
   {
     // POC: originally had a concept of not transforming, but this was
     // optional arg defaulting to false - removing the argument appeared to break nothing

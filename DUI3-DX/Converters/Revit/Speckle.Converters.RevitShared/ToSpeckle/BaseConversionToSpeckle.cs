@@ -14,7 +14,7 @@ public abstract class BaseConversionToSpeckle<THost, TSpeckle>
 {
   public Base Convert(object target)
   {
-    var result = RawConvert((THost)target);
+    var result = Convert((THost)target);
 
     // POC: unless I am going bonkers, we've constrained TSpeckle to Base
     // so it should always BE base?
@@ -28,5 +28,5 @@ public abstract class BaseConversionToSpeckle<THost, TSpeckle>
     return @base;
   }
 
-  public abstract TSpeckle RawConvert(THost target);
+  public abstract TSpeckle Convert(THost target);
 }

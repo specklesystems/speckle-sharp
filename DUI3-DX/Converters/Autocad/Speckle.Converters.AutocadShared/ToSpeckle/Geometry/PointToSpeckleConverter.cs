@@ -16,5 +16,5 @@ public class PointToSpeckleConverter : IHostObjectToSpeckleConversion
 
   public Base Convert(object target) => RawConvert((ADB.DBPoint)target);
 
-  public SOG.Point RawConvert(ADB.DBPoint target) => _pointConverter.RawConvert(target.Position);
+  public SOG.Point RawConvert(ADB.DBPoint target) => _pointConverter.Convert(target.Position);
 }

@@ -23,12 +23,12 @@ public class RawPointCloudToSpeckle : ITypedConverter<RG.PointCloud, SOG.Pointcl
   /// </summary>
   /// <param name="target">The Rhino PointCloud object to convert.</param>
   /// <returns>The converted Speckle Pointcloud object.</returns>
-  public SOG.Pointcloud RawConvert(RG.PointCloud target) =>
+  public SOG.Pointcloud Convert(RG.PointCloud target) =>
     new()
     {
       points = target.GetPoints().SelectMany(pt => new[] { pt.X, pt.Y, pt.Z }).ToList(),
       colors = target.GetColors().Select(o => o.ToArgb()).ToList(),
-      bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))),
+      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(true))),
       units = _contextStack.Current.SpeckleUnits
     };
 }

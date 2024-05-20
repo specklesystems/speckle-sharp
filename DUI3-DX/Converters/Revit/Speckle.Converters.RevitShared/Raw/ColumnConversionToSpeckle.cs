@@ -36,7 +36,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public RevitColumn RawConvert(DB.FamilyInstance target)
+  public RevitColumn Convert(DB.FamilyInstance target)
   {
     FamilySymbol symbol = (FamilySymbol)target.Document.GetElement(target.GetTypeId());
 
@@ -47,14 +47,14 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
       target,
       BuiltInParameter.FAMILY_BASE_LEVEL_PARAM
     );
-    speckleColumn.level = _levelConverter.RawConvert(level);
+    speckleColumn.level = _levelConverter.Convert(level);
 
     Level topLevel = _parameterValueExtractor.GetValueAsDocumentObject<Level>(
       target,
       BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
     );
 
-    speckleColumn.topLevel = _levelConverter.RawConvert(topLevel);
+    speckleColumn.topLevel = _levelConverter.Convert(topLevel);
     speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(
       target,
       DB.BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
@@ -87,7 +87,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
 
   private ICurve? GetBaseCurve(DB.FamilyInstance target, double topLevelElevation, double topLevelOffset)
   {
-    Base baseGeometry = _locationConverter.RawConvert(target.Location);
+    Base baseGeometry = _locationConverter.Convert(target.Location);
     ICurve? baseCurve = baseGeometry as ICurve;
 
     if (baseGeometry is ICurve)

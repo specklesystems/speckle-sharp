@@ -15,9 +15,9 @@ public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Point)target);
+  public object Convert(Base target) => Convert((SOG.Point)target);
 
-  public ACG.MapPoint RawConvert(SOG.Point target)
+  public ACG.MapPoint Convert(SOG.Point target)
   {
     double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
     return new ACG.MapPointBuilderEx(

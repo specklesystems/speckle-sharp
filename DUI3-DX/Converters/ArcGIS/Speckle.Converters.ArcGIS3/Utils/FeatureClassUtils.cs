@@ -41,7 +41,7 @@ public class FeatureClassUtils : IFeatureClassUtils
         if (feat.geometry != null)
         {
           List<Base> geometryToConvert = feat.geometry;
-          ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryToConvert);
+          ACG.Geometry nativeShape = gisGeometryConverter.Convert(geometryToConvert);
           rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
         }
         else

@@ -34,10 +34,10 @@ internal sealed class CeilingConversionToSpeckle : BaseConversionToSpeckle<DB.Ce
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override RevitCeiling RawConvert(DB.Ceiling target)
+  public override RevitCeiling Convert(DB.Ceiling target)
   {
     var sketch = (Sketch)target.Document.GetElement(target.SketchId);
-    List<SOG.Polycurve> profiles = _curveArrArrayConverter.RawConvert(sketch.Profile);
+    List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
     var speckleCeiling = new RevitCeiling();
 
@@ -59,7 +59,7 @@ internal sealed class CeilingConversionToSpeckle : BaseConversionToSpeckle<DB.Ce
     // but it is never being set. We should be setting it
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
-    speckleCeiling.level = _levelConverter.RawConvert(level);
+    speckleCeiling.level = _levelConverter.Convert(level);
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleCeiling);
     speckleCeiling.displayValue = _displayValueExtractor.GetDisplayValue(target);

@@ -19,7 +19,7 @@ public class AutocadPolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Au
     _contextStack = contextStack;
   }
 
-  public ADB.Polyline RawConvert(SOG.Autocad.AutocadPolycurve target)
+  public ADB.Polyline Convert(SOG.Autocad.AutocadPolycurve target)
   {
     if (target.normal is null || target.elevation is null)
     {
@@ -34,7 +34,7 @@ public class AutocadPolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Au
     ADB.Polyline polyline =
       new()
       {
-        Normal = _vectorConverter.RawConvert(target.normal),
+        Normal = _vectorConverter.Convert(target.normal),
         Elevation = (double)target.elevation * f,
         Closed = target.closed
       };

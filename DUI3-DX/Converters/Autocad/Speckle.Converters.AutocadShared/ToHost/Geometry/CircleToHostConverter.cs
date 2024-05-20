@@ -23,12 +23,12 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, ITypedConve
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Circle)target);
+  public object Convert(Base target) => Convert((SOG.Circle)target);
 
-  public ADB.Circle RawConvert(SOG.Circle target)
+  public ADB.Circle Convert(SOG.Circle target)
   {
-    AG.Vector3d normal = _vectorConverter.RawConvert(target.plane.normal);
-    AG.Point3d origin = _pointConverter.RawConvert(target.plane.origin);
+    AG.Vector3d normal = _vectorConverter.Convert(target.plane.normal);
+    AG.Point3d origin = _pointConverter.Convert(target.plane.origin);
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
 
     if (target.radius is null)

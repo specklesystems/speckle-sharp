@@ -25,7 +25,7 @@ public class PolycurveToHostSplineRawConverter : ITypedConverter<SOG.Polycurve, 
     _curveConverter = curveConverter;
   }
 
-  public List<ADB.Entity> RawConvert(SOG.Polycurve target)
+  public List<ADB.Entity> Convert(SOG.Polycurve target)
   {
     // POC: We can improve this once we have IIndex of raw converters and we can get rid of case converters?
     // POC: Should we join entities?
@@ -36,16 +36,16 @@ public class PolycurveToHostSplineRawConverter : ITypedConverter<SOG.Polycurve, 
       switch (segment)
       {
         case SOG.Arc arc:
-          list.Add(_arcConverter.RawConvert(arc));
+          list.Add(_arcConverter.Convert(arc));
           break;
         case SOG.Line line:
-          list.Add(_lineConverter.RawConvert(line));
+          list.Add(_lineConverter.Convert(line));
           break;
         case SOG.Polyline polyline:
-          list.Add(_polylineConverter.RawConvert(polyline));
+          list.Add(_polylineConverter.Convert(polyline));
           break;
         case SOG.Curve curve:
-          list.Add(_curveConverter.RawConvert(curve));
+          list.Add(_curveConverter.Convert(curve));
           break;
         default:
           break;

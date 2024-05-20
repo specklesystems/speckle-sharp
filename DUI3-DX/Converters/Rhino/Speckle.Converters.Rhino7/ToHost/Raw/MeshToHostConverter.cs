@@ -20,13 +20,13 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, RG.Mesh>
   /// <param name="target">The Speckle mesh object to convert.</param>
   /// <returns>A Rhino mesh object converted from the Speckle mesh.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.Mesh RawConvert(SOG.Mesh target)
+  public RG.Mesh Convert(SOG.Mesh target)
   {
     target.AlignVerticesWithTexCoordsByIndex();
 
     RG.Mesh m = new();
 
-    var vertices = _pointListConverter.RawConvert(target.vertices);
+    var vertices = _pointListConverter.Convert(target.vertices);
     var colors = target.colors.Select(Color.FromArgb).ToArray();
 
     m.Vertices.AddVertices(vertices);

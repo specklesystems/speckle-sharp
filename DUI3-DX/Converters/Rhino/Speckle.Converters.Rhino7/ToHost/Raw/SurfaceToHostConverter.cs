@@ -10,7 +10,7 @@ public class SurfaceToHostConverter : ITypedConverter<SOG.Surface, RG.NurbsSurfa
   /// <param name="target">The raw Speckle surface to convert.</param>
   /// <returns>The converted Rhino NURBS surface.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.NurbsSurface RawConvert(SOG.Surface target)
+  public RG.NurbsSurface Convert(SOG.Surface target)
   {
     // Create rhino surface
     var points = target.GetControlPoints().ToList();

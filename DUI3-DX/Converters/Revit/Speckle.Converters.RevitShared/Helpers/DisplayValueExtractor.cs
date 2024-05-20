@@ -39,7 +39,7 @@ public sealed class DisplayValueExtractor
 
     var meshesByMaterial = GetMeshesByMaterial(meshes, solids);
 
-    return _meshByMaterialConverter.RawConvert(meshesByMaterial);
+    return _meshByMaterialConverter.Convert(meshesByMaterial);
   }
 
   private static Dictionary<DB.ElementId, List<DB.Mesh>> GetMeshesByMaterial(

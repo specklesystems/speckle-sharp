@@ -18,7 +18,7 @@ public class BezierSegmentToSpeckleConverter : ITypedConverter<ACG.CubicBezierSe
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.CubicBezierSegment target)
+  public SOG.Polyline Convert(ACG.CubicBezierSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -43,7 +43,7 @@ public class BezierSegmentToSpeckleConverter : ITypedConverter<ACG.CubicBezierSe
         + t * t * t * target.EndPoint.Y;
 
       ACG.MapPoint pointOnCurve = ACG.MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
-      points.Add(_pointConverter.RawConvert(pointOnCurve));
+      points.Add(_pointConverter.Convert(pointOnCurve));
     }
 
     // create Speckle Polyline

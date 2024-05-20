@@ -18,7 +18,7 @@ public class XyzConversionToPoint : ITypedConverter<DB.XYZ, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public SOG.Point RawConvert(DB.XYZ target)
+  public SOG.Point Convert(DB.XYZ target)
   {
     var pointToSpeckle = new SOG.Point(
       _toSpeckleScalingService.ScaleLength(target.X),

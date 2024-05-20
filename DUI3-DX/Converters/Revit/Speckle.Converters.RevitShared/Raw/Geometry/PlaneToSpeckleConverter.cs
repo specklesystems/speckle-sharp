@@ -20,12 +20,12 @@ public class PlaneToSpeckleConverter : ITypedConverter<DB.Plane, SOG.Plane>
     _xyzToVectorConverter = xyzToVectorConverter;
   }
 
-  public SOG.Plane RawConvert(DB.Plane target)
+  public SOG.Plane Convert(DB.Plane target)
   {
-    var origin = _xyzToPointConverter.RawConvert(target.Origin);
-    var normal = _xyzToVectorConverter.RawConvert(target.Normal);
-    var xdir = _xyzToVectorConverter.RawConvert(target.XVec);
-    var ydir = _xyzToVectorConverter.RawConvert(target.YVec);
+    var origin = _xyzToPointConverter.Convert(target.Origin);
+    var normal = _xyzToVectorConverter.Convert(target.Normal);
+    var xdir = _xyzToVectorConverter.Convert(target.XVec);
+    var ydir = _xyzToVectorConverter.Convert(target.YVec);
 
     return new SOG.Plane(origin, normal, xdir, ydir, _contextStack.Current.SpeckleUnits);
   }

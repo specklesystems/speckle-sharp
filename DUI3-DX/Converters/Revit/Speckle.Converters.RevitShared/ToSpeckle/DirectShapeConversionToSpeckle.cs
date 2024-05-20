@@ -24,7 +24,7 @@ public class DirectShapeConversionToSpeckle : BaseConversionToSpeckle<DB.DirectS
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override SOBR.DirectShape RawConvert(DB.DirectShape target)
+  public override SOBR.DirectShape Convert(DB.DirectShape target)
   {
     var category = target.Category.GetBuiltInCategory().GetSchemaBuilderCategoryFromBuiltIn();
 

@@ -87,10 +87,10 @@ public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
     List<double> vertices = new(dbVertices.Count * 3);
     foreach (Point3d vert in dbVertices)
     {
-      vertices.AddRange(_pointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_pointConverter.Convert(vert).ToList());
     }
 
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Mesh speckleMesh =
       new(vertices, faces, colors, null, _contextStack.Current.SpeckleUnits)

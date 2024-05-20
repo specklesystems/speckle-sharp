@@ -74,7 +74,7 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
     if (target.PolyType is not ADB.Poly3dType.SimplePoly)
     {
       // get the spline segment
-      SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
+      SOG.Curve spline = _splineConverter.Convert(target.Spline);
 
       // get the spline displayvalue by exploding the polyline
       List<double> segmentValues = new();
@@ -112,7 +112,7 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
       segments.Add(polyline);
     }
 
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Autocad.AutocadPolycurve polycurve =
       new()

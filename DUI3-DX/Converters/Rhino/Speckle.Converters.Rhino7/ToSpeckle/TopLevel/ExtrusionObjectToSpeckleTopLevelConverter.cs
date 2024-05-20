@@ -18,7 +18,7 @@ public class ExtrusionObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleCon
   public Base Convert(object target)
   {
     var curveObject = (ExtrusionObject)target;
-    var speckleCurve = _curveConverter.RawConvert(curveObject.ExtrusionGeometry.ToBrep());
+    var speckleCurve = _curveConverter.Convert(curveObject.ExtrusionGeometry.ToBrep());
     return speckleCurve;
   }
 }

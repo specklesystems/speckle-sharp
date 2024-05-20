@@ -20,12 +20,12 @@ public class CircularArc3dToSpeckleConverter : ITypedConverter<AG.CircularArc3d,
     _contextStack = contextStack;
   }
 
-  public SOG.Arc RawConvert(AG.CircularArc3d target)
+  public SOG.Arc Convert(AG.CircularArc3d target)
   {
-    SOG.Plane plane = _planeConverter.RawConvert(target.GetPlane());
-    SOG.Point start = _pointConverter.RawConvert(target.StartPoint);
-    SOG.Point end = _pointConverter.RawConvert(target.EndPoint);
-    SOG.Point mid = _pointConverter.RawConvert(target.EvaluatePoint(0.5)); // POC: testing, unsure
+    SOG.Plane plane = _planeConverter.Convert(target.GetPlane());
+    SOG.Point start = _pointConverter.Convert(target.StartPoint);
+    SOG.Point end = _pointConverter.Convert(target.EndPoint);
+    SOG.Point mid = _pointConverter.Convert(target.EvaluatePoint(0.5)); // POC: testing, unsure
     SOP.Interval domain = new(target.GetInterval().LowerBound, target.GetInterval().UpperBound);
 
     SOG.Arc arc =

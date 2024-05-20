@@ -21,7 +21,7 @@ public class MeshConversionToSpeckle : ITypedConverter<DB.Mesh, SOG.Mesh>
     _materialConverter = materialConverter;
   }
 
-  public SOG.Mesh RawConvert(DB.Mesh target)
+  public SOG.Mesh Convert(DB.Mesh target)
   {
     var doc = _contextStack.Current.Document;
 
@@ -31,7 +31,7 @@ public class MeshConversionToSpeckle : ITypedConverter<DB.Mesh, SOG.Mesh>
     RenderMaterial? speckleMaterial = null;
     if (doc.GetElement(target.MaterialElementId) is DB.Material revitMaterial)
     {
-      speckleMaterial = _materialConverter.RawConvert(revitMaterial);
+      speckleMaterial = _materialConverter.Convert(revitMaterial);
     }
 
     return new SOG.Mesh(vertices, faces, units: _contextStack.Current.SpeckleUnits)
@@ -46,7 +46,7 @@ public class MeshConversionToSpeckle : ITypedConverter<DB.Mesh, SOG.Mesh>
 
     foreach (var vert in target.Vertices)
     {
-      vertices.AddRange(_xyzToPointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_xyzToPointConverter.Convert(vert).ToList());
     }
 
     return vertices;

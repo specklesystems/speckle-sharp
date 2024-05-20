@@ -18,7 +18,7 @@ public class BrepObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleConversi
   public Base Convert(object target)
   {
     var curveObject = (BrepObject)target;
-    var speckleCurve = _curveConverter.RawConvert(curveObject.BrepGeometry);
+    var speckleCurve = _curveConverter.Convert(curveObject.BrepGeometry);
     return speckleCurve;
   }
 }

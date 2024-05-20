@@ -38,12 +38,12 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     _slopeArrowExtractor = slopeArrowExtractor;
   }
 
-  public override SOBR.RevitFloor RawConvert(DB.Floor target)
+  public override SOBR.RevitFloor Convert(DB.Floor target)
   {
     SOBR.RevitFloor speckleFloor = new();
 
     var sketch = (DB.Sketch)target.Document.GetElement(target.SketchId);
-    List<SOG.Polycurve> profiles = _curveArrArrayConverter.RawConvert(sketch.Profile);
+    List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
     DB.ElementType type = (DB.ElementType)target.Document.GetElement(target.GetTypeId());
 
@@ -62,7 +62,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     }
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
-    speckleFloor.level = _levelConverter.RawConvert(level);
+    speckleFloor.level = _levelConverter.Convert(level);
     speckleFloor.structural =
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 

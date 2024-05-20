@@ -21,18 +21,18 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, ITypedConvert
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Mesh)target);
+  public object Convert(Base target) => Convert((SOG.Mesh)target);
 
   /// <remarks>
   /// Mesh conversion requires transaction since it's vertices needed to be added into database in advance..
   /// </remarks>
-  public ADB.PolyFaceMesh RawConvert(SOG.Mesh target)
+  public ADB.PolyFaceMesh Convert(SOG.Mesh target)
   {
     target.TriangulateMesh(true);
 
     // get vertex points
     using AG.Point3dCollection vertices = new();
-    List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
+    List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.Convert(o)).ToList();
     foreach (var point in points)
     {
       vertices.Add(point);

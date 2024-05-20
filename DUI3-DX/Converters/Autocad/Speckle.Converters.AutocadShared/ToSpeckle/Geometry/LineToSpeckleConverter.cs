@@ -22,17 +22,17 @@ public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedConv
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ADB.Line)target);
+  public Base Convert(object target) => Convert((ADB.Line)target);
 
-  public SOG.Line RawConvert(ADB.Line target) =>
+  public SOG.Line Convert(ADB.Line target) =>
     new(
-      _pointConverter.RawConvert(target.StartPoint),
-      _pointConverter.RawConvert(target.EndPoint),
+      _pointConverter.Convert(target.StartPoint),
+      _pointConverter.Convert(target.EndPoint),
       _contextStack.Current.SpeckleUnits
     )
     {
       length = target.Length,
       domain = new SOP.Interval(0, target.Length),
-      bbox = _boxConverter.RawConvert(target.GeometricExtents)
+      bbox = _boxConverter.Convert(target.GeometricExtents)
     };
 }

@@ -15,9 +15,9 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, ITypedConv
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Ellipse)target);
+  public object Convert(Base target) => Convert((SOG.Ellipse)target);
 
-  public ACG.Polyline RawConvert(SOG.Ellipse target)
+  public ACG.Polyline Convert(SOG.Ellipse target)
   {
     // Determine the number of vertices to create along the Ellipse
     int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
@@ -47,7 +47,7 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, ITypedConv
       pointsOriginal.Add(pointsOriginal[0]);
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
+    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

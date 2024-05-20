@@ -32,11 +32,11 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
 
     if (convertAsSpline || !isPlanar)
     {
-      return _splineConverter.RawConvert(polycurve);
+      return _splineConverter.Convert(polycurve);
     }
     else
     {
-      return _polylineConverter.RawConvert(polycurve);
+      return _polylineConverter.Convert(polycurve);
     }
   }
 

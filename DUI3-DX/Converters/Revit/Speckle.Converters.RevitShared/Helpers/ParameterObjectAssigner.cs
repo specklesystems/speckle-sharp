@@ -56,7 +56,7 @@ public sealed class ParameterObjectAssigner
     {
       try
       {
-        SOBR.Parameter speckleParam = _paramConverter.RawConvert(kv.Value);
+        SOBR.Parameter speckleParam = _paramConverter.Convert(kv.Value);
         speckleParam.isTypeParameter = isTypeParameter;
         paramBase[kv.Key] = speckleParam;
       }

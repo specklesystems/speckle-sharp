@@ -13,7 +13,7 @@ public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multi
     _pointConverter = pointConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SOG.Mesh> target)
+  public ACG.Multipatch Convert(List<SOG.Mesh> target)
   {
     if (target.Count == 0)
     {
@@ -32,7 +32,7 @@ public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multi
         }
         int ptIndex = part.faces[i];
         newPatch.AddPoint(
-          _pointConverter.RawConvert(
+          _pointConverter.Convert(
             new SOG.Point(part.vertices[ptIndex * 3], part.vertices[ptIndex * 3 + 1], part.vertices[ptIndex * 3 + 2])
             {
               units = part.units

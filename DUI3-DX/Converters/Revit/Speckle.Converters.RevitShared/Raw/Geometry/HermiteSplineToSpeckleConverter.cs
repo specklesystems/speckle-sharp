@@ -11,9 +11,9 @@ public class HerminteSplitToSpeckleConverter : ITypedConverter<DB.HermiteSpline,
     _splineConverter = splineConverter;
   }
 
-  public SOG.Curve RawConvert(DB.HermiteSpline target)
+  public SOG.Curve Convert(DB.HermiteSpline target)
   {
     var nurbs = DB.NurbSpline.Create(target);
-    return _splineConverter.RawConvert(nurbs);
+    return _splineConverter.Convert(nurbs);
   }
 }

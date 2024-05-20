@@ -12,7 +12,7 @@ public class PolylineListToHostConverter : ITypedConverter<List<SOG.Polyline>, A
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Polyline RawConvert(List<SOG.Polyline> target)
+  public ACG.Polyline Convert(List<SOG.Polyline> target)
   {
     if (target.Count == 0)
     {
@@ -21,7 +21,7 @@ public class PolylineListToHostConverter : ITypedConverter<List<SOG.Polyline>, A
     List<ACG.Polyline> polyList = new();
     foreach (SOG.Polyline poly in target)
     {
-      ACG.Polyline arcgisPoly = _polylineConverter.RawConvert(poly);
+      ACG.Polyline arcgisPoly = _polylineConverter.Convert(poly);
       polyList.Add(arcgisPoly);
     }
     return new ACG.PolylineBuilderEx(polyList, ACG.AttributeFlags.HasZ).ToGeometry();

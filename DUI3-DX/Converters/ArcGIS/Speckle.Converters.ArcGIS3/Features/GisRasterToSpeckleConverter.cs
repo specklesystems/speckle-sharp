@@ -22,7 +22,7 @@ public class GisRasterToSpeckleConverter : ITypedConverter<Raster, RasterElement
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((Raster)target);
+  public Base Convert(object target) => Convert((Raster)target);
 
   private List<double> GetRasterMeshCoords(Raster target, List<List<byte>> pixelValsPerBand)
   {
@@ -102,7 +102,7 @@ public class GisRasterToSpeckleConverter : ITypedConverter<Raster, RasterElement
     return newColors;
   }
 
-  public RasterElement RawConvert(Raster target)
+  public RasterElement Convert(Raster target)
   {
     // assisting variables
     var extent = target.GetExtent();

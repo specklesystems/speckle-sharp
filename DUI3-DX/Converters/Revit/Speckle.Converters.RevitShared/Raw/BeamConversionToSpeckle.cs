@@ -33,9 +33,9 @@ public class BeamConversionToSpeckle : ITypedConverter<DB.FamilyInstance, SOBR.R
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public SOBR.RevitBeam RawConvert(DB.FamilyInstance target)
+  public SOBR.RevitBeam Convert(DB.FamilyInstance target)
   {
-    var baseGeometry = _locationConverter.RawConvert(target.Location);
+    var baseGeometry = _locationConverter.Convert(target.Location);
     if (baseGeometry is not ICurve baseCurve)
     {
       throw new SpeckleConversionException(
@@ -56,7 +56,7 @@ public class BeamConversionToSpeckle : ITypedConverter<DB.FamilyInstance, SOBR.R
       target,
       DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
-    speckleBeam.level = _levelConverter.RawConvert(level);
+    speckleBeam.level = _levelConverter.Convert(level);
 
     speckleBeam.displayValue = _displayValueExtractor.GetDisplayValue(target);
 

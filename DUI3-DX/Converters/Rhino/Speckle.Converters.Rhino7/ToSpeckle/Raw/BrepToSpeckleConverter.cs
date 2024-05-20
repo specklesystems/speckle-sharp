@@ -41,7 +41,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
   /// </summary>
   /// <param name="target">The Brep object to convert.</param>
   /// <returns>The converted Speckle Brep object.</returns>
-  public SOG.Brep RawConvert(RG.Brep target)
+  public SOG.Brep Convert(RG.Brep target)
   {
     var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;
     target.Repair(tol);
@@ -57,7 +57,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
     var displayValue = new List<SOG.Mesh>();
     if (displayMesh != null)
     {
-      displayValue.Add(_meshConverter.RawConvert(displayMesh));
+      displayValue.Add(_meshConverter.Convert(displayMesh));
     }
 
     // POC: CNX-9277 Swap input material for something coming from the context.
@@ -67,15 +67,15 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
     // }
 
     // Vertices, uv curves, 3d curves and surfaces
-    var vertices = target.Vertices.Select(vertex => _pointConverter.RawConvert(vertex.Location)).ToList();
-    var curves3d = target.Curves3D.Select(curve3d => _curveConverter.RawConvert(curve3d)).ToList();
-    var surfaces = target.Surfaces.Select(srf => _surfaceConverter.RawConvert(srf.ToNurbsSurface())).ToList();
+    var vertices = target.Vertices.Select(vertex => _pointConverter.Convert(vertex.Location)).ToList();
+    var curves3d = target.Curves3D.Select(curve3d => _curveConverter.Convert(curve3d)).ToList();
+    var surfaces = target.Surfaces.Select(srf => _surfaceConverter.Convert(srf.ToNurbsSurface())).ToList();
 
     List<ICurve> curves2d;
     using (_contextStack.Push(Units.None))
     {
       // Curves2D are unitless, so we convert them within a new pushed context with None units.
-      curves2d = target.Curves2D.Select(curve2d => _curveConverter.RawConvert(curve2d)).ToList();
+      curves2d = target.Curves2D.Select(curve2d => _curveConverter.Convert(curve2d)).ToList();
     }
 
     var speckleBrep = new SOG.Brep
@@ -89,7 +89,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       Orientation = (SOG.BrepOrientation)target.SolidOrientation,
       volume = target.IsSolid ? target.GetVolume() : 0,
       area = target.GetArea(),
-      bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(false))),
+      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(false))),
       units = _contextStack.Current.SpeckleUnits
     };
 
@@ -131,7 +131,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
             edge.StartVertex?.VertexIndex ?? -1,
             edge.EndVertex?.VertexIndex ?? -1,
             edge.ProxyCurveIsReversed,
-            _intervalConverter.RawConvert(edge.Domain)
+            _intervalConverter.Convert(edge.Domain)
           )
       )
       .ToList();
@@ -153,7 +153,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
           trim.EndVertex.VertexIndex
         )
         {
-          Domain = _intervalConverter.RawConvert(trim.Domain)
+          Domain = _intervalConverter.Convert(trim.Domain)
         };
 
         return t;

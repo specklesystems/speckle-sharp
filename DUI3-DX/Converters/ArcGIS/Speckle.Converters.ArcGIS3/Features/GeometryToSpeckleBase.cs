@@ -27,17 +27,17 @@ public class GeometryToSpeckleBaseList : ITypedConverter<ACG.Geometry, IReadOnly
     _multipatchFeatureConverter = multipatchFeatureConverter;
   }
 
-  public IReadOnlyList<Base> RawConvert(ACG.Geometry target)
+  public IReadOnlyList<Base> Convert(ACG.Geometry target)
   {
     try
     {
       return target switch
       {
-        ACG.MapPoint point => new List<SOG.Point>() { _pointToSpeckleConverter.RawConvert(point) },
-        ACG.Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
-        ACG.Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
-        ACG.Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
-        ACG.Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch), // GisMultipatchGeometry or PolygonGeometry3d
+        ACG.MapPoint point => new List<SOG.Point>() { _pointToSpeckleConverter.Convert(point) },
+        ACG.Multipoint multipoint => _multiPointFeatureConverter.Convert(multipoint),
+        ACG.Polyline polyline => _polylineFeatureConverter.Convert(polyline),
+        ACG.Polygon polygon => _polygonFeatureConverter.Convert(polygon),
+        ACG.Multipatch multipatch => _multipatchFeatureConverter.Convert(multipatch), // GisMultipatchGeometry or PolygonGeometry3d
         _ => throw new NotSupportedException($"No conversion found for {target.GetType().Name}"),
       };
     }

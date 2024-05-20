@@ -22,16 +22,16 @@ public class ArcToHostConverter : ISpeckleObjectToHostConversion, ITypedConverte
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Arc)target);
+  public object Convert(Base target) => Convert((SOG.Arc)target);
 
-  public ADB.Arc RawConvert(SOG.Arc target)
+  public ADB.Arc Convert(SOG.Arc target)
   {
     // the most reliable method to convert to autocad convention is to calculate from start, end, and midpoint
     // because of different plane & start/end angle conventions
-    AG.CircularArc3d circularArc = _arcConverter.RawConvert(target);
+    AG.CircularArc3d circularArc = _arcConverter.Convert(target);
 
     // calculate adjusted start and end angles from circularArc reference
-    AG.Plane plane = _planeConverter.RawConvert(target.plane);
+    AG.Plane plane = _planeConverter.Convert(target.plane);
     double angle = circularArc.ReferenceVector.AngleOnPlane(plane);
     double startAngle = circularArc.StartAngle + angle;
     double endAngle = circularArc.EndAngle + angle;

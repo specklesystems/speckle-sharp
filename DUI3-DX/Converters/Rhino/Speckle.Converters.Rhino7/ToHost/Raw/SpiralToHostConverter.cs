@@ -22,10 +22,10 @@ public class SpiralToHostConverter : ITypedConverter<SOG.Spiral, RG.PolylineCurv
   /// <param name="target">The Speckle Spiral object to be converted.</param>
   /// <returns>A Rhino PolylineCurve object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.PolylineCurve RawConvert(SOG.Spiral target)
+  public RG.PolylineCurve Convert(SOG.Spiral target)
   {
-    var result = _polylineConverter.RawConvert(target.displayValue);
-    result.Domain = _intervalConverter.RawConvert(target.domain);
+    var result = _polylineConverter.Convert(target.displayValue);
+    result.Domain = _intervalConverter.Convert(target.domain);
     return result;
   }
 }

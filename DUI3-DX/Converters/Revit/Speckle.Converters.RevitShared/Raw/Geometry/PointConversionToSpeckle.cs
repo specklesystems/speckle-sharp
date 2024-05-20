@@ -11,5 +11,5 @@ public class PointConversionToSpeckle : ITypedConverter<DB.Point, SOG.Point>
     _xyzToPointConverter = xyzToPointConverter;
   }
 
-  public SOG.Point RawConvert(DB.Point target) => _xyzToPointConverter.RawConvert(target.Coord);
+  public SOG.Point Convert(DB.Point target) => _xyzToPointConverter.Convert(target.Coord);
 }

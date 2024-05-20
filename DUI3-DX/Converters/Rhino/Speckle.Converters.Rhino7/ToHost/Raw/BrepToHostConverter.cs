@@ -40,17 +40,17 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, RG.Brep>
   /// <param name="target">The Speckle Brep object to be converted.</param>
   /// <returns>The equivalent Rhino Brep object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.Brep RawConvert(SOG.Brep target)
+  public RG.Brep Convert(SOG.Brep target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
 
     var rhinoBrep = new RG.Brep();
 
     // Geometry goes in first, always. Order doesn't matter.
-    target.Curve3D.ForEach(curve => rhinoBrep.AddEdgeCurve(_curveConverter.RawConvert(curve)));
-    target.Curve2D.ForEach(curve => rhinoBrep.AddTrimCurve(_curveConverter.RawConvert(curve)));
-    target.Surfaces.ForEach(surface => rhinoBrep.AddSurface(_surfaceConverter.RawConvert(surface)));
-    target.Vertices.ForEach(vertex => rhinoBrep.Vertices.Add(_pointConverter.RawConvert(vertex), tolerance));
+    target.Curve3D.ForEach(curve => rhinoBrep.AddEdgeCurve(_curveConverter.Convert(curve)));
+    target.Curve2D.ForEach(curve => rhinoBrep.AddTrimCurve(_curveConverter.Convert(curve)));
+    target.Surfaces.ForEach(surface => rhinoBrep.AddSurface(_surfaceConverter.Convert(surface)));
+    target.Vertices.ForEach(vertex => rhinoBrep.Vertices.Add(_pointConverter.Convert(vertex), tolerance));
 
     // Order matters, first edges, then faces, finally loops.
     target.Edges.ForEach(edge => ConvertSpeckleBrepEdge(rhinoBrep, edge, tolerance));
@@ -151,7 +151,7 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, RG.Brep>
         speckleEdge.StartIndex,
         speckleEdge.EndIndex,
         speckleEdge.Curve3dIndex,
-        _intervalConverter.RawConvert(speckleEdge.Domain),
+        _intervalConverter.Convert(speckleEdge.Domain),
         tolerance
       );
     }

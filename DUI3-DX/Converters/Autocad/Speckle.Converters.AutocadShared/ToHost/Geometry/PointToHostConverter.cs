@@ -14,7 +14,7 @@ public class PointToHostConverter : ISpeckleObjectToHostConversion, ITypedConver
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Point)target);
+  public object Convert(Base target) => Convert((SOG.Point)target);
 
-  public ADB.DBPoint RawConvert(SOG.Point target) => new(_pointConverter.RawConvert(target));
+  public ADB.DBPoint Convert(SOG.Point target) => new(_pointConverter.Convert(target));
 }

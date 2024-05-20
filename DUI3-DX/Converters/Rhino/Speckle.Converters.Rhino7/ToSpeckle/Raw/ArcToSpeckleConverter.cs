@@ -32,9 +32,9 @@ public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
   /// <remarks>
   /// This method assumes the domain of the arc is (0,1) as Arc types in Rhino do not have domain. You may want to request a conversion from ArcCurve instead.
   /// </remarks>
-  public SOG.Arc RawConvert(RG.Arc target) =>
+  public SOG.Arc Convert(RG.Arc target) =>
     new(
-      _planeConverter.RawConvert(target.Plane),
+      _planeConverter.Convert(target.Plane),
       target.Radius,
       target.StartAngle,
       target.EndAngle,
@@ -42,11 +42,11 @@ public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
       _contextStack.Current.SpeckleUnits
     )
     {
-      startPoint = _pointConverter.RawConvert(target.StartPoint),
-      midPoint = _pointConverter.RawConvert(target.MidPoint),
-      endPoint = _pointConverter.RawConvert(target.EndPoint),
+      startPoint = _pointConverter.Convert(target.StartPoint),
+      midPoint = _pointConverter.Convert(target.MidPoint),
+      endPoint = _pointConverter.Convert(target.EndPoint),
       domain = new SOP.Interval(0, 1),
       length = target.Length,
-      bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox()))
+      bbox = _boxConverter.Convert(new RG.Box(target.BoundingBox()))
     };
 }

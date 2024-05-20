@@ -20,7 +20,7 @@ public class MultipatchFeatureToSpeckleConverter : ITypedConverter<ACG.Multipatc
     _pointConverter = pointConverter;
   }
 
-  public IReadOnlyList<Base> RawConvert(ACG.Multipatch target)
+  public IReadOnlyList<Base> Convert(ACG.Multipatch target)
   {
     List<Base> converted = new();
     // placeholder, needs to be declared in order to be used in the Ring patch type
@@ -35,7 +35,7 @@ public class MultipatchFeatureToSpeckleConverter : ITypedConverter<ACG.Multipatc
       int ptCount = target.GetPatchPointCount(idx);
       for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
       {
-        pointList.Add(_pointConverter.RawConvert(target.Points[ptIdx]));
+        pointList.Add(_pointConverter.Convert(target.Points[ptIdx]));
       }
       allPoints.Add(pointList);
     }

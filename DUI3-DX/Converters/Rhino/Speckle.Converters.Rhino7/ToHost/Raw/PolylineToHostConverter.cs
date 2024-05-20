@@ -30,9 +30,9 @@ public class PolylineToHostConverter
   /// If you need it preserved you must request a conversion to
   /// <see cref="RG.PolylineCurve"/> conversion instead
   /// </remarks>
-  public RG.Polyline RawConvert(SOG.Polyline target)
+  public RG.Polyline Convert(SOG.Polyline target)
   {
-    var points = _pointListConverter.RawConvert(target.value);
+    var points = _pointListConverter.Convert(target.value);
 
     if (target.closed)
     {
@@ -52,10 +52,10 @@ public class PolylineToHostConverter
   /// <param name="target">The Speckle polyline object to be converted.</param>
   /// <returns>The converted Rhino Polyline object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  RG.PolylineCurve ITypedConverter<SOG.Polyline, RG.PolylineCurve>.RawConvert(SOG.Polyline target)
+  RG.PolylineCurve ITypedConverter<SOG.Polyline, RG.PolylineCurve>.Convert(SOG.Polyline target)
   {
-    var poly = RawConvert(target).ToPolylineCurve();
-    poly.Domain = _intervalConverter.RawConvert(target.domain);
+    var poly = Convert(target).ToPolylineCurve();
+    poly.Domain = _intervalConverter.Convert(target.domain);
     return poly;
   }
 }

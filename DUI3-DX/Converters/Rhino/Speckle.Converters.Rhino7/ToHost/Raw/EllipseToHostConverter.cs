@@ -26,7 +26,7 @@ public class EllipseToHostConverter
   /// <exception cref="InvalidOperationException">Thrown when <see cref="SOG.Ellipse.firstRadius"/> or <see cref="SOG.Ellipse.secondRadius"/> properties are null.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   /// <remarks><br/>⚠️ This conversion does not preserve the curve domain. If you need it preserved you must request a conversion to <see cref="RG.NurbsCurve"/> conversion instead</remarks>
-  public RG.Ellipse RawConvert(SOG.Ellipse target)
+  public RG.Ellipse Convert(SOG.Ellipse target)
   {
     if (!target.firstRadius.HasValue || !target.secondRadius.HasValue)
     {
@@ -34,7 +34,7 @@ public class EllipseToHostConverter
     }
 
     return new RG.Ellipse(
-      _planeConverter.RawConvert(target.plane),
+      _planeConverter.Convert(target.plane),
       target.firstRadius.Value,
       target.secondRadius.Value
     );
@@ -47,15 +47,15 @@ public class EllipseToHostConverter
   /// <returns>
   /// A <see cref="RG.NurbsCurve"/> that represents the provided <see cref="SOG.Ellipse"/>.
   /// </returns>
-  RG.NurbsCurve ITypedConverter<SOG.Ellipse, RG.NurbsCurve>.RawConvert(SOG.Ellipse target)
+  RG.NurbsCurve ITypedConverter<SOG.Ellipse, RG.NurbsCurve>.Convert(SOG.Ellipse target)
   {
-    var rhinoEllipse = RawConvert(target);
+    var rhinoEllipse = Convert(target);
     var rhinoNurbsEllipse = rhinoEllipse.ToNurbsCurve();
-    rhinoNurbsEllipse.Domain = _intervalConverter.RawConvert(target.domain);
+    rhinoNurbsEllipse.Domain = _intervalConverter.Convert(target.domain);
 
     if (target.trimDomain != null)
     {
-      rhinoNurbsEllipse = rhinoNurbsEllipse.Trim(_intervalConverter.RawConvert(target.trimDomain)).ToNurbsCurve();
+      rhinoNurbsEllipse = rhinoNurbsEllipse.Trim(_intervalConverter.Convert(target.trimDomain)).ToNurbsCurve();
     }
 
     return rhinoNurbsEllipse;

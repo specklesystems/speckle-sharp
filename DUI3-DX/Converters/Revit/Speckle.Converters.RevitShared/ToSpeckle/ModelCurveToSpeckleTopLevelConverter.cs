@@ -22,11 +22,11 @@ public class ModelCurveToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.M
     _conversionContext = conversionContext;
   }
 
-  public override SOBR.Curve.ModelCurve RawConvert(DB.ModelCurve target)
+  public override SOBR.Curve.ModelCurve Convert(DB.ModelCurve target)
   {
     var modelCurve = new SOBR.Curve.ModelCurve()
     {
-      baseCurve = _curveConverter.RawConvert(target.GeometryCurve),
+      baseCurve = _curveConverter.Convert(target.GeometryCurve),
       lineStyle = target.LineStyle.Name,
       elementId = target.Id.ToString(),
       units = _conversionContext.Current.SpeckleUnits

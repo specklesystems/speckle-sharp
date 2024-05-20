@@ -23,7 +23,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.Mod
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve RawConvert(DB.ModelCurveArray target)
+  public SOG.Polycurve Convert(DB.ModelCurveArray target)
   {
     SOG.Polycurve polycurve = new();
     var curves = target.Cast<DB.ModelCurve>().Select(mc => mc.GeometryCurve).ToArray();
@@ -39,7 +39,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.Mod
     polycurve.closed = start.DistanceTo(end) < RevitConversionContextStack.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
 
-    polycurve.segments.AddRange(curves.Select(x => _curveConverter.RawConvert(x)));
+    polycurve.segments.AddRange(curves.Select(x => _curveConverter.Convert(x)));
 
     return polycurve;
   }

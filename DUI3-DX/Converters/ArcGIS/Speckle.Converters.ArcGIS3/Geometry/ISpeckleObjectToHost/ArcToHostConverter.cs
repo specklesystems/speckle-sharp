@@ -15,9 +15,9 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, ITypedConver
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Arc)target);
+  public object Convert(Base target) => Convert((SOG.Arc)target);
 
-  public ACG.Polyline RawConvert(SOG.Arc target)
+  public ACG.Polyline Convert(SOG.Arc target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.length, 50); // Determine based on desired segment length or other criteria
@@ -48,7 +48,7 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, ITypedConver
       pointsOriginal.Add(pointOnArc);
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
+    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

@@ -20,7 +20,7 @@ public class TopographyConversionToSpeckle : BaseConversionToSpeckle<DBA.Topogra
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override SOBR.RevitTopography RawConvert(DBA.TopographySurface target)
+  public override SOBR.RevitTopography Convert(DBA.TopographySurface target)
   {
     var speckleTopo = new SOBR.RevitTopography
     {

@@ -32,7 +32,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, ITy
 
   public Base Convert(object target)
   {
-    return RawConvert((FeatureLayer)target);
+    return Convert((FeatureLayer)target);
   }
 
   private string SpeckleGeometryType(string nativeGeometryType)
@@ -57,7 +57,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, ITy
     return spekleGeometryType;
   }
 
-  public VectorLayer RawConvert(FeatureLayer target)
+  public VectorLayer Convert(FeatureLayer target)
   {
     VectorLayer speckleLayer = new();
 
@@ -115,7 +115,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, ITy
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          GisFeature element = _gisFeatureConverter.RawConvert(row);
+          GisFeature element = _gisFeatureConverter.Convert(row);
 
           // replace element "attributes", to remove those non-visible on Layer level
           Base elementAttributes = new();

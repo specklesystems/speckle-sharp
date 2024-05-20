@@ -27,20 +27,20 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     _braceConversion = braceConversion;
   }
 
-  public override Base RawConvert(DB.FamilyInstance target)
+  public override Base Convert(DB.FamilyInstance target)
   {
     return target.StructuralType switch
     {
-      DB.Structure.StructuralType.Beam => _beamConversion.RawConvert(target),
-      DB.Structure.StructuralType.Column => _columnConversion.RawConvert(target),
-      DB.Structure.StructuralType.Brace => _braceConversion.RawConvert(target),
+      DB.Structure.StructuralType.Beam => _beamConversion.Convert(target),
+      DB.Structure.StructuralType.Column => _columnConversion.Convert(target),
+      DB.Structure.StructuralType.Brace => _braceConversion.Convert(target),
 
       // POC: return generic element conversion or throw?
       //
       //throw new SpeckleConversionException(
       //  $"No conditional converters registered that could convert object of type {target.GetType()}"
       //);
-      _ => _elementConverter.RawConvert(target)
+      _ => _elementConverter.Convert(target)
     };
   }
 }

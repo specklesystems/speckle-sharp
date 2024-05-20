@@ -22,7 +22,7 @@ public class EllipseToSpeckleConverter : ITypedConverter<DB.Ellipse, SOG.Ellipse
     _scalingService = scalingService;
   }
 
-  public SOG.Ellipse RawConvert(DB.Ellipse target)
+  public SOG.Ellipse Convert(DB.Ellipse target)
   {
     using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection))
     {
@@ -30,7 +30,7 @@ public class EllipseToSpeckleConverter : ITypedConverter<DB.Ellipse, SOG.Ellipse
 
       return new SOG.Ellipse()
       {
-        plane = _planeConverter.RawConvert(basePlane),
+        plane = _planeConverter.Convert(basePlane),
         // POC: scale length correct? seems right?
         firstRadius = _scalingService.ScaleLength(target.RadiusX),
         secondRadius = _scalingService.ScaleLength(target.RadiusY),

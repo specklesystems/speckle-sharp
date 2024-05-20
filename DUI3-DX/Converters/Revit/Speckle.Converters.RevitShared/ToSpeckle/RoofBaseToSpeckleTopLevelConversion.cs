@@ -24,7 +24,7 @@ internal sealed class RoofBaseToSpeckleTopLevelConversion : BaseConversionToSpec
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override RevitRoof RawConvert(RoofBase target)
+  public override RevitRoof Convert(RoofBase target)
   {
     RevitRoof revitRoof = new();
     var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());

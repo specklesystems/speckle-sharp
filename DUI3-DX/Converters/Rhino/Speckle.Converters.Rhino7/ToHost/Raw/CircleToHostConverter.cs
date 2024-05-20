@@ -40,7 +40,7 @@ public class CircleToHostConverter : ITypedConverter<SOG.Circle, RG.Circle>, ITy
   /// </exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   /// <remarks><br/>⚠️ This conversion does not preserve the curve domain. If you need it preserved you must request a conversion to <see cref="RG.ArcCurve"/> conversion instead</remarks>
-  public RG.Circle RawConvert(SOG.Circle target)
+  public RG.Circle Convert(SOG.Circle target)
   {
     if (target.radius == null)
     {
@@ -48,11 +48,11 @@ public class CircleToHostConverter : ITypedConverter<SOG.Circle, RG.Circle>, ITy
       throw new ArgumentNullException(nameof(target), "Circle radius cannot be null");
     }
 
-    var plane = _planeConverter.RawConvert(target.plane);
+    var plane = _planeConverter.Convert(target.plane);
     var radius = target.radius.Value;
     return new RG.Circle(plane, radius);
   }
 
-  RG.ArcCurve ITypedConverter<SOG.Circle, RG.ArcCurve>.RawConvert(SOG.Circle target) =>
-    new(RawConvert(target)) { Domain = _intervalConverter.RawConvert(target.domain) };
+  RG.ArcCurve ITypedConverter<SOG.Circle, RG.ArcCurve>.Convert(SOG.Circle target) =>
+    new(Convert(target)) { Domain = _intervalConverter.Convert(target.domain) };
 }

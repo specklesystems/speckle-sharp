@@ -19,7 +19,7 @@ public class AutocadPolycurveToHostPolyline2dRawConverter : ITypedConverter<SOG.
     _contextStack = contextStack;
   }
 
-  public ADB.Polyline2d RawConvert(SOG.Autocad.AutocadPolycurve target)
+  public ADB.Polyline2d Convert(SOG.Autocad.AutocadPolycurve target)
   {
     // check for normal
     if (target.normal is not SOG.Vector normal)
@@ -50,7 +50,7 @@ public class AutocadPolycurveToHostPolyline2dRawConverter : ITypedConverter<SOG.
     }
 
     // create the polyline2d using the empty constructor
-    AG.Vector3d convertedNormal = _vectorConverter.RawConvert(normal);
+    AG.Vector3d convertedNormal = _vectorConverter.Convert(normal);
     double convertedElevation = elevation * f;
     ADB.Polyline2d polyline =
       new()

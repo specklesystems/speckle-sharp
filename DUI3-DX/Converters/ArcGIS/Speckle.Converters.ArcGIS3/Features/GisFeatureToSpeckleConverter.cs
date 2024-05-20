@@ -48,7 +48,7 @@ public class GisFeatureToSpeckleConverter : ITypedConverter<Row, SGIS.GisFeature
     return displayVal;
   }
 
-  public SGIS.GisFeature RawConvert(Row target)
+  public SGIS.GisFeature Convert(Row target)
   {
     // get attributes
     var attributes = new Base();
@@ -94,7 +94,7 @@ public class GisFeatureToSpeckleConverter : ITypedConverter<Row, SGIS.GisFeature
     else
     {
       var shape = (ACG.Geometry)target[geometryField];
-      var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
+      var speckleShapes = _geometryConverter.Convert(shape).ToList();
 
       // if geometry is primitive
       if (

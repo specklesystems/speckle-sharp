@@ -14,7 +14,7 @@ public class PointToSpeckleConverter : ITypedConverter<MapPoint, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public SOG.Point RawConvert(MapPoint target)
+  public SOG.Point Convert(MapPoint target)
   {
     try
     {

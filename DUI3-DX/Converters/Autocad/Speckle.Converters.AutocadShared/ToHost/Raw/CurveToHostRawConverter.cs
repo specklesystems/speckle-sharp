@@ -16,9 +16,9 @@ public class CurveToHostRawConverter : ITypedConverter<SOG.Curve, AG.NurbCurve3d
     _intervalConverter = intervalConverter;
   }
 
-  public AG.NurbCurve3d RawConvert(SOG.Curve target)
+  public AG.NurbCurve3d Convert(SOG.Curve target)
   {
-    var points = target.GetPoints().Select(p => _pointConverter.RawConvert(p)).ToList();
+    var points = target.GetPoints().Select(p => _pointConverter.Convert(p)).ToList();
     if (target.closed && target.periodic)
     {
       points = points.GetRange(0, points.Count - target.degree);
@@ -67,7 +67,7 @@ public class CurveToHostRawConverter : ITypedConverter<SOG.Curve, AG.NurbCurve3d
       curve.MakeClosed();
     }
 
-    curve.SetInterval(_intervalConverter.RawConvert(target.domain));
+    curve.SetInterval(_intervalConverter.Convert(target.domain));
 
     return curve;
   }

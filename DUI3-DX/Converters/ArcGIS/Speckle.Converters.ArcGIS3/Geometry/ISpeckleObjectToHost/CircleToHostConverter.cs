@@ -14,9 +14,9 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, ITypedConve
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Circle)target);
+  public object Convert(Base target) => Convert((SOG.Circle)target);
 
-  public ACG.Polyline RawConvert(SOG.Circle target)
+  public ACG.Polyline Convert(SOG.Circle target)
   {
     // Determine the number of vertices to create along the cirlce
     int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
@@ -46,7 +46,7 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, ITypedConve
       pointsOriginal.Add(pointsOriginal[0]);
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
+    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

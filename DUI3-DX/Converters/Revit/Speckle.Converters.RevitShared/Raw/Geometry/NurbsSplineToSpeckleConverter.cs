@@ -25,18 +25,18 @@ public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.
     _scalingService = scalingService;
   }
 
-  public SOG.Curve RawConvert(DB.NurbSpline target)
+  public SOG.Curve Convert(DB.NurbSpline target)
   {
     var units = _contextStack.Current.SpeckleUnits;
 
     var points = new List<double>();
     foreach (var p in target.CtrlPoints)
     {
-      var point = _xyzToPointConverter.RawConvert(p);
+      var point = _xyzToPointConverter.Convert(p);
       points.AddRange(new List<double> { point.x, point.y, point.z });
     }
 
-    var coords = target.Tessellate().SelectMany(xyz => _xyzToPointConverter.RawConvert(xyz).ToList()).ToList();
+    var coords = target.Tessellate().SelectMany(xyz => _xyzToPointConverter.Convert(xyz).ToList()).ToList();
 
     return new SOG.Curve()
     {

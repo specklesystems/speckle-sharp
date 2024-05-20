@@ -12,7 +12,7 @@ public class PolygonListToHostConverter : ITypedConverter<List<SGIS.PolygonGeome
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Polygon RawConvert(List<SGIS.PolygonGeometry> target)
+  public ACG.Polygon Convert(List<SGIS.PolygonGeometry> target)
   {
     if (target.Count == 0)
     {
@@ -21,13 +21,13 @@ public class PolygonListToHostConverter : ITypedConverter<List<SGIS.PolygonGeome
     List<ACG.Polygon> polyList = new();
     foreach (SGIS.PolygonGeometry poly in target)
     {
-      ACG.Polyline boundary = _polylineConverter.RawConvert(poly.boundary);
+      ACG.Polyline boundary = _polylineConverter.Convert(poly.boundary);
       ACG.PolygonBuilderEx polyOuterRing = new(boundary);
 
       foreach (SOG.Polyline loop in poly.voids)
       {
         // adding inner loops: https://github.com/esri/arcgis-pro-sdk/wiki/ProSnippets-Geometry#build-a-donut-polygon
-        ACG.Polyline loopNative = _polylineConverter.RawConvert(loop);
+        ACG.Polyline loopNative = _polylineConverter.Convert(loop);
         polyOuterRing.AddPart(loopNative.Copy3DCoordinatesToList());
       }
       ACG.Polygon polygon = polyOuterRing.ToGeometry();

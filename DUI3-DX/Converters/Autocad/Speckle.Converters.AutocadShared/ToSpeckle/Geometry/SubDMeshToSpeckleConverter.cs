@@ -30,7 +30,7 @@ public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
     var vertices = new List<double>(target.Vertices.Count * 3);
     foreach (AG.Point3d vert in target.Vertices)
     {
-      vertices.AddRange(_pointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_pointConverter.Convert(vert).ToList());
     }
 
     // faces
@@ -67,7 +67,7 @@ public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
       .ToList();
 
     // bbox
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Mesh speckleMesh = new(vertices, faces, colors, null, _contextStack.Current.SpeckleUnits) { bbox = bbox };
 

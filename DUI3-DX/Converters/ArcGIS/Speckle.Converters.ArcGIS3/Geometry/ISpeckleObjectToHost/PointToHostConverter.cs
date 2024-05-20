@@ -14,5 +14,5 @@ public class PointToHostConverter : ISpeckleObjectToHostConversion
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => _pointConverter.RawConvert(new List<SOG.Point> { (SOG.Point)target });
+  public object Convert(Base target) => _pointConverter.Convert(new List<SOG.Point> { (SOG.Point)target });
 }

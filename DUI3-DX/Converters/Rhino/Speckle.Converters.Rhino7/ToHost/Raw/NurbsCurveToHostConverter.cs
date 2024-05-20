@@ -19,7 +19,7 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurv
   /// <returns>The converted Rhino NurbsCurve object.</returns>
   /// <exception cref="SpeckleConversionException">Thrown when the conversion fails.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.NurbsCurve RawConvert(SOG.Curve target)
+  public RG.NurbsCurve Convert(SOG.Curve target)
   {
     RG.NurbsCurve nurbsCurve = new(target.degree, target.points.Count / 3);
 
@@ -45,7 +45,7 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurv
       }
     }
 
-    nurbsCurve.Domain = _intervalConverter.RawConvert(target.domain);
+    nurbsCurve.Domain = _intervalConverter.Convert(target.domain);
     return nurbsCurve;
   }
 }

@@ -27,7 +27,7 @@ public class GeometryToHostConverter : ITypedConverter<IReadOnlyList<Base>, ACG.
     _multipatchConverter = multipatchConverter;
   }
 
-  public ACG.Geometry RawConvert(IReadOnlyList<Base> target)
+  public ACG.Geometry Convert(IReadOnlyList<Base> target)
   {
     try
     {
@@ -36,15 +36,15 @@ public class GeometryToHostConverter : ITypedConverter<IReadOnlyList<Base>, ACG.
         switch (target[0])
         {
           case SOG.Point point:
-            return _multipointConverter.RawConvert(target.Cast<SOG.Point>().ToList());
+            return _multipointConverter.Convert(target.Cast<SOG.Point>().ToList());
           case SOG.Polyline polyline:
-            return _polylineConverter.RawConvert(target.Cast<SOG.Polyline>().ToList());
+            return _polylineConverter.Convert(target.Cast<SOG.Polyline>().ToList());
           case SGIS.PolygonGeometry3d geometry3d:
-            return _polygon3dConverter.RawConvert(target.Cast<SGIS.PolygonGeometry3d>().ToList());
+            return _polygon3dConverter.Convert(target.Cast<SGIS.PolygonGeometry3d>().ToList());
           case SGIS.PolygonGeometry geometry:
-            return _polygonConverter.RawConvert(target.Cast<SGIS.PolygonGeometry>().ToList());
+            return _polygonConverter.Convert(target.Cast<SGIS.PolygonGeometry>().ToList());
           case SGIS.GisMultipatchGeometry mesh:
-            return _multipatchConverter.RawConvert(target.Cast<SGIS.GisMultipatchGeometry>().ToList());
+            return _multipatchConverter.Convert(target.Cast<SGIS.GisMultipatchGeometry>().ToList());
           default:
             throw new NotSupportedException($"No conversion found for type {target[0]}");
         }

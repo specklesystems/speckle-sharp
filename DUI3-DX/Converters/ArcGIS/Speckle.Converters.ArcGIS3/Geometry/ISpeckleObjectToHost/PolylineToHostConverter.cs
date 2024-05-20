@@ -14,12 +14,12 @@ public class PolylineToHostConverter : ISpeckleObjectToHostConversion, ITypedCon
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Polyline)target);
+  public object Convert(Base target) => Convert((SOG.Polyline)target);
 
-  public ACG.Polyline RawConvert(SOG.Polyline target)
+  public ACG.Polyline Convert(SOG.Polyline target)
   {
     List<SOG.Point> originalPts = target.GetPoints();
-    var points = originalPts.Select(x => _pointConverter.RawConvert(x)).ToList();
+    var points = originalPts.Select(x => _pointConverter.Convert(x)).ToList();
     if (target.closed && originalPts[0] != originalPts[^1])
     {
       points.Add(points[0]);

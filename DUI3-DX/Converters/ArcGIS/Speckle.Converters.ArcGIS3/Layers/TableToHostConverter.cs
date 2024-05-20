@@ -25,7 +25,7 @@ public class TableLayerToHostConverter : ITypedConverter<VectorLayer, Table>
     _fieldsUtils = fieldsUtils;
   }
 
-  public Table RawConvert(VectorLayer target)
+  public Table Convert(VectorLayer target)
   {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));

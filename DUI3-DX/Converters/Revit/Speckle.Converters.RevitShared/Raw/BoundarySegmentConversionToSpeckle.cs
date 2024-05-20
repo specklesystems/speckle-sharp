@@ -12,7 +12,7 @@ public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<DB.Bound
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve RawConvert(IList<DB.BoundarySegment> target)
+  public SOG.Polycurve Convert(IList<DB.BoundarySegment> target)
   {
     if (target.Count == 0)
     {
@@ -23,7 +23,7 @@ public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<DB.Bound
     foreach (var segment in target)
     {
       DB.Curve revitCurve = segment.GetCurve();
-      var curve = _curveConverter.RawConvert(revitCurve);
+      var curve = _curveConverter.Convert(revitCurve);
 
       // POC: We used to attach the `elementID` of every curve in a PolyCurve as a dynamic property.
       // We've removed this as it seemed unnecessary.

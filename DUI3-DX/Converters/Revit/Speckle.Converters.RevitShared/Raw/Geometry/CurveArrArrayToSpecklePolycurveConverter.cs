@@ -13,12 +13,12 @@ internal sealed class CurveArrArrayToSpecklePolycurveConverter : ITypedConverter
     _curveArrayConverter = curveArrayConverter;
   }
 
-  public List<SOG.Polycurve> RawConvert(CurveArrArray target)
+  public List<SOG.Polycurve> Convert(CurveArrArray target)
   {
     List<SOG.Polycurve> polycurves = new();
     foreach (var curveArray in GetCurveArrays(target))
     {
-      polycurves.Add(_curveArrayConverter.RawConvert(curveArray));
+      polycurves.Add(_curveArrayConverter.Convert(curveArray));
     }
 
     return polycurves;

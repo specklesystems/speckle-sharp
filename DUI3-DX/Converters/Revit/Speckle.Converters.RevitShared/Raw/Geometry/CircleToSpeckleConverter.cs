@@ -21,7 +21,7 @@ public class CircleToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Circle>
     _scalingService = scalingService;
   }
 
-  public SOG.Circle RawConvert(DB.Arc target)
+  public SOG.Circle Convert(DB.Arc target)
   {
     // POC: should we check for arc of 360 and throw? Original CircleToSpeckle did not do this.
 
@@ -29,7 +29,7 @@ public class CircleToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Circle>
     var arcPlane = DB.Plane.CreateByNormalAndOrigin(target.Normal, target.Center);
     var c = new SOG.Circle()
     {
-      plane = _planeConverter.RawConvert(arcPlane),
+      plane = _planeConverter.Convert(arcPlane),
       radius = _scalingService.ScaleLength(target.Radius),
       units = _contextStack.Current.SpeckleUnits,
       length = _scalingService.ScaleLength(target.Length)

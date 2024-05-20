@@ -37,7 +37,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override RevitFootprintRoof RawConvert(FootPrintRoof target)
+  public override RevitFootprintRoof Convert(FootPrintRoof target)
   {
     var baseLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
@@ -58,8 +58,8 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     RevitFootprintRoof speckleFootprintRoof =
       new()
       {
-        level = _levelConverter.RawConvert(baseLevel),
-        cutOffLevel = topLevel is not null ? _levelConverter.RawConvert(topLevel) : null,
+        level = _levelConverter.Convert(baseLevel),
+        cutOffLevel = topLevel is not null ? _levelConverter.Convert(topLevel) : null,
         slope = slope
       };
 
@@ -67,7 +67,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     // are voids
     // POC: CNX-9403 in current connector, we are doing serious gymnastics to get the slope of the floor as defined by
     // slope arrow. The way we are doing it relies on dynamic props and only works for Revit <-> Revit
-    var profiles = _modelCurveArrArrayConverter.RawConvert(target.GetProfiles());
+    var profiles = _modelCurveArrArrayConverter.Convert(target.GetProfiles());
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 

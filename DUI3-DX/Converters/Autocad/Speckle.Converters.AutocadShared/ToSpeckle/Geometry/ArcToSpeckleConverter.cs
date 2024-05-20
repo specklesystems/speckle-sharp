@@ -25,16 +25,16 @@ public class DBArcToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedCon
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ADB.Arc)target);
+  public Base Convert(object target) => Convert((ADB.Arc)target);
 
-  public SOG.Arc RawConvert(ADB.Arc target)
+  public SOG.Arc Convert(ADB.Arc target)
   {
-    SOG.Plane plane = _planeConverter.RawConvert(target.GetPlane());
-    SOG.Point start = _pointConverter.RawConvert(target.StartPoint);
-    SOG.Point end = _pointConverter.RawConvert(target.EndPoint);
-    SOG.Point mid = _pointConverter.RawConvert(target.GetPointAtDist(target.Length / 2.0));
+    SOG.Plane plane = _planeConverter.Convert(target.GetPlane());
+    SOG.Point start = _pointConverter.Convert(target.StartPoint);
+    SOG.Point end = _pointConverter.Convert(target.EndPoint);
+    SOG.Point mid = _pointConverter.Convert(target.GetPointAtDist(target.Length / 2.0));
     SOP.Interval domain = new(target.StartParam, target.EndParam);
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Arc arc =
       new(

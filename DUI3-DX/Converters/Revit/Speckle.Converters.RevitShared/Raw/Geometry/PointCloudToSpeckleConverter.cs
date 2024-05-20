@@ -20,7 +20,7 @@ public class PointCloudToSpeckleConverter : ITypedConverter<DB.PointCloudInstanc
     _boundingBoxConverter = boundingBoxConverter;
   }
 
-  public SOG.Pointcloud RawConvert(DB.PointCloudInstance target)
+  public SOG.Pointcloud Convert(DB.PointCloudInstance target)
   {
     var boundingBox = target.get_BoundingBox(null);
     using DB.Transform transform = target.GetTransform();
@@ -33,12 +33,12 @@ public class PointCloudToSpeckleConverter : ITypedConverter<DB.PointCloudInstanc
       var specklePointCloud = new SOG.Pointcloud
       {
         points = points
-          .Select(o => _xyzToPointConverter.RawConvert(transform.OfPoint(o)))
+          .Select(o => _xyzToPointConverter.Convert(transform.OfPoint(o)))
           .SelectMany(o => new List<double>() { o.x, o.y, o.z })
           .ToList(),
         colors = points.Select(o => o.Color).ToList(),
         units = _contextStack.Current.SpeckleUnits,
-        bbox = _boundingBoxConverter.RawConvert(boundingBox)
+        bbox = _boundingBoxConverter.Convert(boundingBox)
       };
 
       return specklePointCloud;

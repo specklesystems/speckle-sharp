@@ -17,9 +17,9 @@ public class PolylineToSpeckleConverter : ITypedConverter<DB.PolyLine, SOG.Polyl
     _xyzToPointConverter = xyzToPointConverter;
   }
 
-  public SOG.Polyline RawConvert(DB.PolyLine target)
+  public SOG.Polyline Convert(DB.PolyLine target)
   {
-    var coords = target.GetCoordinates().SelectMany(coord => _xyzToPointConverter.RawConvert(coord).ToList()).ToList();
+    var coords = target.GetCoordinates().SelectMany(coord => _xyzToPointConverter.Convert(coord).ToList()).ToList();
     return new SOG.Polyline(coords, _contextStack.Current.SpeckleUnits);
   }
 }

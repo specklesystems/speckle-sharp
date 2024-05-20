@@ -7,9 +7,9 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 
 public class PointcloudLayerToHostConverter : ITypedConverter<VectorLayer, LasDatasetLayer>
 {
-  public object Convert(Base target) => RawConvert((VectorLayer)target);
+  public object Convert(Base target) => Convert((VectorLayer)target);
 
-  public LasDatasetLayer RawConvert(VectorLayer target)
+  public LasDatasetLayer Convert(VectorLayer target)
   {
     // POC:
     throw new NotImplementedException($"Receiving Pointclouds is not supported");

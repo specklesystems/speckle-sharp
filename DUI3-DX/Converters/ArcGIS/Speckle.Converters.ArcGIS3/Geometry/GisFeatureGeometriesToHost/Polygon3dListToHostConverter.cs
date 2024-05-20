@@ -17,7 +17,7 @@ public class Polygon3dListToHostConverter : ITypedConverter<List<SGIS.PolygonGeo
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SGIS.PolygonGeometry3d> target)
+  public ACG.Multipatch Convert(List<SGIS.PolygonGeometry3d> target)
   {
     if (target.Count == 0)
     {
@@ -31,7 +31,7 @@ public class Polygon3dListToHostConverter : ITypedConverter<List<SGIS.PolygonGeo
       List<SOG.Point> boundaryPts = part.boundary.GetPoints();
       foreach (SOG.Point pt in boundaryPts)
       {
-        newPatch.AddPoint(_pointConverter.RawConvert(pt));
+        newPatch.AddPoint(_pointConverter.Convert(pt));
       }
       multipatchPart.Patches.Add(newPatch);
 
@@ -41,7 +41,7 @@ public class Polygon3dListToHostConverter : ITypedConverter<List<SGIS.PolygonGeo
         List<SOG.Point> loopPts = loop.GetPoints();
         foreach (SOG.Point pt in loopPts)
         {
-          newLoopPatch.AddPoint(_pointConverter.RawConvert(pt));
+          newLoopPatch.AddPoint(_pointConverter.Convert(pt));
         }
         multipatchPart.Patches.Add(newLoopPatch);
       }

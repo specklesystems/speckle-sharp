@@ -12,6 +12,6 @@ public class VectorToSpeckleRawConverter : ITypedConverter<AG.Vector3d, SOG.Vect
     _contextStack = contextStack;
   }
 
-  public SOG.Vector RawConvert(AG.Vector3d target) =>
+  public SOG.Vector Convert(AG.Vector3d target) =>
     new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
 }

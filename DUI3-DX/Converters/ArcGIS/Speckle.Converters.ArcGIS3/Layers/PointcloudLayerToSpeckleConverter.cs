@@ -68,10 +68,10 @@ public class PointCloudToSpeckleConverter
 
   public Base Convert(object target)
   {
-    return RawConvert((LasDatasetLayer)target);
+    return Convert((LasDatasetLayer)target);
   }
 
-  public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
+  public SGIS.VectorLayer Convert(LasDatasetLayer target)
   {
     SGIS.VectorLayer speckleLayer = new();
 
@@ -102,7 +102,7 @@ public class PointCloudToSpeckleConverter
       {
         using (LasPoint pt = ptCursor.Current)
         {
-          specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
+          specklePts.Add(_pointConverter.Convert(pt.ToMapPoint()));
           values.Add(pt.ClassCode);
           int color = GetPointColor(pt, renderer);
           speckleColors.Add(color);
@@ -116,7 +116,7 @@ public class PointCloudToSpeckleConverter
         points = specklePts.SelectMany(pt => new List<double>() { pt.x, pt.y, pt.z }).ToList(),
         colors = speckleColors,
         sizes = values,
-        bbox = _boxConverter.RawConvert(target.QueryExtent()),
+        bbox = _boxConverter.Convert(target.QueryExtent()),
         units = _contextStack.Current.SpeckleUnits
       };
 

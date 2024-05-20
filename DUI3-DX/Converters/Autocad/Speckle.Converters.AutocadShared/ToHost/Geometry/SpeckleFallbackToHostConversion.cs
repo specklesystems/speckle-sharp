@@ -24,18 +24,18 @@ public class SpeckleFallbackToAutocadConversion
     _meshConverter = meshConverter;
   }
 
-  public object Convert(Base target) => RawConvert((DisplayableObject)target);
+  public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public List<ADB.Entity> RawConvert(DisplayableObject target)
+  public List<ADB.Entity> Convert(DisplayableObject target)
   {
     var result = new List<ADB.Entity>();
     foreach (var item in target.displayValue)
     {
       ADB.Entity x = item switch
       {
-        SOG.Line line => _lineConverter.RawConvert(line),
-        SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
-        SOG.Mesh mesh => _meshConverter.RawConvert(mesh),
+        SOG.Line line => _lineConverter.Convert(line),
+        SOG.Polyline polyline => _polylineConverter.Convert(polyline),
+        SOG.Mesh mesh => _meshConverter.Convert(mesh),
         _ => throw new NotSupportedException($"Found unsupported fallback geometry: {item.GetType()}")
       };
       result.Add(x);

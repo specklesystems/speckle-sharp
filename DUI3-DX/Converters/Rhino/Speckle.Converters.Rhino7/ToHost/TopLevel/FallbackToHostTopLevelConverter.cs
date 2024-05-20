@@ -29,18 +29,18 @@ public class FallbackToHostTopLevelConverter
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((DisplayableObject)target);
+  public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public List<RG.GeometryBase> RawConvert(DisplayableObject target)
+  public List<RG.GeometryBase> Convert(DisplayableObject target)
   {
     var result = new List<RG.GeometryBase>();
     foreach (var item in target.displayValue)
     {
       RG.GeometryBase x = item switch
       {
-        SOG.Line line => _lineConverter.RawConvert(line),
-        SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
-        SOG.Mesh mesh => _meshConverter.RawConvert(mesh),
+        SOG.Line line => _lineConverter.Convert(line),
+        SOG.Polyline polyline => _polylineConverter.Convert(polyline),
+        SOG.Mesh mesh => _meshConverter.Convert(mesh),
         _ => throw new NotSupportedException($"Found unsupported fallback geometry: {item.GetType()}")
       };
       x.Transform(GetUnitsTransform(item));

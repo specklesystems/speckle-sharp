@@ -22,13 +22,13 @@ public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, RG.PolyCu
   /// <param name="target">The SpecklePolyCurve object to convert.</param>
   /// <returns>The converted Rhino PolyCurve object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.PolyCurve RawConvert(SOG.Polycurve target)
+  public RG.PolyCurve Convert(SOG.Polycurve target)
   {
     RG.PolyCurve result = new();
 
     foreach (var segment in target.segments)
     {
-      var childCurve = CurveConverter.NotNull().RawConvert(segment);
+      var childCurve = CurveConverter.NotNull().Convert(segment);
       bool success = result.AppendSegment(childCurve);
       if (!success)
       {
@@ -36,7 +36,7 @@ public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, RG.PolyCu
       }
     }
 
-    result.Domain = _intervalConverter.RawConvert(target.domain);
+    result.Domain = _intervalConverter.Convert(target.domain);
 
     return result;
   }

@@ -24,9 +24,9 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedCo
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ADB.Spline)target);
+  public Base Convert(object target) => Convert((ADB.Spline)target);
 
-  public SOG.Curve RawConvert(ADB.Spline target)
+  public SOG.Curve Convert(ADB.Spline target)
   {
     // get nurbs and geo data
     ADB.NurbsData data = target.NurbsData;
@@ -38,7 +38,7 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedCo
     if (target.GetGeCurve() is NurbCurve3d nurbs)
     {
       length = nurbs.GetLength(nurbs.StartParameter, nurbs.EndParameter, 0.001);
-      domain = _intervalConverter.RawConvert(nurbs.GetInterval());
+      domain = _intervalConverter.Convert(nurbs.GetInterval());
       if (nurbs.Knots.Count < nurbs.NumberOfControlPoints + nurbs.Degree + 1 && target.IsPeriodic)
       {
         periodicClosed = true;
@@ -109,7 +109,7 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, ITypedCo
       closed = periodicClosed || target.Closed,
       length = length,
       domain = domain,
-      bbox = _boxConverter.RawConvert(target.GeometricExtents),
+      bbox = _boxConverter.Convert(target.GeometricExtents),
       units = _contextStack.Current.SpeckleUnits
     };
 

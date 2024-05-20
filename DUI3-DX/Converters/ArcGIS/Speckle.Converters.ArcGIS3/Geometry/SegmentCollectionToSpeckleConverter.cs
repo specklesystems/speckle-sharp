@@ -24,7 +24,7 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
     _bezierConverter = bezierConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
+  public SOG.Polyline Convert(ACG.ReadOnlySegmentCollection target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     double len = 0;
@@ -38,20 +38,20 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
       switch (segment.SegmentType)
       {
         case ACG.SegmentType.Line:
-          points.Add(_pointConverter.RawConvert(segment.StartPoint));
-          points.Add(_pointConverter.RawConvert(segment.EndPoint));
+          points.Add(_pointConverter.Convert(segment.StartPoint));
+          points.Add(_pointConverter.Convert(segment.EndPoint));
           break;
         case ACG.SegmentType.Bezier:
           var segmentBezier = (ACG.CubicBezierSegment)segment;
-          points.AddRange(_bezierConverter.RawConvert(segmentBezier).GetPoints());
+          points.AddRange(_bezierConverter.Convert(segmentBezier).GetPoints());
           break;
         case ACG.SegmentType.EllipticArc:
           var segmentElliptic = (ACG.EllipticArcSegment)segment;
-          points.AddRange(_arcConverter.RawConvert(segmentElliptic).GetPoints());
+          points.AddRange(_arcConverter.Convert(segmentElliptic).GetPoints());
           break;
       }
     }
-    // var box = _boxConverter.RawConvert(target.Extent);
+    // var box = _boxConverter.Convert(target.Extent);
     SOG.Polyline polyline =
       new(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), _contextStack.Current.SpeckleUnits) { };
 

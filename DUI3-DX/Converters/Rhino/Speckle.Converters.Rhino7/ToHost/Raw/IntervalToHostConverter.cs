@@ -11,7 +11,7 @@ public class IntervalToHostConverter : ITypedConverter<SOP.Interval, RG.Interval
   /// <returns>The converted Rhino.Geometry.Interval object.</returns>
   /// <exception cref="ArgumentException">Thrown when the start or end value of the Interval is null.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.Interval RawConvert(SOP.Interval target)
+  public RG.Interval Convert(SOP.Interval target)
   {
     if (!target.start.HasValue || !target.end.HasValue) // POC: CNX-9272 Interval start and end being nullable makes no sense.
     {

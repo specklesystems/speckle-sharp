@@ -16,13 +16,13 @@ public class BraceToSpeckleConverter : ITypedConverter<DB.FamilyInstance, SOBR.R
     _beamConverter = beamConverter;
   }
 
-  public SOBR.RevitBrace RawConvert(DB.FamilyInstance target)
+  public SOBR.RevitBrace Convert(DB.FamilyInstance target)
   {
     // POC: we might want some easy one-liner here to FamilyMatchesOrThrow(target, DB.Structure.StructuralType.Brace) or similar
-    // and added in each RawConvert
+    // and added in each Convert
     // POC: this and the beam lost the notes we were returning, though this seems against even the original pattern
 
-    var beam = _beamConverter.RawConvert(target);
+    var beam = _beamConverter.Convert(target);
 
     var brace = new SOBR.RevitBrace()
     {

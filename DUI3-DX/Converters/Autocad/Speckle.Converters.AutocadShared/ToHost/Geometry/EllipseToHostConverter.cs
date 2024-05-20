@@ -23,15 +23,15 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, ITypedConv
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Ellipse)target);
+  public object Convert(Base target) => Convert((SOG.Ellipse)target);
 
   /// <exception cref="ArgumentNullException"> Throws if any ellipse radius value is null.</exception>
-  public ADB.Ellipse RawConvert(SOG.Ellipse target)
+  public ADB.Ellipse Convert(SOG.Ellipse target)
   {
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
-    AG.Point3d origin = _pointConverter.RawConvert(target.plane.origin);
-    AG.Vector3d normal = _vectorConverter.RawConvert(target.plane.normal);
-    AG.Vector3d xAxis = _vectorConverter.RawConvert(target.plane.xdir);
+    AG.Point3d origin = _pointConverter.Convert(target.plane.origin);
+    AG.Vector3d normal = _vectorConverter.Convert(target.plane.normal);
+    AG.Vector3d xAxis = _vectorConverter.Convert(target.plane.xdir);
 
     // POC: how possibly we might have firstRadius and secondRadius is possibly null?
     if (target.firstRadius is null || target.secondRadius is null)

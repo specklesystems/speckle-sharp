@@ -44,7 +44,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     _converter = converter;
   }
 
-  public override SOBR.RevitWall RawConvert(DB.Wall target)
+  public override SOBR.RevitWall Convert(DB.Wall target)
   {
     SOBR.RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
 
@@ -66,19 +66,19 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
       );
     }
 
-    speckleWall.baseLine = _curveConverter.RawConvert(locationCurve.Curve);
+    speckleWall.baseLine = _curveConverter.Convert(locationCurve.Curve);
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
       DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
-    speckleWall.level = _levelConverter.RawConvert(level);
+    speckleWall.level = _levelConverter.Convert(level);
 
     var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
       DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
-    speckleWall.topLevel = _levelConverter.RawConvert(topLevel);
+    speckleWall.topLevel = _levelConverter.Convert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
     _ = _parameterValueExtractor.TryGetValueAsDouble(
@@ -167,7 +167,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
       return;
     }
 
-    List<SOG.Polycurve> polycurves = _curveArrArrayConverter.RawConvert(profile);
+    List<SOG.Polycurve> polycurves = _curveArrArrayConverter.Convert(profile);
 
     if (polycurves.Count > 1)
     {

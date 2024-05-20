@@ -19,7 +19,7 @@ public class FlatPointListToHostConverter : ITypedConverter<IReadOnlyList<double
   /// with the numbers being coordinates of each point in the format {x1, y1, z1, x2, y2, z2, ..., xN, yN, zN}
   /// </remarks>
   /// <exception cref="SpeckleException">Throws when the input list count is not a multiple of 3.</exception>
-  public Point3dList RawConvert(IReadOnlyList<double> target)
+  public Point3dList Convert(IReadOnlyList<double> target)
   {
     if (target.Count % 3 != 0)
     {

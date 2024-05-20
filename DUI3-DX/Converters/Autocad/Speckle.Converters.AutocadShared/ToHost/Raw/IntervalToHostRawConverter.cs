@@ -5,7 +5,7 @@ namespace Speckle.Converters.AutocadShared.ToHost.Raw;
 public class IntervalToHostRawConverter : ITypedConverter<SOP.Interval, AG.Interval>
 {
   /// <exception cref="ArgumentNullException"> Throws if target start or end value is null.</exception>
-  public AG.Interval RawConvert(SOP.Interval target)
+  public AG.Interval Convert(SOP.Interval target)
   {
     // POC: the tolerance might be in some settings or in some context?
     if (target.start is null || target.end is null)

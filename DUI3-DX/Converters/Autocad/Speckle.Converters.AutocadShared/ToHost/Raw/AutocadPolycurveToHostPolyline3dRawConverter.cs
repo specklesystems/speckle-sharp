@@ -14,7 +14,7 @@ public class AutocadPolycurveToHostPolyline3dRawConverter : ITypedConverter<SOG.
     _contextStack = contextStack;
   }
 
-  public ADB.Polyline3d RawConvert(SOG.Autocad.AutocadPolycurve target)
+  public ADB.Polyline3d Convert(SOG.Autocad.AutocadPolycurve target)
   {
     // get vertices
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);

@@ -37,15 +37,15 @@ public class CurveToSpeckleConverter : ITypedConverter<RG.Curve, ICurve>, ITyped
   /// This is the main converter when the type of curve you input or output does not matter to the caller.<br/>
   /// ⚠️ If an unsupported type of Curve is input, it will be converted to NURBS.
   /// </remarks>
-  public ICurve RawConvert(RG.Curve target) =>
+  public ICurve Convert(RG.Curve target) =>
     target switch
     {
-      RG.PolyCurve polyCurve => _polyCurveConverter.RawConvert(polyCurve),
-      RG.ArcCurve arcCurve => _arcCurveConverter.RawConvert(arcCurve),
-      RG.PolylineCurve polylineCurve => _polylineConverter.RawConvert(polylineCurve),
-      RG.LineCurve lineCurve => _lineCurveConverter.RawConvert(lineCurve),
-      _ => _nurbsCurveConverter.RawConvert(target.ToNurbsCurve())
+      RG.PolyCurve polyCurve => _polyCurveConverter.Convert(polyCurve),
+      RG.ArcCurve arcCurve => _arcCurveConverter.Convert(arcCurve),
+      RG.PolylineCurve polylineCurve => _polylineConverter.Convert(polylineCurve),
+      RG.LineCurve lineCurve => _lineCurveConverter.Convert(lineCurve),
+      _ => _nurbsCurveConverter.Convert(target.ToNurbsCurve())
     };
 
-  Base ITypedConverter<RG.Curve, Base>.RawConvert(RG.Curve target) => (Base)RawConvert(target);
+  Base ITypedConverter<RG.Curve, Base>.Convert(RG.Curve target) => (Base)Convert(target);
 }

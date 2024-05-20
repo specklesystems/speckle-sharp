@@ -13,14 +13,14 @@ internal sealed class ModelCurveArrArrayConverterToSpeckle : ITypedConverter<DB.
     _modelCurveArrayConverter = modelCurveArrayConverter;
   }
 
-  public SOG.Polycurve[] RawConvert(ModelCurveArrArray target)
+  public SOG.Polycurve[] Convert(ModelCurveArrArray target)
   {
     var polycurves = new Polycurve[target.Size];
     var revitArrays = target.Cast<ModelCurveArray>().ToArray();
 
     for (int i = 0; i < polycurves.Length; i++)
     {
-      polycurves[i] = _modelCurveArrayConverter.RawConvert(revitArrays[i]);
+      polycurves[i] = _modelCurveArrayConverter.Convert(revitArrays[i]);
     }
 
     return polycurves;

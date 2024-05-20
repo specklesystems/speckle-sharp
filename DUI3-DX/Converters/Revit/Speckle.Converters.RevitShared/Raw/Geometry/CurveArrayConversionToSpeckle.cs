@@ -24,7 +24,7 @@ public sealed class CurveArrayConversionToSpeckle : ITypedConverter<DB.CurveArra
     _curveConverter = curveConverter;
   }
 
-  public Polycurve RawConvert(CurveArray target)
+  public Polycurve Convert(CurveArray target)
   {
     List<DB.Curve> curves = target.Cast<DB.Curve>().ToList();
 
@@ -34,7 +34,7 @@ public sealed class CurveArrayConversionToSpeckle : ITypedConverter<DB.CurveArra
       closed =
         curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConversionContextStack.TOLERANCE,
       length = _scalingService.ScaleLength(curves.Sum(x => x.Length)),
-      segments = curves.Select(x => _curveConverter.RawConvert(x)).ToList()
+      segments = curves.Select(x => _curveConverter.Convert(x)).ToList()
     };
   }
 }

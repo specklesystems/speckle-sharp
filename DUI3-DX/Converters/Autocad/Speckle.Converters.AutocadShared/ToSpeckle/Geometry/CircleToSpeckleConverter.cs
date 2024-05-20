@@ -26,8 +26,8 @@ public class DBCircleToSpeckleConverter : IHostObjectToSpeckleConversion
 
   public SOG.Circle RawConvert(ADB.Circle target)
   {
-    SOG.Plane plane = _planeConverter.RawConvert(target.GetPlane());
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Plane plane = _planeConverter.Convert(target.GetPlane());
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
     SOG.Circle circle =
       new(plane, target.Radius, _contextStack.Current.SpeckleUnits) { length = target.Circumference, bbox = bbox };
 

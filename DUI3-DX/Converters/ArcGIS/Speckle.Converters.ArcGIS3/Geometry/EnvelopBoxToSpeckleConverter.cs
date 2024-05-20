@@ -20,7 +20,7 @@ public class EnvelopToSpeckleConverter : ITypedConverter<Envelope, SOG.Box>
     _pointConverter = pointConverter;
   }
 
-  public SOG.Box RawConvert(Envelope target)
+  public SOG.Box Convert(Envelope target)
   {
     MapPoint pointMin = new MapPointBuilderEx(
       target.XMin,
@@ -34,8 +34,8 @@ public class EnvelopToSpeckleConverter : ITypedConverter<Envelope, SOG.Box>
       target.ZMax,
       _contextStack.Current.Document.SpatialReference
     ).ToGeometry();
-    SOG.Point minPtSpeckle = _pointConverter.RawConvert(pointMin);
-    SOG.Point maxPtSpeckle = _pointConverter.RawConvert(pointMax);
+    SOG.Point minPtSpeckle = _pointConverter.Convert(pointMin);
+    SOG.Point maxPtSpeckle = _pointConverter.Convert(pointMax);
 
     var units = _contextStack.Current.SpeckleUnits;
 
