@@ -1,5 +1,5 @@
-using System.Reflection;
 using Autofac;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Common.DependencyInjection;
@@ -8,22 +8,13 @@ namespace Speckle.Converters.Common.DependencyInjection;
 // NameAndRankAttribute work that needs doing
 public static class RawConversionRegisterer
 {
-  public static ContainerBuilder RegisterRawConversions(this ContainerBuilder containerBuilder)
+  public static void RegisterRawConversions(this SpeckleContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/
-    foreach (
-      var asm in AppDomain.CurrentDomain
-        .GetAssemblies()
-        .Where(x => x.GetName().Name.StartsWith("Speckle", StringComparison.OrdinalIgnoreCase))
-    )
+    foreach (Type speckleType in containerBuilder.SpeckleTypes)
     {
-      foreach (var type in asm.GetTypes())
-      {
-        RegisterRawConversionsForType(containerBuilder, type);
-      }
+      RegisterRawConversionsForType(containerBuilder.ContainerBuilder, speckleType);
     }
-
-    return containerBuilder;
   }
 
   private static void RegisterRawConversionsForType(ContainerBuilder containerBuilder, Type type)
@@ -44,28 +35,5 @@ public static class RawConversionRegisterer
         .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
         .InstancePerLifetimeScope();
     }
-  }
-
-  public static ContainerBuilder RegisterTypesInAssemblyAsInterface(
-    this ContainerBuilder containerBuilder,
-    Assembly assembly,
-    Type interfaceType
-  )
-  {
-    bool isGeneric = interfaceType.IsGenericType;
-    foreach (var type in assembly.GetTypes().Where(type => type.IsClass && !type.IsAbstract))
-    {
-      IEnumerable<Type> interfaceTypes = type.GetInterfaces();
-      interfaceTypes = isGeneric
-        ? interfaceTypes.Where(it => it.IsGenericType && it.GetGenericTypeDefinition() == interfaceType)
-        : interfaceTypes.Where(it => it == interfaceType);
-
-      foreach (var iterfaceTypeMatch in interfaceTypes)
-      {
-        containerBuilder.RegisterType(type).As(iterfaceTypeMatch).InstancePerLifetimeScope();
-      }
-    }
-
-    return containerBuilder;
   }
 }
