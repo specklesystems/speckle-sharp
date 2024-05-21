@@ -6,15 +6,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Ellipse, ADB.Ellipse>
+public class EllipseToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Ellipse, ADB.Ellipse>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public EllipseToHostConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter,
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -23,15 +23,15 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConver
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Ellipse)target);
+  public object Convert(Base target) => Convert((SOG.Ellipse)target);
 
   /// <exception cref="ArgumentNullException"> Throws if any ellipse radius value is null.</exception>
-  public ADB.Ellipse RawConvert(SOG.Ellipse target)
+  public ADB.Ellipse Convert(SOG.Ellipse target)
   {
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
-    AG.Point3d origin = _pointConverter.RawConvert(target.plane.origin);
-    AG.Vector3d normal = _vectorConverter.RawConvert(target.plane.normal);
-    AG.Vector3d xAxis = _vectorConverter.RawConvert(target.plane.xdir);
+    AG.Point3d origin = _pointConverter.Convert(target.plane.origin);
+    AG.Vector3d normal = _vectorConverter.Convert(target.plane.normal);
+    AG.Vector3d xAxis = _vectorConverter.Convert(target.plane.xdir);
 
     // POC: how possibly we might have firstRadius and secondRadius is possibly null?
     if (target.firstRadius is null || target.secondRadius is null)

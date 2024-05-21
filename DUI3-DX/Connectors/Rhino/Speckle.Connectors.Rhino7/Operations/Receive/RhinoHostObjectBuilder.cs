@@ -11,17 +11,17 @@ namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
-  private readonly ISpeckleConverterToHost _toHostConverter;
+  private readonly IRootToHostConverter _converter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
 
   public RhinoHostObjectBuilder(
-    ISpeckleConverterToHost toHostConverter,
+    IRootToHostConverter converter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     GraphTraversal traverseFunction
   )
   {
-    _toHostConverter = toHostConverter;
+    _converter = converter;
     _contextStack = contextStack;
     _traverseFunction = traverseFunction;
   }
@@ -106,7 +106,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
         onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / objects.Count);
 
-        var result = _toHostConverter.Convert(baseObj);
+        var result = _converter.Convert(baseObj);
 
         var conversionIds = HandleConversionResult(result, baseObj, layerIndex);
         newObjectIds.AddRange(conversionIds);

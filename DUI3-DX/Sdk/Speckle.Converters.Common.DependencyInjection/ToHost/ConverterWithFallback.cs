@@ -6,21 +6,21 @@ namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
 // POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
 /// <summary>
-/// <inheritdoc cref="ToHostConverterWithoutFallback"/>
+/// <inheritdoc cref="ConverterWithoutFallback"/>
 /// <br/>
 /// If no suitable converter conversion is found, and the target <see cref="Base"/> object has a displayValue property
 /// a converter with strong name of <see cref="DisplayableObject"/> is resolved for.
 /// </summary>
-/// <seealso cref="ToHostConverterWithoutFallback"/>
-public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
+/// <seealso cref="ConverterWithoutFallback"/>
+public sealed class ConverterWithFallback : IRootToHostConverter
 {
-  private readonly IConverterResolver<ISpeckleObjectToHostConversion> _toHost;
-  private readonly ToHostConverterWithoutFallback _baseConverter;
+  private readonly IConverterResolver<IToHostTopLevelConverter> _toHost;
+  private readonly ConverterWithoutFallback _baseConverter;
 
-  public ToHostConverterWithFallback(IConverterResolver<ISpeckleObjectToHostConversion> toHost)
+  public ConverterWithFallback(IConverterResolver<IToHostTopLevelConverter> toHost)
   {
     _toHost = toHost;
-    _baseConverter = new ToHostConverterWithoutFallback(toHost);
+    _baseConverter = new ConverterWithoutFallback(toHost);
   }
 
   /// <summary>
@@ -31,7 +31,7 @@ public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
   /// Fallbacks to display value if a direct conversion is not possible.</returns>
   /// <remarks>
   /// The conversion is done in the following order of preference:
-  /// 1. Direct conversion using the <see cref="Speckle.Converters.Common.DependencyInjection.ToHost.ToHostConverterWithoutFallback.TryConvert(Base, out object?)"/> method.
+  /// 1. Direct conversion using the <see cref="ConverterWithoutFallback.TryConvert(Base, out object?)"/> method.
   /// 2. Fallback to display value using the <see cref="Speckle.Core.Models.Extensions.BaseExtensions.TryGetDisplayValue{T}"/> method, if a direct conversion is not possible.
   ///
   /// If the direct conversion is not available and there is no displayValue, a <see cref="System.NotSupportedException"/> is thrown.

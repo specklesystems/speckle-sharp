@@ -5,15 +5,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.Geometry;
 
 [NameAndRankValue(nameof(ADB.SubDMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBSubDMeshToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBSubDMeshToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -30,7 +30,7 @@ public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
     var vertices = new List<double>(target.Vertices.Count * 3);
     foreach (AG.Point3d vert in target.Vertices)
     {
-      vertices.AddRange(_pointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_pointConverter.Convert(vert).ToList());
     }
 
     // faces
@@ -67,7 +67,7 @@ public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
       .ToList();
 
     // bbox
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Mesh speckleMesh = new(vertices, faces, colors, null, _contextStack.Current.SpeckleUnits) { bbox = bbox };
 

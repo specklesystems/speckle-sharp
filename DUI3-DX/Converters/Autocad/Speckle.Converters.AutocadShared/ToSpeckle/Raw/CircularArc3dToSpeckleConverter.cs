@@ -3,15 +3,15 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class CircularArc3dToSpeckleConverter : IRawConversion<AG.CircularArc3d, SOG.Arc>
+public class CircularArc3dToSpeckleConverter : ITypedConverter<AG.CircularArc3d, SOG.Arc>
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public CircularArc3dToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<AG.Plane, SOG.Plane> planeConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -20,12 +20,12 @@ public class CircularArc3dToSpeckleConverter : IRawConversion<AG.CircularArc3d, 
     _contextStack = contextStack;
   }
 
-  public SOG.Arc RawConvert(AG.CircularArc3d target)
+  public SOG.Arc Convert(AG.CircularArc3d target)
   {
-    SOG.Plane plane = _planeConverter.RawConvert(target.GetPlane());
-    SOG.Point start = _pointConverter.RawConvert(target.StartPoint);
-    SOG.Point end = _pointConverter.RawConvert(target.EndPoint);
-    SOG.Point mid = _pointConverter.RawConvert(target.EvaluatePoint(0.5)); // POC: testing, unsure
+    SOG.Plane plane = _planeConverter.Convert(target.GetPlane());
+    SOG.Point start = _pointConverter.Convert(target.StartPoint);
+    SOG.Point end = _pointConverter.Convert(target.EndPoint);
+    SOG.Point mid = _pointConverter.Convert(target.EvaluatePoint(0.5)); // POC: testing, unsure
     SOP.Interval domain = new(target.GetInterval().LowerBound, target.GetInterval().UpperBound);
 
     SOG.Arc arc =

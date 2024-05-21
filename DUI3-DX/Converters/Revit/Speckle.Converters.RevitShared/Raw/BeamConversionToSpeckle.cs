@@ -10,17 +10,17 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
 // As-is, what we are saying is that it can take "any Family Instance" and turn it into a Speckle.RevitBeam, which is far from correct.
 // CNX-9312
-public class BeamConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.RevitBeam>
+public class BeamConversionToSpeckle : ITypedConverter<DB.FamilyInstance, SOBR.RevitBeam>
 {
-  private readonly IRawConversion<DB.Location, Base> _locationConverter;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.Location, Base> _locationConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public BeamConversionToSpeckle(
-    IRawConversion<DB.Location, Base> locationConverter,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.Location, Base> locationConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner
@@ -33,9 +33,9 @@ public class BeamConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.Re
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public SOBR.RevitBeam RawConvert(DB.FamilyInstance target)
+  public SOBR.RevitBeam Convert(DB.FamilyInstance target)
   {
-    var baseGeometry = _locationConverter.RawConvert(target.Location);
+    var baseGeometry = _locationConverter.Convert(target.Location);
     if (baseGeometry is not ICurve baseCurve)
     {
       throw new SpeckleConversionException(
@@ -56,7 +56,7 @@ public class BeamConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.Re
       target,
       DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
-    speckleBeam.level = _levelConverter.RawConvert(level);
+    speckleBeam.level = _levelConverter.Convert(level);
 
     speckleBeam.displayValue = _displayValueExtractor.GetDisplayValue(target);
 

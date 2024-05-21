@@ -1,16 +1,16 @@
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.InterfaceGenerator;
 
-namespace Speckle.Converters.ArcGIS3;
+namespace Speckle.Converters.Common;
 
-//poc: dupe code from rhino
-public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
+[GenerateAutoInterface]
+public class RootToSpeckleConverter : IRootToSpeckleConverter
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public ArcGISConverterToSpeckle(IFactory<string, IHostObjectToSpeckleConversion> toSpeckle)
+  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }

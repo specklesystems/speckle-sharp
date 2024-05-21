@@ -12,18 +12,18 @@ namespace Speckle.Converters.Common;
 // clould be anywhere or all in once place - rooting through box 274 for something you need, when said box has a miriad different
 // and unrelated items, is no fun. Plus when you need that item, you end up bringing out the whole box/
 [NameAndRankValue(nameof(DB.Floor), 0)]
-public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.RevitFloor>
+public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Floor, SOBR.RevitFloor>
 {
-  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ISlopeArrowExtractor _slopeArrowExtractor;
 
-  public FloorConversionToSpeckle(
-    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
+  public FloorTopLevelConverterToSpeckle(
+    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
     DisplayValueExtractor displayValueExtractor,
@@ -38,12 +38,12 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     _slopeArrowExtractor = slopeArrowExtractor;
   }
 
-  public override SOBR.RevitFloor RawConvert(DB.Floor target)
+  public override SOBR.RevitFloor Convert(DB.Floor target)
   {
     SOBR.RevitFloor speckleFloor = new();
 
     var sketch = (DB.Sketch)target.Document.GetElement(target.SketchId);
-    List<SOG.Polycurve> profiles = _curveArrArrayConverter.RawConvert(sketch.Profile);
+    List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
     DB.ElementType type = (DB.ElementType)target.Document.GetElement(target.GetTypeId());
 
@@ -62,7 +62,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     }
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
-    speckleFloor.level = _levelConverter.RawConvert(level);
+    speckleFloor.level = _levelConverter.Convert(level);
     speckleFloor.structural =
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 

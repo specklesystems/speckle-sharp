@@ -6,21 +6,21 @@ using Speckle.Converters.ArcGIS3.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch, IReadOnlyList<Base>>
+public class MultipatchFeatureToSpeckleConverter : ITypedConverter<ACG.Multipatch, IReadOnlyList<Base>>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public MultipatchFeatureToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public IReadOnlyList<Base> RawConvert(ACG.Multipatch target)
+  public IReadOnlyList<Base> Convert(ACG.Multipatch target)
   {
     List<Base> converted = new();
     // placeholder, needs to be declared in order to be used in the Ring patch type
@@ -35,7 +35,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch
       int ptCount = target.GetPatchPointCount(idx);
       for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
       {
-        pointList.Add(_pointConverter.RawConvert(target.Points[ptIdx]));
+        pointList.Add(_pointConverter.Convert(target.Points[ptIdx]));
       }
       allPoints.Add(pointList);
     }

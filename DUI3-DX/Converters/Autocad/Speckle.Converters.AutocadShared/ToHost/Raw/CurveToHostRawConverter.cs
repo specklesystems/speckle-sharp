@@ -2,23 +2,23 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Raw;
 
-public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
+public class CurveToHostRawConverter : ITypedConverter<SOG.Curve, AG.NurbCurve3d>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOP.Interval, AG.Interval> _intervalConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOP.Interval, AG.Interval> _intervalConverter;
 
   public CurveToHostRawConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IRawConversion<SOP.Interval, AG.Interval> intervalConverter
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOP.Interval, AG.Interval> intervalConverter
   )
   {
     _pointConverter = pointConverter;
     _intervalConverter = intervalConverter;
   }
 
-  public AG.NurbCurve3d RawConvert(SOG.Curve target)
+  public AG.NurbCurve3d Convert(SOG.Curve target)
   {
-    var points = target.GetPoints().Select(p => _pointConverter.RawConvert(p)).ToList();
+    var points = target.GetPoints().Select(p => _pointConverter.Convert(p)).ToList();
     if (target.closed && target.periodic)
     {
       points = points.GetRange(0, points.Count - target.degree);
@@ -67,7 +67,7 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
       curve.MakeClosed();
     }
 
-    curve.SetInterval(_intervalConverter.RawConvert(target.domain));
+    curve.SetInterval(_intervalConverter.Convert(target.domain));
 
     return curve;
   }

@@ -6,16 +6,16 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7;
 
-public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleObjectToHostConversion
+public abstract class SpeckleToHostGeometryBaseTopLevelConverter<TIn, TOut> : IToHostTopLevelConverter
   where TIn : Base
   where TOut : RG.GeometryBase
 {
   protected IConversionContextStack<RhinoDoc, UnitSystem> ContextStack { get; private set; }
-  private readonly IRawConversion<TIn, TOut> _geometryBaseConverter;
+  private readonly ITypedConverter<TIn, TOut> _geometryBaseConverter;
 
-  protected SpeckleToHostGeometryBaseConversion(
+  protected SpeckleToHostGeometryBaseTopLevelConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<TIn, TOut> geometryBaseConverter
+    ITypedConverter<TIn, TOut> geometryBaseConverter
   )
   {
     ContextStack = contextStack;
@@ -25,7 +25,7 @@ public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleO
   public object Convert(Base target)
   {
     var castedBase = (TIn)target;
-    var result = _geometryBaseConverter.RawConvert(castedBase);
+    var result = _geometryBaseConverter.Convert(castedBase);
 
     /*
      * POC: CNX-9270 Looking at a simpler, more performant way of doing unit scaling on `ToNative`

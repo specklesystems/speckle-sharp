@@ -25,7 +25,7 @@ public static class RawConversionRegisterer
     }
 
     var rawConversionInterfaces = type.GetInterfaces()
-      .Where(it => it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IRawConversion<,>));
+      .Where(it => it.IsGenericType && it.GetGenericTypeDefinition() == typeof(ITypedConverter<,>));
 
     foreach (var conversionInterface in rawConversionInterfaces)
     {

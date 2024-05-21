@@ -8,20 +8,21 @@ using Speckle.Converters.RevitShared.Extensions;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.ExtrusionRoof), 0)]
-public class ExtrusionRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
+public class ExtrusionRoofToSpeckleTopLevelConverter
+  : BaseTopLevelConverterToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
 {
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _pointConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public ExtrusionRoofToSpeckleTopLevelConverter(
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
-    IRawConversion<DB.ModelCurveArray, SOG.Polycurve> modelCurveArrayConverter,
-    IRawConversion<DB.XYZ, SOG.Point> pointConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.ModelCurveArray, SOG.Polycurve> modelCurveArrayConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> pointConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     HostedElementConversionToSpeckle hostedElementConverter,
@@ -37,7 +38,7 @@ public class ExtrusionRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override RevitExtrusionRoof RawConvert(DB.ExtrusionRoof target)
+  public override RevitExtrusionRoof Convert(DB.ExtrusionRoof target)
   {
     var speckleExtrusionRoof = new RevitExtrusionRoof
     {
@@ -46,15 +47,15 @@ public class ExtrusionRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     };
     var plane = target.GetProfile().get_Item(0).SketchPlane.GetPlane();
     speckleExtrusionRoof.referenceLine = new SOG.Line(
-      _pointConverter.RawConvert(plane.Origin.Add(plane.XVec.Normalize().Negate())),
-      _pointConverter.RawConvert(plane.Origin)
+      _pointConverter.Convert(plane.Origin.Add(plane.XVec.Normalize().Negate())),
+      _pointConverter.Convert(plane.Origin)
     );
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
       DB.BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM
     );
-    speckleExtrusionRoof.level = _levelConverter.RawConvert(level);
-    speckleExtrusionRoof.outline = _modelCurveArrayConverter.RawConvert(target.GetProfile());
+    speckleExtrusionRoof.level = _levelConverter.Convert(level);
+    speckleExtrusionRoof.outline = _modelCurveArrayConverter.Convert(target.GetProfile());
 
     var elementType = (DB.ElementType)target.Document.GetElement(target.GetTypeId());
     speckleExtrusionRoof.type = elementType.Name;

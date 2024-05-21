@@ -10,15 +10,13 @@ using ArcGIS.Core.Data.Raster;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(RasterLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class RasterLayerToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<RasterLayer, SGIS.RasterLayer>
+public class RasterLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<RasterLayer, SGIS.RasterLayer>
 {
-  private readonly IRawConversion<Raster, RasterElement> _gisRasterConverter;
+  private readonly ITypedConverter<Raster, RasterElement> _gisRasterConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public RasterLayerToSpeckleConverter(
-    IRawConversion<Raster, RasterElement> gisRasterConverter,
+    ITypedConverter<Raster, RasterElement> gisRasterConverter,
     IConversionContextStack<Map, Unit> contextStack
   )
   {
@@ -28,10 +26,10 @@ public class RasterLayerToSpeckleConverter
 
   public Base Convert(object target)
   {
-    return RawConvert((RasterLayer)target);
+    return Convert((RasterLayer)target);
   }
 
-  public SGIS.RasterLayer RawConvert(RasterLayer target)
+  public SGIS.RasterLayer Convert(RasterLayer target)
   {
     var speckleLayer = new SGIS.RasterLayer();
 
@@ -63,7 +61,7 @@ public class RasterLayerToSpeckleConverter
     speckleLayer.units = _contextStack.Current.SpeckleUnits;
 
     // write details about the Raster
-    RasterElement element = _gisRasterConverter.RawConvert(target.GetRaster());
+    RasterElement element = _gisRasterConverter.Convert(target.GetRaster());
     speckleLayer.elements.Add(element);
 
     return speckleLayer;

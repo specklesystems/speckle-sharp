@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class PointToSpeckleRawConverter : IRawConversion<AG.Point3d, SOG.Point>
+public class PointToSpeckleRawConverter : ITypedConverter<AG.Point3d, SOG.Point>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
@@ -12,6 +12,5 @@ public class PointToSpeckleRawConverter : IRawConversion<AG.Point3d, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public SOG.Point RawConvert(AG.Point3d target) =>
-    new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
+  public SOG.Point Convert(AG.Point3d target) => new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
 }

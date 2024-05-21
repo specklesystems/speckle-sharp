@@ -3,16 +3,16 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class PointCloudToSpeckleConverter : IRawConversion<DB.PointCloudInstance, SOG.Pointcloud>
+public class PointCloudToSpeckleConverter : ITypedConverter<DB.PointCloudInstance, SOG.Pointcloud>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.BoundingBoxXYZ, SOG.Box> _boundingBoxConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.BoundingBoxXYZ, SOG.Box> _boundingBoxConverter;
 
   public PointCloudToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    IRawConversion<DB.BoundingBoxXYZ, SOG.Box> boundingBoxConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.BoundingBoxXYZ, SOG.Box> boundingBoxConverter
   )
   {
     _contextStack = contextStack;
@@ -20,7 +20,7 @@ public class PointCloudToSpeckleConverter : IRawConversion<DB.PointCloudInstance
     _boundingBoxConverter = boundingBoxConverter;
   }
 
-  public SOG.Pointcloud RawConvert(DB.PointCloudInstance target)
+  public SOG.Pointcloud Convert(DB.PointCloudInstance target)
   {
     var boundingBox = target.get_BoundingBox(null);
     using DB.Transform transform = target.GetTransform();
@@ -33,12 +33,12 @@ public class PointCloudToSpeckleConverter : IRawConversion<DB.PointCloudInstance
       var specklePointCloud = new SOG.Pointcloud
       {
         points = points
-          .Select(o => _xyzToPointConverter.RawConvert(transform.OfPoint(o)))
+          .Select(o => _xyzToPointConverter.Convert(transform.OfPoint(o)))
           .SelectMany(o => new List<double>() { o.x, o.y, o.z })
           .ToList(),
         colors = points.Select(o => o.Color).ToList(),
         units = _contextStack.Current.SpeckleUnits,
-        bbox = _boundingBoxConverter.RawConvert(boundingBox)
+        bbox = _boundingBoxConverter.Convert(boundingBox)
       };
 
       return specklePointCloud;
