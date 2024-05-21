@@ -1,8 +1,6 @@
 name: .NET Build and Publish
 
 on:
-  pull_request:
-    branches: ["dui3/alpha"]
   push:
     branches: ["main"]
 

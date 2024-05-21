@@ -20,4 +20,4 @@ jobs:
           dotnet-version: 7.x.x
 
       - name: Trigger Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} 9108567828 3.0.0-pr3418.135
+        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} 9171394901 3.0.0-pr3418.151
