@@ -33,7 +33,7 @@ public class ArcGISConnectorModule : ISpeckleModule
 
     // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for ArcGIS only!
     // On SendOperation, once we called QueuedTask, it expect to run everything on same thread.
-    builder.AddSingletonInstance<ISyncToMainThread, SyncToCurrentThread>();
+    builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
 
     builder.AddSingleton<DocumentModelStore, ArcGISDocumentStore>();
 
