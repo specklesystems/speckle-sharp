@@ -33,6 +33,12 @@
           "Serilog": "2.12.0"
         }
       },
+      "Speckle.InterfaceGenerator": {
+        "type": "Direct",
+        "requested": "[0.9.4, )",
+        "resolved": "0.9.4",
+        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
+      },
       "Speckle.Revit.API": {
         "type": "Direct",
         "requested": "[2023.0.0, )",

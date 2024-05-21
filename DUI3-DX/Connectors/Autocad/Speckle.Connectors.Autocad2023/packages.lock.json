@@ -39,6 +39,12 @@
         "resolved": "2023.0.0",
         "contentHash": "aNfiNw9zRW8pCl8AAQK7afEJuea4bJ4sFNsGVSDrdq1egaonZrwALU01dSyFNCE8tne86eVjlprpOGG6r0+G/A=="
       },
+      "Speckle.InterfaceGenerator": {
+        "type": "Direct",
+        "requested": "[0.9.4, )",
+        "resolved": "0.9.4",
+        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
+      },
       "Autofac": {
         "type": "Transitive",
         "resolved": "5.2.0",
