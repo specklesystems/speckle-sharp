@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GraphQL;
 using Speckle.Automate.Sdk.Schema;
+using Speckle.Automate.Sdk.Schema.Triggers;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -75,9 +76,14 @@ public class AutomationContext
   /// <exception cref="SpeckleException">Throws if commit object is null.</exception>
   public async Task<Base> ReceiveVersion()
   {
-    Commit? commit = await SpeckleClient
-      .CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId)
-      .ConfigureAwait(false);
+    // TODO: this is a quick hack to keep implementation consistency. Move to proper receive many versions
+    if (AutomationRunData.Triggers.First() is not VersionCreationTrigger trigger)
+    {
+      throw new SpeckleException("Processed automation run data without any triggers");
+    }
+    var versionId = trigger.Payload.VersionId;
+
+    Commit? commit = await SpeckleClient.CommitGet(AutomationRunData.ProjectId, versionId).ConfigureAwait(false);
     Base? commitRootObject = await Operations
       .Receive(commit.referencedObject, _serverTransport, _memoryTransport)
       .ConfigureAwait(false);
@@ -86,9 +92,7 @@ public class AutomationContext
       throw new SpeckleException("Commit root object was null");
     }
 
-    Console.WriteLine(
-      $"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {AutomationRunData.VersionId}"
-    );
+    Console.WriteLine($"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {versionId}");
     return commitRootObject;
   }
 
@@ -103,13 +107,13 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    if (modelName == AutomationRunData.BranchName)
-    {
-      throw new ArgumentException(
-        $"The target model: {modelName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
-        nameof(modelName)
-      );
-    }
+    // if (modelName == AutomationRunData.BranchName)
+    // {
+    //   throw new ArgumentException(
+    //     $"The target model: {modelName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
+    //     nameof(modelName)
+    //   );
+    // }
 
     string rootObjectId = await Operations
       .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
@@ -122,6 +126,57 @@ public class AutomationContext
       await SpeckleClient
         .BranchCreate(new BranchCreateInput() { streamId = AutomationRunData.ProjectId, name = modelName })
         .ConfigureAwait(false);
+    }
+    else
+    {
+      // Confirm target branch is not the same as source branch
+      if (branch.id == null)
+      {
+        throw new SpeckleException("Cannot use the branch without its id");
+      }
+
+      var matchingTrigger = AutomationRunData.Triggers.FirstOrDefault(
+        (trigger) =>
+        {
+          switch (trigger)
+          {
+            case VersionCreationTrigger versionCreationTrigger:
+            {
+              return versionCreationTrigger.Payload.ModelId == branch.id;
+            }
+            default:
+            {
+              return false;
+            }
+          }
+        }
+      );
+
+      if (matchingTrigger != null)
+      {
+        switch (matchingTrigger)
+        {
+          case VersionCreationTrigger versionCreationTrigger:
+          {
+            throw new SpeckleException(
+              $$"""
+                        The target model: {{modelName}} cannot match the model
+                         that triggered this automation:
+                         {{versionCreationTrigger.Payload.ModelId}}
+                        """
+            );
+          }
+          default:
+          {
+            throw new SpeckleException(
+              $$"""
+                        The target model: {{modelName}} cannot match the model
+                         that triggered this automation.
+                        """
+            );
+          }
+        }
+      }
     }
     string versionId = await SpeckleClient
       .CommitCreate(
@@ -154,7 +209,21 @@ public class AutomationContext
     List<string> linkResources = new();
     if (includeSourceModelVersion)
     {
-      linkResources.Add($@"{AutomationRunData.ModelId}@{AutomationRunData.VersionId}");
+      foreach (var trigger in AutomationRunData.Triggers)
+      {
+        switch (trigger)
+        {
+          case VersionCreationTrigger versionCreationTrigger:
+          {
+            linkResources.Add($@"{versionCreationTrigger.Payload.ModelId}@{versionCreationTrigger.Payload.VersionId}");
+            break;
+          }
+          default:
+          {
+            throw new SpeckleException($"Could not link resource specified by {trigger.TriggerType} trigger");
+          }
+        }
+      }
     }
 
     if (resourceIds is not null)
