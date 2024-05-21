@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <AssemblyName>Objects.Converter.Civil2025</AssemblyName>
+    <AssemblyName>Objects.Converter.Civil3D2025</AssemblyName>
     <RootNamespace>Objects.Converter.Civil</RootNamespace>
     <DefineConstants>$(DefineConstants);CIVIL2025;CIVIL;CIVIL2021_OR_GREATER;CIVIL2022_OR_GREATER;CIVIL2023_OR_GREATER;CIVIL2024_OR_GREATER;CIVIL2025_OR_GREATER</DefineConstants>
     <PackageId>Speckle.Objects.Converter.Civil2025</PackageId>
