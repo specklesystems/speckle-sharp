@@ -70,7 +70,6 @@ Target(
 );
 Target(
   RESTORE,
-  DependsOn(FORMAT),
   Consts.Solutions,
   s =>
   {

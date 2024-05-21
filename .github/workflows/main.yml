@@ -27,9 +27,6 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
 
-      - name: Format
-        run: ./build.ps1 format
-
       - name : Install GitVersion
         uses: gittools/actions/gitversion/setup@v1.1.1
         with:
@@ -38,6 +35,9 @@ jobs:
       - name: Determine Version
         id: version
         uses: gittools/actions/gitversion/execute@v1.1.1
+
+      - name: Format
+        run: ./build.ps1 format
 
       - name: Restore
         run: ./build.ps1 restore
