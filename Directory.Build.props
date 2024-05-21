@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <PropertyGroup Label="General Config">
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <LangVersion>11</LangVersion>
     <DebugSymbols>true</DebugSymbols>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
