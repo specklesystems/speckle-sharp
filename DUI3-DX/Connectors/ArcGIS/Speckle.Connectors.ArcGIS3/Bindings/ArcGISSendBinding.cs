@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
@@ -17,6 +16,8 @@ using Speckle.Connectors.ArcGIS.Filters;
 using ArcGIS.Desktop.Editing.Events;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Core.Data;
+using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -30,6 +31,8 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
+
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -252,7 +255,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
-    using IUnitOfWork<SendOperation> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
+    using IUnitOfWork<SendOperation<MapMember>> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
@@ -264,18 +267,48 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      string versionId = await unitOfWork.Service
-        .Execute(
-          modelCard.SendFilter.NotNull(),
-          modelCard.AccountId.NotNull(),
-          modelCard.ProjectId.NotNull(),
-          modelCard.ModelId.NotNull(),
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
-          cts.Token
-        )
+      var sendInfo = new SendInfo(
+        modelCard.AccountId.NotNull(),
+        modelCard.ProjectId.NotNull(),
+        modelCard.ModelId.NotNull(),
+        "ArcGIS",
+        _convertedObjectReferences,
+        modelCard.ChangedObjectIds
+      );
+
+      var sendResult = await QueuedTask
+        .Run(async () =>
+        {
+          List<MapMember> mapMembers = modelCard.SendFilter
+            .NotNull()
+            .GetObjectIds()
+            .Select(id => (MapMember)MapView.Active.Map.FindLayer(id) ?? MapView.Active.Map.FindStandaloneTable(id))
+            .Where(obj => obj != null)
+            .ToList();
+
+          var result = await unitOfWork.Service
+            .Execute(
+              mapMembers,
+              sendInfo,
+              (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+              cts.Token
+            )
+            .ConfigureAwait(false);
+
+          // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+          foreach (var kvp in result.convertedReferences)
+          {
+            _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+          }
+
+          // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+          modelCard.ChangedObjectIds = new();
+
+          return result;
+        })
         .ConfigureAwait(false);
 
-      Commands.SetModelCreatedVersionId(modelCardId, versionId);
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
