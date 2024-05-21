@@ -6,15 +6,15 @@ namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
 // POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
 /// <summary>
-/// Provides an implementation for <see cref="ISpeckleConverterToHost"/>
-/// that resolves a <see cref="ISpeckleObjectToHostConversion"/> via the injected <see cref="RecursiveConverterResolver{TConverter}"/>
+/// Provides an implementation for <see cref="IRootToHostConverter"/>
+/// that resolves a <see cref="IToHostTopLevelConverter"/> via the injected <see cref="IConverterResolver{TConverter}"/>
 /// </summary>
-/// <seealso cref="ToHostConverterWithFallback"/>
-public sealed class ToHostConverterWithoutFallback : ISpeckleConverterToHost
+/// <seealso cref="ConverterWithFallback"/>
+public sealed class ConverterWithoutFallback : IRootToHostConverter
 {
-  private readonly IConverterResolver<ISpeckleObjectToHostConversion> _toHost;
+  private readonly IConverterResolver<IToHostTopLevelConverter> _toHost;
 
-  public ToHostConverterWithoutFallback(IConverterResolver<ISpeckleObjectToHostConversion> converterResolver)
+  public ConverterWithoutFallback(IConverterResolver<IToHostTopLevelConverter> converterResolver)
   {
     _toHost = converterResolver;
   }

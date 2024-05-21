@@ -5,20 +5,20 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class BrepToHostConverter : IRawConversion<SOG.Brep, RG.Brep>
+public class BrepToHostConverter : ITypedConverter<SOG.Brep, RG.Brep>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
-  private readonly IRawConversion<ICurve, RG.Curve> _curveConverter;
-  private readonly IRawConversion<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
-  private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<ICurve, RG.Curve> _curveConverter;
+  private readonly ITypedConverter<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
+  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public BrepToHostConverter(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<ICurve, RG.Curve> curveConverter,
-    IRawConversion<SOG.Surface, RG.NurbsSurface> surfaceConverter,
-    IRawConversion<SOG.Point, RG.Point3d> pointConverter,
-    IRawConversion<SOP.Interval, RG.Interval> intervalConverter
+    ITypedConverter<ICurve, RG.Curve> curveConverter,
+    ITypedConverter<SOG.Surface, RG.NurbsSurface> surfaceConverter,
+    ITypedConverter<SOG.Point, RG.Point3d> pointConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _contextStack = contextStack;
@@ -40,17 +40,17 @@ public class BrepToHostConverter : IRawConversion<SOG.Brep, RG.Brep>
   /// <param name="target">The Speckle Brep object to be converted.</param>
   /// <returns>The equivalent Rhino Brep object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.Brep RawConvert(SOG.Brep target)
+  public RG.Brep Convert(SOG.Brep target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
 
     var rhinoBrep = new RG.Brep();
 
     // Geometry goes in first, always. Order doesn't matter.
-    target.Curve3D.ForEach(curve => rhinoBrep.AddEdgeCurve(_curveConverter.RawConvert(curve)));
-    target.Curve2D.ForEach(curve => rhinoBrep.AddTrimCurve(_curveConverter.RawConvert(curve)));
-    target.Surfaces.ForEach(surface => rhinoBrep.AddSurface(_surfaceConverter.RawConvert(surface)));
-    target.Vertices.ForEach(vertex => rhinoBrep.Vertices.Add(_pointConverter.RawConvert(vertex), tolerance));
+    target.Curve3D.ForEach(curve => rhinoBrep.AddEdgeCurve(_curveConverter.Convert(curve)));
+    target.Curve2D.ForEach(curve => rhinoBrep.AddTrimCurve(_curveConverter.Convert(curve)));
+    target.Surfaces.ForEach(surface => rhinoBrep.AddSurface(_surfaceConverter.Convert(surface)));
+    target.Vertices.ForEach(vertex => rhinoBrep.Vertices.Add(_pointConverter.Convert(vertex), tolerance));
 
     // Order matters, first edges, then faces, finally loops.
     target.Edges.ForEach(edge => ConvertSpeckleBrepEdge(rhinoBrep, edge, tolerance));
@@ -151,7 +151,7 @@ public class BrepToHostConverter : IRawConversion<SOG.Brep, RG.Brep>
         speckleEdge.StartIndex,
         speckleEdge.EndIndex,
         speckleEdge.Curve3dIndex,
-        _intervalConverter.RawConvert(speckleEdge.Domain),
+        _intervalConverter.Convert(speckleEdge.Domain),
         tolerance
       );
     }

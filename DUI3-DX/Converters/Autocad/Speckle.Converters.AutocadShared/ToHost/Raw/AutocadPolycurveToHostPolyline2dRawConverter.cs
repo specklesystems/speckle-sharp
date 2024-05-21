@@ -5,13 +5,14 @@ using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Autocad2023.ToHost.Raw;
 
-public class AutocadPolycurveToHostPolyline2dRawConverter : IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d>
+public class AutocadPolycurveToHostPolyline2dRawConverter
+  : ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d>
 {
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public AutocadPolycurveToHostPolyline2dRawConverter(
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -19,7 +20,7 @@ public class AutocadPolycurveToHostPolyline2dRawConverter : IRawConversion<SOG.A
     _contextStack = contextStack;
   }
 
-  public ADB.Polyline2d RawConvert(SOG.Autocad.AutocadPolycurve target)
+  public ADB.Polyline2d Convert(SOG.Autocad.AutocadPolycurve target)
   {
     // check for normal
     if (target.normal is not SOG.Vector normal)
@@ -50,7 +51,7 @@ public class AutocadPolycurveToHostPolyline2dRawConverter : IRawConversion<SOG.A
     }
 
     // create the polyline2d using the empty constructor
-    AG.Vector3d convertedNormal = _vectorConverter.RawConvert(normal);
+    AG.Vector3d convertedNormal = _vectorConverter.Convert(normal);
     double convertedElevation = elevation * f;
     ADB.Polyline2d polyline =
       new()

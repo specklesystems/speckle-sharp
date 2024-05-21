@@ -12,12 +12,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public class HostedElementConversionToSpeckle
 {
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IRootToSpeckleConverter _converter;
   private readonly IRevitConversionContextStack _contextStack;
 
   public HostedElementConversionToSpeckle(
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    ISpeckleConverterToSpeckle converter,
+    IRootToSpeckleConverter converter,
     IRevitConversionContextStack contextStack
   )
   {

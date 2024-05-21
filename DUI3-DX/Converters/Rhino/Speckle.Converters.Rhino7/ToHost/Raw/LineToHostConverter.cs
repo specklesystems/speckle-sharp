@@ -2,11 +2,11 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class LineToHostConverter : IRawConversion<SOG.Line, RG.LineCurve>, IRawConversion<SOG.Line, RG.Line>
+public class LineToHostConverter : ITypedConverter<SOG.Line, RG.LineCurve>, ITypedConverter<SOG.Line, RG.Line>
 {
-  private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
 
-  public LineToHostConverter(IRawConversion<SOG.Point, RG.Point3d> pointConverter)
+  public LineToHostConverter(ITypedConverter<SOG.Point, RG.Point3d> pointConverter)
   {
     _pointConverter = pointConverter;
   }
@@ -22,13 +22,13 @@ public class LineToHostConverter : IRawConversion<SOG.Line, RG.LineCurve>, IRawC
   /// If you need it preserved you must request a conversion to
   /// <see cref="RG.LineCurve"/> conversion instead
   /// </remarks>
-  public RG.Line RawConvert(SOG.Line target) =>
-    new(_pointConverter.RawConvert(target.start), _pointConverter.RawConvert(target.end));
+  public RG.Line Convert(SOG.Line target) =>
+    new(_pointConverter.Convert(target.start), _pointConverter.Convert(target.end));
 
   /// <summary>
   /// Converts a Speckle Line object to a Rhino LineCurve object.
   /// </summary>
   /// <param name="target">The Speckle Line object to convert.</param>
   /// <returns>Returns the resulting Rhino LineCurve object.</returns>
-  RG.LineCurve IRawConversion<SOG.Line, RG.LineCurve>.RawConvert(SOG.Line target) => new(RawConvert(target));
+  RG.LineCurve ITypedConverter<SOG.Line, RG.LineCurve>.Convert(SOG.Line target) => new(Convert(target));
 }

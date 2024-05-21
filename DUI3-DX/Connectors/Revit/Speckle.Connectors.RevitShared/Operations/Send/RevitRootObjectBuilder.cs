@@ -8,24 +8,17 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
-public class RootObjectBuilder : IRootObjectBuilder<ElementId>
+public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 {
   // POC: SendSelection and RevitConversionContextStack should be interfaces, former needs interfaces
-  private readonly ISpeckleConverterToSpeckle _converter;
-  private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
+  private readonly IRootToSpeckleConverter _converter;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
 
-  public RootObjectBuilder(
-    ISpeckleConverterToSpeckle converter,
-    ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    IRevitConversionContextStack contextStack
-  )
+  public RevitRootObjectBuilder(IRootToSpeckleConverter converter, IRevitConversionContextStack contextStack)
   {
     _converter = converter;
-    // POC: needs considering if this is something to add now or needs refactoring
-    _convertedObjectsCache = convertedObjectsCache;
     _contextStack = contextStack;
 
     // Note, this class is instantiated per unit of work (aka per send operation), so we can safely initialize what we need in here.

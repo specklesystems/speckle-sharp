@@ -7,13 +7,13 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.DirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DirectShapeConversionToSpeckle : BaseConversionToSpeckle<DB.DirectShape, SOBR.DirectShape>
+public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.DirectShape, SOBR.DirectShape>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly DisplayValueExtractor _displayValueExtractor;
 
-  public DirectShapeConversionToSpeckle(
+  public DirectShapeTopLevelConverterToSpeckle(
     ParameterObjectAssigner parameterObjectAssigner,
     IRevitConversionContextStack contextStack,
     DisplayValueExtractor displayValueExtractor
@@ -24,7 +24,7 @@ public class DirectShapeConversionToSpeckle : BaseConversionToSpeckle<DB.DirectS
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override SOBR.DirectShape RawConvert(DB.DirectShape target)
+  public override SOBR.DirectShape Convert(DB.DirectShape target)
   {
     var category = target.Category.GetBuiltInCategory().GetSchemaBuilderCategoryFromBuiltIn();
 

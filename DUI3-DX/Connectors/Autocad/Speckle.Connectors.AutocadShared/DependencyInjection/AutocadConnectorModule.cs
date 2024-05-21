@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;
@@ -16,8 +15,6 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Autocad;
-using Speckle.Converters.Common;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
@@ -41,12 +38,12 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton<AutocadIdleManager>();
 
     // Operations
-    builder.AddScoped<SendOperation<(DBObject obj, string applicationId)>>();
+    builder.AddScoped<SendOperation<AutocadRootObject>>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // Object Builders
-    builder.AddScoped<IHostObjectBuilder, HostObjectBuilder>();
-    builder.AddSingleton<IRootObjectBuilder<(DBObject obj, string applicationId)>, RootObjectBuilder>();
+    builder.AddScoped<IHostObjectBuilder, AutocadHostObjectBuilder>();
+    builder.AddSingleton<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
 
     // Register bindings
 
@@ -58,8 +55,6 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton<IBinding, AutocadSelectionBinding>();
     builder.AddSingleton<IBinding, AutocadSendBinding>();
     builder.AddSingleton<IBinding, AutocadReceiveBinding>();
-
-    builder.AddSingleton<IHostToSpeckleUnitConverter<UnitsValue>, AutocadToSpeckleUnitConverter>();
 
     // register send filters
     builder.AddTransient<ISendFilter, AutocadSelectionFilter>();

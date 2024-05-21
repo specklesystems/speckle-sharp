@@ -4,14 +4,14 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class RawPointCloudToSpeckle : IRawConversion<RG.PointCloud, SOG.Pointcloud>
+public class RawPointCloudToSpeckle : ITypedConverter<RG.PointCloud, SOG.Pointcloud>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
 
   public RawPointCloudToSpeckle(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    ITypedConverter<RG.Box, SOG.Box> boxConverter
   )
   {
     _contextStack = contextStack;
@@ -23,12 +23,12 @@ public class RawPointCloudToSpeckle : IRawConversion<RG.PointCloud, SOG.Pointclo
   /// </summary>
   /// <param name="target">The Rhino PointCloud object to convert.</param>
   /// <returns>The converted Speckle Pointcloud object.</returns>
-  public SOG.Pointcloud RawConvert(RG.PointCloud target) =>
+  public SOG.Pointcloud Convert(RG.PointCloud target) =>
     new()
     {
       points = target.GetPoints().SelectMany(pt => new[] { pt.X, pt.Y, pt.Z }).ToList(),
       colors = target.GetColors().Select(o => o.ToArgb()).ToList(),
-      bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))),
+      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(true))),
       units = _contextStack.Current.SpeckleUnits
     };
 }

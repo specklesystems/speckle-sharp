@@ -56,6 +56,6 @@ public class RevitConnectorModule : ISpeckleModule
 
     // send operation and dependencies
     builder.AddScoped<SendOperation<ElementId>>();
-    builder.AddScoped<IRootObjectBuilder<ElementId>, RootObjectBuilder>();
+    builder.AddScoped<IRootObjectBuilder<ElementId>, RevitRootObjectBuilder>();
   }
 }

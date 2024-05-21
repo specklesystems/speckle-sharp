@@ -8,18 +8,18 @@ using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Autocad.Operations.Send;
 
-public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applicationId)>
+public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
 {
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
 
-  public RootObjectBuilder(ISpeckleConverterToSpeckle converter)
+  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter)
   {
     _converter = converter;
   }
 
   public Base Build(
-    IReadOnlyList<(DBObject obj, string applicationId)> objects,
+    IReadOnlyList<AutocadRootObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
@@ -39,12 +39,9 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
-    foreach ((DBObject obj, string applicationId) tuple in objects)
+    foreach (var (root, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
-
-      var dbObject = tuple.obj;
-      var applicationId = tuple.applicationId;
 
       try
       {
@@ -58,7 +55,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
         }
         else
         {
-          converted = _converter.Convert(dbObject);
+          converted = _converter.Convert(root);
 
           if (converted == null)
           {
@@ -69,7 +66,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
         }
 
         // Create and add a collection for each layer if not done so already.
-        if ((tuple.obj as Entity)?.Layer is string layer)
+        if ((root as Entity)?.Layer is string layer)
         {
           if (!collectionCache.TryGetValue(layer, out Collection? collection))
           {
