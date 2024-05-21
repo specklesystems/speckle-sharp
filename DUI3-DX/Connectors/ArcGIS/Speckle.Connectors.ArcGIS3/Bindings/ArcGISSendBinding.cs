@@ -14,6 +14,9 @@ using Speckle.Connectors.Utils;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.Filters;
+using ArcGIS.Desktop.Editing.Events;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Core.Data;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -32,6 +35,8 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
+  private List<FeatureLayer> SubscribedLayers { get; set; } = new();
+  private List<StandaloneTable> SubscribedTables { get; set; } = new();
 
   public ArcGISSendBinding(
     DocumentModelStore store,
@@ -57,6 +62,111 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     StandaloneTablesRemovedEvent.Subscribe(GetIdsForStandaloneTablesRemovedEvent, true);
     MapPropertyChangedEvent.Subscribe(GetIdsForMapPropertyChangedEvent, true); // Map units, CRS etc.
     MapMemberPropertiesChangedEvent.Subscribe(GetIdsForMapMemberPropertiesChangedEvent, true); // e.g. Layer name
+
+    ActiveMapViewChangedEvent.Subscribe(SubscribeToMapMembersDataSourceChange, true);
+    LayersAddedEvent.Subscribe(GetIdsForLayersAddedEvent, true);
+    StandaloneTablesAddedEvent.Subscribe(GetIdsForStandaloneTablesAddedEvent, true);
+  }
+
+  private void SubscribeToMapMembersDataSourceChange(ActiveMapViewChangedEventArgs args)
+  {
+    var task = QueuedTask.Run(() =>
+    {
+      if (MapView.Active == null)
+      {
+        return;
+      }
+
+      // subscribe to layers
+      foreach (Layer layer in MapView.Active.Map.Layers)
+      {
+        if (layer is FeatureLayer featureLayer)
+        {
+          SubscribeToFeatureLayerDataSourceChange(featureLayer);
+        }
+      }
+      // subscribe to tables
+      foreach (StandaloneTable table in MapView.Active.Map.StandaloneTables)
+      {
+        SubscribeToTableDataSourceChange(table);
+      }
+    });
+    task.Wait();
+  }
+
+  private void SubscribeToFeatureLayerDataSourceChange(FeatureLayer layer)
+  {
+    if (SubscribedLayers.Contains(layer))
+    {
+      return;
+    }
+    Table layerTable = layer.GetTable();
+    SubscribeToAnyDataSourceChange(layerTable);
+    SubscribedLayers.Add(layer);
+  }
+
+  private void SubscribeToTableDataSourceChange(StandaloneTable table)
+  {
+    if (SubscribedTables.Contains(table))
+    {
+      return;
+    }
+    Table layerTable = table.GetTable();
+    SubscribeToAnyDataSourceChange(layerTable);
+    SubscribedTables.Add(table);
+  }
+
+  private void SubscribeToAnyDataSourceChange(Table layerTable)
+  {
+    RowCreatedEvent.Subscribe(
+      (args) =>
+      {
+        OnRowChanged(args);
+      },
+      layerTable
+    );
+    RowChangedEvent.Subscribe(
+      (args) =>
+      {
+        OnRowChanged(args);
+      },
+      layerTable
+    );
+    RowDeletedEvent.Subscribe(
+      (args) =>
+      {
+        OnRowChanged(args);
+      },
+      layerTable
+    );
+  }
+
+  private void OnRowChanged(RowChangedEventArgs args)
+  {
+    if (args == null || MapView.Active == null)
+    {
+      return;
+    }
+
+    // get the path of the edited dataset
+    var datasetURI = args.Row.GetTable().GetPath();
+
+    // find all layers & tables reading from the dataset
+    foreach (Layer layer in MapView.Active.Map.Layers)
+    {
+      if (layer.GetPath() == datasetURI)
+      {
+        ChangedObjectIds.Add(layer.URI);
+      }
+    }
+    foreach (StandaloneTable table in MapView.Active.Map.StandaloneTables)
+    {
+      if (table.GetPath() == datasetURI)
+      {
+        ChangedObjectIds.Add(table.URI);
+      }
+    }
+    RunExpirationChecks(false);
   }
 
   private void GetIdsForLayersRemovedEvent(LayerEventsArgs args)
@@ -87,6 +197,25 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       }
     }
     RunExpirationChecks(false);
+  }
+
+  private void GetIdsForLayersAddedEvent(LayerEventsArgs args)
+  {
+    foreach (Layer layer in args.Layers)
+    {
+      if (layer is FeatureLayer featureLayer)
+      {
+        SubscribeToFeatureLayerDataSourceChange(featureLayer);
+      }
+    }
+  }
+
+  private void GetIdsForStandaloneTablesAddedEvent(StandaloneTableEventArgs args)
+  {
+    foreach (StandaloneTable table in args.Tables)
+    {
+      SubscribeToTableDataSourceChange(table);
+    }
   }
 
   private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
