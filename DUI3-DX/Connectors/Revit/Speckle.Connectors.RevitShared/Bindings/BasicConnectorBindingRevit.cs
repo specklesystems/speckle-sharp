@@ -50,30 +50,26 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public string GetSourceApplicationName() => _revitSettings.HostSlug.ToLower(); // POC: maybe not right place but... // ANOTHER POC: We should align this naming from somewhere in common DUI projects instead old structs. I know there are other POC comments around this
 
-  public string GetSourceApplicationVersion()
-  {
-    // POC: maybe not right place but...
-    return _revitSettings.HostAppVersion;
-  }
+  public string GetSourceApplicationVersion() => _revitSettings.HostAppVersion; // POC: maybe not right place but...
 
   public DocumentInfo? GetDocumentInfo()
   {
     // POC: not sure why this would ever be null, is this needed?
     _revitContext.UIApplication.NotNull();
 
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+    var doc = _revitContext.UIApplication.ActiveUIDocument?.Document;
     if (doc is null)
     {
       return null;
     }
 
-    var info = new DocumentInfo(doc.Title, doc.GetHashCode().ToString(), doc.PathName);
     if (doc.IsFamilyDocument)
     {
-      info.Message = "Family Environment files not supported by Speckle.";
+      return new DocumentInfo("", "", "") { Message = "Family environment files not supported by Speckle." };
     }
 
-    // POC: Notify user here if document is null.
+    var info = new DocumentInfo(doc.PathName, doc.Title, doc.GetHashCode().ToString());
+
     return info;
   }
 

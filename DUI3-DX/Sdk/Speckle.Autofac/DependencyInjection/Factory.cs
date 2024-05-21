@@ -1,7 +1,9 @@
 using Autofac.Features.Indexed;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Autofac.DependencyInjection;
 
+[GenerateAutoInterface]
 public class Factory<TKey, TValue> : IFactory<TKey, TValue>
   where TValue : class
 {
@@ -14,7 +16,10 @@ public class Factory<TKey, TValue> : IFactory<TKey, TValue>
 
   public TValue? ResolveInstance(TKey strongName)
   {
-    _types.TryGetValue(strongName, out TValue value);
-    return value;
+    if (_types.TryGetValue(strongName, out TValue value))
+    {
+      return value;
+    }
+    return null;
   }
 }

@@ -1,6 +1,5 @@
-﻿using System.IO;
-using System.Reflection;
-using Rhino.PlugIns;
+﻿using Rhino.PlugIns;
+using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
@@ -45,7 +44,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   {
     try
     {
-      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<SpeckleConnectorsRhino7Plugin>;
 
       Container = new AutofacContainer(new StorageInfo());
 
@@ -77,25 +76,5 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   {
     _rhinoPlugin?.Shutdown();
     base.OnShutdown();
-  }
-
-  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(SpeckleConnectorsRhino7Plugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly;
   }
 }
