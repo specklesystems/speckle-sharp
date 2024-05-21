@@ -1,5 +1,8 @@
 namespace Speckle.Automate.Sdk.Schema.Triggers;
 
+/// <summary>
+/// Represents a single version creation trigger for the automation run.
+/// </summary>
 public class VersionCreationTrigger : AutomationRunTriggerBase
 {
   public VersionCreationTriggerPayload Payload { get; set; }
@@ -11,6 +14,9 @@ public class VersionCreationTrigger : AutomationRunTriggerBase
   }
 }
 
+/// <summary>
+/// Represents the version creation trigger payload.
+/// </summary>
 public class VersionCreationTriggerPayload
 {
   public string ModelId { get; set; }
