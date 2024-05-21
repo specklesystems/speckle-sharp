@@ -55,7 +55,7 @@ This monorepo is the home to our Speckle 2.0 .NET projects:
   - [`ConnectorGrasshopper`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorGrasshopper): for McNeel Grasshopper
   - [`ConnectorRevit`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorRevit): for Autodesk Revit 2019+
   - [`ConnectorRhino`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorRhino): for McNeel Rhino 6+
-- [`DesktopUI`](https://github.com/specklesystems/speckle-sharp/tree/main/DesktopUI): reusable UI for all connectors (except visual programming)
+- [`DesktopUI2`](https://github.com/specklesystems/speckle-sharp/tree/main/DesktopUI2): reusable UI for all connectors (except visual programming)
 
 ### Other repos
 
