@@ -258,54 +258,29 @@ public class AutomationContext
       {
         Query =
           @"
-            mutation ReportFunctionRunStatus(
-                $automationId: String!,
-                $automationRevisionId: String!,
-                $automationRunId: String!,
-                $versionId: String!,
-                $functionId: String!,
-                $functionName: String!,
-                $functionLogo: String,
-                $runStatus: AutomationRunStatus!
-                $elapsed: Float!
-                $resultVersionIds: [String!]!
+            mutation AutomateFunctionRunStatusReport(
+                $functionRunId: String!
+                $status: AutomateRunStatus!
                 $statusMessage: String
-                $objectResults: JSONObject
+                $results: JSONObject
+                $contextView: String
             ){
-              automationMutations {
-                functionRunStatusReport(input: {
-                  automationId: $automationId
-                  automationRevisionId: $automationRevisionId
-                  automationRunId: $automationRunId
-                  versionId: $versionId
-                  functionRuns: [{
-                    functionId: $functionId,
-                    functionName: $functionName,
-                    functionLogo: $functionLogo,
-                    status: $runStatus,
-                    elapsed: $elapsed,
-                    resultVersionIds: $resultVersionIds,
-                    statusMessage: $statusMessage,
-                    results: $objectResults,
-                  }]
+                automateFunctionRunStatusReport(input: {
+                    functionRunId: $functionRunId
+                    status: $status
+                    statusMessage: $statusMessage
+                    contextView: $contextView
+                    results: $results
                 })
-              }
             }
         ",
         Variables = new
         {
-          automationId = AutomationRunData.AutomationId,
-          automationRevisionId = AutomationRunData.AutomationRevisionId,
-          automationRunId = AutomationRunData.AutomationRunId,
-          versionId = AutomationRunData.VersionId,
-          functionId = AutomationRunData.FunctionId,
-          functionName = AutomationRunData.FunctionName,
-          functionLogo = AutomationRunData.FunctionLogo,
-          runStatus = RunStatus,
+          functionRunId = AutomationRunData.FunctionRunId,
+          status = RunStatus,
           statusMessage = AutomationResult.StatusMessage,
-          elapsed = Elapsed.TotalSeconds,
-          resultVersionIds = AutomationResult.ResultVersions,
-          objectResults,
+          contextView = ContextView,
+          results = objectResults,
         }
       };
     await SpeckleClient.ExecuteGraphQLRequest<Dictionary<string, object>>(request).ConfigureAwait(false);
