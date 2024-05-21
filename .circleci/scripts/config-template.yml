@@ -81,7 +81,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0.100
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.100
             $HOME/.dotnet/dotnet --version
       - run:
           name: Enforce formatting
@@ -129,7 +129,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0.100
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.100
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -310,7 +310,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0.100
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.100
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
