@@ -107,14 +107,6 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    // if (modelName == AutomationRunData.BranchName)
-    // {
-    //   throw new ArgumentException(
-    //     $"The target model: {modelName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
-    //     nameof(modelName)
-    //   );
-    // }
-
     string rootObjectId = await Operations
       .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
       .ConfigureAwait(false);
