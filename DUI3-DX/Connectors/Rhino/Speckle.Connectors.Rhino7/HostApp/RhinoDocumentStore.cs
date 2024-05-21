@@ -9,8 +9,8 @@ public class RhinoDocumentStore : DocumentModelStore
   private const string SPECKLE_KEY = "Speckle_DUI3";
   public override bool IsDocumentInit { get; set; } = true; // Note: because of rhino implementation details regarding expiry checking of sender cards.
 
-  public RhinoDocumentStore(JsonSerializerSettings jsonSerializerSettings, bool writeToFileOnChange)
-    : base(jsonSerializerSettings, writeToFileOnChange)
+  public RhinoDocumentStore(JsonSerializerSettings jsonSerializerSettings)
+    : base(jsonSerializerSettings, true)
   {
     RhinoDoc.BeginOpenDocument += (_, _) => IsDocumentInit = false;
     RhinoDoc.EndOpenDocument += (_, e) =>

@@ -1,12 +1,9 @@
+using System.Reflection;
 using ArcGIS.Desktop.Framework;
-using Autofac;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.HostApp;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
-using Speckle.Converters.Common.DependencyInjection;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS;
@@ -24,19 +21,21 @@ internal sealed class SpeckleModule : Module
   public static SpeckleModule Current =>
     s_this ??= (SpeckleModule)FrameworkApplication.FindModule("ConnectorArcGIS_Module");
 
-  public AutofacContainer Container { get; }
+  public SpeckleContainer Container { get; }
 
   public SpeckleModule()
   {
     AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<SpeckleModule>;
 
-    Container = new AutofacContainer(new StorageInfo());
-    Container.PreBuildEvent += Container_PreBuildEvent;
+    var builder = SpeckleContainerBuilder.CreateInstance();
 
     // Register Settings
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
-    Container.LoadAutofacModules(arcgisSettings.Modules).AddSingletonInstance(arcgisSettings).Build();
+    Container = builder
+      .LoadAutofacModules(Assembly.GetExecutingAssembly(), arcgisSettings.Modules)
+      .AddSingleton(arcgisSettings)
+      .Build();
   }
 
   /// <summary>
@@ -48,12 +47,5 @@ internal sealed class SpeckleModule : Module
     //TODO - add your business logic
     //return false to ~cancel~ Application close
     return true;
-  }
-
-  private static void Container_PreBuildEvent(object? sender, ContainerBuilder containerBuilder)
-  {
-    containerBuilder.RegisterRawConversions();
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
-    containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
 }
