@@ -418,7 +418,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-dotnet-mac:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
     parameters:
       slnname:
         type: string
