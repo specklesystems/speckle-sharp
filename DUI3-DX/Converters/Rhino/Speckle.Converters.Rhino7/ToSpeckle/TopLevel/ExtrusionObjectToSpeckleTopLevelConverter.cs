@@ -6,11 +6,11 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 [NameAndRankValue(nameof(ExtrusionObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ExtrusionObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleConversion
+public class ExtrusionObjectToSpeckleTopLevelConverter : IToSpeckleTopLevelConverter
 {
-  private readonly IRawConversion<RG.Brep, SOG.Brep> _curveConverter;
+  private readonly ITypedConverter<RG.Brep, SOG.Brep> _curveConverter;
 
-  public ExtrusionObjectToSpeckleTopLevelConverter(IRawConversion<RG.Brep, SOG.Brep> curveConverter)
+  public ExtrusionObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Brep, SOG.Brep> curveConverter)
   {
     _curveConverter = curveConverter;
   }
@@ -18,7 +18,7 @@ public class ExtrusionObjectToSpeckleTopLevelConverter : IHostObjectToSpeckleCon
   public Base Convert(object target)
   {
     var curveObject = (ExtrusionObject)target;
-    var speckleCurve = _curveConverter.RawConvert(curveObject.ExtrusionGeometry.ToBrep());
+    var speckleCurve = _curveConverter.Convert(curveObject.ExtrusionGeometry.ToBrep());
     return speckleCurve;
   }
 }

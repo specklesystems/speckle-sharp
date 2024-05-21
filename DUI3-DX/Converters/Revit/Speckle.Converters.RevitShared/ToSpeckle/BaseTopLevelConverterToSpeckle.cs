@@ -6,15 +6,15 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: maybe but could be generic abstract Converters.Common?
 // or maybe it's not actually doing very much now and can come out
-public abstract class BaseConversionToSpeckle<THost, TSpeckle>
-  : IHostObjectToSpeckleConversion,
+public abstract class BaseTopLevelConverterToSpeckle<THost, TSpeckle>
+  : IToSpeckleTopLevelConverter,
     // POC: why do we need to do this for each base conversion?
-    IRawConversion<THost, TSpeckle>
+    ITypedConverter<THost, TSpeckle>
   where TSpeckle : Base
 {
   public Base Convert(object target)
   {
-    var result = RawConvert((THost)target);
+    var result = Convert((THost)target);
 
     // POC: unless I am going bonkers, we've constrained TSpeckle to Base
     // so it should always BE base?
@@ -28,5 +28,5 @@ public abstract class BaseConversionToSpeckle<THost, TSpeckle>
     return @base;
   }
 
-  public abstract TSpeckle RawConvert(THost target);
+  public abstract TSpeckle Convert(THost target);
 }

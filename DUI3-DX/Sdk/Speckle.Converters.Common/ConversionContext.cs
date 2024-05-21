@@ -10,6 +10,6 @@ public class ConversionContext<TDocument>
     SpeckleUnits = speckleUnits;
   }
 
-  public TDocument Document { get; protected set; }
+  public TDocument Document { get; }
   public string SpeckleUnits { get; private set; }
 }

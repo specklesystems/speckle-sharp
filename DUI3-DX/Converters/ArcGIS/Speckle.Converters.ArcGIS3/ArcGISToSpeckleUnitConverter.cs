@@ -7,29 +7,31 @@ namespace Speckle.Converters.ArcGIS3;
 
 public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
 {
-  private readonly Dictionary<string, string> _unitMapping = new();
+  private static readonly IReadOnlyDictionary<string, string> s_unitMapping = Create();
 
-  public ArcGISToSpeckleUnitConverter()
+  private static IReadOnlyDictionary<string, string> Create()
   {
+    var dict = new Dictionary<string, string>();
     // POC: we should have a unit test to confirm these are as expected and don't change
     //_unitMapping[LinearUnit.] = Units.Meters;
-    _unitMapping[LinearUnit.Millimeters.Name] = Units.Millimeters;
-    _unitMapping[LinearUnit.Centimeters.Name] = Units.Centimeters;
-    _unitMapping[LinearUnit.Meters.Name] = Units.Meters;
-    _unitMapping[LinearUnit.Kilometers.Name] = Units.Kilometers;
-    _unitMapping[LinearUnit.Inches.Name] = Units.Inches;
-    _unitMapping[LinearUnit.Feet.Name] = Units.Feet;
-    _unitMapping[LinearUnit.Yards.Name] = Units.Yards;
-    _unitMapping[LinearUnit.Miles.Name] = Units.Miles;
+    dict[LinearUnit.Millimeters.Name] = Units.Millimeters;
+    dict[LinearUnit.Centimeters.Name] = Units.Centimeters;
+    dict[LinearUnit.Meters.Name] = Units.Meters;
+    dict[LinearUnit.Kilometers.Name] = Units.Kilometers;
+    dict[LinearUnit.Inches.Name] = Units.Inches;
+    dict[LinearUnit.Feet.Name] = Units.Feet;
+    dict[LinearUnit.Yards.Name] = Units.Yards;
+    dict[LinearUnit.Miles.Name] = Units.Miles;
     //_unitMapping[LinearUnit.Decimeters] = Units.;
     //_unitMapping[LinearUnit.NauticalMiles] = Units.;
+    return dict;
   }
 
   public string ConvertOrThrow(Unit hostUnit)
   {
     var linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).Name;
 
-    if (_unitMapping.TryGetValue(linearUnit, out string? value))
+    if (s_unitMapping.TryGetValue(linearUnit, out string? value))
     {
       return value;
     }

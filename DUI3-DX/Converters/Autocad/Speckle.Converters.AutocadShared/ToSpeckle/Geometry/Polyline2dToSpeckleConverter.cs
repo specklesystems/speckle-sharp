@@ -12,26 +12,26 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.FitCurvePoly"/> will have only <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// The IToSpeckleTopLevelConverter inheritance should only expect database-resident <see cref="ADB.Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline2d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
+public class Polyline2dToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly IRawConversion<ADB.Arc, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<ADB.Line, SOG.Line> _lineConverter;
-  private readonly IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve> _polylineConverter;
-  private readonly IRawConversion<ADB.Spline, SOG.Curve> _splineConverter;
-  private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<ADB.Arc, SOG.Arc> _arcConverter;
+  private readonly ITypedConverter<ADB.Line, SOG.Line> _lineConverter;
+  private readonly ITypedConverter<ADB.Polyline, SOG.Autocad.AutocadPolycurve> _polylineConverter;
+  private readonly ITypedConverter<ADB.Spline, SOG.Curve> _splineConverter;
+  private readonly ITypedConverter<AG.Vector3d, SOG.Vector> _vectorConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public Polyline2dToSpeckleConverter(
-    IRawConversion<ADB.Arc, SOG.Arc> arcConverter,
-    IRawConversion<ADB.Line, SOG.Line> lineConverter,
-    IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve> polylineConverter,
-    IRawConversion<ADB.Spline, SOG.Curve> splineConverter,
-    IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<ADB.Arc, SOG.Arc> arcConverter,
+    ITypedConverter<ADB.Line, SOG.Line> lineConverter,
+    ITypedConverter<ADB.Polyline, SOG.Autocad.AutocadPolycurve> polylineConverter,
+    ITypedConverter<ADB.Spline, SOG.Curve> splineConverter,
+    ITypedConverter<AG.Vector3d, SOG.Vector> vectorConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -137,7 +137,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
                 arc.ReverseCurve();
               }
 
-              segments.Add(_arcConverter.RawConvert(arc));
+              segments.Add(_arcConverter.Convert(arc));
               previousPoint = arc.EndPoint;
               break;
             case ADB.Line line:
@@ -146,7 +146,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
                 line.ReverseCurve();
               }
 
-              segments.Add(_lineConverter.RawConvert(line));
+              segments.Add(_lineConverter.Convert(line));
               previousPoint = line.EndPoint;
               break;
           }
@@ -157,7 +157,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     // for splines, convert the spline curve and display value and add to the segments list
     if (isSpline)
     {
-      SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
+      SOG.Curve spline = _splineConverter.Convert(target.Spline);
       SOG.Polyline displayValue = segmentValues.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
       if (displayValue != null)
       {
@@ -167,8 +167,8 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       segments.Add(spline);
     }
 
-    SOG.Vector normal = _vectorConverter.RawConvert(target.Normal);
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Vector normal = _vectorConverter.Convert(target.Normal);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
     SOG.Autocad.AutocadPolycurve polycurve =
       new()
       {

@@ -34,7 +34,7 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
 
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
+    using var uow = _unitOfWorkFactory.Resolve<IRootToSpeckleConverter>();
     var converter = uow.Service;
 
     int count = 0;

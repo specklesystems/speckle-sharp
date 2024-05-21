@@ -5,15 +5,15 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 [NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
+public class MeshToSpeckleConverter : ITypedConverter<RG.Mesh, SOG.Mesh>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public MeshToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
@@ -28,7 +28,7 @@ public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
   /// <param name="target">The Rhino Mesh to be converted.</param>
   /// <returns>The converted Speckle Mesh.</returns>
   /// <exception cref="SpeckleConversionException">Thrown when the Rhino Mesh has 0 vertices or faces.</exception>
-  public SOG.Mesh RawConvert(RG.Mesh target)
+  public SOG.Mesh Convert(RG.Mesh target)
   {
     if (target.Vertices.Count == 0 || target.Faces.Count == 0)
     {
@@ -55,7 +55,7 @@ public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
 
     var colors = target.VertexColors.Select(cl => cl.ToArgb()).ToList();
     var volume = target.IsClosed ? target.Volume() : 0;
-    var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(false)));
+    var bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(false)));
 
     return new SOG.Mesh(vertexCoordinates, faces, colors, textureCoordinates, _contextStack.Current.SpeckleUnits)
     {

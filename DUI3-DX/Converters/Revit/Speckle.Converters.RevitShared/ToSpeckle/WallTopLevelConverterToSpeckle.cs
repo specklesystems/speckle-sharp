@@ -12,26 +12,26 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
 [NameAndRankValue(nameof(DB.Wall), 0)]
-public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.RevitWall>
+public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Wall, SOBR.RevitWall>
 {
-  private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IRootToSpeckleConverter _converter;
 
-  public WallConversionToSpeckle(
-    IRawConversion<DB.Curve, ICurve> curveConverter,
-    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
-    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+  public WallTopLevelConverterToSpeckle(
+    ITypedConverter<DB.Curve, ICurve> curveConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
     IRevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
-    ISpeckleConverterToSpeckle converter
+    IRootToSpeckleConverter converter
   )
   {
     _curveConverter = curveConverter;
@@ -44,7 +44,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     _converter = converter;
   }
 
-  public override SOBR.RevitWall RawConvert(DB.Wall target)
+  public override SOBR.RevitWall Convert(DB.Wall target)
   {
     SOBR.RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
 
@@ -66,19 +66,19 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
       );
     }
 
-    speckleWall.baseLine = _curveConverter.RawConvert(locationCurve.Curve);
+    speckleWall.baseLine = _curveConverter.Convert(locationCurve.Curve);
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
       DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
-    speckleWall.level = _levelConverter.RawConvert(level);
+    speckleWall.level = _levelConverter.Convert(level);
 
     var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
       DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
-    speckleWall.topLevel = _levelConverter.RawConvert(topLevel);
+    speckleWall.topLevel = _levelConverter.Convert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
     _ = _parameterValueExtractor.TryGetValueAsDouble(
@@ -167,7 +167,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
       return;
     }
 
-    List<SOG.Polycurve> polycurves = _curveArrArrayConverter.RawConvert(profile);
+    List<SOG.Polycurve> polycurves = _curveArrArrayConverter.Convert(profile);
 
     if (polycurves.Count > 1)
     {

@@ -3,26 +3,26 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class CurveToHostConverter : IRawConversion<ICurve, RG.Curve>
+public class CurveToHostConverter : ITypedConverter<ICurve, RG.Curve>
 {
-  private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
-  private readonly IRawConversion<SOG.Arc, RG.ArcCurve> _arcConverter;
-  private readonly IRawConversion<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
-  private readonly IRawConversion<SOG.Spiral, RG.PolylineCurve> _spiralConverter;
-  private readonly IRawConversion<SOG.Circle, RG.ArcCurve> _circleConverter;
-  private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
-  private readonly IRawConversion<SOG.Polycurve, RG.PolyCurve> _polyCurveConverter;
-  private readonly IRawConversion<SOG.Curve, RG.NurbsCurve> _nurbsCurveConverter;
+  private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;
+  private readonly ITypedConverter<SOG.Arc, RG.ArcCurve> _arcConverter;
+  private readonly ITypedConverter<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
+  private readonly ITypedConverter<SOG.Spiral, RG.PolylineCurve> _spiralConverter;
+  private readonly ITypedConverter<SOG.Circle, RG.ArcCurve> _circleConverter;
+  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, RG.PolyCurve> _polyCurveConverter;
+  private readonly ITypedConverter<SOG.Curve, RG.NurbsCurve> _nurbsCurveConverter;
 
   public CurveToHostConverter(
-    IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
-    IRawConversion<SOG.Arc, RG.ArcCurve> arcConverter,
-    IRawConversion<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
-    IRawConversion<SOG.Spiral, RG.PolylineCurve> spiralConverter,
-    IRawConversion<SOG.Circle, RG.ArcCurve> circleConverter,
-    IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
-    IRawConversion<SOG.Polycurve, RG.PolyCurve> polyCurveConverter,
-    IRawConversion<SOG.Curve, RG.NurbsCurve> nurbsCurveConverter
+    ITypedConverter<SOG.Line, RG.LineCurve> lineConverter,
+    ITypedConverter<SOG.Arc, RG.ArcCurve> arcConverter,
+    ITypedConverter<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
+    ITypedConverter<SOG.Spiral, RG.PolylineCurve> spiralConverter,
+    ITypedConverter<SOG.Circle, RG.ArcCurve> circleConverter,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
+    ITypedConverter<SOG.Polycurve, RG.PolyCurve> polyCurveConverter,
+    ITypedConverter<SOG.Curve, RG.NurbsCurve> nurbsCurveConverter
   )
   {
     _lineConverter = lineConverter;
@@ -42,17 +42,17 @@ public class CurveToHostConverter : IRawConversion<ICurve, RG.Curve>
   /// <returns>The converted RG.Curve object.</returns>
   /// <exception cref="NotSupportedException">Thrown when the conversion is not supported for the given type of curve.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.Curve RawConvert(ICurve target) =>
+  public RG.Curve Convert(ICurve target) =>
     target switch
     {
-      SOG.Line line => _lineConverter.RawConvert(line),
-      SOG.Arc arc => _arcConverter.RawConvert(arc),
-      SOG.Circle circle => _circleConverter.RawConvert(circle),
-      SOG.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
-      SOG.Spiral spiral => _spiralConverter.RawConvert(spiral),
-      SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
-      SOG.Curve curve => _nurbsCurveConverter.RawConvert(curve),
-      SOG.Polycurve polyCurve => _polyCurveConverter.RawConvert(polyCurve),
+      SOG.Line line => _lineConverter.Convert(line),
+      SOG.Arc arc => _arcConverter.Convert(arc),
+      SOG.Circle circle => _circleConverter.Convert(circle),
+      SOG.Ellipse ellipse => _ellipseConverter.Convert(ellipse),
+      SOG.Spiral spiral => _spiralConverter.Convert(spiral),
+      SOG.Polyline polyline => _polylineConverter.Convert(polyline),
+      SOG.Curve curve => _nurbsCurveConverter.Convert(curve),
+      SOG.Polycurve polyCurve => _polyCurveConverter.Convert(polyCurve),
       _ => throw new NotSupportedException($"Unable to convert curves of type {target.GetType().Name}")
     };
 }

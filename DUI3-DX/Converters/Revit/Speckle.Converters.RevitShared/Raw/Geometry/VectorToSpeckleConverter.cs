@@ -3,7 +3,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class VectorToSpeckleConverter : IRawConversion<DB.XYZ, SOG.Vector>
+public class VectorToSpeckleConverter : ITypedConverter<DB.XYZ, SOG.Vector>
 {
   private readonly IReferencePointConverter _referencePointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
@@ -17,7 +17,7 @@ public class VectorToSpeckleConverter : IRawConversion<DB.XYZ, SOG.Vector>
     _scalingService = scalingService;
   }
 
-  public SOG.Vector RawConvert(DB.XYZ target)
+  public SOG.Vector Convert(DB.XYZ target)
   {
     // POC: originally had a concept of not transforming, but this was
     // optional arg defaulting to false - removing the argument appeared to break nothing

@@ -8,18 +8,18 @@ namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class FallbackToHostTopLevelConverter
-  : ISpeckleObjectToHostConversion,
-    IRawConversion<DisplayableObject, List<RG.GeometryBase>>
+  : IToHostTopLevelConverter,
+    ITypedConverter<DisplayableObject, List<RG.GeometryBase>>
 {
-  private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
-  private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
-  private readonly IRawConversion<SOG.Mesh, RG.Mesh> _meshConverter;
+  private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;
+  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOG.Mesh, RG.Mesh> _meshConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public FallbackToHostTopLevelConverter(
-    IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
-    IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
-    IRawConversion<SOG.Mesh, RG.Mesh> meshConverter,
+    ITypedConverter<SOG.Line, RG.LineCurve> lineConverter,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
+    ITypedConverter<SOG.Mesh, RG.Mesh> meshConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
@@ -29,18 +29,18 @@ public class FallbackToHostTopLevelConverter
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((DisplayableObject)target);
+  public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public List<RG.GeometryBase> RawConvert(DisplayableObject target)
+  public List<RG.GeometryBase> Convert(DisplayableObject target)
   {
     var result = new List<RG.GeometryBase>();
     foreach (var item in target.displayValue)
     {
       RG.GeometryBase x = item switch
       {
-        SOG.Line line => _lineConverter.RawConvert(line),
-        SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
-        SOG.Mesh mesh => _meshConverter.RawConvert(mesh),
+        SOG.Line line => _lineConverter.Convert(line),
+        SOG.Polyline polyline => _polylineConverter.Convert(polyline),
+        SOG.Mesh mesh => _meshConverter.Convert(mesh),
         _ => throw new NotSupportedException($"Found unsupported fallback geometry: {item.GetType()}")
       };
       x.Transform(GetUnitsTransform(item));

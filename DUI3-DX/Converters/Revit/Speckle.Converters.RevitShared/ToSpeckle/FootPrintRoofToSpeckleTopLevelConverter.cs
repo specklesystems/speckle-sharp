@@ -11,18 +11,19 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.FootPrintRoof), 0)]
-public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
+public class FootPrintRoofToSpeckleTopLevelConverter
+  : BaseTopLevelConverterToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
 {
-  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public FootPrintRoofToSpeckleTopLevelConverter(
-    IRawConversion<Level, RevitLevel> levelConverter,
-    IRawConversion<ModelCurveArrArray, Polycurve[]> modelCurveArrArrayConverter,
+    ITypedConverter<Level, RevitLevel> levelConverter,
+    ITypedConverter<ModelCurveArrArray, Polycurve[]> modelCurveArrArrayConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     HostedElementConversionToSpeckle hostedElementConverter,
@@ -37,7 +38,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override RevitFootprintRoof RawConvert(FootPrintRoof target)
+  public override RevitFootprintRoof Convert(FootPrintRoof target)
   {
     var baseLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
@@ -58,8 +59,8 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     RevitFootprintRoof speckleFootprintRoof =
       new()
       {
-        level = _levelConverter.RawConvert(baseLevel),
-        cutOffLevel = topLevel is not null ? _levelConverter.RawConvert(topLevel) : null,
+        level = _levelConverter.Convert(baseLevel),
+        cutOffLevel = topLevel is not null ? _levelConverter.Convert(topLevel) : null,
         slope = slope
       };
 
@@ -67,7 +68,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<D
     // are voids
     // POC: CNX-9403 in current connector, we are doing serious gymnastics to get the slope of the floor as defined by
     // slope arrow. The way we are doing it relies on dynamic props and only works for Revit <-> Revit
-    var profiles = _modelCurveArrArrayConverter.RawConvert(target.GetProfiles());
+    var profiles = _modelCurveArrArrayConverter.Convert(target.GetProfiles());
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 
