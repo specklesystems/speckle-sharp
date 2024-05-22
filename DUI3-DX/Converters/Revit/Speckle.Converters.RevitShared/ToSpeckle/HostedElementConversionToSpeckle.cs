@@ -30,7 +30,7 @@ public class HostedElementConversionToSpeckle
   {
     foreach (var elemId in hostedElementIds)
     {
-      Element element = _contextStack.Current.Document.GetElement(elemId);
+      var element = _contextStack.Current.Document.GetElement(elemId);
 
       Base @base;
       try

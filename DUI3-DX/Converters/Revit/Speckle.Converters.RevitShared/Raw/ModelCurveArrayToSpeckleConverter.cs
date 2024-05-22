@@ -6,15 +6,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>
+public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
   private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
   public ModelCurveArrayToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    ScalingServiceToSpeckle scalingService,
+    IScalingServiceToSpeckle scalingService,
     ITypedConverter<DB.Curve, ICurve> curveConverter
   )
   {

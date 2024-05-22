@@ -1,11 +1,13 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Converters.RevitShared.Services;
 
 // POC: feels like this is a context thing and we should be calculating this occasionally?
 // needs some thought as to how it could be be done, could leave as is for now
-public sealed class ScalingServiceToSpeckle
+[GenerateAutoInterface]
+public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
 {
   private readonly double _defaultLengthConversionFactor;
 

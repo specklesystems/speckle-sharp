@@ -36,7 +36,7 @@ public class ReferencePointConverter : IReferencePointConverter
 
   // POC: this might be better in some RevitDocumentService
   // we could probably return that instance instead of the Doc from the context, maybe...
-  public DB.Transform GetDocReferencePointTransform(DB.Document doc)
+  public DB.Transform GetDocReferencePointTransform(IRevitDocument doc)
   {
     //linked files are always saved to disc and will have a path name
     //if the current doc is unsaved it will not, but then it'll be the only one :)
@@ -61,7 +61,7 @@ public class ReferencePointConverter : IReferencePointConverter
     var referencePointTransform = DB.Transform.Identity;
 
     // POC: bogus disposal below
-    var points = new DB.FilteredElementCollector(_contextStack.Current.Document)
+    var points = _contextStack.Current.Document.CreateFilteredElementCollector()
       .OfClass(typeof(DB.BasePoint))
       .Cast<DB.BasePoint>()
       .ToList();

@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
+    <PackageReference Include="Mapster" Version="7.3.0" />
+    <PackageReference Include="Speckle.ProxyGenerator" Version="0.1.2" />
   </ItemGroup>
 
   <ItemGroup>

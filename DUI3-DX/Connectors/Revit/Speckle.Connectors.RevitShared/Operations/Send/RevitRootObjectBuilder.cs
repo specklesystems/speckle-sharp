@@ -43,7 +43,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
       throw new SpeckleException("Family Environment documents are not supported.");
     }
 
-    var revitElements = new List<Element>(); // = _contextStack.Current.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var revitElements = new List<IRevitElement>(); // = _contextStack.Current.Document.GetElements(sendSelection.SelectedItems).ToList();
 
     foreach (var id in objects)
     {
@@ -61,7 +61,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
 
-    foreach (Element revitElement in revitElements)
+    foreach (var revitElement in revitElements)
     {
       ct.ThrowIfCancellationRequested();
 
