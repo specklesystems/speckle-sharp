@@ -7,17 +7,17 @@ public sealed class SendOperation<T>
 {
   private readonly IRootObjectBuilder<T> _rootObjectBuilder;
   private readonly IRootObjectSender _baseObjectSender;
-  private readonly ISyncToMainThread _syncToMainThread;
+  private readonly ISyncToThread _syncToThread;
 
   public SendOperation(
     IRootObjectBuilder<T> rootObjectBuilder,
     IRootObjectSender baseObjectSender,
-    ISyncToMainThread syncToMainThread
+    ISyncToThread syncToThread
   )
   {
     _rootObjectBuilder = rootObjectBuilder;
     _baseObjectSender = baseObjectSender;
-    _syncToMainThread = syncToMainThread;
+    _syncToThread = syncToThread;
   }
 
   public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Execute(
@@ -27,7 +27,7 @@ public sealed class SendOperation<T>
     CancellationToken ct = default
   )
   {
-    Base commitObject = await _syncToMainThread
+    Base commitObject = await _syncToThread
       .RunOnThread(() => _rootObjectBuilder.Build(objects, sendInfo, onOperationProgressed, ct))
       .ConfigureAwait(false);
 
