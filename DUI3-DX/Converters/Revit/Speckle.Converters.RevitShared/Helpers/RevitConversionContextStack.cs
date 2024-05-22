@@ -29,9 +29,9 @@ public class RevitConversionContextStack : ConversionContextStack<IRevitDocument
     ) { }
 }
 
-[Proxy(typeof(Document), false, ProxyClassAccessibility.Public, new [] {"PlanTopology", "PlanTopologies", "TypeOfStorage", "Equals"})]
-[SuppressMessage("Naming", "CA1708:Identifiers should differ by more than case")]
+[Proxy(typeof(Document), new [] {"PlanTopology", "PlanTopologies", "TypeOfStorage", "Equals"})]
 [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
+
 public partial interface IRevitDocument
 {
 }
@@ -41,9 +41,7 @@ public static class RevitDocumentExtensions
   public static IRevitFilteredElementCollector CreateFilteredElementCollector(this IRevitDocument revitDocument) => new FilteredElementCollectorProxy(new FilteredElementCollector(revitDocument._Instance));
 }
 
-[Proxy(typeof(FilteredElementCollector), false, ProxyClassAccessibility.Public, new [] {"GetEnumerator", "Equals"})]
-[SuppressMessage("Naming", "CA1708:Identifiers should differ by more than case")]
-[SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
+[Proxy(typeof(FilteredElementCollector), new [] {"GetEnumerator", "Equals"})]
 public partial interface IRevitFilteredElementCollector
 {
 }
@@ -54,9 +52,34 @@ public static class RevitFilteredExtensions
     => revitFilteredElementCollector._Instance.ToElements().Cast<T>();
 }
 
-[Proxy(typeof(Element), false, ProxyClassAccessibility.Public, new [] {"Equals", "Parameter", "BoundingBox", "Geometry"})]
-[SuppressMessage("Naming", "CA1708:Identifiers should differ by more than case")]
-[SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
+[Proxy(typeof(Element),   new [] {"Parameter", "BoundingBox", "Geometry"})]
 public partial interface IRevitElement
 {
+}
+[Proxy(typeof(GeometryElement),  new [] {"Parameter"})]
+public partial interface IRevitGeometryElement
+{
+}
+[Proxy(typeof(CurveElement), new[]{"CreateAreaBasedLoadBoundaryLines"})]
+public partial interface IRevitCurveElement: IRevitElement
+{
+} 
+
+[Proxy(typeof(Curve))]
+public partial interface IRevitCurve
+{
+}
+[Proxy(typeof(ModelCurve))]
+public partial interface IRevitModelCurve : IRevitCurveElement
+{
+}
+[Proxy(typeof(ModelCurveArray), new [] {"Item"})]
+[SuppressMessage("Design", "CA1010:Generic interface should also be implemented")]
+public partial interface IRevitModelCurveCollection
+{
+}
+public static class RevitModelCurveCollectionExtensions
+{
+  public static IEnumerable<IRevitModelCurve> Cast(this IRevitModelCurveCollection revitModelCurveCollection)
+    => revitModelCurveCollection._Instance.Cast<ModelCurve>().Select(x => new ModelCurveProxy(x));
 }

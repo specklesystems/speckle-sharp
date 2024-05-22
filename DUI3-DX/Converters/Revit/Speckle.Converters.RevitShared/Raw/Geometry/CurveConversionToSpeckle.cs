@@ -1,10 +1,11 @@
 using Objects;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>
+public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>, ITypedConverter<IRevitCurve, ICurve>
 {
   private readonly ITypedConverter<DB.Line, SOG.Line> _lineConverter;
   private readonly ITypedConverter<DB.Arc, SOG.Arc> _arcConverter;
@@ -29,6 +30,8 @@ public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>
     _nurbsConverter = nurbsConverter;
     _hermiteConverter = hermiteConverter;
   }
+
+  public ICurve Convert(IRevitCurve target) => Convert(target._Instance);
 
   public ICurve Convert(DB.Curve target)
   {

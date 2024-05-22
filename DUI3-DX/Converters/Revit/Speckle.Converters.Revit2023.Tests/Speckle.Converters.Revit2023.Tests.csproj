@@ -1,15 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-
-        <IsPackable>false</IsPackable>
+        <TargetFramework>net48</TargetFramework>
+        <PlatformTarget>x64</PlatformTarget>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FakeItEasy" Version="8.2.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1"/>
         <PackageReference Include="NUnit" Version="3.13.3"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.4.2"/>
