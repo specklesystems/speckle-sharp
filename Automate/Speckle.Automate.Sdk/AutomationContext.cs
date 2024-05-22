@@ -107,11 +107,8 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    string rootObjectId = await Operations
-      .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
-      .ConfigureAwait(false);
-
     Branch branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
+
     if (branch is null)
     {
       // Create the branch with the specified name
@@ -127,49 +124,37 @@ public class AutomationContext
         throw new SpeckleException("Cannot use the branch without its id");
       }
 
-      var matchingTrigger = AutomationRunData.Triggers.FirstOrDefault(
-        (trigger) =>
-        {
-          switch (trigger)
-          {
-            case VersionCreationTrigger versionCreationTrigger:
-            {
-              return versionCreationTrigger.Payload.ModelId == branch.id;
-            }
-            default:
-            {
-              return false;
-            }
-          }
-        }
-      );
-
-      if (matchingTrigger != null)
+      foreach (var trigger in AutomationRunData.Triggers)
       {
-        switch (matchingTrigger)
+        switch (trigger)
         {
           case VersionCreationTrigger versionCreationTrigger:
           {
-            throw new SpeckleException(
-              $$"""
-                        The target model: {{modelName}} cannot match the model
-                         that triggered this automation:
-                         {{versionCreationTrigger.Payload.ModelId}}
-                        """
-            );
+            if (versionCreationTrigger.Payload.ModelId == branch.id)
+            {
+              throw new SpeckleException(
+                $$"""
+                The target model: {{modelName}} cannot match the model
+                 that triggered this automation:
+                 {{versionCreationTrigger.Payload.ModelId}}
+                """
+              );
+            }
+            continue;
           }
           default:
           {
-            throw new SpeckleException(
-              $$"""
-                        The target model: {{modelName}} cannot match the model
-                         that triggered this automation.
-                        """
-            );
+            // TODO: How should we handle unknown trigger types?
+            continue;
           }
         }
       }
     }
+
+    string rootObjectId = await Operations
+      .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
+      .ConfigureAwait(false);
+
     string versionId = await SpeckleClient
       .CommitCreate(
         new CommitCreateInput
