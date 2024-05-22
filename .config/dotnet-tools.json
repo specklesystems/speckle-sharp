@@ -1,17 +1,11 @@
 {
   "version": 1,
   "isRoot": true,
-  "tools": {
+  "tools": { 
     "dotnet-t4": {
       "version": "2.2.1",
       "commands": [
         "t4"
-      ]
-    },
-    "jetbrains.resharper.globaltools": {
-      "version": "2023.1.0",
-      "commands": [
-        "jb"
       ]
     },
     "csharpier": {

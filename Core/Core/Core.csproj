@@ -17,8 +17,8 @@
 
   <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>
-      $(WarningsNotAsErrors);
+    <NoWarn>
+      $(NoWarn);
       CA1000; CA1001; CA1003; CA1024; CA1033; CA1034; CA1051; CA1055; CA1063; CA1065;
       CA1502; CA1506;
       CA1708; CA1710; CA1711; CA1716; CA1720; CA1721; CA1724;
@@ -27,7 +27,7 @@
       CS0419; CS0618; CS0659; CS0809;
       CS8600; CS8602; CS8603; CS8604;
       IDE0032; IDE0059; IDE0130; IDE1006;
-    </WarningsNotAsErrors>
+    </NoWarn>
   </PropertyGroup>
   
   <ItemGroup>

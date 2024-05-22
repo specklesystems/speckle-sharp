@@ -1,0 +1,23 @@
+name: Tester
+
+on:
+  pull_request:
+    branches: ["dui3/alpha"]
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.x.x
+
+      - name: Trigger Build Installers
+        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} 9171394901 3.0.0-pr3418.151
