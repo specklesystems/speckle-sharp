@@ -3,21 +3,21 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class Polygon3dListToHostConverter : IRawConversion<List<SGIS.PolygonGeometry3d>, ACG.Multipatch>
+public class Polygon3dListToHostConverter : ITypedConverter<List<SGIS.PolygonGeometry3d>, ACG.Multipatch>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
-  private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Polyline, ACG.Polyline> _polylineConverter;
 
   public Polygon3dListToHostConverter(
-    IRawConversion<SOG.Point, ACG.MapPoint> pointConverter,
-    IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter
+    ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
+    ITypedConverter<SOG.Polyline, ACG.Polyline> polylineConverter
   )
   {
     _pointConverter = pointConverter;
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SGIS.PolygonGeometry3d> target)
+  public ACG.Multipatch Convert(List<SGIS.PolygonGeometry3d> target)
   {
     if (target.Count == 0)
     {
@@ -31,7 +31,7 @@ public class Polygon3dListToHostConverter : IRawConversion<List<SGIS.PolygonGeom
       List<SOG.Point> boundaryPts = part.boundary.GetPoints();
       foreach (SOG.Point pt in boundaryPts)
       {
-        newPatch.AddPoint(_pointConverter.RawConvert(pt));
+        newPatch.AddPoint(_pointConverter.Convert(pt));
       }
       multipatchPart.Patches.Add(newPatch);
 
@@ -41,7 +41,7 @@ public class Polygon3dListToHostConverter : IRawConversion<List<SGIS.PolygonGeom
         List<SOG.Point> loopPts = loop.GetPoints();
         foreach (SOG.Point pt in loopPts)
         {
-          newLoopPatch.AddPoint(_pointConverter.RawConvert(pt));
+          newLoopPatch.AddPoint(_pointConverter.Convert(pt));
         }
         multipatchPart.Patches.Add(newLoopPatch);
       }

@@ -5,18 +5,18 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Circle, ACG.Polyline>
+public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Circle, ACG.Polyline>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public CircleToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public CircleToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Circle)target);
+  public object Convert(Base target) => Convert((SOG.Circle)target);
 
-  public ACG.Polyline RawConvert(SOG.Circle target)
+  public ACG.Polyline Convert(SOG.Circle target)
   {
     // Determine the number of vertices to create along the cirlce
     int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
@@ -46,7 +46,7 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
       pointsOriginal.Add(pointsOriginal[0]);
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
+    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

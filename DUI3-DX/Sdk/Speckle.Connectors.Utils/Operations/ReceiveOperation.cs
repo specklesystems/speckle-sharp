@@ -9,12 +9,12 @@ namespace Speckle.Connectors.Utils.Operations;
 public sealed class ReceiveOperation
 {
   private readonly IHostObjectBuilder _hostObjectBuilder;
-  private readonly ISyncToMainThread _syncToMainThread;
+  private readonly ISyncToThread _syncToThread;
 
-  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ISyncToMainThread syncToMainThread)
+  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ISyncToThread syncToThread)
   {
     _hostObjectBuilder = hostObjectBuilder;
-    _syncToMainThread = syncToMainThread;
+    _syncToThread = syncToThread;
   }
 
   public async Task<IEnumerable<string>> Execute(
@@ -42,7 +42,7 @@ public sealed class ReceiveOperation
     cancellationToken.ThrowIfCancellationRequested();
 
     // 4 - Convert objects
-    return await _syncToMainThread
+    return await _syncToThread
       .RunOnThread(() =>
       {
         return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);

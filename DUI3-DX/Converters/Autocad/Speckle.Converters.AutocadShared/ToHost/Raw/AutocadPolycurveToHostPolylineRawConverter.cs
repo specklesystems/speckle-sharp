@@ -5,13 +5,13 @@ using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Autocad2023.ToHost.Raw;
 
-public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline>
+public class AutocadPolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline>
 {
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public AutocadPolycurveToHostPolylineRawConverter(
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -19,7 +19,7 @@ public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Aut
     _contextStack = contextStack;
   }
 
-  public ADB.Polyline RawConvert(SOG.Autocad.AutocadPolycurve target)
+  public ADB.Polyline Convert(SOG.Autocad.AutocadPolycurve target)
   {
     if (target.normal is null || target.elevation is null)
     {
@@ -34,7 +34,7 @@ public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Aut
     ADB.Polyline polyline =
       new()
       {
-        Normal = _vectorConverter.RawConvert(target.normal),
+        Normal = _vectorConverter.Convert(target.normal),
         Elevation = (double)target.elevation * f,
         Closed = target.closed
       };

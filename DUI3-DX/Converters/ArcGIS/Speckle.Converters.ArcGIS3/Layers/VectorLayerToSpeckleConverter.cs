@@ -10,15 +10,15 @@ using Speckle.Converters.ArcGIS3.Utils;
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
+public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<FeatureLayer, VectorLayer>
 {
-  private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
+  private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
-    IRawConversion<Row, GisFeature> gisFeatureConverter,
+    ITypedConverter<Row, GisFeature> gisFeatureConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISFieldUtils fieldsUtils,
     IConversionContextStack<Map, Unit> contextStack
@@ -32,7 +32,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 
   public Base Convert(object target)
   {
-    return RawConvert((FeatureLayer)target);
+    return Convert((FeatureLayer)target);
   }
 
   private string SpeckleGeometryType(string nativeGeometryType)
@@ -57,7 +57,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     return spekleGeometryType;
   }
 
-  public VectorLayer RawConvert(FeatureLayer target)
+  public VectorLayer Convert(FeatureLayer target)
   {
     VectorLayer speckleLayer = new();
 
@@ -115,7 +115,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          GisFeature element = _gisFeatureConverter.RawConvert(row);
+          GisFeature element = _gisFeatureConverter.Convert(row);
 
           // replace element "attributes", to remove those non-visible on Layer level
           Base elementAttributes = new();

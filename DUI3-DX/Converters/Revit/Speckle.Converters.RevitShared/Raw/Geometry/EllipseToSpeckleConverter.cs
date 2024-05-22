@@ -5,15 +5,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class EllipseToSpeckleConverter : IRawConversion<DB.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : ITypedConverter<DB.Ellipse, SOG.Ellipse>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public EllipseToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
     ScalingServiceToSpeckle scalingService
   )
   {
@@ -22,7 +22,7 @@ public class EllipseToSpeckleConverter : IRawConversion<DB.Ellipse, SOG.Ellipse>
     _scalingService = scalingService;
   }
 
-  public SOG.Ellipse RawConvert(DB.Ellipse target)
+  public SOG.Ellipse Convert(DB.Ellipse target)
   {
     using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection))
     {
@@ -30,7 +30,7 @@ public class EllipseToSpeckleConverter : IRawConversion<DB.Ellipse, SOG.Ellipse>
 
       return new SOG.Ellipse()
       {
-        plane = _planeConverter.RawConvert(basePlane),
+        plane = _planeConverter.Convert(basePlane),
         // POC: scale length correct? seems right?
         firstRadius = _scalingService.ScaleLength(target.RadiusX),
         secondRadius = _scalingService.ScaleLength(target.RadiusY),

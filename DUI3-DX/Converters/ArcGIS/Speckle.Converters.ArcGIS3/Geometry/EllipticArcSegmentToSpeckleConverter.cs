@@ -4,21 +4,21 @@ using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegment, SOG.Polyline>
+public class EllipticArcToSpeckleConverter : ITypedConverter<ACG.EllipticArcSegment, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public EllipticArcToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.EllipticArcSegment target)
+  public SOG.Polyline Convert(ACG.EllipticArcSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -52,7 +52,7 @@ public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegme
         target.SpatialReference
       );
 
-      points.Add(_pointConverter.RawConvert(pointOnArc));
+      points.Add(_pointConverter.Convert(pointOnArc));
     }
 
     // create Speckle Polyline

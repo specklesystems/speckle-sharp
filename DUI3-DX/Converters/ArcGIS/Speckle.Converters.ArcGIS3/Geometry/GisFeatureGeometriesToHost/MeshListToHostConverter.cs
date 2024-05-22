@@ -4,16 +4,16 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
-public class MeshListToHostConverter : IRawConversion<List<SOG.Mesh>, ACG.Multipatch>
+public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multipatch>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public MeshListToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public MeshListToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }
 
-  public ACG.Multipatch RawConvert(List<SOG.Mesh> target)
+  public ACG.Multipatch Convert(List<SOG.Mesh> target)
   {
     if (target.Count == 0)
     {
@@ -32,7 +32,7 @@ public class MeshListToHostConverter : IRawConversion<List<SOG.Mesh>, ACG.Multip
         }
         int ptIndex = part.faces[i];
         newPatch.AddPoint(
-          _pointConverter.RawConvert(
+          _pointConverter.Convert(
             new SOG.Point(part.vertices[ptIndex * 3], part.vertices[ptIndex * 3 + 1], part.vertices[ptIndex * 3 + 2])
             {
               units = part.units

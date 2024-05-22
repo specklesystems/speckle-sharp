@@ -5,7 +5,7 @@ using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class PointToSpeckleConverter : IRawConversion<MapPoint, SOG.Point>
+public class PointToSpeckleConverter : ITypedConverter<MapPoint, SOG.Point>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
@@ -14,7 +14,7 @@ public class PointToSpeckleConverter : IRawConversion<MapPoint, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public SOG.Point RawConvert(MapPoint target)
+  public SOG.Point Convert(MapPoint target)
   {
     try
     {

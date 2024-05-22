@@ -3,9 +3,9 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class IntervalToSpeckleConverter : IRawConversion<AG.Interval, SOP.Interval>
+public class IntervalToSpeckleConverter : ITypedConverter<AG.Interval, SOP.Interval>
 {
-  public Base Convert(object target) => RawConvert((AG.Interval)target);
+  public Base Convert(object target) => Convert((AG.Interval)target);
 
-  public SOP.Interval RawConvert(AG.Interval target) => new(target.LowerBound, target.UpperBound);
+  public SOP.Interval Convert(AG.Interval target) => new(target.LowerBound, target.UpperBound);
 }

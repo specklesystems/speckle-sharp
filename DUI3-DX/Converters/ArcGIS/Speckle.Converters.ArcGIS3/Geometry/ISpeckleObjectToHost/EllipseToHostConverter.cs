@@ -6,18 +6,18 @@ namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 //TODO: Ellipses don't convert correctly, see Autocad test stream
 // [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Ellipse, ACG.Polyline>
+public class EllipseToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Ellipse, ACG.Polyline>
 {
-  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
 
-  public EllipseToHostConverter(IRawConversion<SOG.Point, ACG.MapPoint> pointConverter)
+  public EllipseToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
   {
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Ellipse)target);
+  public object Convert(Base target) => Convert((SOG.Ellipse)target);
 
-  public ACG.Polyline RawConvert(SOG.Ellipse target)
+  public ACG.Polyline Convert(SOG.Ellipse target)
   {
     // Determine the number of vertices to create along the Ellipse
     int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
@@ -47,7 +47,7 @@ public class EllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConver
       pointsOriginal.Add(pointsOriginal[0]);
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.RawConvert(x));
+    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
     return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

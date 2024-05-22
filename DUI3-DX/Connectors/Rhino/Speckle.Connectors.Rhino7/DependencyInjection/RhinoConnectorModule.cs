@@ -5,6 +5,7 @@ using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Rhino7.Bindings;
 using Speckle.Connectors.Rhino7.Filters;
@@ -36,6 +37,9 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddDUI();
     builder.AddDUIView();
 
+    // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for Rhino!
+    builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
+
     // Register other connector specific types
     builder.AddSingleton<IRhinoPlugin, RhinoPlugin>();
     builder.AddSingleton<DocumentModelStore, RhinoDocumentStore>();
@@ -62,6 +66,6 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddScoped<SendOperation<RhinoObject>>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
-    builder.AddSingleton<IRootObjectBuilder<RhinoObject>, RootObjectBuilder>();
+    builder.AddSingleton<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
   }
 }

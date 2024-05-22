@@ -6,34 +6,31 @@ namespace Speckle.Converters.Common.DependencyInjection;
 
 public static class ContainerRegistration
 {
-  public static void AddConverterCommon(this SpeckleContainerBuilder builder)
+  public static void AddConverterCommon<TRootToSpeckleConverter, THostToSpeckleUnitConverter, THostUnit>(
+    this SpeckleContainerBuilder builder
+  )
+    where TRootToSpeckleConverter : class, IRootToSpeckleConverter
+    where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
   {
+    builder.AddScoped<IRootToSpeckleConverter, TRootToSpeckleConverter>();
+    builder.AddScoped<IHostToSpeckleUnitConverter<THostUnit>, THostToSpeckleUnitConverter>();
     /*
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
+    builder.AddScoped<IFactory<IToSpeckleTopLevelConverter>, Factory<IToSpeckleTopLevelConverter>>();
     builder.AddScoped<
-      IFactory<string, IHostObjectToSpeckleConversion>,
-      Factory<string, IHostObjectToSpeckleConversion>
-    >();
-    builder.AddScoped<
-      IConverterResolver<IHostObjectToSpeckleConversion>,
-      RecursiveConverterResolver<IHostObjectToSpeckleConversion>
+      IConverterResolver<IToSpeckleTopLevelConverter>,
+      ConverterResolver<IToSpeckleTopLevelConverter>
     >();
 
-    builder.AddScoped<
-      IFactory<string, ISpeckleObjectToHostConversion>,
-      Factory<string, ISpeckleObjectToHostConversion>
-    >();
-    builder.AddScoped<
-      IConverterResolver<ISpeckleObjectToHostConversion>,
-      RecursiveConverterResolver<ISpeckleObjectToHostConversion>
-    >();
+    builder.AddScoped<IFactory<IToHostTopLevelConverter>, Factory<IToHostTopLevelConverter>>();
+    builder.AddScoped<IConverterResolver<IToHostTopLevelConverter>, ConverterResolver<IToHostTopLevelConverter>>();
 
-    builder.AddScoped<ISpeckleConverterToHost, ToHostConverterWithFallback>();
+    builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 
     builder.RegisterRawConversions();
-    builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
-    builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
+    builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();
+    builder.InjectNamedTypes<IToHostTopLevelConverter>();
   }
 }

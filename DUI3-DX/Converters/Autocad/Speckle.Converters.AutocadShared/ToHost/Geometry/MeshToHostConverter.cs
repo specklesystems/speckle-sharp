@@ -7,13 +7,13 @@ using Speckle.Core.Logging;
 namespace Speckle.Converters.Autocad.Geometry;
 
 [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
+public class MeshToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Mesh, ADB.PolyFaceMesh>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public MeshToHostConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -21,18 +21,18 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Mesh)target);
+  public object Convert(Base target) => Convert((SOG.Mesh)target);
 
   /// <remarks>
   /// Mesh conversion requires transaction since it's vertices needed to be added into database in advance..
   /// </remarks>
-  public ADB.PolyFaceMesh RawConvert(SOG.Mesh target)
+  public ADB.PolyFaceMesh Convert(SOG.Mesh target)
   {
     target.TriangulateMesh(true);
 
     // get vertex points
     using AG.Point3dCollection vertices = new();
-    List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
+    List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.Convert(o)).ToList();
     foreach (var point in points)
     {
       vertices.Add(point);

@@ -4,16 +4,16 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IReadOnlyList<PolygonGeometry>>
+public class PolygonFeatureToSpeckleConverter : ITypedConverter<ACG.Polygon, IReadOnlyList<PolygonGeometry>>
 {
-  private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
+  private readonly ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
-  public PolygonFeatureToSpeckleConverter(IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
+  public PolygonFeatureToSpeckleConverter(ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
   {
     _segmentConverter = segmentConverter;
   }
 
-  public IReadOnlyList<PolygonGeometry> RawConvert(ACG.Polygon target)
+  public IReadOnlyList<PolygonGeometry> Convert(ACG.Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
     List<PolygonGeometry> polygonList = new();
@@ -30,7 +30,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
     for (int idx = 0; idx < partCount; idx++)
     {
       ACG.ReadOnlySegmentCollection segmentCollection = target.Parts[idx];
-      SOG.Polyline polyline = _segmentConverter.RawConvert(segmentCollection);
+      SOG.Polyline polyline = _segmentConverter.Convert(segmentCollection);
 
       bool isExteriorRing = target.IsExteriorRing(idx);
       if (isExteriorRing is true)

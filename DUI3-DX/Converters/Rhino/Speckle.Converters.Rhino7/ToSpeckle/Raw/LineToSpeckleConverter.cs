@@ -4,15 +4,15 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>, IRawConversion<RG.LineCurve, SOG.Line>
+public class LineToSpeckleConverter : ITypedConverter<RG.Line, SOG.Line>, ITypedConverter<RG.LineCurve, SOG.Line>
 {
-  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public LineToSpeckleConverter(
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
@@ -29,17 +29,13 @@ public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>, IRawCon
   /// <remarks>
   /// ⚠️ This conversion assumes the domain of a line is (0, LENGTH), as Rhino Lines do not have domain. If you want the domain preserved use LineCurve conversions instead.
   /// </remarks>
-  public SOG.Line RawConvert(RG.Line target) =>
-    new(
-      _pointConverter.RawConvert(target.From),
-      _pointConverter.RawConvert(target.To),
-      _contextStack.Current.SpeckleUnits
-    )
+  public SOG.Line Convert(RG.Line target) =>
+    new(_pointConverter.Convert(target.From), _pointConverter.Convert(target.To), _contextStack.Current.SpeckleUnits)
     {
       length = target.Length,
       domain = new SOP.Interval(0, target.Length),
-      bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox))
+      bbox = _boxConverter.Convert(new RG.Box(target.BoundingBox))
     };
 
-  public SOG.Line RawConvert(RG.LineCurve target) => RawConvert(target.Line);
+  public SOG.Line Convert(RG.LineCurve target) => Convert(target.Line);
 }

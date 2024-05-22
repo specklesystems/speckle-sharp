@@ -5,15 +5,15 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
+public class LineConversionToSpeckle : ITypedConverter<DB.Line, SOG.Line>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
     ScalingServiceToSpeckle scalingService
   )
   {
@@ -22,12 +22,12 @@ public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
     _scalingService = scalingService;
   }
 
-  public SOG.Line RawConvert(DB.Line target) =>
+  public SOG.Line Convert(DB.Line target) =>
     new()
     {
       units = _contextStack.Current.SpeckleUnits,
-      start = _xyzToPointConverter.RawConvert(target.GetEndPoint(0)),
-      end = _xyzToPointConverter.RawConvert(target.GetEndPoint(1)),
+      start = _xyzToPointConverter.Convert(target.GetEndPoint(0)),
+      end = _xyzToPointConverter.Convert(target.GetEndPoint(1)),
       domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1)),
       length = _scalingService.ScaleLength(target.Length)
     };

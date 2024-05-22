@@ -5,16 +5,16 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad2023.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Autocad.AutocadPolycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class AutocadPolycurveToHostConverter : ISpeckleObjectToHostConversion
+public class AutocadPolycurveToHostConverter : IToHostTopLevelConverter
 {
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline> _polylineConverter;
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> _polyline2dConverter;
-  private readonly IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> _polyline3dConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline> _polylineConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> _polyline2dConverter;
+  private readonly ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> _polyline3dConverter;
 
   public AutocadPolycurveToHostConverter(
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline> polylineConverter,
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> polyline2dConverter,
-    IRawConversion<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> polyline3dConverter
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline> polylineConverter,
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline2d> polyline2dConverter,
+    ITypedConverter<SOG.Autocad.AutocadPolycurve, ADB.Polyline3d> polyline3dConverter
   )
   {
     _polylineConverter = polylineConverter;
@@ -29,18 +29,18 @@ public class AutocadPolycurveToHostConverter : ISpeckleObjectToHostConversion
     switch (polycurve.polyType)
     {
       case SOG.Autocad.AutocadPolyType.Light:
-        return _polylineConverter.RawConvert(polycurve);
+        return _polylineConverter.Convert(polycurve);
 
       case SOG.Autocad.AutocadPolyType.Simple2d:
       case SOG.Autocad.AutocadPolyType.FitCurve2d:
       case SOG.Autocad.AutocadPolyType.CubicSpline2d:
       case SOG.Autocad.AutocadPolyType.QuadSpline2d:
-        return _polyline2dConverter.RawConvert(polycurve);
+        return _polyline2dConverter.Convert(polycurve);
 
       case SOG.Autocad.AutocadPolyType.Simple3d:
       case SOG.Autocad.AutocadPolyType.CubicSpline3d:
       case SOG.Autocad.AutocadPolyType.QuadSpline3d:
-        return _polyline3dConverter.RawConvert(polycurve);
+        return _polyline3dConverter.Convert(polycurve);
 
       default:
         throw new SpeckleConversionException("Unknown poly type for AutocadPolycurve");

@@ -10,14 +10,14 @@ namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 /// Otherwise we convert it as spline (list of ADB.Entity) that switch cases according to each segment type.
 /// </summary>
 [NameAndRankValue(nameof(SOG.Polycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
+public class PolycurveToHostConverter : IToHostTopLevelConverter
 {
-  private readonly IRawConversion<SOG.Polycurve, ADB.Polyline> _polylineConverter;
-  private readonly IRawConversion<SOG.Polycurve, List<ADB.Entity>> _splineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, ADB.Polyline> _polylineConverter;
+  private readonly ITypedConverter<SOG.Polycurve, List<ADB.Entity>> _splineConverter;
 
   public PolycurveToHostConverter(
-    IRawConversion<SOG.Polycurve, ADB.Polyline> polylineConverter,
-    IRawConversion<SOG.Polycurve, List<ADB.Entity>> splineConverter
+    ITypedConverter<SOG.Polycurve, ADB.Polyline> polylineConverter,
+    ITypedConverter<SOG.Polycurve, List<ADB.Entity>> splineConverter
   )
   {
     _polylineConverter = polylineConverter;
@@ -32,11 +32,11 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
 
     if (convertAsSpline || !isPlanar)
     {
-      return _splineConverter.RawConvert(polycurve);
+      return _splineConverter.Convert(polycurve);
     }
     else
     {
-      return _polylineConverter.RawConvert(polycurve);
+      return _polylineConverter.Convert(polycurve);
     }
   }
 

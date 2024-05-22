@@ -1,12 +1,13 @@
 ﻿using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Connectors.Autocad.Operations.Send;
 
 namespace Speckle.Connectors.Autocad.HostApp.Extensions;
 
 public static class DocumentExtensions
 {
-  public static List<(DBObject, string)> GetObjects(this Document doc, IEnumerable<string> objectIds)
+  public static List<AutocadRootObject> GetObjects(this Document doc, IEnumerable<string> objectIds)
   {
-    List<(DBObject, string)> objects = new();
+    List<AutocadRootObject> objects = new();
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
@@ -20,7 +21,7 @@ public static class DocumentExtensions
           {
             if (tr.GetObject(myObjectId, OpenMode.ForRead) is DBObject dbObject)
             {
-              objects.Add((dbObject, objectIdHandle));
+              objects.Add(new(dbObject, objectIdHandle));
             }
           }
         }
