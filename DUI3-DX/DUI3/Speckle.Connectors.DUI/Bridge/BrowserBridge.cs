@@ -247,31 +247,27 @@ public class BrowserBridge : IBridge
     // POC: ASYNC "Reporting and Error Handling" -> Unhandled errors in invoked method for async functions!
     catch (AggregateException e)
     {
-      var errorDetails = new
-      {
-        Error = e.Message,
-        e.StackTrace,
-        InnerError = e.InnerException?.Message,
-        InnerStackTrace = e.InnerException?.StackTrace
-      };
-
-      var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
-      NotifyUIMethodCallResultReady(requestId, serializedError);
+      ReportUnhandledError(requestId, e);
     }
     // POC: SYNC "Reporting and Error Handling" -> Unhandled errors in invoked method for sync functions!
     catch (TargetInvocationException e)
     {
-      var errorDetails = new
-      {
-        Error = e.Message,
-        e.StackTrace,
-        InnerError = e.InnerException?.Message,
-        InnerStackTrace = e.InnerException?.StackTrace
-      };
-
-      var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
-      NotifyUIMethodCallResultReady(requestId, serializedError);
+      ReportUnhandledError(requestId, e);
     }
+  }
+
+  private void ReportUnhandledError(string requestId, Exception e)
+  {
+    var errorDetails = new
+    {
+      Error = e.Message,
+      e.StackTrace,
+      InnerError = e.InnerException?.Message,
+      InnerStackTrace = e.InnerException?.StackTrace
+    };
+
+    var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
+    NotifyUIMethodCallResultReady(requestId, serializedError);
   }
 
   /// <summary>
