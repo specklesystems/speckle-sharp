@@ -207,6 +207,7 @@ public class BrowserBridge : IBridge
         {
           continue;
         }
+
         typedArgs[i] = ccc;
       }
 
@@ -223,6 +224,8 @@ public class BrowserBridge : IBridge
       else // It's an async call
       {
         // See note at start of function. Do not asyncify!
+
+        // POC: "Reporting and Error Handling" -> Aggregate exception
         resultTypedTask.Wait();
 
         // If has a "Result" property return the value otherwise null (Task<void> etc)
@@ -241,6 +244,20 @@ public class BrowserBridge : IBridge
         _serializerOptions
       );
 
+      NotifyUIMethodCallResultReady(requestId, serializedError);
+    }
+    // POC: "Reporting and Error Handling" -> Unhandled errors in invoked method!
+    catch (TargetInvocationException e)
+    {
+      var errorDetails = new
+      {
+        Error = e.Message,
+        e.StackTrace,
+        InnerError = e.InnerException?.Message,
+        InnerStackTrace = e.InnerException?.StackTrace
+      };
+
+      var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
       NotifyUIMethodCallResultReady(requestId, serializedError);
     }
   }
