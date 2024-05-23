@@ -10,7 +10,7 @@ public interface ISendBinding : IBinding
   /// Instructs the host app to start sending this model.
   /// </summary>
   /// <param name="modelCardId"></param>
-  public Task Send(string modelCardId);
+  public Task Send(string modelCardId, CancellationToken ct);
 
   /// <summary>
   /// Instructs the host app to  cancel the sending for a given model.

@@ -7,6 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Cancellation;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -35,6 +36,7 @@ public class BrowserBridge : IBridge
   private Type? _bindingType;
 
   private readonly ILogger<BrowserBridge> _logger;
+  private readonly CancellationManager _cancellationManager;
 
   /// <summary>
   /// Action that opens up the developer tools of the respective browser we're using. While webview2 allows for "right click, inspect", cefsharp does not - hence the need for this.
@@ -71,10 +73,15 @@ public class BrowserBridge : IBridge
   /// </summary>
   /// <param name="jsonSerializerSettings">The settings to use for JSON serialization and deserialization.</param>
   /// <param name="loggerFactory">The factory to create a logger for <see cref="BrowserBridge"/>.</param>
-  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings, ILoggerFactory loggerFactory)
+  public BrowserBridge(
+    JsonSerializerSettings jsonSerializerSettings,
+    ILoggerFactory loggerFactory,
+    CancellationManager cancellationManager
+  )
   {
     _serializerOptions = jsonSerializerSettings;
     _logger = loggerFactory.CreateLogger<BrowserBridge>();
+    _cancellationManager = cancellationManager;
 
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
@@ -191,6 +198,7 @@ public class BrowserBridge : IBridge
 
       var parameters = method.GetParameters();
       var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
+
       if (parameters.Length != jsonArgsArray?.Length)
       {
         throw new SpeckleException(
@@ -202,9 +210,22 @@ public class BrowserBridge : IBridge
 
       for (int i = 0; i < typedArgs.Length; i++)
       {
-        var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
+        Type deserializeType = parameters[i].ParameterType;
+        // Detect here if function has CancellationToken argument, then we will attach token accordingly
+        if (parameters[i].ParameterType == typeof(CancellationToken))
+        {
+          deserializeType = typeof(UICancelToken);
+        }
+        var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], deserializeType, _serializerOptions);
         if (ccc is null)
         {
+          continue;
+        }
+
+        if (ccc is UICancelToken token)
+        {
+          var cts = _cancellationManager.InitCancellationTokenSource(token.Id.NotNull());
+          typedArgs[i] = cts.Token;
           continue;
         }
 
@@ -243,6 +264,10 @@ public class BrowserBridge : IBridge
       );
 
       NotifyUIMethodCallResultReady(requestId, serializedError);
+    }
+    catch (OperationCanceledException)
+    {
+      return;
     }
     // POC: ASYNC "Reporting and Error Handling" -> Unhandled errors in invoked method for async functions!
     catch (AggregateException e)
@@ -311,6 +336,12 @@ public class BrowserBridge : IBridge
   public void OpenUrl(string url)
   {
     Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+  }
+
+  public void CancelOperation(string uiCancelTokenId)
+  {
+    // If we need more info later we can get serialized UICancelToken from UI and deserialize here.
+    _cancellationManager.CancelOperation(uiCancelTokenId);
   }
 
   public void Send(string eventName)

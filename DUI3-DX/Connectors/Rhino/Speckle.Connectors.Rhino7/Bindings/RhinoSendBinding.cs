@@ -132,13 +132,13 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     "CA1506:Avoid excessive class coupling",
     Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
   )]
-  public async Task Send(string modelCardId)
+  public async Task Send(string modelCardId, CancellationToken ct)
   {
     using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<RhinoObject>>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
+      //  CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
@@ -167,7 +167,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
           rhinoObjects,
           sendInfo,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
-          cts.Token
+          ct
         )
         .ConfigureAwait(false);
 
@@ -182,13 +182,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
       Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
-    catch (OperationCanceledException)
+    catch (OperationCanceledException e)
     {
-      return;
+      Commands.SetModelError(modelCardId, e);
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
       Commands.SetModelError(modelCardId, e);
+      throw;
     }
   }
 
