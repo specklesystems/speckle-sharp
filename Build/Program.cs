@@ -102,9 +102,12 @@ Target(
       return Glob.Files(".", d);
     }
 
-    foreach (var file in GetFiles("**/*.Test.csproj"))
+    foreach (var file in GetFiles("**/*.Tests.csproj"))
     {
-      Run("dotnet", $"test {file} -c Release --no-restore --verbosity=normal");
+       Run(
+      "msbuild",
+      $"{file} /p:Configuration=Release /p:RestoreLockedMode=true /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m"
+    );
     }
   }
 );

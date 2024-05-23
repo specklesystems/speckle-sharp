@@ -13,9 +13,10 @@ public class ModelCurveArrayToSpeckleConverterTests
   private readonly IRevitConversionContextStack _revitConversionContextStack = A.Fake<IRevitConversionContextStack>(x => x.Strict());
   private readonly IScalingServiceToSpeckle _scalingServiceToSpeckle = A.Fake<IScalingServiceToSpeckle>(x => x.Strict());
   private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter = A.Fake<ITypedConverter<IRevitCurve, ICurve>>(x => x.Strict());
-  
+
+
   [Test]
-  public void Setup()
+  public void Convert()
   {
    var target = A.Fake<IRevitModelCurveCollection>(x => x.Strict());
     var sut = new ModelCurveArrayToSpeckleConverter(_revitConversionContextStack, _scalingServiceToSpeckle,

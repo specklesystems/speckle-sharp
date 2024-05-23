@@ -10,11 +10,12 @@
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
     <PackageReference Include="Mapster" Version="7.3.0" />
-    <PackageReference Include="Speckle.ProxyGenerator" Version="0.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+    <ProjectReference Include="..\..\..\Speckle.Revit2023.Api\Speckle.Revit2023.Api.csproj" />
+    <ProjectReference Include="..\..\..\Speckle.Revit2023.Interfaces\Speckle.Revit2023.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

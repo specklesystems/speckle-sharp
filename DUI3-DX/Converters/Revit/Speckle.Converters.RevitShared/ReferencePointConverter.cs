@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit2023.Api;
 
 namespace Speckle.Converters.RevitShared;
 

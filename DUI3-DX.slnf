@@ -2,6 +2,7 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "..\\ProxyGenerator\\src\\Speckle.ProxyGenerator\\Speckle.ProxyGenerator.csproj",
       "Build\\Build.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
@@ -27,10 +28,13 @@
       "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7\\Speckle.Converters.Rhino7.csproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI.WebView\\Speckle.Connectors.DUI.WebView.csproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
+      "DUI3-DX\\RevitGenerator\\RevitGenerator.csproj",
       "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
+      "DUI3-DX\\Speckle.Revit2023.Api\\Speckle.Revit2023.Api.csproj",
+      "DUI3-DX\\Speckle.Revit2023.Interfaces\\Speckle.Revit2023.Interfaces.csproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
