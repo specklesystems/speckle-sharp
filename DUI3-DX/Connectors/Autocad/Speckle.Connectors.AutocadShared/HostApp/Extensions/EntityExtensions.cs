@@ -10,7 +10,7 @@ public static class EntityExtensions
   /// <param name="entity">Entity to add into database.</param>
   /// <param name="layer"> Layer to append object.</param>
   /// <exception cref="InvalidOperationException">Throws when there is no top transaction in the document.</exception>
-  public static ObjectId Append(this Entity entity, string? layer = null)
+  public static ObjectId AppendToDb(this Entity entity, string? layer = null)
   {
     // POC: Will be addressed to move it into AutocadContext!
     var db = entity.Database ?? Application.DocumentManager.MdiActiveDocument.Database;

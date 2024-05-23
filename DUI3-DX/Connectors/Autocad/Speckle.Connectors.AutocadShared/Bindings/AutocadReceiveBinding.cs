@@ -4,16 +4,17 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
-using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.Common;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
 public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 {
-  public string Name { get; } = "receiveBinding";
+  public string Name => "receiveBinding";
   public IBridge Parent { get; }
 
   private readonly DocumentModelStore _store;
@@ -53,7 +54,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       }
 
       // Receive host objects
-      IEnumerable<string> receivedObjectIds = await unitOfWork.Service
+      IReadOnlyList<ConversionResult> conversionResults = await unitOfWork.Service
         .Execute(
           modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId.NotNull(),
@@ -65,7 +66,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      Commands.SetModelReceiveResult(modelCardId, receivedObjectIds.ToList());
+      Commands.SetModelReceiveResult(modelCardId, conversionResults);
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
