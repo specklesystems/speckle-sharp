@@ -7,6 +7,7 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -51,7 +52,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
       }
 
       // Receive host objects
-      IEnumerable<string> receivedObjectIds = await unitOfWork.Service
+      IReadOnlyList<ConversionResult> conversionResults = await unitOfWork.Service
         .Execute(
           modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId.NotNull(),
@@ -63,8 +64,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      // POC: Here we can't set receive result if ReceiveOperation throws an error.
-      Commands.SetModelReceiveResult(modelCardId, receivedObjectIds.ToList());
+      Commands.SetModelReceiveResult(modelCardId, conversionResults);
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {

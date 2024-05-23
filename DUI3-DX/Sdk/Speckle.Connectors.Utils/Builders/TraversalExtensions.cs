@@ -9,7 +9,7 @@ public static class TraversalExtensions
     this GraphTraversal traversalFunction,
     Base rootObject,
     Action<string, double?>? onOperationProgressed,
-    CancellationToken cancellationToken
+    CancellationToken cancellationToken = default
   )
   {
     var traversalGraph = traversalFunction.Traverse(rootObject).ToArray();

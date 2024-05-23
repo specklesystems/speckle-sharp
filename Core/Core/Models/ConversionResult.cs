@@ -28,5 +28,7 @@ public sealed class ConversionResult
   }
 
   public override string ToString() =>
-    IsSuccessful ? $"Successfully converted {Target} to {Result}" : $"Failed to convert {Target}: {Error!.Message}";
+    IsSuccessful
+      ? $"Successfully converted {Target} to {Result}"
+      : $"Failed to convert {Target}: {Error!.GetType()}: {Error!.Message}";
 }
