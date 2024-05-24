@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" IncludeAssets="compile" />
   </ItemGroup>
   
     <ItemGroup>

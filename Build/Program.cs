@@ -50,6 +50,7 @@ Target(
     }
   }
 );
+
 Target(
   VERSION,
   async () =>
@@ -60,6 +61,7 @@ Target(
     Run("echo", $"\"version={output}\" >> $GITHUB_OUTPUT");
   }
 );
+
 Target(
   FORMAT,
   () =>
@@ -68,6 +70,7 @@ Target(
     Run("dotnet", "csharpier --check .");
   }
 );
+
 Target(
   RESTORE,
   Consts.Solutions,
@@ -111,30 +114,39 @@ Target(
 
 Target(
   ZIP,
-  Consts.Projects,
+  Consts.InstallerManifests,
   x =>
   {
-    var (path, framework) = x;
+    var outputDir = Path.Combine(".", "output");
+    var slugDir = Path.Combine(outputDir, x.HostAppSlug);
 
-    var fullPath = Path.Combine(".", path, "bin", "Release", framework);
-    if (Directory.Exists(fullPath))
+    Directory.CreateDirectory(outputDir);
+    Directory.CreateDirectory(slugDir);
+
+    foreach (var asset in x.Projects)
     {
-      foreach (var file in Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories))
+      var fullPath = Path.Combine(".", asset.ProjectPath, "bin", "Release", asset.TargetName);
+      if (Directory.Exists(fullPath))
       {
-        Console.WriteLine(file);
+        var assetName = Path.GetFileName(asset.ProjectPath);
+        Directory.CreateDirectory(Path.Combine(slugDir, assetName));
+        foreach (var file in Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories))
+        {
+          Console.WriteLine(file);
+          File.Copy(file, Path.Combine(slugDir, assetName, Path.GetFileName(file)), true);
+        }
+      }
+      else
+      {
+        throw new InvalidOperationException("Could not find: " + fullPath);
       }
     }
-    else
-    {
-      throw new InvalidOperationException("Could not find: " + fullPath);
-    }
-    var outputDir = Path.Combine(".", "output");
-    Directory.CreateDirectory(outputDir);
 
-    var outputPath = Path.Combine(outputDir, $"{Path.GetFileName(path)}.zip");
-
-    Console.WriteLine($"Zipping: '{fullPath}' to '{outputPath}'");
-    ZipFile.CreateFromDirectory(fullPath, outputPath);
+    var outputPath = Path.Combine(outputDir, $"{x.HostAppSlug}.zip");
+    File.Delete(outputPath);
+    Console.WriteLine($"Zipping: '{slugDir}' to '{outputPath}'");
+    ZipFile.CreateFromDirectory(slugDir, outputPath, CompressionLevel.Optimal, true);
+    Directory.Delete(slugDir, true);
   }
 );
 
