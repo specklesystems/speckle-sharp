@@ -49,6 +49,10 @@ public partial class ModelCurveArrayProxy
   }
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+  public int Count => Size;
+
+  public IRevitModelCurve this[int index] => get_Item(index);
 }
 
 [Proxy(typeof(ModelCurve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]

@@ -15,6 +15,7 @@ public abstract class ConversionContextStack<TDocument, THostUnit> : IConversion
 {
   private readonly IHostToSpeckleUnitConverter<THostUnit> _unitConverter;
   private readonly TDocument _document;
+  private readonly Stack<IConversionContext<TDocument>> _stack = new();
 
   protected ConversionContextStack(
     TDocument document,
@@ -28,9 +29,7 @@ public abstract class ConversionContextStack<TDocument, THostUnit> : IConversion
     _stack.Push(new ConversionContext<TDocument>(_document, _unitConverter.ConvertOrThrow(hostUnit)));
   }
 
-  private readonly Stack<ConversionContext<TDocument>> _stack = new();
-
-  public ConversionContext<TDocument> Current => _stack.Peek();
+  public IConversionContext<TDocument> Current => _stack.Peek();
 
   public ContextWrapper<TDocument, THostUnit> Push(string speckleUnit)
   {

@@ -23,7 +23,9 @@ public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitMo
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(IRevitModelCurveCollection target)
+  public SOG.Polycurve Convert(IRevitModelCurveCollection target) => Convert((IReadOnlyList<IRevitModelCurve>)target);
+
+  public SOG.Polycurve Convert(IReadOnlyList<IRevitModelCurve> target)
   {
     SOG.Polycurve polycurve = new();
     var curves = target.Select(mc => mc.GeometryCurve).ToArray();
