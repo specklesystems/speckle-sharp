@@ -1,7 +1,9 @@
 name: Tester
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - dui3/alpha
 jobs:
   test:
     runs-on: windows-latest
