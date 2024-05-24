@@ -145,7 +145,7 @@ Target(
     var outputPath = Path.Combine(outputDir, $"{x.HostAppSlug}.zip");
     File.Delete(outputPath);
     Console.WriteLine($"Zipping: '{slugDir}' to '{outputPath}'");
-    ZipFile.CreateFromDirectory(slugDir, outputPath, CompressionLevel.Optimal, true);
+    ZipFile.CreateFromDirectory(slugDir, outputPath);
     Directory.Delete(slugDir, true);
   }
 );
