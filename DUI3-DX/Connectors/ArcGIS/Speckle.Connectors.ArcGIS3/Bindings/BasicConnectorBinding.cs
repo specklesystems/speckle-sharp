@@ -131,19 +131,17 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     {
       if (member is FeatureLayer featureLayer)
       {
-        using (RowCursor rowCursor = featureLayer.Search())
+        using RowCursor rowCursor = featureLayer.Search();
+        while (rowCursor.MoveNext())
         {
-          while (rowCursor.MoveNext())
+          using (var row = rowCursor.Current)
           {
-            using (var row = rowCursor.Current)
+            if (row is not Feature feature)
             {
-              if (row is not Feature feature)
-              {
-                continue;
-              }
-              Geometry geometry = feature.GetShape();
-              MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
+              continue;
             }
+            Geometry geometry = feature.GetShape();
+            MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
           }
         }
       }
