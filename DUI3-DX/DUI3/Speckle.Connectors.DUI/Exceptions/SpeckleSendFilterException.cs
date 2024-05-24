@@ -1,6 +1,8 @@
-﻿namespace Speckle.Connectors.DUI.Exceptions;
+﻿using Speckle.Core.Logging;
 
-public class SpeckleSendFilterException : Exception
+namespace Speckle.Connectors.DUI.Exceptions;
+
+public class SpeckleSendFilterException : SpeckleException
 {
   public SpeckleSendFilterException() { }
 
