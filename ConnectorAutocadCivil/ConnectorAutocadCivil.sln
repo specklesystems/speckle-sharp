@@ -69,6 +69,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2025", "Con
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2025", "..\Objects\Converters\ConverterAutocadCivil\ConverterAutocad2025\ConverterAutocad2025.csproj", "{5A4FB6D3-CAC0-43BC-BB4A-BED3845C79DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2025", "ConnectorCivil2025\ConnectorCivil2025.csproj", "{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterCivil2025", "..\Objects\Converters\ConverterAutocadCivil\ConverterCivil2025\ConverterCivil2025.csproj", "{A8950613-B16B-461E-9549-331408DE7821}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,6 +183,14 @@ Global
 		{5A4FB6D3-CAC0-43BC-BB4A-BED3845C79DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A4FB6D3-CAC0-43BC-BB4A-BED3845C79DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A4FB6D3-CAC0-43BC-BB4A-BED3845C79DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8950613-B16B-461E-9549-331408DE7821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8950613-B16B-461E-9549-331408DE7821}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8950613-B16B-461E-9549-331408DE7821}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8950613-B16B-461E-9549-331408DE7821}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +222,8 @@ Global
 		{572B1D77-83BA-4E96-A70A-7D000D2AC220} = {A07071D5-E197-487D-B543-28639AC3C719}
 		{6B147D7E-4F94-43EC-A982-340E98B37656} = {A07071D5-E197-487D-B543-28639AC3C719}
 		{5A4FB6D3-CAC0-43BC-BB4A-BED3845C79DA} = {8AFDB1E6-D3E7-45EA-BCDC-F3554BDDEF1E}
+		{DD5EF30C-6000-4B8A-8ECC-6F6D5C3B0CEE} = {A07071D5-E197-487D-B543-28639AC3C719}
+		{A8950613-B16B-461E-9549-331408DE7821} = {8AFDB1E6-D3E7-45EA-BCDC-F3554BDDEF1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EAFBA51C-7222-435F-8BDF-8C15B27A34C8}

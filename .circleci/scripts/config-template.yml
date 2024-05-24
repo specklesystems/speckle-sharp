@@ -28,7 +28,7 @@ workflows:
             tags:
               only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish
+            - publish-nugets
           context: nuget
 
 commands:
@@ -49,20 +49,8 @@ commands:
             echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$BASH_ENV"
           environment:
             WORKFLOW_NUM: << pipeline.number >>
-
-  packandpublish:
+  publish-nugets:
     steps:
-      - run:
-          name: Build nuget packages
-          command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
-            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
-            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER.$WORKFLOW_NUM)
-            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:IsDesktopBuild=false
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Push nuget packages
           command: $HOME/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
@@ -93,6 +81,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
             $HOME/.dotnet/dotnet --version
       - run:
           name: Enforce formatting
@@ -108,6 +97,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
             $HOME/.dotnet/dotnet build SDK.slnf -c Release -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Build nuget packages
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
+            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
+            VERSION=$(echo $VER.$WORKFLOW_NUM)
+            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
@@ -129,6 +129,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -309,6 +310,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
