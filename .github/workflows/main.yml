@@ -2,9 +2,7 @@ name: .NET Build and Publish
 
 on:
   push:
-    branches: ["main", "dev"]
-  pull_request:
-    branches: ["dui3/alpha"]
+    branches: ["main", "dev", "dui3/alpha"]
   workflow_dispatch:
 
 jobs:
