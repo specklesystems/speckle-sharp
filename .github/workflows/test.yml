@@ -1,7 +1,7 @@
 name: Tester
 
 on:
-  push:
+  pull_request: 
     branches:
       - dui3/alpha
 jobs:
