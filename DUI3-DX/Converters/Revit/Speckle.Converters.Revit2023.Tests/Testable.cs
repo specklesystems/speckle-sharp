@@ -1,7 +1,12 @@
 ﻿using Speckle.Converters.Common;
 using Speckle.Revit2023.Interfaces;
 
-namespace Speckle.Connectors.Revit2023.Tests;
+namespace Speckle.Converters.Revit2023.Tests;
+
+public static class RevitConversionContextStack
+{
+  public const double TOLERANCE = 0.0164042; // 5mm in ft
+}
 
 public interface IRevitConversionContextStack : IConversionContextStack<IRevitDocument, IRevitForgeTypeId> { }
 

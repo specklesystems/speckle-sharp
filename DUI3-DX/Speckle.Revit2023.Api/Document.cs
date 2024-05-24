@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using Autodesk.Revit.DB;
 using Speckle.ProxyGenerator;
 using Speckle.Revit2023.Interfaces;
@@ -10,7 +11,6 @@ namespace Speckle.Revit2023.Api;
 [Proxy(
   typeof(Document),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
-  ProxyClassAccessibility.Public,
   new[] { "PlanTopology", "PlanTopologies", "TypeOfStorage", "Equals" }
 )]
 [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
@@ -19,13 +19,49 @@ public partial interface IRevitDocumentProxy : IRevitDocument { }
 [Proxy(
   typeof(ModelCurveArray),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
-  ProxyClassAccessibility.Public,
   new[] { "GetEnumerator", "Item" }
 )]
 public partial interface IRevitModelCurveCollectionProxy : IRevitModelCurveCollection { }
 
+public partial class ModelCurveArrayProxy
+{
+  public IEnumerator<IRevitModelCurve> GetEnumerator() =>
+    new RevitModelCurveCollectionIterator(_Instance.ForwardIterator());
+
+  private readonly struct RevitModelCurveCollectionIterator : IEnumerator<IRevitModelCurve>
+  {
+    private readonly ModelCurveArrayIterator _curveArrayIterator;
+
+    public RevitModelCurveCollectionIterator(ModelCurveArrayIterator curveArrayIterator)
+    {
+      _curveArrayIterator = curveArrayIterator;
+    }
+
+    public void Dispose() => _curveArrayIterator.Dispose();
+
+    public bool MoveNext() => _curveArrayIterator.MoveNext();
+
+    public void Reset() => _curveArrayIterator.Reset();
+
+    object IEnumerator.Current => Current;
+
+    public IRevitModelCurve Current => new ModelCurveProxy((ModelCurve)_curveArrayIterator.Current);
+  }
+
+  IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+[Proxy(typeof(ModelCurve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitModelCurveProxy : IRevitModelCurve { }
+
+[Proxy(typeof(CurveElement), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitCurveElementProxy : IRevitCurveElement { }
+
 [Proxy(typeof(Curve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
 public partial interface IRevitCurveProxy : IRevitCurve { }
+
+[Proxy(typeof(XYZ), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitXYZProxy : IRevitXYZ { }
 
 [Proxy(typeof(Units), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
 public partial interface IRevitUnitsProxy : IRevitUnits { }

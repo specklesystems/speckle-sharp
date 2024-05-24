@@ -1,5 +1,4 @@
 ﻿using Objects;
-using Speckle.Connectors.Revit2023.Tests;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Revit2023.Interfaces;
@@ -27,7 +26,7 @@ public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitMo
   public SOG.Polycurve Convert(IRevitModelCurveCollection target)
   {
     SOG.Polycurve polycurve = new();
-    var curves = target.Cast().Select(mc => mc.GeometryCurve).ToArray();
+    var curves = target.Select(mc => mc.GeometryCurve).ToArray();
 
     if (curves.Length == 0)
     {
@@ -44,6 +43,4 @@ public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitMo
 
     return polycurve;
   }
-
-  public SOG.Polycurve Convert(DB.ModelCurveArray target) => Convert(new ModelCurveArrayProxy(target));
 }

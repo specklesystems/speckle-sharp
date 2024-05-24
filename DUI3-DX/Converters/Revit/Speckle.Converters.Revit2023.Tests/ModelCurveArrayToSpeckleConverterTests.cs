@@ -1,7 +1,6 @@
 using FakeItEasy;
 using NUnit.Framework;
 using Objects;
-using Speckle.Connectors.Revit2023.Tests;
 using Speckle.Converters.Common.Objects;
 using Speckle.Revit2023.Interfaces;
 

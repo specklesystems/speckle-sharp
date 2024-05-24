@@ -10,9 +10,25 @@ public interface IRevitDocument
 }
 
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]
-public interface IRevitModelCurveCollection { }
+public interface IRevitModelCurveCollection : IEnumerable<IRevitModelCurve> { }
 
-public interface IRevitCurve { }
+public interface IRevitModelCurve : IRevitCurveElement { }
+
+public interface IRevitCurveElement
+{
+  IRevitCurve GeometryCurve { get; }
+}
+
+public interface IRevitCurve
+{
+  IRevitXYZ GetEndPoint(int index);
+  double Length { get; }
+}
+
+public interface IRevitXYZ
+{
+  double DistanceTo(IRevitXYZ source);
+}
 
 public interface IRevitUnits
 {
