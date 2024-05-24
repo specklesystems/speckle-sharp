@@ -256,6 +256,9 @@ public class BrowserBridge : IBridge
     }
   }
 
+  /// <summary>
+  /// Errors that not handled on bindings.
+  /// </summary>
   private void ReportUnhandledError(string requestId, Exception e)
   {
     var errorDetails = new

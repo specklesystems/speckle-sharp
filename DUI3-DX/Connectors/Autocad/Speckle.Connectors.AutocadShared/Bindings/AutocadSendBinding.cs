@@ -6,9 +6,9 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Operations.Send;
+using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
@@ -122,23 +122,26 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   {
     try
     {
-      using var uow = _unitOfWorkFactory.Resolve<SendOperation<AutocadRootObject>>();
-      // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
-
-      // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No publish model card was found.");
       }
+
+      using var uow = _unitOfWorkFactory.Resolve<SendOperation<AutocadRootObject>>();
+
+      // Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Get elements to convert
       List<AutocadRootObject> autocadObjects = Application.DocumentManager.CurrentDocument.GetObjects(
         modelCard.SendFilter.NotNull().GetObjectIds()
       );
+
       if (autocadObjects.Count == 0)
       {
-        throw new InvalidOperationException("No objects were found. Please update your send filter!");
+        // Handle as CARD ERROR in this function
+        throw new SpeckleSendFilterException("No objects were found to convert. Please update your publish filter!");
       }
 
       var sendInfo = new SendInfo(
@@ -170,11 +173,13 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
       Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
+    // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)
     {
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
       return;
     }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
     }
