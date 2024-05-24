@@ -28,7 +28,6 @@
       "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7\\Speckle.Converters.Rhino7.csproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI.WebView\\Speckle.Connectors.DUI.WebView.csproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
-      "DUI3-DX\\RevitGenerator\\RevitGenerator.csproj",
       "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",

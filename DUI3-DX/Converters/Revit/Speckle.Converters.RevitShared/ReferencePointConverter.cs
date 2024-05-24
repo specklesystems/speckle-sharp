@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit2023.Api;
+using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Converters.RevitShared;
 
@@ -62,7 +63,8 @@ public class ReferencePointConverter : IReferencePointConverter
     var referencePointTransform = DB.Transform.Identity;
 
     // POC: bogus disposal below
-    var points = _contextStack.Current.Document.CreateFilteredElementCollector()
+    var points = _contextStack.Current.Document
+      .CreateFilteredElementCollector()
       .OfClass(typeof(DB.BasePoint))
       .Cast<DB.BasePoint>()
       .ToList();

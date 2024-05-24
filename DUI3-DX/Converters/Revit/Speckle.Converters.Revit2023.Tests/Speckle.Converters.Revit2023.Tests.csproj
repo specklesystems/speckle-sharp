@@ -16,7 +16,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Speckle.Converters.Revit2023\Speckle.Converters.Revit2023.csproj" />
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+      <ProjectReference Include="..\..\..\Speckle.Revit2023.Interfaces\Speckle.Revit2023.Interfaces.csproj" />
     </ItemGroup>
 
 </Project>

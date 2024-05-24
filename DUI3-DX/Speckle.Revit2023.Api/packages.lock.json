@@ -45,6 +45,12 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg=="
+      },
+      "speckle.revit2023.interfaces": {
+        "type": "Project",
+        "dependencies": {
+          "Mapster": "[7.3.0, )"
+        }
       }
     }
   }

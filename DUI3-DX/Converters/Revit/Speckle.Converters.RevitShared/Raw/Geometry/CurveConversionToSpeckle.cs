@@ -2,6 +2,7 @@ using Objects;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 using Speckle.Revit2023.Api;
+using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -31,7 +32,7 @@ public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>, IType
     _hermiteConverter = hermiteConverter;
   }
 
-  public ICurve Convert(IRevitCurve target) => Convert(target._Instance);
+  public ICurve Convert(IRevitCurve target) => Convert(((IRevitCurveProxy)target)._Instance);
 
   public ICurve Convert(DB.Curve target)
   {

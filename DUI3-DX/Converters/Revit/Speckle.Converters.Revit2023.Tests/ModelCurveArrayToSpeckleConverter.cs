@@ -1,16 +1,13 @@
-using Objects;
+﻿using Objects;
+using Speckle.Connectors.Revit2023.Tests;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit2023.Api;
 using Speckle.Revit2023.Interfaces;
+using SOG = Objects.Geometry;
 
-namespace Speckle.Converters.RevitShared.Raw;
+namespace Speckle.Converters.Revit2023.Tests;
 
-public sealed class ModelCurveArrayToSpeckleConverter
-  : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>,
-    ITypedConverter<IRevitModelCurveCollection, SOG.Polycurve>
+public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitModelCurveCollection, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly IScalingServiceToSpeckle _scalingService;

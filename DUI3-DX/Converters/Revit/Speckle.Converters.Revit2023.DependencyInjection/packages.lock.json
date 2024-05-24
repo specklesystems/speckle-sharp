@@ -433,11 +433,15 @@
         "type": "Project",
         "dependencies": {
           "Mapster": "[7.3.0, )",
-          "Speckle.Revit.API": "[2023.0.0, )"
+          "Speckle.Revit.API": "[2023.0.0, )",
+          "Speckle.Revit2023.Interfaces": "[2.0.999-local, )"
         }
       },
       "speckle.revit2023.interfaces": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "Mapster": "[7.3.0, )"
+        }
       }
     }
   }

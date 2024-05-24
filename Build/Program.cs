@@ -104,10 +104,10 @@ Target(
 
     foreach (var file in GetFiles("**/*.Tests.csproj"))
     {
-       Run(
-      "msbuild",
-      $"{file} /p:Configuration=Release /p:RestoreLockedMode=true /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m"
-    );
+      Run(
+        "msbuild",
+        $"{file} /p:Configuration=Release /p:RestoreLockedMode=true /p:IsDesktopBuild=false /p:NuGetRestorePackages=false -v:m"
+      );
     }
   }
 );

@@ -22,8 +22,8 @@ public static class AssemblyResolver
       assembly = Assembly.LoadFrom(assemblyFile);
     }
     return assembly;
-  }  
-  
+  }
+
   public static Assembly? OnAssemblyResolve(string location, ResolveEventArgs args)
   {
     // POC: tight binding to files

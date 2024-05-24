@@ -1,6 +1,6 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
-using Speckle.Revit2023.Api;
+using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 

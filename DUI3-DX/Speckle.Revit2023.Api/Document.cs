@@ -1,28 +1,44 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Autodesk.Revit.DB;
 using Speckle.ProxyGenerator;
+using Speckle.Revit2023.Interfaces;
+#pragma warning disable CA1010
+#pragma warning disable CA1710
 
 namespace Speckle.Revit2023.Api;
 
-[Proxy(typeof(Document), new [] {"Autodesk.Revit.DB", "PlanTopologies", "TypeOfStorage", "Equals"})]
+[Proxy(
+  typeof(Document),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  ProxyClassAccessibility.Public,
+  new[] { "PlanTopology", "PlanTopologies", "TypeOfStorage", "Equals" }
+)]
 [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
+public partial interface IRevitDocumentProxy : IRevitDocument { }
 
-public partial interface IRevitDocument 
-{
-}
+[Proxy(
+  typeof(ModelCurveArray),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  ProxyClassAccessibility.Public,
+  new[] { "GetEnumerator", "Item" }
+)]
+public partial interface IRevitModelCurveCollectionProxy : IRevitModelCurveCollection { }
 
-public static class RevitDocumentExtensions
-{
-  public static IRevitFilteredElementCollector CreateFilteredElementCollector(this IRevitDocument revitDocument) => new FilteredElementCollectorProxy(new FilteredElementCollector(revitDocument._Instance));
-}
+[Proxy(typeof(Curve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitCurveProxy : IRevitCurve { }
 
-[Proxy(typeof(FilteredElementCollector), new [] {"Autodesk.Revit.DB","GetEnumerator", "Equals"})]
-public partial interface IRevitFilteredElementCollector
-{
-}
+[Proxy(typeof(Units), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitUnitsProxy : IRevitUnits { }
 
-public static class RevitFilteredExtensions
-{
-  public static IEnumerable<T> Cast<T>(this IRevitFilteredElementCollector revitFilteredElementCollector)
-    => Enumerable.Cast<T>(revitFilteredElementCollector._Instance.ToElements());
-}
+[Proxy(
+  typeof(ForgeTypeId),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  new[] { "Equals" }
+)]
+public partial interface IRevitForgeTypeIdProxy : IRevitForgeTypeId { }
+
+[Proxy(
+  typeof(FormatOptions),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
+)]
+public partial interface IRevitFormatOptionsProxy : IRevitFormatOptions { }
