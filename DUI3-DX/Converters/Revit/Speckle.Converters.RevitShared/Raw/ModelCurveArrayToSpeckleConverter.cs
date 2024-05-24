@@ -3,23 +3,19 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit2023.Api;
-using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-public sealed class ModelCurveArrayToSpeckleConverter
-  : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>,
-    ITypedConverter<IRevitModelCurveCollection, SOG.Polycurve>
+public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly IScalingServiceToSpeckle _scalingService;
-  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
   public ModelCurveArrayToSpeckleConverter(
     IRevitConversionContextStack contextStack,
     IScalingServiceToSpeckle scalingService,
-    ITypedConverter<IRevitCurve, ICurve> curveConverter
+    ITypedConverter<DB.Curve, ICurve> curveConverter
   )
   {
     _contextStack = contextStack;
@@ -27,10 +23,10 @@ public sealed class ModelCurveArrayToSpeckleConverter
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(IRevitModelCurveCollection target)
+  public SOG.Polycurve Convert(DB.ModelCurveArray target)
   {
     SOG.Polycurve polycurve = new();
-    var curves = target.Cast().Select(mc => mc.GeometryCurve).ToArray();
+    var curves = target.Cast<DB.ModelCurve>().Select(mc => mc.GeometryCurve).ToArray();
 
     if (curves.Length == 0)
     {
@@ -47,6 +43,4 @@ public sealed class ModelCurveArrayToSpeckleConverter
 
     return polycurve;
   }
-
-  public SOG.Polycurve Convert(DB.ModelCurveArray target) => Convert(new ModelCurveArrayProxy(target));
 }

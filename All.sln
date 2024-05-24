@@ -553,8 +553,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Revit2023.Api", "DU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Revit2023.Interfaces", "DUI3-DX\Speckle.Revit2023.Interfaces\Speckle.Revit2023.Interfaces.csproj", "{5889773A-A6C4-4742-8AA9-62E57DCF873B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.ProxyGenerator", "..\ProxyGenerator\src\Speckle.ProxyGenerator\Speckle.ProxyGenerator.csproj", "{FA560D4E-968D-4547-95EF-81987218580C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2757,22 +2755,6 @@ Global
 		{5889773A-A6C4-4742-8AA9-62E57DCF873B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5889773A-A6C4-4742-8AA9-62E57DCF873B}.Release|x64.ActiveCfg = Release|Any CPU
 		{5889773A-A6C4-4742-8AA9-62E57DCF873B}.Release|x64.Build.0 = Release|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug Mac|x64.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Debug|x64.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release Mac|x64.ActiveCfg = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release Mac|x64.Build.0 = Debug|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release|x64.ActiveCfg = Release|Any CPU
-		{FA560D4E-968D-4547-95EF-81987218580C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

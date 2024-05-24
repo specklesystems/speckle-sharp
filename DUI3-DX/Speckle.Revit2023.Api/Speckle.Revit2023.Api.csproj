@@ -6,12 +6,12 @@
       <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Speckle.ProxyGenerator" Version="0.1.5" PrivateAssets="All"/>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
     <PackageReference Include="Mapster" Version="7.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ProxyGenerator\src\Speckle.ProxyGenerator\Speckle.ProxyGenerator.csproj" OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false"   />
+    <ProjectReference Include="..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\Speckle.Revit2023.Interfaces\Speckle.Revit2023.Interfaces.csproj" />
   </ItemGroup>
 </Project>

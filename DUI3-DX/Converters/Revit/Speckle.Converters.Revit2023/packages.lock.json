@@ -2,17 +2,6 @@
   "version": 1,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
-      "Mapster": {
-        "type": "Direct",
-        "requested": "[7.3.0, )",
-        "resolved": "7.3.0",
-        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
-        "dependencies": {
-          "Mapster.Core": "1.2.0",
-          "Microsoft.CSharp": "4.3.0",
-          "System.Reflection.Emit": "4.3.0"
-        }
-      },
       "PolySharp": {
         "type": "Direct",
         "requested": "[1.14.1, )",
@@ -62,6 +51,16 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "yg72rrYDapfsIUrul7aF6wwNnTJBOFvuA9VdDTQpPa8AlAriHbufeXYLBcodKjfUdkCnaiggX1U/nEP08Zb5GA=="
+      },
+      "Mapster": {
+        "type": "Transitive",
+        "resolved": "7.3.0",
+        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
+        "dependencies": {
+          "Mapster.Core": "1.2.0",
+          "Microsoft.CSharp": "4.3.0",
+          "System.Reflection.Emit": "4.3.0"
+        }
       },
       "Mapster.Core": {
         "type": "Transitive",
@@ -418,6 +417,7 @@
         "type": "Project",
         "dependencies": {
           "Mapster": "[7.3.0, )",
+          "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Revit.API": "[2023.0.0, )",
           "Speckle.Revit2023.Interfaces": "[2.0.999-local, )"
         }

@@ -1,6 +1,7 @@
-using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.InterfaceGenerator;
+using Speckle.Revit2023.Api;
+using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Services;
 
@@ -10,15 +11,17 @@ namespace Speckle.Converters.RevitShared.Services;
 public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
 {
   private readonly double _defaultLengthConversionFactor;
+  private readonly IRevitUnitUtils _revitUnitUtils;
 
   // POC: this seems like the reverse relationship
-  public ScalingServiceToSpeckle(IRevitConversionContextStack contextStack)
+  public ScalingServiceToSpeckle(IRevitConversionContextStack contextStack, IRevitUnitUtils revitUnitUtils)
   {
+    _revitUnitUtils = revitUnitUtils;
     // POC: this is accurate for the current context stack
     var documentUnits = contextStack.Current.Document.GetUnits();
-    var formatOptions = documentUnits.GetFormatOptions(new(SpecTypeId.Length));
+    var formatOptions = documentUnits.GetFormatOptions(RevitSpecTypeId.Length);
     var lengthUnitsTypeId = formatOptions.GetUnitTypeId();
-    _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
+    _defaultLengthConversionFactor = _revitUnitUtils.ConvertFromInternalUnits(1, lengthUnitsTypeId);
   }
 
   // POC: throughout Revit conversions there's lots of comparison to check the units are valid
@@ -28,14 +31,8 @@ public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
   public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
 
   // POC: not sure about this???
-  public double Scale(double value, ForgeTypeId forgeTypeId)
+  public double Scale(double value, IRevitForgeTypeId forgeTypeId)
   {
-    return ScaleStatic(value, forgeTypeId);
-  }
-
-  // POC: not sure why this is needed???
-  private static double ScaleStatic(double value, ForgeTypeId forgeTypeId)
-  {
-    return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+    return _revitUnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
   }
 }

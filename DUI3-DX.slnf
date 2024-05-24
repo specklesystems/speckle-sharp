@@ -2,7 +2,6 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "..\\ProxyGenerator\\src\\Speckle.ProxyGenerator\\Speckle.ProxyGenerator.csproj",
       "Build\\Build.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",

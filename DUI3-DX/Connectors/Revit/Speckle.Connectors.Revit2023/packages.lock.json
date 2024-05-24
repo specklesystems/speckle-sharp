@@ -521,7 +521,6 @@
       "speckle.converters.revit2023": {
         "type": "Project",
         "dependencies": {
-          "Mapster": "[7.3.0, )",
           "Speckle.Converters.Common": "[2.0.999-local, )",
           "Speckle.Revit.API": "[2023.0.0, )",
           "Speckle.Revit2023.Api": "[2.0.999-local, )",
@@ -568,6 +567,7 @@
         "type": "Project",
         "dependencies": {
           "Mapster": "[7.3.0, )",
+          "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Revit.API": "[2023.0.0, )",
           "Speckle.Revit2023.Interfaces": "[2.0.999-local, )"
         }
