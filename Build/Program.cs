@@ -126,19 +126,24 @@ Target(
     foreach (var asset in x.Projects)
     {
       var fullPath = Path.Combine(".", asset.ProjectPath, "bin", "Release", asset.TargetName);
-      if (Directory.Exists(fullPath))
-      {
-        var assetName = Path.GetFileName(asset.ProjectPath);
-        Directory.CreateDirectory(Path.Combine(slugDir, assetName));
-        foreach (var file in Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories))
-        {
-          Console.WriteLine(file);
-          File.Copy(file, Path.Combine(slugDir, assetName, Path.GetFileName(file)), true);
-        }
-      }
-      else
+      if (!Directory.Exists(fullPath))
       {
         throw new InvalidOperationException("Could not find: " + fullPath);
+      }
+
+      var assetName = Path.GetFileName(asset.ProjectPath);
+      var connectorDir = Path.Combine(slugDir, assetName);
+
+      Directory.CreateDirectory(connectorDir);
+      foreach (var directory in Directory.EnumerateDirectories(fullPath, "*", SearchOption.AllDirectories))
+      {
+        Directory.CreateDirectory(directory.Replace(fullPath, connectorDir));
+      }
+
+      foreach (var file in Directory.EnumerateFiles(fullPath, "*", SearchOption.AllDirectories))
+      {
+        Console.WriteLine(file);
+        File.Copy(file, file.Replace(fullPath, connectorDir), true);
       }
     }
 
@@ -146,7 +151,7 @@ Target(
     File.Delete(outputPath);
     Console.WriteLine($"Zipping: '{slugDir}' to '{outputPath}'");
     ZipFile.CreateFromDirectory(slugDir, outputPath);
-    Directory.Delete(slugDir, true);
+    // Directory.Delete(slugDir, true);
   }
 );
 

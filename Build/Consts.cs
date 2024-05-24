@@ -14,7 +14,7 @@ public static class Consts
     ),
     new("rhino", new InstallerAsset[] { new("DUI3-DX/Connectors/Rhino/Speckle.Connectors.Rhino7", "net48") }),
     new("revit", new InstallerAsset[] { new("DUI3-DX/Connectors/Revit/Speckle.Connectors.Revit2023", "net48") }),
-    new("acad", new InstallerAsset[] { new("DUI3-DX/Connectors/Autocad/Speckle.Connectors.Autocad2023", "net48") })
+    new("autocad", new InstallerAsset[] { new("DUI3-DX/Connectors/Autocad/Speckle.Connectors.Autocad2023", "net48") })
   };
 }
 
