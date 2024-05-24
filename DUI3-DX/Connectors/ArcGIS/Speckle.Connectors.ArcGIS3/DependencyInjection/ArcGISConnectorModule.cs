@@ -1,3 +1,4 @@
+using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.ArcGis.Operations.Send;
@@ -10,8 +11,10 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Autofac;
 using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.DUI;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
 // POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
@@ -27,6 +30,10 @@ public class ArcGISConnectorModule : ISpeckleModule
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();
+
+    // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for ArcGIS only!
+    // On SendOperation, once we called QueuedTask, it expect to run everything on same thread.
+    builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
 
     builder.AddSingleton<DocumentModelStore, ArcGISDocumentStore>();
 
@@ -45,8 +52,8 @@ public class ArcGISConnectorModule : ISpeckleModule
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // register send operation and dependencies
-    builder.AddScoped<SendOperation>();
+    builder.AddScoped<SendOperation<MapMember>>();
     builder.AddScoped<RootObjectBuilder>();
-    builder.AddScoped<IRootObjectSender, RootObjectSender>();
+    builder.AddSingleton<IRootObjectBuilder<MapMember>, RootObjectBuilder>();
   }
 }
