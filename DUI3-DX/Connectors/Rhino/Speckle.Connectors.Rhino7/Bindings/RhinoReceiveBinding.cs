@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
