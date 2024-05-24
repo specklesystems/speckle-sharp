@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>32aea787-c986-4b76-a57f-0da5453aa1f5</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Speckle.Connectors.Revit</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo16.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\logo32.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Plugin\Speckle.Connectors.Revit2023.addin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\DocumentModelStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\IdStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\IStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\RevitConnectorModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RevitRootObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
+      <DependentUpon>CefSharpPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>

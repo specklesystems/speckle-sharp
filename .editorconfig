@@ -219,6 +219,8 @@ dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjecti
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
 dotnet_diagnostic.ide0061.severity = suggestion # Use expression body for local functions: Subjective
+dotnet_diagnostic.ide0063.severity = suggestion # Using directive can be simplified
+dotnet_diagnostic.ide0066.severity = suggestion # Use switch expression: Subjective
 dotnet_diagnostic.ide0029.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
@@ -229,6 +231,7 @@ dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: 
 dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0042.severity = suggestion # Deconstruct variable declaration: Subjective
 dotnet_diagnostic.ide0028.severity = suggestion # Use collection initializers: Subjective
+dotnet_diagnostic.ide0072.severity = suggestion # Populate switch statement: Subjective
 dotnet_diagnostic.ide0074.severity = suggestion # Use compound assignment: Subjective
 
 # Maintainability rules

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Runtime.InteropServices;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Credentials;
@@ -28,6 +29,8 @@ public class ActiveUserResponse
   public UserInfo activeUser { get; set; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class UserInfo
 {
   public string id { get; set; }
@@ -46,11 +49,15 @@ public class TokenExchangeResponse
   public string refreshToken { get; set; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class Streams
 {
   public int totalCount { get; set; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class Commits
 {
   public int totalCount { get; set; }
