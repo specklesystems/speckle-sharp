@@ -19,12 +19,16 @@ public partial interface IRevitDocumentProxy : IRevitDocument { }
 [Proxy(
   typeof(ModelCurveArray),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
-  new[] { "GetEnumerator", "Item" }
+  new[] { "GetEnumerator", "Item", "get_Item", "set_Item" }
 )]
 public partial interface IRevitModelCurveCollectionProxy : IRevitModelCurveCollection { }
 
 public partial class ModelCurveArrayProxy
 {
+  IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+  public int Count => Size;
+
   public IEnumerator<IRevitModelCurve> GetEnumerator() =>
     new RevitModelCurveCollectionIterator(_Instance.ForwardIterator());
 
@@ -48,11 +52,14 @@ public partial class ModelCurveArrayProxy
     public IRevitModelCurve Current => new ModelCurveProxy((ModelCurve)_curveArrayIterator.Current);
   }
 
-  IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-  public int Count => Size;
-
-  public IRevitModelCurve this[int index] => get_Item(index);
+  public IRevitModelCurve this[int index]
+  {
+    get
+    {
+      var obj = _Instance.get_Item(index);
+      return Mapster.TypeAdapter.Adapt<IRevitModelCurve>(obj);
+    }
+  }
 }
 
 [Proxy(typeof(ModelCurve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
