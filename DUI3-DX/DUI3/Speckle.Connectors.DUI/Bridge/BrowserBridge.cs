@@ -255,13 +255,7 @@ public class BrowserBridge : IBridge
   /// </summary>
   private void ReportUnhandledError(string requestId, Exception e)
   {
-    var errorDetails = new
-    {
-      Error = e.Message,
-      e.StackTrace,
-      InnerError = e.InnerException?.Message,
-      InnerStackTrace = e.InnerException?.StackTrace
-    };
+    var errorDetails = new { e.Message, Error = e.ToString() };
 
     var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
     NotifyUIMethodCallResultReady(requestId, serializedError);
