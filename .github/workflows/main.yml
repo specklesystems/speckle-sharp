@@ -5,7 +5,8 @@ on:
     branches: ["main", "dev"]
   pull_request:
     branches: ["dui3/alpha"]
-  
+  workflow_dispatch:
+
 jobs:
   build-and-publish:
     runs-on: windows-latest
