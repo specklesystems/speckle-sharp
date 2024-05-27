@@ -7,6 +7,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RootNameSpace>Speckle.Connectors.ArcGIS</RootNameSpace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   
@@ -19,7 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" IncludeAssets="compile"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
   </ItemGroup>
   
@@ -28,4 +29,6 @@
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI.WebView\Speckle.Connectors.DUI.WebView.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
   </ItemGroup>
+  
+  <Import Project="Esri.ArcGISPro.Extensions30.Speckle.targets"/>
 </Project>

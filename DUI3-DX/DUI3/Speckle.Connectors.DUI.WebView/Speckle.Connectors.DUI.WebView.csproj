@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net4.8;net6.0-windows</TargetFrameworks>
     <UseWpf>true</UseWpf>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>

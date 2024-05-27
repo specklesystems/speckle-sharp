@@ -4,6 +4,7 @@
     <TargetExt>.rhp</TargetExt>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   
   <ItemGroup>
@@ -14,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build" />
     <PackageReference Include="RhinoWindows" Version="7.13.21348.13001" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>

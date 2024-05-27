@@ -89,8 +89,8 @@ Target(
     var fileVersion = Environment.GetEnvironmentVariable("FILE_VERSION");
     Console.WriteLine($"Version: {version} & {fileVersion}");
     Run(
-      "msbuild",
-      $"{s} /p:Configuration=Release /p:RestoreLockedMode=true /p:IsDesktopBuild=false /p:NuGetRestorePackages=false /p:Version={version} /p:FileVersion={fileVersion} -v:m"
+      "dotnet",
+      $"build {s} --no-restore -c Release -p:IsDesktopBuild=false -p:Version={version} -p:FileVersion={fileVersion} -v:m"
     );
   }
 );

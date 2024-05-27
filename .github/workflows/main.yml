@@ -3,13 +3,13 @@ name: .NET Build and Publish
 on:
   push:
     branches: ["main", "dev", "dui3/alpha"]
-  pull_request: 
+  pull_request:
     branches:
       - dui3/alpha
 
 jobs:
   build-and-publish:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -20,40 +20,37 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x.x
+          dotnet-version: 8.0.204
 
       - name: NuGet Cache
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
 
-      - name : Install GitVersion
+      - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v1.1.1
         with:
-          versionSpec: '5.x'
+          versionSpec: "5.x"
 
       - name: Determine Version
         id: version
         uses: gittools/actions/gitversion/execute@v1.1.1
 
       - name: Format
-        run: ./build.ps1 format
+        run: ./build.sh format
 
       - name: Restore
-        run: ./build.ps1 restore
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        run: ./build.sh restore
 
       - name: Build
         env:
           VERSION: ${{ env.fullSemVer }}
           FILE_VERSION: ${{ env.assemblySemFileVer }}
-        run: ./build.ps1 build
+        run: ./build.sh build
 
       - name: Pack
-        run: ./build.ps1 zip
+        run: ./build.sh zip
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -61,6 +58,6 @@ jobs:
           name: output-${{ env.fullSemVer }}
           path: output/*.*
           compression-level: 0 # no compression
-  
+
       - name: Trigger Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}
+        run: ./build.sh build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}
