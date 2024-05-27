@@ -1,4 +1,5 @@
 mode: ContinuousDelivery
+assembly-informational-format: '{FullSemVer}'
 branches: 
   main:
     regex: ^latest$
