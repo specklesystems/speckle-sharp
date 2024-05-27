@@ -1,5 +1,5 @@
 mode: ContinuousDelivery
-assembly-informational-format: '{FullSemVer}'
+assembly-informational-format: '{Major}.{Minor}.{Patch}-{PreReleaseLabel}'
 branches: 
   main:
     regex: ^latest$
