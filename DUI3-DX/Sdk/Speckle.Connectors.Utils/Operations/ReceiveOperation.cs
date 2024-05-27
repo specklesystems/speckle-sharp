@@ -17,7 +17,7 @@ public sealed class ReceiveOperation
     _syncToThread = syncToThread;
   }
 
-  public async Task<IReadOnlyList<ConversionResult>> Execute(
+  public async Task<IReadOnlyList<ReceiveConversionResult>> Execute(
     string accountId, // POC: all these string arguments exists in ModelCard but not sure to pass this dependency here, TBD!
     string projectId,
     string projectName,

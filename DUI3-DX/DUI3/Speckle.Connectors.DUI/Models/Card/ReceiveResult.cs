@@ -1,7 +1,5 @@
+using Speckle.Core.Models;
+
 namespace Speckle.Connectors.DUI.Models.Card;
 
-public class ReceiveResult
-{
-  public List<string>? BakedObjectIds { get; set; }
-  public bool Display { get; set; }
-}
+public record ReceiveResult(IReadOnlyList<ReceiveConversionResult> Results, bool Display);

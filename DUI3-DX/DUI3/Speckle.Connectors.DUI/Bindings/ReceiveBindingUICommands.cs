@@ -12,17 +12,10 @@ public class ReceiveBindingUICommands : BasicConnectorBindingCommands
   public ReceiveBindingUICommands(IBridge bridge)
     : base(bridge) { }
 
-  public void SetModelReceiveResult(string modelCardId, IReadOnlyList<ConversionResult> conversionResults)
+  public void SetModelReceiveResult(string modelCardId, IReadOnlyList<ReceiveConversionResult> conversionResults)
   {
     ReceiverModelCardResult res =
-      new()
-      {
-        ModelCardId = modelCardId,
-        ReceiveResult = new ReceiveResult()
-        {
-          BakedObjectIds = conversionResults.Where(x => x.IsSuccessful).Select(x => x.ResultId!).ToList()
-        }
-      };
+      new() { ModelCardId = modelCardId, ReceiveResult = new ReceiveResult(conversionResults, true) };
     Bridge.Send(SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME, res);
   }
 }

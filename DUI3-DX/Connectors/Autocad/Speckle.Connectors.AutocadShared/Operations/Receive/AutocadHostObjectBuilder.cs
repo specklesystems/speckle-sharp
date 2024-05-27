@@ -26,7 +26,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     _autocadLayerManager = autocadLayerManager;
   }
 
-  public IReadOnlyList<ConversionResult> Build(
+  public IReadOnlyList<ReceiveConversionResult> Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -44,18 +44,20 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
     HashSet<string> uniqueLayerNames = new();
 
-    List<ConversionResult> results = new();
+    List<ReceiveConversionResult> results = new();
     foreach (var tc in _traversalFunction.TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken))
     {
       try
       {
         var convertedObjects = ConvertObject(tc, baseLayerPrefix, uniqueLayerNames);
 
-        results.AddRange(convertedObjects.Select(e => new ConversionResult(tc, e, e.Handle.Value.ToString())));
+        results.AddRange(
+          convertedObjects.Select(e => new ReceiveConversionResult(tc.Current, e, e.Handle.Value.ToString()))
+        );
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(tc, ex));
+        results.Add(new(tc.Current, ex));
       }
     }
 

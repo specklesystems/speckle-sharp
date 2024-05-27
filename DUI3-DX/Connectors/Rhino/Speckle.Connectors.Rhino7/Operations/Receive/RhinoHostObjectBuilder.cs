@@ -26,7 +26,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public IReadOnlyList<ConversionResult> Build(
+  public IReadOnlyList<ReceiveConversionResult> Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -49,7 +49,10 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   }
 
   // POC: Potentially refactor out into an IObjectBaker.
-  private IReadOnlyList<ConversionResult> BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
+  private IReadOnlyList<ReceiveConversionResult> BakeObjects(
+    IEnumerable<TraversalContext> objectsGraph,
+    string baseLayerName
+  )
   {
     RhinoDoc doc = _contextStack.Current.Document;
     var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
@@ -80,7 +83,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     using var noDraw = new DisableRedrawScope(doc.Views);
 
-    var conversionResults = new List<ConversionResult>();
+    var conversionResults = new List<ReceiveConversionResult>();
 
     foreach (TraversalContext tc in objectsGraph)
     {
