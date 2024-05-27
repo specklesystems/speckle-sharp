@@ -26,7 +26,11 @@ public sealed class SendConversionResult
 
   [JsonIgnore]
   public Base? Result { get; }
+
+  [JsonIgnore]
   public Exception? Error { get; }
+
+  public string? ErrorMessage => Error?.Message;
 
   [JsonIgnore]
   public object Target { get; }
