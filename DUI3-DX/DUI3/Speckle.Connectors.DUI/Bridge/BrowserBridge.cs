@@ -7,6 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Speckle.Connectors.Utils;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -255,7 +256,17 @@ public class BrowserBridge : IBridge
   /// </summary>
   private void ReportUnhandledError(string requestId, Exception e)
   {
-    var errorDetails = new { e.Message, Error = e.ToString() };
+    var message = e.Message;
+    if (e is TargetInvocationException tie) // Exception on SYNC function calls. Message should be passed from inner exception since it is wrapped.
+    {
+      message = tie.InnerException?.Message;
+    }
+    var errorDetails = new
+    {
+      Message = message, // Topmost message
+      Error = e.ToFormattedString(), // All messages from exceptions
+      StackTrace = e.ToString()
+    };
 
     var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
     NotifyUIMethodCallResultReady(requestId, serializedError);
