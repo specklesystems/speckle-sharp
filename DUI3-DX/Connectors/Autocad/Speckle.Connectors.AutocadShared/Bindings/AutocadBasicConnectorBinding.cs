@@ -88,7 +88,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      var dbObjects = doc.GetObjects((receiverModelCard.ReceiveResult?.BakedObjectIds).NotNull());
+      var dbObjects = doc.GetObjects((receiverModelCard.ReceiveResult?.GetSuccessfulResultIds()).NotNull());
       objectIds = dbObjects.Select(tuple => tuple.Root.Id).ToArray();
     }
 
