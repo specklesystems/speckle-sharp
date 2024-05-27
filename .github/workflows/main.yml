@@ -58,7 +58,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: output-${{ env.fullSemVer }}.zip
+          name: output-${{ env.fullSemVer }}
           path: output/*.*
           compression-level: 0 # no compression
   
