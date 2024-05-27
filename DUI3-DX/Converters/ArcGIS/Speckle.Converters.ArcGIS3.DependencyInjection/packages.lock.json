@@ -8,18 +8,6 @@
         "resolved": "5.2.0",
         "contentHash": "V8dBH0dsv75uDzl7Sw+HkhKDPUw2eXnlMjcSVMH+tLo2s67MpTKGyDj1pDcpR+IF2u4YRs0s3/x7R88YJzIWvg=="
       },
-      "PolySharp": {
-        "type": "Direct",
-        "requested": "[1.14.1, )",
-        "resolved": "1.14.1",
-        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
-      },
-      "Speckle.InterfaceGenerator": {
-        "type": "Direct",
-        "requested": "[0.9.4, )",
-        "resolved": "0.9.4",
-        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
-      },
       "Esri.ArcGISPro.Extensions30": {
         "type": "Transitive",
         "resolved": "3.2.0.49743",

@@ -20,23 +20,11 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net48": "1.0.3"
         }
       },
-      "PolySharp": {
-        "type": "Direct",
-        "requested": "[1.14.1, )",
-        "resolved": "1.14.1",
-        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
-      },
       "Revit.Async": {
         "type": "Direct",
         "requested": "[2.0.1, )",
         "resolved": "2.0.1",
         "contentHash": "B7D5zXznqgxMryBYdGgWob20ALfGSP7hJ6+bh9JdLM/LRkYN5dNf0AaI0+7VID9X7e8MA0koAxv9fIijJnmSnw=="
-      },
-      "Speckle.InterfaceGenerator": {
-        "type": "Direct",
-        "requested": "[0.9.4, )",
-        "resolved": "0.9.4",
-        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
       },
       "Speckle.Revit.API": {
         "type": "Direct",

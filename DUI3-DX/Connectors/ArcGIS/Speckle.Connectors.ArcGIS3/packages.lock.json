@@ -14,18 +14,6 @@
         "resolved": "7.0.0",
         "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw=="
       },
-      "PolySharp": {
-        "type": "Direct",
-        "requested": "[1.14.1, )",
-        "resolved": "1.14.1",
-        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
-      },
-      "Speckle.InterfaceGenerator": {
-        "type": "Direct",
-        "requested": "[0.9.4, )",
-        "resolved": "0.9.4",
-        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
-      },
       "Autofac": {
         "type": "Transitive",
         "resolved": "5.2.0",

@@ -11,12 +11,6 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net48": "1.0.3"
         }
       },
-      "PolySharp": {
-        "type": "Direct",
-        "requested": "[1.14.1, )",
-        "resolved": "1.14.1",
-        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
-      },
       "RhinoCommon": {
         "type": "Direct",
         "requested": "[7.13.21348.13001, )",
@@ -31,12 +25,6 @@
         "dependencies": {
           "RhinoCommon": "[7.13.21348.13001]"
         }
-      },
-      "Speckle.InterfaceGenerator": {
-        "type": "Direct",
-        "requested": "[0.9.4, )",
-        "resolved": "0.9.4",
-        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
       },
       "System.Resources.Extensions": {
         "type": "Direct",
