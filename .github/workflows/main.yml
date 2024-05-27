@@ -20,7 +20,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.204
+          dotnet-version: |
+            7.x.x
+            8.0.204
 
       - name: NuGet Cache
         uses: actions/cache@v4
