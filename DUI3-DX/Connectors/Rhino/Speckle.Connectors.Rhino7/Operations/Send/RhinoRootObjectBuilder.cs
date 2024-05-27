@@ -4,8 +4,10 @@ using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
@@ -21,7 +23,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     _unitOfWorkFactory = unitOfWorkFactory;
   }
 
-  public Base Build(
+  public SendConversionResults Build(
     IReadOnlyList<RhinoObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -34,12 +36,12 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    Base commitObject = ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
+    SendConversionResults results = ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
 
-    return commitObject;
+    return results;
   }
 
-  private Collection ConvertObjects(
+  private SendConversionResults ConvertObjects(
     IReadOnlyList<RhinoObject> rhinoObjects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -57,6 +59,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     Dictionary<int, Collection> layerCollectionCache = new(); // POC: This seems to always start empty, so it's not caching anything out here.
 
     // POC: Handle blocks.
+    List<SendConversionResult> results = new(rhinoObjects.Count);
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -89,26 +92,23 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
         // add to host
         collectionHost.elements.Add(converted);
-        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
+
+        results.Add(new(rhinoObject, applicationId, converted));
       }
-      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
-      catch (SpeckleConversionException e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // POC: DO something with the exception
-        Console.WriteLine(e);
+        results.Add(new(rhinoObject, applicationId, ex));
+        // POC: add logging
       }
-      catch (NotSupportedException e)
-      {
-        // POC: DO something with the exception
-        Console.WriteLine(e);
-      }
+
+      onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
 
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
       // Thread.Sleep(550);
     }
 
     // 5. profit
-    return rootObjectCollection;
+    return new(results, rootObjectCollection);
   }
 
   /// <summary>

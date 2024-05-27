@@ -1,11 +1,10 @@
 ﻿using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Utils.Builders;
 
-public interface IRootObjectBuilder<T>
+public interface IRootObjectBuilder<in T>
 {
-  public Base Build(
+  public SendConversionResults Build(
     IReadOnlyList<T> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,

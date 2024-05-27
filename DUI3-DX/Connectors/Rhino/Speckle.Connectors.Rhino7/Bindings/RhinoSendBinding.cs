@@ -172,7 +172,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .ConfigureAwait(false);
 
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.convertedReferences)
+      foreach (var kvp in sendResult.ConvertedReferences)
       {
         _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
       }
@@ -180,7 +180,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
-      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.RootObjId);
     }
     catch (OperationCanceledException)
     {

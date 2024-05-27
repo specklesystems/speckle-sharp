@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using Autodesk.AutoCAD.DatabaseServices;
+﻿using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
@@ -18,7 +18,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     _converter = converter;
   }
 
-  public Base Build(
+  public SendConversionResults Build(
     IReadOnlyList<AutocadRootObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -39,6 +39,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
+    List<SendConversionResult> results = new(objects.Count);
     foreach (var (root, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
@@ -56,12 +57,6 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
         else
         {
           converted = _converter.Convert(root);
-
-          if (converted == null)
-          {
-            continue;
-          }
-
           converted.applicationId = applicationId;
         }
 
@@ -78,22 +73,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
           collection.elements.Add(converted);
         }
 
-        onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
+        results.Add(new(root, applicationId, converted));
       }
-      catch (SpeckleConversionException e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        Console.WriteLine(e);
+        results.Add(new(root, applicationId, ex));
+        // POC: add logging
       }
-      catch (NotSupportedException e)
-      {
-        Console.WriteLine(e);
-      }
-      catch (Exception e) when (!e.IsFatal())
-      {
-        Debug.WriteLine(e.Message);
-      }
+
+      onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
 
-    return modelWithLayers;
+    return new(results, modelWithLayers);
   }
 }

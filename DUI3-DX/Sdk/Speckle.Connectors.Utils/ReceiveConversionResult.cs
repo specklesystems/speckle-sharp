@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Utils;
@@ -17,9 +18,9 @@ public sealed class ReceiveConversionResult
   public string TargetId => Target.id;
   public string? TargetAppId => Target.applicationId;
 
-  //[MemberNotNullWhen(true, nameof(Result))]
-  //[MemberNotNullWhen(true, nameof(ResultId))]
-  //[MemberNotNullWhen(false, nameof(Error))]
+  [MemberNotNullWhen(true, nameof(Result))]
+  [MemberNotNullWhen(true, nameof(ResultId))]
+  [MemberNotNullWhen(false, nameof(Error))]
   public bool IsSuccessful => Result is not null;
 
   public ReceiveConversionResult(Base target, object result, string resultId)

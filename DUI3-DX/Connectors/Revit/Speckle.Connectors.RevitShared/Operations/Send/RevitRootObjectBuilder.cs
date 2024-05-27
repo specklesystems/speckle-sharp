@@ -1,6 +1,7 @@
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
+using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
@@ -29,7 +30,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     };
   }
 
-  public Base Build(
+  public SendConversionResults Build(
     IReadOnlyList<ElementId> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -61,6 +62,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
 
+    List<SendConversionResult> results = new(revitElements.Count);
     foreach (Element revitElement in revitElements)
     {
       ct.ThrowIfCancellationRequested();
@@ -87,17 +89,18 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
         }
 
         collection.elements.Add(converted);
+        results.Add(new(revitElement, applicationId, converted));
       }
-      catch (SpeckleConversionException)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // POC: logging
+        results.Add(new(revitElement, applicationId, ex));
+        // POC: add logging
       }
 
-      countProgress++;
-      onOperationProgressed?.Invoke("Converting", (double)countProgress / revitElements.Count);
+      onOperationProgressed?.Invoke("Converting", (double)++countProgress / revitElements.Count);
     }
 
-    return _rootObject;
+    return new(results, _rootObject);
   }
 
   /// <summary>
