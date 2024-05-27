@@ -1,4 +1,4 @@
-using Speckle.Core.Models;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.DUI.Models.Card;
 

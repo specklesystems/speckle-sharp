@@ -7,7 +7,7 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
+using NotNullExtensions = Speckle.Connectors.Utils.NotNullExtensions;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -54,11 +54,11 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
       // Receive host objects
       IReadOnlyList<ReceiveConversionResult> conversionResults = await unitOfWork.Service
         .Execute(
-          modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
-          modelCard.ProjectId.NotNull(),
-          modelCard.ProjectName.NotNull(),
-          modelCard.ModelName.NotNull(),
-          modelCard.SelectedVersionId.NotNull(),
+          NotNullExtensions.NotNull(modelCard.AccountId), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
+          NotNullExtensions.NotNull(modelCard.ProjectId),
+          NotNullExtensions.NotNull(modelCard.ProjectName),
+          NotNullExtensions.NotNull(modelCard.ModelName),
+          NotNullExtensions.NotNull(modelCard.SelectedVersionId),
           cts.Token,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
-namespace Speckle.Core.Models;
+namespace Speckle.Connectors.Utils;
 
 public sealed class ReceiveConversionResult
 {
