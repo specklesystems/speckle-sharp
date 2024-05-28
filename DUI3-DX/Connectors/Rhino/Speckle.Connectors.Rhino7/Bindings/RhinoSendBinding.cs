@@ -6,10 +6,10 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Autofac.DependencyInjection;
 using Rhino.DocObjects;
+using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
@@ -137,14 +137,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<RhinoObject>>();
     try
     {
-      // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
-
-      // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No publish model card was found.");
       }
+
+      //  Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       List<RhinoObject> rhinoObjects = modelCard.SendFilter
         .NotNull()
@@ -152,6 +152,12 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
         .Where(obj => obj != null)
         .ToList();
+
+      if (!rhinoObjects.Any())
+      {
+        // Handle as CARD ERROR in this function
+        throw new SpeckleSendFilterException("No objects were found to convert. Please update your publish filter!");
+      }
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),
@@ -182,13 +188,15 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
       Commands.SetModelCreatedVersionId(modelCardId, sendResult.RootObjId, sendResult.ConversionResults.Results);
     }
-    catch (OperationCanceledException)
-    {
-      return;
-    }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    // Catch here specific exceptions if they related to model card.
+    catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
+    }
+    catch (OperationCanceledException)
+    {
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
+      return;
     }
   }
 

@@ -28,18 +28,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
-  )
-  {
-    if (!objects.Any())
-    {
-      // POC: not sure if we would want to throw in here?
-      throw new InvalidOperationException("No objects were found. Please update your send filter!");
-    }
-
-    SendConversionResults results = ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
-
-    return results;
-  }
+  ) => ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
 
   private SendConversionResults ConvertObjects(
     IReadOnlyList<RhinoObject> rhinoObjects,

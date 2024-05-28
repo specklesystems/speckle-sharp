@@ -6,9 +6,7 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using NotNullExtensions = Speckle.Converters.Common.NotNullExtensions;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -44,23 +42,24 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
-      // Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
-
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No download model card was found.");
       }
+
+      // Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Receive host objects
       IReadOnlyList<ReceiveConversionResult> conversionResults = await unitOfWork.Service
         .Execute(
-          NotNullExtensions.NotNull(modelCard.AccountId), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
-          NotNullExtensions.NotNull(modelCard.ProjectId),
-          NotNullExtensions.NotNull(modelCard.ProjectName),
-          NotNullExtensions.NotNull(modelCard.ModelName),
-          NotNullExtensions.NotNull(modelCard.SelectedVersionId),
+          modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
+          modelCard.ProjectId.NotNull(),
+          modelCard.ProjectName.NotNull(),
+          modelCard.ModelName.NotNull(),
+          modelCard.SelectedVersionId.NotNull(),
           cts.Token,
           onOperationProgressed: (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
@@ -68,9 +67,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
       Commands.SetModelReceiveResult(modelCardId, conversionResults);
     }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    // Catch here specific exceptions if they related to model card.
+    catch (OperationCanceledException)
     {
-      Commands.SetModelError(modelCardId, e);
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
+      return;
     }
   }
 

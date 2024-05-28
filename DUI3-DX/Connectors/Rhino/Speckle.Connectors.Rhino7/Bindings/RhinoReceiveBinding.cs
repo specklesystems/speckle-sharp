@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Logging;
 using NotNullExtensions = Speckle.Connectors.Utils.NotNullExtensions;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
@@ -42,14 +41,15 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
     using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
-      // Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
-
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No download model card was found.");
       }
+
+      // Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Receive host objects
       IReadOnlyList<ReceiveConversionResult> conversionResults = await unitOfWork.Service
@@ -66,9 +66,11 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
 
       Commands.SetModelReceiveResult(modelCardId, conversionResults);
     }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    // Catch here specific exceptions if they related to model card.
+    catch (OperationCanceledException)
     {
-      Commands.SetModelError(modelCardId, e);
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
+      return;
     }
   }
 

@@ -26,12 +26,6 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
     CancellationToken ct = default
   )
   {
-    if (!objects.Any())
-    {
-      // POC: not sure if we would want to throw in here?
-      throw new InvalidOperationException("No objects were found. Please update your send filter!");
-    }
-
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
     using var uow = _unitOfWorkFactory.Resolve<IRootToSpeckleConverter>();
