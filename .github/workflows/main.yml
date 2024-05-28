@@ -61,4 +61,10 @@ jobs:
           compression-level: 0 # no compression
 
       - name: 🔫 Trigger Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}
+        uses: aurelien-baudet/workflow-dispatch@v2
+        with:
+          workflow: Build Installers
+          repo: specklesystems/connector-installers
+          token: ${{ secrets.CONNECTORS_GH_TOKEN }}
+          inputs: '{ "run_id": "${{ github.run_id }}", "version": "${{ env.fullSemVer }}" }'
+          ref: main
