@@ -58,7 +58,10 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
     RhinoObject rhinoObject = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(objectId));
     if (rhinoObject is null)
     {
-      throw new InvalidOperationException("Highlighting RhinoObject is not successful.");
+      throw new InvalidOperationException(
+        "Highlighting RhinoObject is not successful.",
+        new ArgumentException($"{objectId} is not a valid id", objectId)
+      );
     }
     RhinoDoc.ActiveDoc.Objects.Select(new List<Guid>() { new(objectId) });
 
