@@ -69,8 +69,8 @@ jobs:
           inputs: '{ "run_id": "${{ github.run_id }}", "version": "${{ env.fullSemVer }}" }'
           ref: main
           wait-for-completion: true
-          wait-for-completion-interval: 5s
-          wait-for-completion-timeout: 2m
+          wait-for-completion-interval: 10s
+          wait-for-completion-timeout: 10m
           display-workflow-run-url: true
           display-workflow-run-url-interval: 10s
           workflow-logs: true
