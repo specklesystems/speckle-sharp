@@ -104,8 +104,8 @@ Target(
   Consts.Solutions,
   s =>
   {
-    var version = Environment.GetEnvironmentVariable("VERSION") ?? "3.0.0-localBuild";
-    var fileVersion = Environment.GetEnvironmentVariable("FILE_VERSION") ?? "3.0.0.0";
+    var version = Environment.GetEnvironmentVariable("GitVersion_FullSemVer") ?? "3.0.0-localBuild";
+    var fileVersion = Environment.GetEnvironmentVariable("GitVersion_AssemblySemFileVer") ?? "3.0.0.0";
     Console.WriteLine($"Version: {version} & {fileVersion}");
     Run(
       "dotnet",

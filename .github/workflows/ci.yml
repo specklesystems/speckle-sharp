@@ -43,17 +43,14 @@ jobs:
 
       - name: ⚒️ Run build
         run: ./build.ps1
-        env:
-          VERSION: ${{ env.fullSemVer }}
-          FILE_VERSION: ${{ env.assemblySemFileVer }}
 
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: output-${{ env.fullSemVer }}
+          name: output-${{ env.GitVersion_AssemblySemFileVer }}
           path: output/*.*
           compression-level: 0 # no compression
 
       - id: set-version
         name: Set version to output
-        run: echo "version=${{env.fullSemver}}" >> "$GITHUB_OUTPUT"
+        run: echo "version=${{env.GitVersion_FullSemVer}}" >> "$GITHUB_OUTPUT"
