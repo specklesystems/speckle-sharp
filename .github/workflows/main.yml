@@ -2,10 +2,8 @@ name: .NET Build and Publish
 
 on:
   push:
-    branches: ["main", "dev", "dui3/alpha"]
-  pull_request:
-    branches:
-      - dui3/alpha
+    branches: ["main", "dev", "dui3/alpha", "dui3/ci/*"]
+    tags: ["3.*"]
 
 jobs:
   build-and-publish:
