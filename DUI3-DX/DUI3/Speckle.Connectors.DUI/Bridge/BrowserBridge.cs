@@ -7,6 +7,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Speckle.Connectors.Utils;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -207,6 +208,7 @@ public class BrowserBridge : IBridge
         {
           continue;
         }
+
         typedArgs[i] = ccc;
       }
 
@@ -223,7 +225,7 @@ public class BrowserBridge : IBridge
       else // It's an async call
       {
         // See note at start of function. Do not asyncify!
-        resultTypedTask.Wait();
+        resultTypedTask.GetAwaiter().GetResult();
 
         // If has a "Result" property return the value otherwise null (Task<void> etc)
         PropertyInfo resultProperty = resultTypedTask.GetType().GetProperty("Result");
@@ -243,6 +245,31 @@ public class BrowserBridge : IBridge
 
       NotifyUIMethodCallResultReady(requestId, serializedError);
     }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      ReportUnhandledError(requestId, e);
+    }
+  }
+
+  /// <summary>
+  /// Errors that not handled on bindings.
+  /// </summary>
+  private void ReportUnhandledError(string requestId, Exception e)
+  {
+    var message = e.Message;
+    if (e is TargetInvocationException tie) // Exception on SYNC function calls. Message should be passed from inner exception since it is wrapped.
+    {
+      message = tie.InnerException?.Message;
+    }
+    var errorDetails = new
+    {
+      Message = message, // Topmost message
+      Error = e.ToFormattedString(), // All messages from exceptions
+      StackTrace = e.ToString()
+    };
+
+    var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
+    NotifyUIMethodCallResultReady(requestId, serializedError);
   }
 
   /// <summary>
