@@ -2,8 +2,10 @@ name: .NET Build and Publish
 
 on:
   push:
-    branches: ["main", "dev", "dui3/alpha", "dui3/ci/*"]
-    tags: ["3.*"]
+    branches: ["main", "dev", "dui3/alpha"] # Continuous delivery on every long-lived branch
+    tags: ["3.*"] # Manual delivery on every 3.x tag
+  pull_request:
+    branches: ["main", "dev"] # Releases on every PR that targets main or dev
 
 jobs:
   build:
