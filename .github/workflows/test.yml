@@ -1,9 +1,8 @@
 name: Tester
 
 on:
-  pull_request: 
-    branches:
-      - dui3/alpha
+  workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
