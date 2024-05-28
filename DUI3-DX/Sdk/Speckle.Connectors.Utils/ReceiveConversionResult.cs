@@ -4,24 +4,39 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Utils;
 
+public interface IConversionResult
+{
+  public string? ResultId { get; }
+
+  public string? ErrorMessage { get; }
+}
+
 public sealed class ReceiveConversionResult
 {
   public string? ResultId { get; }
 
   [JsonIgnore]
   public object? Result { get; }
-  public Exception? Error { get; }
 
   [JsonIgnore]
-  public Base Target { get; }
+  public Exception? Error { get; }
 
-  public string TargetId => Target.id;
-  public string? TargetAppId => Target.applicationId;
+  public string? ErrorMessage => Error?.Message;
+
+  [JsonIgnore]
+  public Base? Target { get; }
+
+  public string? TargetId => Target?.id;
+
+  public string? TargetType => Target?.speckle_type.Split(new[] { '.' }).Last();
+  public string? TargetAppId => Target?.applicationId;
 
   [MemberNotNullWhen(true, nameof(Result))]
   [MemberNotNullWhen(true, nameof(ResultId))]
   [MemberNotNullWhen(false, nameof(Error))]
   public bool IsSuccessful => Result is not null;
+
+  public ReceiveConversionResult() { }
 
   public ReceiveConversionResult(Base target, object result, string resultId)
   {

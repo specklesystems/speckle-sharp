@@ -36,22 +36,25 @@ public sealed class SendConversionResult
   public object Target { get; }
 
   public string TargetId { get; }
+  public string TargetType { get; }
 
   [MemberNotNullWhen(true, nameof(Result))]
   [MemberNotNullWhen(true, nameof(ResultId))]
   [MemberNotNullWhen(false, nameof(Error))]
   public bool IsSuccessful => Result is not null;
 
-  public SendConversionResult(object target, string targetId, Base result)
+  public SendConversionResult(object target, string targetType, string targetId, Base result)
   {
     Target = target;
+    TargetType = targetType;
     TargetId = targetId;
     Result = result;
   }
 
-  public SendConversionResult(object target, string targetId, Exception error)
+  public SendConversionResult(object target, string targetType, string targetId, Exception error)
   {
     Target = target;
+    TargetType = targetType;
     TargetId = targetId;
     Error = error;
   }

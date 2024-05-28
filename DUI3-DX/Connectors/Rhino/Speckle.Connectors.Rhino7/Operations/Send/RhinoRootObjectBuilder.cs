@@ -93,11 +93,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // add to host
         collectionHost.elements.Add(converted);
 
-        results.Add(new(rhinoObject, applicationId, converted));
+        results.Add(new(rhinoObject, rhinoObject.ObjectType.ToString(), applicationId, converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(rhinoObject, applicationId, ex));
+        results.Add(new(rhinoObject, rhinoObject.ObjectType.ToString(), applicationId, ex));
         // POC: add logging
       }
 

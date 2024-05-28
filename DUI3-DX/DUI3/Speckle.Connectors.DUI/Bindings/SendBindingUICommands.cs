@@ -1,4 +1,5 @@
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -18,6 +19,18 @@ public class SendBindingUICommands : BasicConnectorBindingCommands
   public void SetModelsExpired(IEnumerable<string> expiredModelIds) =>
     Bridge.Send(SET_MODELS_EXPIRED_UI_COMMAND_NAME, expiredModelIds);
 
-  public void SetModelCreatedVersionId(string modelCardId, string versionId) =>
-    Bridge.Send(SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME, new { modelCardId, versionId });
+  public void SetModelCreatedVersionId(
+    string modelCardId,
+    string versionId,
+    IReadOnlyList<SendConversionResult> sendConversionResults
+  ) =>
+    Bridge.Send(
+      SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME,
+      new
+      {
+        modelCardId,
+        versionId,
+        sendConversionResults
+      }
+    );
 }

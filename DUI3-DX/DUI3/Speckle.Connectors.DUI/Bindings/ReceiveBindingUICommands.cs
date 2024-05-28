@@ -15,7 +15,7 @@ public class ReceiveBindingUICommands : BasicConnectorBindingCommands
   public void SetModelReceiveResult(string modelCardId, IReadOnlyList<ReceiveConversionResult> conversionResults)
   {
     ReceiverModelCardResult res =
-      new() { ModelCardId = modelCardId, ReceiveResult = new ReceiveResult(conversionResults, true) };
+      new() { ModelCardId = modelCardId, ReceiveResult = new ReceiveResult(true, conversionResults) };
     Bridge.Send(SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME, res);
   }
 }

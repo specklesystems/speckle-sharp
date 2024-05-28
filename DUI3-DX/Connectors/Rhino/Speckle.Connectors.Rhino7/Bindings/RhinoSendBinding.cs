@@ -180,7 +180,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
-      Commands.SetModelCreatedVersionId(modelCardId, sendResult.RootObjId);
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.RootObjId, sendResult.ConversionResults.Results);
     }
     catch (OperationCanceledException)
     {
