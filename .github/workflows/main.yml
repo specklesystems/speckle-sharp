@@ -61,10 +61,16 @@ jobs:
           compression-level: 0 # no compression
 
       - name: 🔫 Trigger Build Installers
-        uses: aurelien-baudet/workflow-dispatch@v2
+        uses: ALEEF02/workflow-dispatch@v3.0.0
         with:
           workflow: Build Installers
           repo: specklesystems/connector-installers
           token: ${{ secrets.CONNECTORS_GH_TOKEN }}
           inputs: '{ "run_id": "${{ github.run_id }}", "version": "${{ env.fullSemVer }}" }'
           ref: main
+          wait-for-completion: true
+          wait-for-completion-interval: 5s
+          wait-for-completion-timeout: 2m
+          display-workflow-run-url: true
+          display-workflow-run-url-interval: 10s
+          workflow-logs: true
