@@ -27,3 +27,4 @@ jobs:
           repo: specklesystems/connector-installers
           token: ${{ secrets.CONNECTORS_GH_TOKEN }}
           inputs: '{ "run_id": "9226788131", "version": "3.0.0-pr3418.162" }'
+          ref: main
