@@ -14,9 +14,9 @@ const string BUILD = "build";
 const string TEST = "test";
 const string FORMAT = "format";
 const string ZIP = "zip";
-const string BUILD_INSTALLERS = "build-installers";
 const string VERSION = "version";
 const string RESTORE_TOOLS = "restore-tools";
+const string BUILD_SERVER_VERSION = "build-server-version";
 
 var arguments = new List<string>();
 if (args.Length > 1)
@@ -90,8 +90,17 @@ Target(
 );
 
 Target(
+  BUILD_SERVER_VERSION,
+  DependsOn(RESTORE_TOOLS),
+  () =>
+  {
+    Run("dotnet-gitversion", "/output buildserver");
+  }
+);
+
+Target(
   BUILD,
-  DependsOn(RESTORE),
+  DependsOn(RESTORE, BUILD_SERVER_VERSION),
   Consts.Solutions,
   s =>
   {
