@@ -1,12 +1,20 @@
 name: .NET Build
 
 on:
-  pull_request:
+  pull_request: # Run build on every pull request that is not to main/dev
+    branches-ignore:
+      - main
+      - dev
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
-    runs-on: windows-latest
-
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,13 +45,27 @@ jobs:
         uses: gittools/actions/gitversion/execute@v1.1.1
 
       - name: 🗄️ Format
-        run: ./build.ps1 format
+        run: ./build.sh format
 
       - name: ♻️ Restore
-        run: ./build.ps1 restore
+        run: ./build.sh restore
 
       - name: ⚒️ Build
-        run: ./build.ps1 build
+        run: ./build.sh build
         env:
           VERSION: ${{ env.fullSemVer }}
           FILE_VERSION: ${{ env.assemblySemFileVer }}
+
+      - name: 📦 Pack
+        run: ./build.sh zip
+
+      - name: ⬆️ Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ env.fullSemVer }}
+          path: output/*.*
+          compression-level: 0 # no compression
+
+      - id: set-version
+        name: Set version to output
+        run: echo "version=${{env.fullSemver}}" >> "$GITHUB_OUTPUT"

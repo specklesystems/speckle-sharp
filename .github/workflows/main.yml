@@ -9,63 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
-    outputs:
-      version: ${{ steps.set-version.outputs.version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 7.x.x
-
-      - name: NuGet Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v1.1.1
-        with:
-          versionSpec: "5.x"
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Determine Version
-        id: version
-        uses: gittools/actions/gitversion/execute@v1.1.1
-
-      - name: 🗄️ Format
-        run: ./build.ps1 format
-
-      - name: ♻️ Restore
-        run: ./build.ps1 restore
-
-      - name: ⚒️ Build
-        run: ./build.ps1 build
-        env:
-          VERSION: ${{ env.fullSemVer }}
-          FILE_VERSION: ${{ env.assemblySemFileVer }}
-
-      - name: 📦 Pack
-        run: ./build.ps1 zip
-
-      - name: ⬆️ Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: output-${{ env.fullSemVer }}
-          path: output/*.*
-          compression-level: 0 # no compression
-
-      - id: set-version
-        name: Set version to output
-        run: echo "version=${{env.fullSemver}}" >> "$Env:GITHUB_OUTPUT"
+    uses: ./.github/workflows/ci.yml
 
   deploy-installers:
     runs-on: ubuntu-latest
