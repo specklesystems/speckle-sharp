@@ -3,14 +3,17 @@
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" IncludeAssets="compile" />
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743"
+      IncludeAssets="compile"/>
   </ItemGroup>
-  
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
-    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj"/>
+  </ItemGroup>
 
 </Project>
