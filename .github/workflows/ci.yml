@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
     steps:
@@ -42,19 +42,19 @@ jobs:
         uses: gittools/actions/gitversion/execute@v1.1.1
 
       - name: 🗄️ Format
-        run: ./build.sh format
+        run: ./build.ps1 format
 
       - name: ♻️ Restore
-        run: ./build.sh restore
+        run: ./build.ps1 restore
 
       - name: ⚒️ Build
-        run: ./build.sh build
+        run: ./build.ps1 build
         env:
           VERSION: ${{ env.fullSemVer }}
           FILE_VERSION: ${{ env.assemblySemFileVer }}
 
       - name: 📦 Pack
-        run: ./build.sh zip
+        run: ./build.ps1 zip
 
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
