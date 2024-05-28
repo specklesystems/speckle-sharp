@@ -2,8 +2,7 @@ name: .NET Build
 
 on:
   pull_request:
-    branches:
-      - "*"
+    types: [opened, reopened]
 
 jobs:
   build:
