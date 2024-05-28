@@ -7,4 +7,4 @@ branches:
   develop:
     tag: beta
   pull-request:
-    tag: alpha
+    tag: pr
