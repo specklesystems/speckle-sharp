@@ -122,9 +122,9 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     {
       flatPathName += pathItem;
       Collection childCollection;
-      if (_collectionCache.ContainsKey(flatPathName))
+      if (_collectionCache.TryGetValue(flatPathName, out Collection? collection))
       {
-        childCollection = _collectionCache[flatPathName];
+        childCollection = collection;
       }
       else
       {
