@@ -52,6 +52,28 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
+  public void HighlightObject(string objectId)
+  {
+    RhinoDoc.ActiveDoc.Objects.UnselectAll();
+    RhinoObject rhinoObject = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(objectId));
+    if (rhinoObject is null)
+    {
+      throw new InvalidOperationException("Highlighting RhinoObject is not successful.");
+    }
+    RhinoDoc.ActiveDoc.Objects.Select(new List<Guid>() { new(objectId) });
+
+    // Calculate the bounding box of the selected objects
+    BoundingBox boundingBox = BoundingBoxExtensions.UnionRhinoObjects(new List<RhinoObject>() { rhinoObject });
+
+    // Zoom to the calculated bounding box
+    if (boundingBox.IsValid)
+    {
+      RhinoDoc.ActiveDoc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(boundingBox);
+    }
+
+    RhinoDoc.ActiveDoc.Views.Redraw();
+  }
+
   public void HighlightModel(string modelCardId)
   {
     var objectIds = new List<string>();
