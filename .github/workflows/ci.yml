@@ -44,7 +44,7 @@ jobs:
       - name: ⚒️ Run build
         run: ./build.ps1
         env:
-          DOTNET_NUGET_SIGNATURE_VERIFICATION: false
+          NUGET_CERT_REVOCATION_MODE: offline
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
         with:
