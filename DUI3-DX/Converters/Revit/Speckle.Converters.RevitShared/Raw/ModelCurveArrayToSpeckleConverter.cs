@@ -6,16 +6,16 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-internal sealed class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.ModelCurveArray, SOG.Polycurve>
+internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ScalingServiceToSpeckle _scalingService;
-  private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
   public ModelCurveArrayToSpeckleConverter(
     IRevitConversionContextStack contextStack,
     ScalingServiceToSpeckle scalingService,
-    IRawConversion<DB.Curve, ICurve> curveConverter
+    ITypedConverter<DB.Curve, ICurve> curveConverter
   )
   {
     _contextStack = contextStack;
@@ -23,7 +23,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.Mode
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve RawConvert(DB.ModelCurveArray target)
+  public SOG.Polycurve Convert(DB.ModelCurveArray target)
   {
     SOG.Polycurve polycurve = new();
     var curves = target.Cast<DB.ModelCurve>().Select(mc => mc.GeometryCurve).ToArray();
@@ -39,7 +39,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : IRawConversion<DB.Mode
     polycurve.closed = start.DistanceTo(end) < RevitConversionContextStack.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
 
-    polycurve.segments.AddRange(curves.Select(x => _curveConverter.RawConvert(x)));
+    polycurve.segments.AddRange(curves.Select(x => _curveConverter.Convert(x)));
 
     return polycurve;
   }

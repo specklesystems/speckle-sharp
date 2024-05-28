@@ -4,16 +4,16 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
+public class MeshConversionToSpeckle : ITypedConverter<DB.Mesh, SOG.Mesh>
 {
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.Material, RenderMaterial> _materialConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Material, RenderMaterial> _materialConverter;
   private readonly IRevitConversionContextStack _contextStack;
 
   public MeshConversionToSpeckle(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    IRawConversion<DB.Material, RenderMaterial> materialConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.Material, RenderMaterial> materialConverter
   )
   {
     _contextStack = contextStack;
@@ -21,7 +21,7 @@ public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
     _materialConverter = materialConverter;
   }
 
-  public SOG.Mesh RawConvert(DB.Mesh target)
+  public SOG.Mesh Convert(DB.Mesh target)
   {
     var doc = _contextStack.Current.Document;
 
@@ -31,7 +31,7 @@ public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
     RenderMaterial? speckleMaterial = null;
     if (doc.GetElement(target.MaterialElementId) is DB.Material revitMaterial)
     {
-      speckleMaterial = _materialConverter.RawConvert(revitMaterial);
+      speckleMaterial = _materialConverter.Convert(revitMaterial);
     }
 
     return new SOG.Mesh(vertices, faces, units: _contextStack.Current.SpeckleUnits)
@@ -46,7 +46,7 @@ public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 
     foreach (var vert in target.Vertices)
     {
-      vertices.AddRange(_xyzToPointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_xyzToPointConverter.Convert(vert).ToList());
     }
 
     return vertices;

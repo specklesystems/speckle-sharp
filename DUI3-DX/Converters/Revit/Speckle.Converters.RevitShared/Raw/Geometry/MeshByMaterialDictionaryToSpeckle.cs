@@ -4,16 +4,17 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>>
+public class MeshByMaterialDictionaryToSpeckle
+  : ITypedConverter<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.Material, RenderMaterial> _materialConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Material, RenderMaterial> _materialConverter;
 
   public MeshByMaterialDictionaryToSpeckle(
-    IRawConversion<DB.Material, RenderMaterial> materialConverter,
+    ITypedConverter<DB.Material, RenderMaterial> materialConverter,
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter
   )
   {
     _materialConverter = materialConverter;
@@ -34,7 +35,7 @@ public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.El
   /// Also note that, for each unique material, the method tries to retrieve the related DB.Material from the current document and convert it. If the conversion is successful,
   /// the material is added to the corresponding Speckle mesh. If the conversion fails, the operation simply continues without the material.
   /// </remarks>
-  public List<SOG.Mesh> RawConvert(Dictionary<DB.ElementId, List<DB.Mesh>> target)
+  public List<SOG.Mesh> Convert(Dictionary<DB.ElementId, List<DB.Mesh>> target)
   {
     var result = new List<SOG.Mesh>(target.Keys.Count);
 
@@ -56,7 +57,7 @@ public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.El
       var doc = _contextStack.Current.Document;
       if (doc.GetElement(materialId) is DB.Material material)
       {
-        speckleMesh["renderMaterial"] = _materialConverter.RawConvert(material);
+        speckleMesh["renderMaterial"] = _materialConverter.Convert(material);
       }
 
       // Append the revit mesh data to the speckle mesh
@@ -77,7 +78,7 @@ public class MeshByMaterialDictionaryToSpeckle : IRawConversion<Dictionary<DB.El
 
     foreach (var vert in mesh.Vertices)
     {
-      var (x, y, z) = _xyzToPointConverter.RawConvert(vert);
+      var (x, y, z) = _xyzToPointConverter.Convert(vert);
       speckleMesh.vertices.Add(x);
       speckleMesh.vertices.Add(y);
       speckleMesh.vertices.Add(z);

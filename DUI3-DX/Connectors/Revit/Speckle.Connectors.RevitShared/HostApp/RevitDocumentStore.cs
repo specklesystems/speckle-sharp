@@ -29,10 +29,9 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
-    IdStorageSchema idStorageSchema,
-    bool writeToFileOnChange
+    IdStorageSchema idStorageSchema
   )
-    : base(serializerSettings, writeToFileOnChange)
+    : base(serializerSettings, true)
   {
     _idleManager = idleManager;
     _revitContext = revitContext;
@@ -110,7 +109,7 @@ internal sealed class RevitDocumentStore : DocumentModelStore
   {
     try
     {
-      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument.Document);
+      var stateEntity = GetSpeckleEntity(_revitContext.UIApplication?.ActiveUIDocument?.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
         Models = new();

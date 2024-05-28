@@ -9,18 +9,18 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// The <see cref="ADB.PolyFaceMesh"/> class converter. Converts to <see cref="SOG.Mesh"/>.
 /// </summary>
 /// <remarks>
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// The IToSpeckleTopLevelConverter inheritance should only expect database-resident <see cref="ADB.PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBPolyfaceMeshToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBPolyfaceMeshToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -87,10 +87,10 @@ public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
     List<double> vertices = new(dbVertices.Count * 3);
     foreach (Point3d vert in dbVertices)
     {
-      vertices.AddRange(_pointConverter.RawConvert(vert).ToList());
+      vertices.AddRange(_pointConverter.Convert(vert).ToList());
     }
 
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     SOG.Mesh speckleMesh =
       new(vertices, faces, colors, null, _contextStack.Current.SpeckleUnits)

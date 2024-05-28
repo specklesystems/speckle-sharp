@@ -1,12 +1,9 @@
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.Files;
-using System.Reflection;
 using System.IO;
-using Autofac;
+using System.Reflection;
+using Speckle.Autofac;
 using Speckle.Connectors.Utils;
-using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
@@ -15,7 +12,7 @@ internal sealed class RevitExternalApplication : IExternalApplication
 {
   private IRevitPlugin? _revitPlugin;
 
-  private AutofacContainer? _container;
+  private SpeckleContainer? _container;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way
@@ -47,15 +44,13 @@ internal sealed class RevitExternalApplication : IExternalApplication
     try
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
-      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-      _container = new AutofacContainer(new StorageInfo());
-      _container.PreBuildEvent += ContainerPreBuildEvent;
-
+      AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<RevitExternalApplication>;
+      var containerBuilder = SpeckleContainerBuilder.CreateInstance();
       // init DI
-      _container
-        .LoadAutofacModules(_revitSettings.ModuleFolders.NotNull())
-        .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
-        .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
+      _container = containerBuilder
+        .LoadAutofacModules(Assembly.GetExecutingAssembly(), _revitSettings.ModuleFolders.NotNull())
+        .AddSingleton(_revitSettings) // apply revit settings into DI
+        .AddSingleton(application) // inject UIControlledApplication application
         .Build();
 
       // resolve root object
@@ -69,14 +64,6 @@ internal sealed class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
-  }
-
-  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
-  {
-    // POC: need to settle on the mechanism and location as to where we should register these services
-    containerBuilder.RegisterRawConversions();
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
-    containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
 
   public Result OnShutdown(UIControlledApplication application)
@@ -95,25 +82,5 @@ internal sealed class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
-  }
-
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly.NotNull();
   }
 }

@@ -5,15 +5,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Arc, ADB.Arc>
+public class ArcToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Arc, ADB.Arc>
 {
-  private readonly IRawConversion<SOG.Arc, AG.CircularArc3d> _arcConverter;
-  private readonly IRawConversion<SOG.Plane, AG.Plane> _planeConverter;
+  private readonly ITypedConverter<SOG.Arc, AG.CircularArc3d> _arcConverter;
+  private readonly ITypedConverter<SOG.Plane, AG.Plane> _planeConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public ArcToHostConverter(
-    IRawConversion<SOG.Arc, AG.CircularArc3d> arcConverter,
-    IRawConversion<SOG.Plane, AG.Plane> planeConverter,
+    ITypedConverter<SOG.Arc, AG.CircularArc3d> arcConverter,
+    ITypedConverter<SOG.Plane, AG.Plane> planeConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -22,16 +22,16 @@ public class ArcToHostConverter : ISpeckleObjectToHostConversion, IRawConversion
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Arc)target);
+  public object Convert(Base target) => Convert((SOG.Arc)target);
 
-  public ADB.Arc RawConvert(SOG.Arc target)
+  public ADB.Arc Convert(SOG.Arc target)
   {
     // the most reliable method to convert to autocad convention is to calculate from start, end, and midpoint
     // because of different plane & start/end angle conventions
-    AG.CircularArc3d circularArc = _arcConverter.RawConvert(target);
+    AG.CircularArc3d circularArc = _arcConverter.Convert(target);
 
     // calculate adjusted start and end angles from circularArc reference
-    AG.Plane plane = _planeConverter.RawConvert(target.plane);
+    AG.Plane plane = _planeConverter.Convert(target.plane);
     double angle = circularArc.ReferenceVector.AngleOnPlane(plane);
     double startAngle = circularArc.StartAngle + angle;
     double endAngle = circularArc.EndAngle + angle;

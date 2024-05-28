@@ -5,7 +5,7 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class ParameterConversionToSpeckle : IRawConversion<Parameter, SOBR.Parameter>
+public class ParameterConversionToSpeckle : ITypedConverter<Parameter, SOBR.Parameter>
 {
   private readonly ParameterValueExtractor _valueExtractor;
 
@@ -14,7 +14,7 @@ public class ParameterConversionToSpeckle : IRawConversion<Parameter, SOBR.Param
     _valueExtractor = valueExtractor;
   }
 
-  public SOBR.Parameter RawConvert(Parameter target)
+  public SOBR.Parameter Convert(Parameter target)
   {
     string internalName = target.GetInternalName();
     ForgeTypeId? unitTypeId = null;

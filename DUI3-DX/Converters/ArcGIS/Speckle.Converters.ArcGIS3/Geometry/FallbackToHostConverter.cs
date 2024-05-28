@@ -5,16 +5,16 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class FallbackToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<DisplayableObject, ACG.Geometry>
+public class FallbackToHostConverter : IToHostTopLevelConverter, ITypedConverter<DisplayableObject, ACG.Geometry>
 {
-  private readonly IRawConversion<List<SOG.Mesh>, ACG.Multipatch> _meshListConverter;
-  private readonly IRawConversion<List<SOG.Polyline>, ACG.Polyline> _polylineListConverter;
-  private readonly IRawConversion<List<SOG.Point>, ACG.Multipoint> _pointListConverter;
+  private readonly ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> _meshListConverter;
+  private readonly ITypedConverter<List<SOG.Polyline>, ACG.Polyline> _polylineListConverter;
+  private readonly ITypedConverter<List<SOG.Point>, ACG.Multipoint> _pointListConverter;
 
   public FallbackToHostConverter(
-    IRawConversion<List<SOG.Mesh>, ACG.Multipatch> meshListConverter,
-    IRawConversion<List<SOG.Polyline>, ACG.Polyline> polylineListConverter,
-    IRawConversion<List<SOG.Point>, ACG.Multipoint> pointListConverter
+    ITypedConverter<List<SOG.Mesh>, ACG.Multipatch> meshListConverter,
+    ITypedConverter<List<SOG.Polyline>, ACG.Polyline> polylineListConverter,
+    ITypedConverter<List<SOG.Point>, ACG.Multipoint> pointListConverter
   )
   {
     _meshListConverter = meshListConverter;
@@ -22,9 +22,9 @@ public class FallbackToHostConverter : ISpeckleObjectToHostConversion, IRawConve
     _pointListConverter = pointListConverter;
   }
 
-  public object Convert(Base target) => RawConvert((DisplayableObject)target);
+  public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public ACG.Geometry RawConvert(DisplayableObject target)
+  public ACG.Geometry Convert(DisplayableObject target)
   {
     if (!target.displayValue.Any())
     {
@@ -35,9 +35,9 @@ public class FallbackToHostConverter : ISpeckleObjectToHostConversion, IRawConve
 
     return first switch
     {
-      SOG.Polyline => _polylineListConverter.RawConvert(target.displayValue.Cast<SOG.Polyline>().ToList()),
-      SOG.Mesh => _meshListConverter.RawConvert(target.displayValue.Cast<SOG.Mesh>().ToList()),
-      SOG.Point => _pointListConverter.RawConvert(target.displayValue.Cast<SOG.Point>().ToList()),
+      SOG.Polyline => _polylineListConverter.Convert(target.displayValue.Cast<SOG.Polyline>().ToList()),
+      SOG.Mesh => _meshListConverter.Convert(target.displayValue.Cast<SOG.Mesh>().ToList()),
+      SOG.Point => _pointListConverter.Convert(target.displayValue.Cast<SOG.Point>().ToList()),
       _ => throw new NotSupportedException($"Found unsupported fallback geometry: {first.GetType()}")
     };
   }

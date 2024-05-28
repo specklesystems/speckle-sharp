@@ -7,11 +7,11 @@ using Speckle.Converters.ArcGIS3.Utils;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
+public class GisFeatureToSpeckleConverter : ITypedConverter<Row, SGIS.GisFeature>
 {
-  private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly ITypedConverter<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
 
-  public GisFeatureToSpeckleConverter(IRawConversion<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
+  public GisFeatureToSpeckleConverter(ITypedConverter<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
   {
     _geometryConverter = geometryConverter;
   }
@@ -49,7 +49,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     return displayVal;
   }
 
-  public SGIS.GisFeature RawConvert(Row target)
+  public SGIS.GisFeature Convert(Row target)
   {
     // get attributes
     var attributes = new Base();
@@ -86,7 +86,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     else
     {
       var shape = (ACG.Geometry)target[geometryField];
-      var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
+      var speckleShapes = _geometryConverter.Convert(shape).ToList();
 
       // if geometry is primitive
       if (

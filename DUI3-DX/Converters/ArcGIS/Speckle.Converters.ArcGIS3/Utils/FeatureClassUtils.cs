@@ -31,7 +31,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
     List<FieldDescription> fields,
-    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
+    ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
     foreach (GisFeature feat in gisFeatures)
@@ -41,7 +41,7 @@ public class FeatureClassUtils : IFeatureClassUtils
         if (feat.geometry != null)
         {
           List<Base> geometryToConvert = feat.geometry;
-          ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryToConvert);
+          ACG.Geometry nativeShape = gisGeometryConverter.Convert(geometryToConvert);
           rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
         }
         else

@@ -11,16 +11,16 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointCloudToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
+  : IToSpeckleTopLevelConverter,
+    ITypedConverter<LasDatasetLayer, SGIS.VectorLayer>
 {
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
-  private readonly IRawConversion<ACG.Envelope, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.Envelope, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public PointCloudToSpeckleConverter(
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
-    IRawConversion<ACG.Envelope, SOG.Box> boxConverter,
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter,
+    ITypedConverter<ACG.Envelope, SOG.Box> boxConverter,
     IConversionContextStack<Map, ACG.Unit> contextStack
   )
   {
@@ -69,10 +69,10 @@ public class PointCloudToSpeckleConverter
 
   public Base Convert(object target)
   {
-    return RawConvert((LasDatasetLayer)target);
+    return Convert((LasDatasetLayer)target);
   }
 
-  public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
+  public SGIS.VectorLayer Convert(LasDatasetLayer target)
   {
     SGIS.VectorLayer speckleLayer = new();
 
@@ -103,7 +103,7 @@ public class PointCloudToSpeckleConverter
       {
         using (LasPoint pt = ptCursor.Current)
         {
-          specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
+          specklePts.Add(_pointConverter.Convert(pt.ToMapPoint()));
           values.Add(pt.ClassCode);
           int color = GetPointColor(pt, renderer);
           speckleColors.Add(color);
@@ -117,7 +117,7 @@ public class PointCloudToSpeckleConverter
         points = specklePts.SelectMany(pt => new List<double>() { pt.x, pt.y, pt.z }).ToList(),
         colors = speckleColors,
         sizes = values,
-        bbox = _boxConverter.RawConvert(target.QueryExtent()),
+        bbox = _boxConverter.Convert(target.QueryExtent()),
         units = _contextStack.Current.SpeckleUnits
       };
 

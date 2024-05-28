@@ -6,21 +6,21 @@ using Objects.Primitive;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class EnvelopToSpeckleConverter : IRawConversion<Envelope, SOG.Box>
+public class EnvelopToSpeckleConverter : ITypedConverter<Envelope, SOG.Box>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<MapPoint, SOG.Point> _pointConverter;
 
   public EnvelopToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter
+    ITypedConverter<MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public SOG.Box RawConvert(Envelope target)
+  public SOG.Box Convert(Envelope target)
   {
     MapPoint pointMin = new MapPointBuilderEx(
       target.XMin,
@@ -34,8 +34,8 @@ public class EnvelopToSpeckleConverter : IRawConversion<Envelope, SOG.Box>
       target.ZMax,
       _contextStack.Current.Document.SpatialReference
     ).ToGeometry();
-    SOG.Point minPtSpeckle = _pointConverter.RawConvert(pointMin);
-    SOG.Point maxPtSpeckle = _pointConverter.RawConvert(pointMax);
+    SOG.Point minPtSpeckle = _pointConverter.Convert(pointMin);
+    SOG.Point maxPtSpeckle = _pointConverter.Convert(pointMax);
 
     var units = _contextStack.Current.SpeckleUnits;
 
