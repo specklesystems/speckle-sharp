@@ -37,9 +37,6 @@ jobs:
         with:
           versionSpec: "5.x"
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
       - name: Determine Version
         id: version
         uses: gittools/actions/gitversion/execute@v1.1.1
