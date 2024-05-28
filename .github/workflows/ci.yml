@@ -26,11 +26,11 @@ jobs:
         with:
           dotnet-version: 7.x.x
 
-      - name: NuGet Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+      # - name: NuGet Cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.nuget/packages
+      #     key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
 
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v1.1.1
@@ -41,20 +41,11 @@ jobs:
         id: version
         uses: gittools/actions/gitversion/execute@v1.1.1
 
-      - name: 🗄️ Format
-        run: ./build.ps1 format
-
-      - name: ♻️ Restore
-        run: ./build.ps1 restore
-
-      - name: ⚒️ Build
-        run: ./build.ps1 build
+      - name: ⚒️ Run build
+        run: ./build.ps1
         env:
           VERSION: ${{ env.fullSemVer }}
           FILE_VERSION: ${{ env.assemblySemFileVer }}
-
-      - name: 📦 Pack
-        run: ./build.ps1 zip
 
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4

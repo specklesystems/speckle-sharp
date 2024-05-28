@@ -16,6 +16,7 @@ const string FORMAT = "format";
 const string ZIP = "zip";
 const string BUILD_INSTALLERS = "build-installers";
 const string VERSION = "version";
+const string RESTORE_TOOLS = "restore-tools";
 
 var arguments = new List<string>();
 if (args.Length > 1)
@@ -63,10 +64,18 @@ Target(
 );
 
 Target(
-  FORMAT,
+  RESTORE_TOOLS,
   () =>
   {
     Run("dotnet", "tool restore");
+  }
+);
+
+Target(
+  FORMAT,
+  DependsOn(RESTORE_TOOLS),
+  () =>
+  {
     Run("dotnet", "csharpier --check .");
   }
 );
@@ -76,17 +85,18 @@ Target(
   Consts.Solutions,
   s =>
   {
-    Run("dotnet", $"dotnet restore {s}");
+    Run("dotnet", $"restore {s}");
   }
 );
 
 Target(
   BUILD,
+  DependsOn(RESTORE),
   Consts.Solutions,
   s =>
   {
-    var version = Environment.GetEnvironmentVariable("VERSION");
-    var fileVersion = Environment.GetEnvironmentVariable("FILE_VERSION");
+    var version = Environment.GetEnvironmentVariable("VERSION") ?? "3.0.0-localBuild";
+    var fileVersion = Environment.GetEnvironmentVariable("FILE_VERSION") ?? "3.0.0.0";
     Console.WriteLine($"Version: {version} & {fileVersion}");
     Run(
       "dotnet",
@@ -114,6 +124,7 @@ Target(
 
 Target(
   ZIP,
+  DependsOn(TEST),
   Consts.InstallerManifests,
   x =>
   {
@@ -155,17 +166,6 @@ Target(
   }
 );
 
-Target(
-  BUILD_INSTALLERS,
-  async () =>
-  {
-    var token = arguments.First();
-    var runId = arguments.Skip(1).First();
-    var version = arguments.Skip(2).First();
-    await Github.BuildInstallers(token, runId, version).ConfigureAwait(false);
-  }
-);
-
-Target("default", DependsOn(ZIP), () => Console.WriteLine("Done!"));
+Target("default", DependsOn(FORMAT, ZIP), () => Console.WriteLine("Done!"));
 
 await RunTargetsAndExitAsync(args).ConfigureAwait(true);
