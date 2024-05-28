@@ -94,7 +94,7 @@ Target(
   DependsOn(RESTORE_TOOLS),
   () =>
   {
-    Run("dotnet-gitversion", "/output buildserver");
+    Run("dotnet", "tool run dotnet-gitversion /output json /output buildserver");
   }
 );
 
