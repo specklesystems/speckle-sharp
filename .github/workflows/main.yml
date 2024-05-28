@@ -3,9 +3,6 @@ name: .NET Build and Publish
 on:
   push:
     branches: ["main", "dev", "dui3/alpha"]
-  pull_request: 
-    branches:
-      - dui3/alpha
 
 jobs:
   build-and-publish:
@@ -26,41 +23,41 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
 
-      - name : Install GitVersion
+      - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v1.1.1
         with:
-          versionSpec: '5.x'
+          versionSpec: "5.x"
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
       - name: Determine Version
         id: version
         uses: gittools/actions/gitversion/execute@v1.1.1
 
-      - name: Format
+      - name: 🗄️ Format
         run: ./build.ps1 format
 
-      - name: Restore
+      - name: ♻️ Restore
         run: ./build.ps1 restore
 
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build
+      - name: ⚒️ Build
+        run: ./build.ps1 build
         env:
           VERSION: ${{ env.fullSemVer }}
           FILE_VERSION: ${{ env.assemblySemFileVer }}
-        run: ./build.ps1 build
 
-      - name: Pack
+      - name: 📦 Pack
         run: ./build.ps1 zip
 
-      - name: Upload artifacts
+      - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: output-${{ env.fullSemVer }}
           path: output/*.*
           compression-level: 0 # no compression
-  
-      - name: Trigger Build Installers
+
+      - name: 🔫 Trigger Build Installers
         run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}
