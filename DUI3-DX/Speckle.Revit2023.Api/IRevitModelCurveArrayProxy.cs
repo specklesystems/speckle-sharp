@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Autodesk.Revit.DB;
 using Speckle.ProxyGenerator;
 using Speckle.Revit2023.Interfaces;
@@ -10,7 +10,7 @@ namespace Speckle.Revit2023.Api;
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
   new[] { "GetEnumerator", "Item", "get_Item", "set_Item" }
 )]
-public partial interface IRevitModelCurveCollectionProxy : IRevitModelCurveCollection { }
+public partial interface IRevitModelCurveArrayProxy : IRevitModelCurveArray { }
 
 public partial class ModelCurveArrayProxy
 {
@@ -50,3 +50,12 @@ public partial class ModelCurveArrayProxy
     }
   }
 }
+
+[Proxy(
+typeof(ModelCurveArrArray),
+ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+new[] { "GetEnumerator", "Item", "get_Item", "set_Item" }
+  )]
+public partial interface IRevitModelCurveArrArrayProxy : IRevitModelCurveArrArray { }
+
+

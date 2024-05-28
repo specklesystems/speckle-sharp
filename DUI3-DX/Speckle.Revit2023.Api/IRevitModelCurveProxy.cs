@@ -15,3 +15,12 @@ public partial interface IRevitCurveProxy : IRevitCurve { }
 
 [Proxy(typeof(XYZ), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
 public partial interface IRevitXYZProxy : IRevitXYZ { }
+
+[Proxy(typeof(LocationCurve), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitLocationCurveProxy : IRevitLocationCurve { }
+
+[Proxy(typeof(Location), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitLocationProxy : IRevitLocation { }
+
+[Proxy(typeof(LocationPoint), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitLocationPointProxy : IRevitLocationPoint { }

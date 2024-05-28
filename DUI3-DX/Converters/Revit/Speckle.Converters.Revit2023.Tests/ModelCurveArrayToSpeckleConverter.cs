@@ -6,7 +6,7 @@ using SOG = Objects.Geometry;
 
 namespace Speckle.Converters.Revit2023.Tests;
 
-public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitModelCurveCollection, SOG.Polycurve>
+public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitModelCurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly IScalingServiceToSpeckle _scalingService;
@@ -23,7 +23,7 @@ public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitMo
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(IRevitModelCurveCollection target) => Convert((IReadOnlyList<IRevitModelCurve>)target);
+  public SOG.Polycurve Convert(IRevitModelCurveArray target) => Convert((IReadOnlyList<IRevitModelCurve>)target);
 
   public SOG.Polycurve Convert(IReadOnlyList<IRevitModelCurve> target)
   {
