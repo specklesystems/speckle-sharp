@@ -136,21 +136,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   {
     foreach (var member in mapMembers)
     {
-      if (member is FeatureLayer featureLayer)
+      if (member is FeatureLayer layer)
       {
-        using RowCursor rowCursor = featureLayer.Search();
-        while (rowCursor.MoveNext())
-        {
-          using (var row = rowCursor.Current)
-          {
-            if (row is not Feature feature)
-            {
-              continue;
-            }
-            Geometry geometry = feature.GetShape();
-            MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
-          }
-        }
+        layer.Select();
       }
     }
   }
