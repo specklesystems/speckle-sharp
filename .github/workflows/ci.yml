@@ -32,10 +32,10 @@ jobs:
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: output-${{ env.GitVersion_AssemblySemFileVer }}
+          name: output-${{ env.GitVersion_FullSemVer }}
           path: output/*.*
           compression-level: 0 # no compression
 
       - id: set-version
         name: Set version to output
-        run: echo "version=${{env.GitVersion_FullSemVer}}" >> "$Env:GITHUB_OUTPUT"
+        run: echo "version=${{ env.GitVersion_FullSemVer }}" >> "$Env:GITHUB_OUTPUT"
