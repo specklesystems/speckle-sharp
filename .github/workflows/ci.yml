@@ -25,6 +25,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
+      - name: ⚒️ Run GitVersion
+        run: ./build.ps1 build-server-version
 
       - name: ⚒️ Run build
         run: ./build.ps1
