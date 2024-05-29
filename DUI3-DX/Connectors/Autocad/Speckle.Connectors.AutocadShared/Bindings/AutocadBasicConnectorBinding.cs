@@ -19,6 +19,8 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
   private readonly DocumentModelStore _store;
   private readonly AutocadSettings _settings;
 
+  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
+
   public BasicConnectorBindingCommands Commands { get; }
 
   public AutocadBasicConnectorBinding(DocumentModelStore store, AutocadSettings settings, IBridge parent)

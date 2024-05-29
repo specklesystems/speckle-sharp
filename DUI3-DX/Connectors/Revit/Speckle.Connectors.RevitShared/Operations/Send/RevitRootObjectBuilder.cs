@@ -90,11 +90,11 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
         }
 
         collection.elements.Add(converted);
-        results.Add(new(revitElement, applicationId, converted));
+        results.Add(new(revitElement, revitElement.GetType().Name, applicationId, converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(revitElement, applicationId, ex));
+        results.Add(new(revitElement, revitElement.GetType().Name, applicationId, ex));
         // POC: add logging
       }
 

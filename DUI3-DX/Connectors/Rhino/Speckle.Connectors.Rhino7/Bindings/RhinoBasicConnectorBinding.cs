@@ -52,31 +52,19 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
-  public void HighlightObject(string objectId)
+  public void HighlightObjects(List<string> objectIds)
   {
-    RhinoDoc.ActiveDoc.Objects.UnselectAll();
-    RhinoObject rhinoObject = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(objectId));
-    List<RhinoObject> rhinoObjects = new();
-    if (rhinoObject is not null)
-    {
-      rhinoObjects.Add(rhinoObject);
-    }
+    var objects = GetObjectsFromIds(objectIds);
 
-    Group group = RhinoDoc.ActiveDoc.Groups.FindId(new Guid(objectId));
-    List<Group> groups = new();
-    if (group is not null)
-    {
-      groups.Add(group);
-    }
-
-    if (rhinoObjects.Count == 0 && groups.Count == 0)
+    if (objects.rhinoObjects.Count == 0 && objects.groups.Count == 0)
     {
       throw new InvalidOperationException(
         "Highlighting RhinoObject is not successful.",
-        new ArgumentException($"{objectId} is not a valid id", objectId)
+        new ArgumentException($"{objectIds} is not a valid id", nameof(objectIds))
       );
     }
-    HighlightObjects(rhinoObjects, groups);
+
+    HighlightObjectsOnView(objects.rhinoObjects, objects.groups);
   }
 
   public void HighlightModel(string modelCardId)
@@ -100,6 +88,21 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
       return;
     }
 
+    var objects = GetObjectsFromIds(objectIds);
+
+    RhinoDoc.ActiveDoc.Objects.UnselectAll();
+
+    if (objects.rhinoObjects.Count == 0 && objects.groups.Count == 0)
+    {
+      Commands.SetModelError(modelCardId, new OperationCanceledException("No objects found to highlight."));
+      return;
+    }
+
+    HighlightObjectsOnView(objects.rhinoObjects, objects.groups);
+  }
+
+  private (List<RhinoObject> rhinoObjects, List<Group> groups) GetObjectsFromIds(List<string> objectIds)
+  {
     List<RhinoObject> rhinoObjects = objectIds
       .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
       .Where(o => o != null)
@@ -111,19 +114,12 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
       .Where(o => o != null)
       .ToList();
 
-    RhinoDoc.ActiveDoc.Objects.UnselectAll();
-
-    if (rhinoObjects.Count == 0 && groups.Count == 0)
-    {
-      Commands.SetModelError(modelCardId, new OperationCanceledException("No objects found to highlight."));
-      return;
-    }
-
-    HighlightObjects(rhinoObjects, groups);
+    return (rhinoObjects, groups);
   }
 
-  private void HighlightObjects(IReadOnlyList<RhinoObject> rhinoObjects, IReadOnlyList<Group> groups)
+  private void HighlightObjectsOnView(IReadOnlyList<RhinoObject> rhinoObjects, IReadOnlyList<Group> groups)
   {
+    RhinoDoc.ActiveDoc.Objects.UnselectAll();
     List<RhinoObject> rhinoObjectsToSelect = new(rhinoObjects);
 
     foreach (Group group in groups)

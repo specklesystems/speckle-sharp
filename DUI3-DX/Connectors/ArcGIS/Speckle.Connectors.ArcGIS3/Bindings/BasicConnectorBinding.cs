@@ -20,6 +20,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public string Name => "baseBinding";
   public IBridge Parent { get; }
 
+  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
+
   public BasicConnectorBindingCommands Commands { get; }
   private readonly DocumentModelStore _store;
   private readonly ArcGISSettings _settings;
@@ -73,7 +75,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      objectIds = receiverModelCard.ReceiveResult?.BakedObjectIds.NotNull();
+      objectIds = receiverModelCard.ReceiveResult?.GetSuccessfulResultIds();
     }
 
     if (objectIds is null)

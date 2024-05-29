@@ -304,7 +304,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
             .ConfigureAwait(false);
 
           // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-          foreach (var kvp in result.convertedReferences)
+          foreach (var kvp in result.ConvertedReferences)
           {
             _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
           }
@@ -316,7 +316,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         })
         .ConfigureAwait(false);
 
-      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.RootObjId, sendResult.ConversionResults.Results);
     }
     // Catch here specific exceptions if they related to model card.
     catch (SpeckleSendFilterException e)

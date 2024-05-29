@@ -105,5 +105,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     });
   }
 
+  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
+
   public BasicConnectorBindingCommands Commands { get; }
 }

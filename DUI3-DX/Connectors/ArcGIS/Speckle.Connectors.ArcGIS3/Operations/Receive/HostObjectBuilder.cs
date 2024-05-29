@@ -8,6 +8,7 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
+using Speckle.Connectors.Utils;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
@@ -99,7 +100,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return vectorLayers.Count + rasterLayers.Count > 0;
   }
 
-  public IEnumerable<string> Build(
+  public IReadOnlyList<ReceiveConversionResult> Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -129,6 +130,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     List<(string, string)> convertedGISObjects = new();
 
     // 1. convert everything
+    List<ReceiveConversionResult> results = new();
     foreach (var item in objectsToConvert)
     {
       (string[] path, Base obj, string? parentId) = item;
@@ -194,6 +196,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       task.Wait(cancellationToken);
     }
 
-    return objectIds;
+    return results;
   }
 }

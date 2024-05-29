@@ -1,8 +1,10 @@
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGis.Operations.Send;
@@ -19,7 +21,7 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
     _unitOfWorkFactory = unitOfWorkFactory;
   }
 
-  public Base Build(
+  public SendConversionResults Build(
     IReadOnlyList<MapMember> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -35,6 +37,7 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
 
     Collection rootObjectCollection = new(); //TODO: Collections
 
+    List<SendConversionResult> results = new(objects.Count);
     foreach (MapMember mapMember in objects)
     {
       ct.ThrowIfCancellationRequested();
@@ -59,24 +62,17 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
 
         // add to host
         collectionHost.elements.Add(converted);
+        results.Add(new(mapMember, mapMember.GetType().Name, applicationId, converted));
       }
-      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
-      catch (SpeckleConversionException e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // POC: DO something with the exception
-        Console.WriteLine(e);
-        continue;
-      }
-      catch (NotSupportedException e)
-      {
-        // POC: DO something with the exception
-        Console.WriteLine(e);
-        continue;
+        results.Add(new(mapMember, mapMember.GetType().Name, applicationId, ex));
+        // POC: add logging
       }
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
 
-    return rootObjectCollection;
+    return new(results, rootObjectCollection);
   }
 }

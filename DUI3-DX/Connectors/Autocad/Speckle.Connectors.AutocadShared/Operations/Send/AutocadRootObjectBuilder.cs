@@ -73,11 +73,11 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
           collection.elements.Add(converted);
         }
 
-        results.Add(new(root, applicationId, converted));
+        results.Add(new(root, root.GetType().Name, applicationId, converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(root, applicationId, ex));
+        results.Add(new(root, root.GetType().Name, applicationId, ex));
         // POC: add logging
       }
 
