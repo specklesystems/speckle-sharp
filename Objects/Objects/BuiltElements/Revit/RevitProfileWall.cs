@@ -10,25 +10,28 @@ public class RevitProfileWall : Wall
 {
   public RevitProfileWall() { }
 
-  [SchemaInfo("RevitWall by profile", "Creates a Revit wall from a profile.", "Revit", "Architecture")]
   public RevitProfileWall(
     string family,
     string type,
-    [SchemaParamInfo("Profile to use"), SchemaMainParam] Polycurve profile,
+    Polycurve profile,
     Level level,
+    double height,
+    string units,
+    string? elementId,
     LocationLine locationLine = LocationLine.Interior,
     bool structural = false,
-    [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base>? elements = null,
+    IReadOnlyList<Mesh>? displayValue = null,
+    List<Base>? elements = null,
     List<Parameter>? parameters = null
   )
+    : base(height, units, profile, level, displayValue, elements)
   {
     this.family = family;
+    this.profile = profile; //TODO: IS the profile the same as baseLine?
     this.type = type;
-    this.profile = profile;
     this.locationLine = locationLine;
     this.structural = structural;
-    this.level = level;
-    this.elements = elements;
+    this.elementId = elementId;
     this.parameters = parameters?.ToBase();
   }
 
@@ -45,11 +48,34 @@ public class RevitProfileWall : Wall
   public LocationLine locationLine { get; set; }
   public bool structural { get; set; }
   public Base? parameters { get; set; }
-  public string elementId { get; set; }
+  public string? elementId { get; set; }
 
-  #region Deprecated Ctors
+  #region Scehma Info Ctors
 
-
+  [SchemaInfo("RevitWall by profile", "Creates a Revit wall from a profile.", "Revit", "Architecture")]
+  public RevitProfileWall(
+    string family,
+    string type,
+    [SchemaParamInfo("Profile to use"), SchemaMainParam] Polycurve profile,
+    Level level,
+    LocationLine locationLine = LocationLine.Interior,
+    bool structural = false,
+    [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base>? elements = null,
+    List<Parameter>? parameters = null
+  )
+    : this(
+      family,
+      type,
+      profile,
+      level,
+      0,
+      null,
+      null,
+      locationLine,
+      structural,
+      elements: elements,
+      parameters: parameters
+    ) { }
 
   #endregion
 }

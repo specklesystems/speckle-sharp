@@ -187,17 +187,22 @@ public partial class ConverterRevit
       return RevitElementToSpeckle(revitWall, out notes);
     }
 
-    RevitWall speckleWall = new();
-    speckleWall.family = revitWall.WallType.FamilyName.ToString();
-    speckleWall.type = revitWall.WallType.Name;
-    speckleWall.baseLine = (ICurve)baseGeometry;
-    speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
-    speckleWall.topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE);
-    speckleWall.height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-    speckleWall.baseOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET);
-    speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
-    speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-    speckleWall.flipped = revitWall.Flipped;
+    RevitWall speckleWall =
+      new(
+        revitWall.WallType.FamilyName,
+        revitWall.WallType.Name,
+        (ICurve)baseGeometry,
+        ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT),
+        ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET),
+        revitWall.Flipped,
+        GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT),
+        revitWall.Id.ToString()
+      )
+      {
+        height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM)
+      };
 
     //CreateVoids(revitWall, speckleWall);
 
