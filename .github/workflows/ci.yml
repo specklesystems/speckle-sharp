@@ -1,0 +1,41 @@
+name: .NET Build
+
+on:
+  pull_request: # Run build on every pull request that is not to main/dev
+    branches-ignore:
+      - main
+      - dev
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.x.x
+
+      - name: ⚒️ Run build
+        run: ./build.ps1
+
+      - name: ⬆️ Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ env.GitVersion_AssemblySemFileVer }}
+          path: output/*.*
+          compression-level: 0 # no compression
+
+      - id: set-version
+        name: Set version to output
+        run: echo "version=${{env.GitVersion_FullSemVer}}" >> "$GITHUB_OUTPUT"
