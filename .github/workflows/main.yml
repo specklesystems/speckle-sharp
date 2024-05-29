@@ -28,5 +28,3 @@ jobs:
           wait-for-completion-timeout: 10m
           display-workflow-run-url: true
           display-workflow-run-url-interval: 10s
-          workflow-logs: true
-          run-name: "Deploying from: ${{ github.ref_name }}"
