@@ -286,7 +286,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
             .Where(obj => obj != null)
             .ToList();
 
-          if (!mapMembers.Any())
+          if (mapMembers.Count == 0)
           {
             // Handle as CARD ERROR in this function
             throw new SpeckleSendFilterException(
