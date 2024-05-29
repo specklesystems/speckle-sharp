@@ -6,7 +6,7 @@ public static class Consts
 {
   public static readonly string[] Solutions = { "DUI3-DX.slnf" };
 
-  public static InstallerProject[] InstallerManifests =
+  public static readonly InstallerProject[] InstallerManifests =
   {
     new(
       "arcgis",
