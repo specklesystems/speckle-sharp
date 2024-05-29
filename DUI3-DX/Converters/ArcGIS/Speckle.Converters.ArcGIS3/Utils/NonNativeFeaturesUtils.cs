@@ -52,7 +52,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
         // Key must be unique per parent and speckle_type
         // Key is composed of parentId and parentPath (that contains speckle_type)
         string uniqueKey = $"{parentId}_{parentPath}";
-        if (!geometryGroups.ContainsKey(uniqueKey))
+        if (!geometryGroups.TryGetValue(uniqueKey, out (List<ACG.Geometry> geometries, string? parentId) value))
         {
           geometryGroups[uniqueKey] = (new List<ACG.Geometry>(), parentId);
         }
