@@ -9,9 +9,8 @@ public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
 {
   private readonly Dictionary<int, string> _unitMapping = new();
 
-  private static IReadOnlyDictionary<string, string> Create()
+  private ArcGISToSpeckleUnitConverter()
   {
-    var dict = new Dictionary<string, string>();
     // POC: we should have a unit test to confirm these are as expected and don't change
     // more units: https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8349.html
     _unitMapping[LinearUnit.Millimeters.FactoryCode] = Units.Millimeters;
@@ -29,7 +28,7 @@ public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
   {
     int linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).FactoryCode;
 
-    if (s_unitMapping.TryGetValue(linearUnit, out string? value))
+    if (_unitMapping.TryGetValue(linearUnit, out string? value))
     {
       return value;
     }

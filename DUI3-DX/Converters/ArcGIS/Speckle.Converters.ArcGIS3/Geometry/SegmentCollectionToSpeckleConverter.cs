@@ -36,10 +36,11 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
             points,
             new List<SOG.Point>()
             {
-              _pointConverter.RawConvert(segment.StartPoint),
-              _pointConverter.RawConvert(segment.EndPoint)
+              _pointConverter.Convert(segment.StartPoint),
+              _pointConverter.Convert(segment.EndPoint)
             }
           );
+          break;
         default:
           throw new SpeckleConversionException($"Segment of type '{segment.SegmentType}' cannot be converted");
       }

@@ -255,7 +255,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
-    using IUnitOfWork<SendOperation<MapMember>> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
+    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
     try
     {
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
