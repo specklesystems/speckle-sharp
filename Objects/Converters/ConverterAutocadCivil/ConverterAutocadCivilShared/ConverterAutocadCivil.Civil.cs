@@ -1,4 +1,4 @@
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -599,7 +599,7 @@ public partial class ConverterAutocadCivil
     foreach (ProfilePVI pvi in profile.PVIs)
     {
       double pviStation = 0;
-#if CIVIL2024
+#if CIVIL2024_OR_GREATER
       pviStation = pvi.RawStation;
 #else
       pviStation = pvi.Station;

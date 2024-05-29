@@ -31,7 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Entry\RevitDllConflictUserNotifier.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RevitApplicationFunctionalityController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitDocumentAggregateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitObjectCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\UIDocumentProvider.cs" />

@@ -127,7 +127,7 @@
     <!-- Expose the repository root to all projects -->
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic
     complexity threshold -->

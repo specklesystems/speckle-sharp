@@ -244,7 +244,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
               converted[key] = obj.ExtensionDictionary.GetUserString(key);
             */
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
             // add property sets if this is Civil3D
             var propertySets = obj.GetPropertySets(tr);
             if (propertySets.Count > 0)

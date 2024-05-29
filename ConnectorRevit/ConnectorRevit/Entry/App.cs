@@ -6,11 +6,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
-using ConnectorRevit;
 using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Models;
-using Speckle.BatchUploader.Sdk;
-using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -33,7 +30,8 @@ public class App : IExternalApplication
   private bool _initialized;
   private static readonly string[] s_assemblyPathFragmentsToIgnore = new string[]
   {
-    "Microsoft.Net\\assembly\\GAC_MSIL\\"
+    "Microsoft.Net\\assembly\\GAC_MSIL\\",
+    "C:\\Program Files\\dotnet\\shared\\"
   };
 
   public Result OnStartup(UIControlledApplication application)
@@ -75,7 +73,6 @@ public class App : IExternalApplication
       APIContext.Initialize(application);
 
       InitializeUiPanel(application);
-      conflictNotifier.WarnUserOfPossibleConflicts();
 
       return Result.Succeeded;
     }
@@ -133,6 +130,8 @@ public class App : IExternalApplication
     return "2023";
 #elif REVIT2024
     return "2024";
+#elif REVIT2025
+    return "2025";
 #endif
   }
 
@@ -177,13 +176,6 @@ public class App : IExternalApplication
       InitializeConnector();
       AppInstance ??= new UIApplication(sender as Application);
       CreateBindings();
-
-      BatchUploaderClient client = new(new Uri("http://localhost:5001"));
-      RevitApplicationController revitAppController = new(AppInstance);
-      BatchUploadOperationDriver batchUploadOperationDriver =
-        new(client, revitAppController, SpeckleRevitCommand.Bindings);
-
-      batchUploadOperationDriver.ProcessAllJobs();
 
       //This is also called in DUI, adding it here to know how often the connector is loaded and used
       Analytics.TrackEvent(Analytics.Events.Registered, null, false);
