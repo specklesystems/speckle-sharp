@@ -9,6 +9,7 @@
     <Description>Converter for Revit 2025</Description>
     <PackageTags>$(PackageTags) objects converter revit</PackageTags>
     <CopyToKitFolder>true</CopyToKitFolder>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
