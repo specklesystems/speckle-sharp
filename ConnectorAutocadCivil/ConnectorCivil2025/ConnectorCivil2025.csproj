@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <RootNamespace>Speckle.ConnectorCivil</RootNamespace>
+    <AssemblyName>SpeckleConnectorCivil</AssemblyName>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2025\acad.exe</StartProgram>
+    <StartArguments>
+      /ld "C:\Program Files\Autodesk\AutoCAD 2025\\AecBase.dbx" /product "C3D" /language
+      "en-US"
+    </StartArguments>
+
+    <AssemblyTitle>ConnectorCivil2025</AssemblyTitle>
+    <Product>ConnectorCivil2025</Product>
+    <DefineConstants>$(DefineConstants);CIVIL2025;CIVIL;CIVIL2021_OR_GREATER;CIVIL2022_OR_GREATER;CIVIL2023_OR_GREATER;CIVIL2024_OR_GREATER;CIVIL2025_OR_GREATER</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+  <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2Civil3D2025" />
+  </Target>
+  <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <Message Text="Calling 2025 post build" Importance="high" />
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2Civil3D2025\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App"></FrameworkReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2025.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+    <PackageReference Include="Speckle.Civil3D.API" Version="2025.0.0" />
+  </ItemGroup>
+</Project>

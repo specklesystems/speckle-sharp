@@ -11,7 +11,7 @@ using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
 using Speckle.Core.Logging;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using Autodesk.Aec.ApplicationServices;
 #endif
 
@@ -412,7 +412,7 @@ public partial class ConverterAutocadCivil
       {
         _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
         if (_modelUnits == Units.None)
         {
           // try to get the drawing unit instead
