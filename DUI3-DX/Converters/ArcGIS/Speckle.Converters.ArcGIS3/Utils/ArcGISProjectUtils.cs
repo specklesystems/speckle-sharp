@@ -1,7 +1,6 @@
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Desktop.Core;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
@@ -64,8 +63,8 @@ public class ArcGISProjectUtils : IArcGISProjectUtils
 
     string fGdbPath = parentFolder.ToString();
     Item folderToAdd = ItemFactory.Instance.Create(fGdbPath);
-    // POC: QueuedTask
-    QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
+
+    Project.Current.AddItem(folderToAdd as IProjectItem);
 
     // Add a file geodatabase or a SQLite or enterprise database connection to a project
     var gdbToAdd = folderToAdd
@@ -74,7 +73,7 @@ public class ArcGISProjectUtils : IArcGISProjectUtils
     if (gdbToAdd is not null)
     {
       // POC: QueuedTask
-      var addedGeodatabase = QueuedTask.Run(() => Project.Current.AddItem(gdbToAdd as IProjectItem));
+      Project.Current.AddItem(gdbToAdd as IProjectItem);
     }
 
     return fGdbName;
