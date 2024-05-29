@@ -8,6 +8,7 @@ using DesktopUI2.Models;
 using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
+using MenuItem = DesktopUI2.Models.MenuItem;
 using Timer = System.Timers.Timer;
 
 namespace Speckle.ConnectorRevit.UI;

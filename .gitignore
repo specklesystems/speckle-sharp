@@ -382,3 +382,5 @@ ConnectorArchicad/AddOn/Build*
 
 
 **/yarn.lock
+
+output/

@@ -51,12 +51,13 @@ public sealed class DisplayValueExtractor
     foreach (var mesh in meshes)
     {
       var materialId = mesh.MaterialElementId;
-      if (!meshesByMaterial.ContainsKey(materialId))
+      if (!meshesByMaterial.TryGetValue(materialId, out List<DB.Mesh>? value))
       {
-        meshesByMaterial[materialId] = new List<DB.Mesh>();
+        value = new List<DB.Mesh>();
+        meshesByMaterial[materialId] = value;
       }
 
-      meshesByMaterial[materialId].Add(mesh);
+      value.Add(mesh);
     }
 
     foreach (var solid in solids)
@@ -64,12 +65,13 @@ public sealed class DisplayValueExtractor
       foreach (DB.Face face in solid.Faces)
       {
         var materialId = face.MaterialElementId;
-        if (!meshesByMaterial.ContainsKey(materialId))
+        if (!meshesByMaterial.TryGetValue(materialId, out List<DB.Mesh>? value))
         {
-          meshesByMaterial[materialId] = new List<DB.Mesh>();
+          value = new List<DB.Mesh>();
+          meshesByMaterial[materialId] = value;
         }
 
-        meshesByMaterial[materialId].Add(face.Triangulate());
+        value.Add(face.Triangulate());
       }
     }
 

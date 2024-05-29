@@ -1,0 +1,10 @@
+mode: ContinuousDelivery
+assembly-informational-format: "{Major}.{Minor}.{Patch}-{PreReleaseTag}"
+branches:
+  main:
+    regex: ^main$
+    tag: rc
+  develop:
+    tag: beta
+  pull-request:
+    tag: pr
