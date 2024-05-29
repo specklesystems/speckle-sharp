@@ -8,7 +8,7 @@ namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 public class PointCloudObjectToSpeckleTopLevelConverter
   : RhinoObjectToSpeckleTopLevelConverter<PointCloudObject, RG.PointCloud, SOG.Pointcloud>
 {
-  public PointCloudObjectToSpeckleTopLevelConverter(IRawConversion<RG.PointCloud, SOG.Pointcloud> conversion)
+  public PointCloudObjectToSpeckleTopLevelConverter(ITypedConverter<RG.PointCloud, SOG.Pointcloud> conversion)
     : base(conversion) { }
 
   protected override RG.PointCloud GetTypedGeometry(PointCloudObject input) => input.PointCloudGeometry;

@@ -3,11 +3,11 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class NurbsCurveToHostConverter : IRawConversion<SOG.Curve, RG.NurbsCurve>
+public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurve>
 {
-  private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
-  public NurbsCurveToHostConverter(IRawConversion<SOP.Interval, RG.Interval> intervalConverter)
+  public NurbsCurveToHostConverter(ITypedConverter<SOP.Interval, RG.Interval> intervalConverter)
   {
     _intervalConverter = intervalConverter;
   }
@@ -19,7 +19,7 @@ public class NurbsCurveToHostConverter : IRawConversion<SOG.Curve, RG.NurbsCurve
   /// <returns>The converted Rhino NurbsCurve object.</returns>
   /// <exception cref="SpeckleConversionException">Thrown when the conversion fails.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.NurbsCurve RawConvert(SOG.Curve target)
+  public RG.NurbsCurve Convert(SOG.Curve target)
   {
     RG.NurbsCurve nurbsCurve = new(target.degree, target.points.Count / 3);
 
@@ -45,7 +45,7 @@ public class NurbsCurveToHostConverter : IRawConversion<SOG.Curve, RG.NurbsCurve
       }
     }
 
-    nurbsCurve.Domain = _intervalConverter.RawConvert(target.domain);
+    nurbsCurve.Domain = _intervalConverter.Convert(target.domain);
     return nurbsCurve;
   }
 }

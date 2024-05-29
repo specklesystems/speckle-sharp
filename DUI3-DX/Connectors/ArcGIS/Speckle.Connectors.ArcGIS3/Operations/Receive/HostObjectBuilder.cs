@@ -12,9 +12,9 @@ using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
-public class HostObjectBuilder : IHostObjectBuilder
+public class ArcGISHostObjectBuilder : IHostObjectBuilder
 {
-  private readonly ISpeckleConverterToHost _toHostConverter;
+  private readonly IRootToHostConverter _converter;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly INonNativeFeaturesUtils _nonGisFeaturesUtils;
 
@@ -22,15 +22,15 @@ public class HostObjectBuilder : IHostObjectBuilder
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly GraphTraversal _traverseFunction;
 
-  public HostObjectBuilder(
-    ISpeckleConverterToHost toHostConverter,
+  public ArcGISHostObjectBuilder(
+    IRootToHostConverter converter,
     IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<Map, Unit> contextStack,
     INonNativeFeaturesUtils nonGisFeaturesUtils,
     GraphTraversal traverseFunction
   )
   {
-    _toHostConverter = toHostConverter;
+    _converter = converter;
     _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
     _nonGisFeaturesUtils = nonGisFeaturesUtils;
@@ -44,7 +44,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     List<string> objectIds
   )
   {
-    Geometry converted = (Geometry)_toHostConverter.Convert(obj);
+    Geometry converted = (Geometry)_converter.Convert(obj);
     objectIds.Add(obj.id);
     List<string> objPath = path.ToList();
     objPath.Add(obj.speckle_type.Split(".")[^1]);
@@ -53,7 +53,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
   public (string, string) ConvertNativeLayers(Base obj, string[] path, List<string> objectIds)
   {
-    string converted = (string)_toHostConverter.Convert(obj);
+    string converted = (string)_converter.Convert(obj);
     objectIds.Add(obj.id);
     string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
     return (objPath, converted);
@@ -82,7 +82,8 @@ public class HostObjectBuilder : IHostObjectBuilder
   private string[] GetLayerPath(TraversalContext context)
   {
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    string[] reverseOrderPath =
+      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
     return reverseOrderPath.Reverse().ToArray();
   }
 
@@ -180,10 +181,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     // 3. add layer and tables to the Table Of Content
     foreach ((string, string) databaseObj in convertedGISObjects)
     {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cancellationToken);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
       // BAKE OBJECTS HERE
       // POC: QueuedTask
       var task = QueuedTask.Run(() =>

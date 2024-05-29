@@ -8,7 +8,7 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
+public class TableLayerToHostConverter : ITypedConverter<VectorLayer, Table>
 {
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
@@ -25,7 +25,7 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
     _fieldsUtils = fieldsUtils;
   }
 
-  public Table RawConvert(VectorLayer target)
+  public Table Convert(VectorLayer target)
   {
     string databasePath = _arcGISProjectUtils.GetDatabasePath();
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));

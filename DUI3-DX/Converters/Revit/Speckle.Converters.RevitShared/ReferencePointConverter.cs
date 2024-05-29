@@ -42,16 +42,17 @@ public class ReferencePointConverter : IReferencePointConverter
     //if the current doc is unsaved it will not, but then it'll be the only one :)
     var id = doc.PathName;
 
-    if (!_docTransforms.ContainsKey(id))
+    if (!_docTransforms.TryGetValue(id, out DB.Transform? transform))
     {
       // get from settings
       var referencePointSetting = _revitSettings.TryGetSettingString("reference-point", out string value)
         ? value
         : string.Empty;
-      _docTransforms[id] = GetReferencePointTransform(referencePointSetting);
+      transform = GetReferencePointTransform(referencePointSetting);
+      _docTransforms[id] = transform;
     }
 
-    return _docTransforms[id];
+    return transform;
   }
 
   [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]

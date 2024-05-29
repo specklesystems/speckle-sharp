@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project>
+  <!-- Code to zip up the files-->
+
+  <UsingTask TaskName="PackageAddIn" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ZipIntermediatePath ParameterType="System.String" Required="true" />
+      <PackageType ParameterType="System.String" Required="true" />
+      <TargetFolder ParameterType="System.String" Required="true" />
+      <TargetFileName ParameterType="System.String" Required="true" />
+      <RootNamespace ParameterType="System.String" Required="true" />
+      <PackageOutputPath ParameterType="System.String" Output="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Xml.Linq"/>
+      <Using Namespace="System.Linq"/>
+      <Using Namespace="System.IO.Compression"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+      Success = false;
+      string ConfigNotFound = "{0} was not found. File must be present in the root of the project and its build action set to AddInContent.";
+	  string ZipIntermediatePathNotFound = "{0} was not found.";
+      string DefaultAssemblyDoesNotMatch = "Your value of '{0}' for the '{1}' attribute in the {2} does not match the assembly name '{3}' set for your project.";
+      string DefaultNSDoesNotMatch = "Your value of '{0}' for the '{1}' attribute in the {2} does not match the default namespace '{3}' set for your project.";
+      //Create the name of the Config File and extension
+      string extension = "";
+      string config = "";
+      string attrib_asm = "";
+      string attrib_ns = "";
+      var assemblyValMissing = "";
+      var nsValMissing = "";
+      if (PackageType.ToLower() == "plugin")
+      {
+        Log.LogMessage(MessageImportance.Low, "This is an plugin");
+        config = "Config.xml";
+        extension = ".esriPlugin";
+        attrib_asm = "library";
+        attrib_ns = "namespace";
+        assemblyValMissing = "AddIn element 'library' attribute not found";
+        nsValMissing = "AddIn element 'namespace' attribute not found";
+      }
+      else if (PackageType.ToLower() == "configuration")
+      {
+        Log.LogMessage(MessageImportance.Low, "This is an configuration");
+        config = "Config.daml";
+        extension = ".proConfigX";
+        attrib_asm = "defaultAssembly";
+        attrib_ns = "defaultNamespace";
+        assemblyValMissing = "ArcGIS element 'defaultAssembly' attribute not found";
+        nsValMissing = "ArcGIS element 'defaultNamespace' attribute not found";
+      }
+      else
+      {
+        Log.LogMessage(MessageImportance.Low, "This is an addin");
+		config = "Config.daml";
+		bool proSDKProject = File.Exists(Path.Combine(ZipIntermediatePath, config));	
+		if (!proSDKProject) //This might be a class library that uses the Pro references only
+		      return true; 
+        extension = ".esriAddinX";
+        attrib_asm = "defaultAssembly";
+        attrib_ns = "defaultNamespace";
+        assemblyValMissing = "ArcGIS element 'defaultAssembly' attribute not found";
+        nsValMissing = "ArcGIS element 'defaultNamespace' attribute not found";
+      }
+      // Check if Config.daml exists in ZipFolder
+      ZipIntermediatePath = Path.GetFullPath(ZipIntermediatePath);
+      if (!Directory.Exists(ZipIntermediatePath))
+	  {
+	    Log.LogError(ZipIntermediatePathNotFound, ZipIntermediatePath);
+		return false;
+	  }       
+      var addInXML = Path.Combine(ZipIntermediatePath, config);
+      Log.LogMessage(MessageImportance.Low, "addInXML: " + addInXML);
+      Log.LogMessage(MessageImportance.High, "PackageType: " + PackageType);
+      if (!File.Exists(addInXML))
+      {
+        Log.LogError(ConfigNotFound, config);
+        return false;
+      }
+      //Verfiy that an assembly with the name defined in the Config.daml
+      //matches the default assembly set in the project. Ditto for the
+      //namespace
+      string DefaultAssembly = "";
+      string DefaultNamespace = "";
+      XDocument xdoc = XDocument.Load(addInXML);
+      XNamespace DefaultNS = "http://schemas.esri.com/DADF/Registry";
+      if (PackageType.ToLower() == "plugin")
+      {
+        var addin = xdoc.Root.Element(DefaultNS + "AddIn");
+        if (addin != null)
+        {
+          var val = addin.Attribute("library");
+          if (val != null)
+            DefaultAssembly = val.Value;
+          val = addin.Attribute("namespace");
+          if (val != null)
+            DefaultNamespace = val.Value;
+        }
+      }
+      else
+      {
+        var val = xdoc.Root.Attribute("defaultAssembly");
+        if (val != null)
+          DefaultAssembly = val.Value;
+        val = xdoc.Root.Attribute("defaultNamespace");
+        if (val != null)
+          DefaultNamespace = val.Value;
+      }
+      if (string.IsNullOrEmpty(DefaultAssembly))
+      {
+        Log.LogError(assemblyValMissing);
+        return false;
+      }
+      if (string.IsNullOrEmpty(DefaultNamespace))
+      {
+        Log.LogError(nsValMissing);
+        return false;
+      }
+
+      //check that the addin assembly and default assembly names match
+      if (DefaultAssembly.ToLower() != TargetFileName.ToLower())
+      {
+        Log.LogWarning(DefaultAssemblyDoesNotMatch, DefaultAssembly, attrib_asm, config, TargetFileName);
+      }
+      //Ditto for namespace
+      if (DefaultNamespace.ToLower() != RootNamespace.ToLower())
+      {
+        Log.LogWarning(DefaultNSDoesNotMatch, DefaultNamespace, attrib_ns, config, RootNamespace);
+      }
+
+      if (!Directory.Exists(TargetFolder))
+      {
+        Directory.CreateDirectory(TargetFolder);
+      }
+
+      string addInAssembly = System.IO.Path.GetFileNameWithoutExtension(DefaultAssembly);
+      string archiveName = addInAssembly + extension;
+      try
+      {
+        string file = Path.Combine(TargetFolder, archiveName);
+        if (File.Exists(file))
+          File.Delete(file);
+        System.IO.Compression.ZipFile.CreateFromDirectory(ZipIntermediatePath, file);
+        PackageOutputPath = Path.GetFullPath(file);
+        Success = true;
+      }
+      catch (Exception ex)
+      {
+        Log.LogErrorFromException(ex);
+        return false;
+      }
+      return Success;
+    ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <!-- Code to find relative path-->
+  <UsingTask TaskName="ConvertToRelativePath" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <RelativeTo ParameterType="System.String" Required="true"/>
+      <Paths ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <RelativePaths ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Linq"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+			var result = new List<ITaskItem>();
+            System.Uri relativeTo = new Uri(this.RelativeTo);
+            foreach (var i in Paths) {
+                try {
+                    System.Uri itemFullPath = new Uri(i.GetMetadata("FullPath"));
+                    var relativeUri = relativeTo.MakeRelativeUri(itemFullPath);
+
+                    result.Add(new TaskItem(Uri.UnescapeDataString(relativeUri.ToString())));
+                }
+                catch {
+                    return false;
+                }
+            }
+            RelativePaths = result.ToArray();
+			foreach (var i in RelativePaths)
+            {
+                Log.LogMessage(MessageImportance.Low, "RelativePaths: " + i.ToString());
+            }
+            return true;
+			 ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="CleanAddIn" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ProjectDir ParameterType="System.String" Required="true"/>
+      <AssemblyName ParameterType="System.String" Required="true"/>
+      <PackageType ParameterType="System.String" Required="true"/>
+      <!--<ArcGISFolder ParameterType="System.String" Output="true" /> -->
+      <CleanInfo ParameterType="System.String" Output="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Xml.Linq"/>
+      <Using Namespace="System.Linq"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+	  Success = false;
+      string ConfigNotFound = "{0} was not found. File must be present in the root of the project and its build action set to AddInContent.";
+
+      //Create the name of the Config File and extension
+      string extension = "";
+      string config = "";
+
+      if (PackageType.ToLower() == "plugin")
+      {
+        config = "Config.xml";
+        extension = ".esriPlugin";
+      }
+      else if (PackageType.ToLower() == "configuration")
+      {
+        config = "Config.daml";
+        extension = ".proConfigX";
+      }
+      else
+      {
+        config = "Config.daml";
+		    bool proSDKProject = File.Exists(Path.Combine(ProjectDir, config));
+		    if (!proSDKProject) //This might be a class library that uses the Pro references only
+		       return true;
+        extension = ".esriAddinX";
+      }
+
+      var addInXML = Path.Combine(ProjectDir, config);
+      if (!File.Exists(addInXML))
+      {
+        Log.LogError(ConfigNotFound, config);
+        return false;
+      }
+
+      //Get the add-in id
+      XDocument xdoc = XDocument.Load(addInXML);
+      XNamespace DefaultNS = "http://schemas.esri.com/DADF/Registry";
+      if (PackageType.ToLower() == "plugin")
+      {
+        Log.LogMessage("process plugin");
+        var addInID = xdoc.Root.Element(DefaultNS + "AddInID");
+        CleanInfo = addInID.Value;//let it error if it's missing
+      }
+      else if (PackageType.ToLower() == "addin")
+      {
+        Log.LogMessage("process addin");
+        var addinInfo = xdoc.Root.Element(DefaultNS + "AddInInfo");
+        CleanInfo = addinInfo.Attribute("id").Value;//let it error if it's missing
+      }
+      else
+      {
+        Log.LogMessage("process configuration");
+        CleanInfo = AssemblyName + extension;
+      }
+      Success = true;
+      return Success;
+	]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <!-- Define additional BuildAction option -->
+  <!-- Set up default zip properties -->
+  <PropertyGroup>
+    <PackageType Condition="'$(PackageType)' == ''">Addin</PackageType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ArcGISFolder>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\ESRI\ArcGISPro', 'InstallDir', null, RegistryView.Registry64))</ArcGISFolder>
+    <ArcGISFolder Condition="'$(ArcGISFolder)' == ''">$(registry:HKEY_CURRENT_USER\SOFTWARE\ESRI\ArcGISPro@InstallDir)</ArcGISFolder>
+  </PropertyGroup>
+  <Target Name="ArcGISInstallOutput" AfterTargets="Build">
+    <Message Text="IntermediateOutputPath Name: $(IntermediateOutputPath)..." Importance="High"/>
+    <Message Text="CleanFile Name: $(CleanFile)..." Importance="High"/>
+    <Message Text="ProjectDir Name: $(ProjectDir)..." Importance="High"/>
+    <Message Text="AssemblyName Name: $(AssemblyName)..." Importance="High"/>
+    <Message Text="TargetFileName Name: $(TargetFileName)..." Importance="High"/>
+    <Message Text="RootNamespace: $(RootNamespace)..." Importance="High"/>
+    <Message Text="TargetFolder Name: $(OutDir)..." Importance="High"/>
+    <Message Text="PackageType Name: $(PackageType)..." Importance="High"/>
+    <Message Text="Install dir: $(ArcGISFolder)" Importance="High"/>
+    <!-- Get a list of project outputs from the cache file and FileWritesXXX item, 
+         excluding those in intermediate output directory  -->
+    <!-- Note clean file may miss listing CopyLocal reference -->
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(CleanFile)">
+      <Output TaskParameter="Lines" ItemName="CacheOutputFiles" />
+    </ReadLinesFromFile>
+    <FindUnderPath Files="@(CacheOutputFiles)" Path="$(OutDir)">
+      <Output TaskParameter="InPath" ItemName="PackageOutputFiles" />
+    </FindUnderPath>
+    <FindUnderPath Files="@(FileWrites->'%(FullPath)')" Path="$(OutDir)">
+      <Output TaskParameter="InPath" ItemName="PackageOutputFiles" />
+    </FindUnderPath>
+    <FindUnderPath Files="@(FileWritesShareable->'%(FullPath)')" Path="$(OutDir)">
+      <Output TaskParameter="InPath" ItemName="PackageOutputFiles" />
+    </FindUnderPath>
+    <RemoveDuplicates Inputs="@(PackageOutputFiles)">
+      <Output TaskParameter="Filtered" ItemName="FilteredPackageOutputFiles" />
+    </RemoveDuplicates>
+    <ConvertToRelativePath Paths="@(FilteredPackageOutputFiles)" RelativeTo="$(TargetDir)">
+      <Output TaskParameter="RelativePaths" ItemName="ConfigBinaries" />
+    </ConvertToRelativePath>
+    <Message Text="ConvertToRelativePath Task, TargetDir: $(TargetDir) " Importance="High"/>
+  </Target>
+  <Target Name="PackageArcGISContents" AfterTargets="ArcGISInstallOutput">
+    <Message Text="Running PackageArcGISContents..." Importance="High"/>
+    <RemoveDir Condition="Exists('$(ZipIntermediatePath)')" Directories="$(ZipIntermediatePath)" />
+    <Message Text="ZipIntermediatePath: $(ZipIntermediatePath)Install..." Importance="High"/>
+    <!-- Copy project output files, preserving folder structure -->
+    <Copy SourceFiles="@(ConfigBinaries->'$(OutDir)%(Identity)')" ContinueOnError="true" DestinationFolder="$(IntermediateOutputPath)temp_archive\Install\%(RelativeDir)" />
+    <!-- Copy items marked with Content as BuildAction, preserving folder structure & handling linked items -->
+    <!-- Only include items that have CopyToOutputDirectory as Never -->
+    <Copy SourceFiles="@(Content)" Condition="'%(Content.Link)' == '' And ('%(Content.CopyToOutputDirectory)' == 'Never' Or '%(Content.CopyToOutputDirectory)' == '')" DestinationFolder="$(IntermediateOutputPath)temp_archive\%(RelativeDir)" ContinueOnError="true" />
+    <Copy SourceFiles="@(Content)" Condition="'%(Content.Link)' != '' And ('%(Content.CopyToOutputDirectory)' == 'Never' Or '%(Content.CopyToOutputDirectory)' == '')" DestinationFiles="$(IntermediateOutputPath)temp_archive\%(Content.Link)" ContinueOnError="true"/>
+    <!-- Zipping up add-in resources -->
+    <PackageAddIn ZipIntermediatePath="$(IntermediateOutputPath)temp_archive\"
+                  PackageType="$(PackageType)"
+                  TargetFolder="$(OutDir)"
+                  TargetFileName="$(TargetFileName)"
+                  RootNamespace="$(RootNamespace)">
+      <Output TaskParameter="PackageOutputPath" PropertyName="PackageFile" />
+    </PackageAddIn>
+    <!-- Shell out to RegisterAddIn.exe to install the package -->
+    <Message Text="Deploying $(PackageType)..." Importance="High"/>
+    <Message Text="ArcGISFolder Name: $(ArcGISFolder)..." Importance="High"/>
+    <Message Text="Unable to execute RegisterAddIn.exe. ArcGIS Pro is not installed." Importance="High" Condition="'$(ArcGISFolder)' == ''"/>
+    <Message Text="Execute RegisterAddIn.exe &quot;$(PackageFile)&quot; /s..." Importance="High" Condition="'$(ArcGISFolder)' != ''"/>
+    <Exec IgnoreExitCode="true" WorkingDirectory="$(ArcGISFolder)bin" Command="RegisterAddIn.exe &quot;$(PackageFile)&quot; /s" Condition="'$(ArcGISFolder)' != '' AND $(PackageFile) != '' ">
+      <Output TaskParameter="ExitCode" PropertyName="ESRIRegAddinExitCode" />
+    </Exec>
+    <RemoveDir Condition="Exists('$(ZipIntermediatePath)')" Directories="$(ZipIntermediatePath)" />
+  </Target>
+  <Target Name="CleanArcGISContents" AfterTargets="Clean">
+    <CleanAddIn ProjectDir="$(ProjectDir)"
+                AssemblyName="$(AssemblyName)"
+                PackageType="$(PackageType)">
+      <Output TaskParameter="CleanInfo" PropertyName="CleanInfo" />
+    </CleanAddIn>
+    <Message Text="Clean $(PackageType)..." Importance="High"/>
+    <Message Text="Execute RegisterAddIn.exe &quot;$(CleanInfo)&quot; /u..." Importance="High" Condition="'$(ArcGISFolder)' != ''"/>
+    <Message Text="Unable to execute RegisterAddIn.exe. ArcGIS Pro is not installed." Importance="High" Condition="'$(ArcGISFolder)' == ''"/>
+    <Exec IgnoreExitCode="true" WorkingDirectory="$(ArcGISFolder)bin" Command="RegisterAddIn.exe &quot;$(CleanInfo)&quot; /u /s" Condition="'$(ArcGISFolder)' != '' AND $(CleanInfo) != ''">
+      <Output TaskParameter="ExitCode" PropertyName="ESRIRegAddinExitCode" />
+    </Exec>
+  </Target>
+</Project>

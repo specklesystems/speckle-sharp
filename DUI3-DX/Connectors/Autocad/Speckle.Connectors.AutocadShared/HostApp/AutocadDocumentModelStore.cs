@@ -12,10 +12,9 @@ public class AutocadDocumentStore : DocumentModelStore
 
   public AutocadDocumentStore(
     JsonSerializerSettings jsonSerializerSettings,
-    AutocadDocumentManager autocadDocumentManager,
-    bool writeToFileOnChange
+    AutocadDocumentManager autocadDocumentManager
   )
-    : base(jsonSerializerSettings, writeToFileOnChange)
+    : base(jsonSerializerSettings, true)
   {
     _autocadDocumentManager = autocadDocumentManager;
     _previousDocName = _nullDocumentName;

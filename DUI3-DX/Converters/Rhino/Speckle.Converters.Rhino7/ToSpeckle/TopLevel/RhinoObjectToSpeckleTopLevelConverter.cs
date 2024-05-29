@@ -3,15 +3,14 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw, TOutRaw>
-  : IHostObjectToSpeckleConversion
+public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw, TOutRaw> : IToSpeckleTopLevelConverter
   where TTopLevelIn : Rhino.DocObjects.RhinoObject
   where TInRaw : RG.GeometryBase
   where TOutRaw : Base
 {
-  public IRawConversion<TInRaw, TOutRaw> Conversion { get; }
+  public ITypedConverter<TInRaw, TOutRaw> Conversion { get; }
 
-  protected RhinoObjectToSpeckleTopLevelConverter(IRawConversion<TInRaw, TOutRaw> conversion)
+  protected RhinoObjectToSpeckleTopLevelConverter(ITypedConverter<TInRaw, TOutRaw> conversion)
   {
     Conversion = conversion;
   }
@@ -24,7 +23,7 @@ public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw,
     var typedTarget = (TTopLevelIn)target;
     var typedGeometry = GetTypedGeometry(typedTarget);
 
-    var result = Conversion.RawConvert(typedGeometry);
+    var result = Conversion.Convert(typedGeometry);
 
     // POC: Any common operations for all RhinoObjects should be done here, not on the specific implementer
     // Things like user-dictionaries and other user-defined metadata.

@@ -3,7 +3,7 @@ using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
-public class SyncToUIThread : ISyncToMainThread
+public class SyncToUIThread : ISyncToThread
 {
   private readonly IBridge _bridge;
 

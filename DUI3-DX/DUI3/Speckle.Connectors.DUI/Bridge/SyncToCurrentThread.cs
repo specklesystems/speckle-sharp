@@ -5,7 +5,7 @@ namespace Speckle.Connectors.DUI.Bridge;
 /// <summary>
 /// Implements the ISyncToMainThread interface and runs a given function on the current thread using Task.Run.
 /// </summary>
-public class SyncToCurrentThread : ISyncToMainThread
+public class SyncToCurrentThread : ISyncToThread
 {
   /// <summary>
   /// Executes a given function on the current thread using Task.Run.

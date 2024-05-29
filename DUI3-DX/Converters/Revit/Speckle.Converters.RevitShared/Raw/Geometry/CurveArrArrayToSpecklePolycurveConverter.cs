@@ -4,21 +4,21 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-internal sealed class CurveArrArrayToSpecklePolycurveConverter : IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>>
+internal sealed class CurveArrArrayToSpecklePolycurveConverter : ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>>
 {
-  private readonly IRawConversion<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
+  private readonly ITypedConverter<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
 
-  public CurveArrArrayToSpecklePolycurveConverter(IRawConversion<CurveArray, Polycurve> curveArrayConverter)
+  public CurveArrArrayToSpecklePolycurveConverter(ITypedConverter<CurveArray, Polycurve> curveArrayConverter)
   {
     _curveArrayConverter = curveArrayConverter;
   }
 
-  public List<SOG.Polycurve> RawConvert(CurveArrArray target)
+  public List<SOG.Polycurve> Convert(CurveArrArray target)
   {
     List<SOG.Polycurve> polycurves = new();
     foreach (var curveArray in GetCurveArrays(target))
     {
-      polycurves.Add(_curveArrayConverter.RawConvert(curveArray));
+      polycurves.Add(_curveArrayConverter.Convert(curveArray));
     }
 
     return polycurves;

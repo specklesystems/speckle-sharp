@@ -6,10 +6,10 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // POC: needs breaking down https://spockle.atlassian.net/browse/CNX-9354
 public sealed class DisplayValueExtractor
 {
-  private readonly IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> _meshByMaterialConverter;
+  private readonly ITypedConverter<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> _meshByMaterialConverter;
 
   public DisplayValueExtractor(
-    IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> meshByMaterialConverter
+    ITypedConverter<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> meshByMaterialConverter
   )
   {
     _meshByMaterialConverter = meshByMaterialConverter;
@@ -39,7 +39,7 @@ public sealed class DisplayValueExtractor
 
     var meshesByMaterial = GetMeshesByMaterial(meshes, solids);
 
-    return _meshByMaterialConverter.RawConvert(meshesByMaterial);
+    return _meshByMaterialConverter.Convert(meshesByMaterial);
   }
 
   private static Dictionary<DB.ElementId, List<DB.Mesh>> GetMeshesByMaterial(
@@ -51,12 +51,13 @@ public sealed class DisplayValueExtractor
     foreach (var mesh in meshes)
     {
       var materialId = mesh.MaterialElementId;
-      if (!meshesByMaterial.ContainsKey(materialId))
+      if (!meshesByMaterial.TryGetValue(materialId, out List<DB.Mesh>? value))
       {
-        meshesByMaterial[materialId] = new List<DB.Mesh>();
+        value = new List<DB.Mesh>();
+        meshesByMaterial[materialId] = value;
       }
 
-      meshesByMaterial[materialId].Add(mesh);
+      value.Add(mesh);
     }
 
     foreach (var solid in solids)
@@ -64,12 +65,13 @@ public sealed class DisplayValueExtractor
       foreach (DB.Face face in solid.Faces)
       {
         var materialId = face.MaterialElementId;
-        if (!meshesByMaterial.ContainsKey(materialId))
+        if (!meshesByMaterial.TryGetValue(materialId, out List<DB.Mesh>? value))
         {
-          meshesByMaterial[materialId] = new List<DB.Mesh>();
+          value = new List<DB.Mesh>();
+          meshesByMaterial[materialId] = value;
         }
 
-        meshesByMaterial[materialId].Add(face.Triangulate());
+        value.Add(face.Triangulate());
       }
     }
 

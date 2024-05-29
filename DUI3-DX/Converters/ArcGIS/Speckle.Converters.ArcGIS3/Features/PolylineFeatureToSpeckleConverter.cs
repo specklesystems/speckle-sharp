@@ -4,13 +4,13 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolyineFeatureToSpeckleConverter : IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>>
+public class PolyineFeatureToSpeckleConverter : ITypedConverter<ACG.Polyline, IReadOnlyList<SOG.Polyline>>
 {
-  private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
+  private readonly ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public PolyineFeatureToSpeckleConverter(
-    IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter,
+    ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter,
     IConversionContextStack<Map, ACG.Unit> contextStack
   )
   {
@@ -18,7 +18,7 @@ public class PolyineFeatureToSpeckleConverter : IRawConversion<ACG.Polyline, IRe
     _contextStack = contextStack;
   }
 
-  public IReadOnlyList<SOG.Polyline> RawConvert(ACG.Polyline target)
+  public IReadOnlyList<SOG.Polyline> Convert(ACG.Polyline target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     List<SOG.Polyline> polylineList = new();
@@ -42,7 +42,7 @@ public class PolyineFeatureToSpeckleConverter : IRawConversion<ACG.Polyline, IRe
 
     foreach (var segmentCollection in polylineToConvert.Parts)
     {
-      polylineList.Add(_segmentConverter.RawConvert(segmentCollection));
+      polylineList.Add(_segmentConverter.Convert(segmentCollection));
     }
     return polylineList;
   }

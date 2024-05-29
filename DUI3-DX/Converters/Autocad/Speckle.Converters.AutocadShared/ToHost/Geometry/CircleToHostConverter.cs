@@ -6,15 +6,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Circle, ADB.Circle>
+public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Circle, ADB.Circle>
 {
-  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
+  private readonly ITypedConverter<SOG.Point, AG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Vector, AG.Vector3d> _vectorConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public CircleToHostConverter(
-    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter,
+    ITypedConverter<SOG.Point, AG.Point3d> pointConverter,
+    ITypedConverter<SOG.Vector, AG.Vector3d> vectorConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -23,12 +23,12 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
     _contextStack = contextStack;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Circle)target);
+  public object Convert(Base target) => Convert((SOG.Circle)target);
 
-  public ADB.Circle RawConvert(SOG.Circle target)
+  public ADB.Circle Convert(SOG.Circle target)
   {
-    AG.Vector3d normal = _vectorConverter.RawConvert(target.plane.normal);
-    AG.Point3d origin = _pointConverter.RawConvert(target.plane.origin);
+    AG.Vector3d normal = _vectorConverter.Convert(target.plane.normal);
+    AG.Point3d origin = _pointConverter.Convert(target.plane.origin);
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
 
     if (target.radius is null)

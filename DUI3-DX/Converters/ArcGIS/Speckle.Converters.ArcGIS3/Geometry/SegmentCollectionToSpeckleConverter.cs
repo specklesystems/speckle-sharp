@@ -4,21 +4,21 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
+public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
+  public SOG.Polyline Convert(ACG.ReadOnlySegmentCollection target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     double len = 0;
@@ -40,7 +40,6 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySe
               _pointConverter.RawConvert(segment.EndPoint)
             }
           );
-          break;
         default:
           throw new SpeckleConversionException($"Segment of type '{segment.SegmentType}' cannot be converted");
       }

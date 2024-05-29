@@ -4,16 +4,16 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class BoundingBoxXYZToSpeckleConverter : IRawConversion<DB.BoundingBoxXYZ, SOG.Box>
+public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<DB.BoundingBoxXYZ, SOG.Box>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
 
   public BoundingBoxXYZToSpeckleConverter(
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    IRawConversion<DB.Plane, SOG.Plane> planeConverter
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter
   )
   {
     _contextStack = contextStack;
@@ -21,11 +21,11 @@ public class BoundingBoxXYZToSpeckleConverter : IRawConversion<DB.BoundingBoxXYZ
     _planeConverter = planeConverter;
   }
 
-  public SOG.Box RawConvert(DB.BoundingBoxXYZ target)
+  public SOG.Box Convert(DB.BoundingBoxXYZ target)
   {
     // convert min and max pts to speckle first
-    var min = _xyzToPointConverter.RawConvert(target.Min);
-    var max = _xyzToPointConverter.RawConvert(target.Max);
+    var min = _xyzToPointConverter.Convert(target.Min);
+    var max = _xyzToPointConverter.Convert(target.Max);
 
     // get the base plane of the bounding box from the transform
     var transform = target.Transform;
@@ -40,7 +40,7 @@ public class BoundingBoxXYZToSpeckleConverter : IRawConversion<DB.BoundingBoxXYZ
       xSize = new Interval(min.x, max.x),
       ySize = new Interval(min.y, max.y),
       zSize = new Interval(min.z, max.z),
-      basePlane = _planeConverter.RawConvert(plane),
+      basePlane = _planeConverter.Convert(plane),
       units = _contextStack.Current.SpeckleUnits
     };
 

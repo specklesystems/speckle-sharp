@@ -1,9 +1,11 @@
 ﻿using Autofac;
 using Autofac.Core;
+using Speckle.InterfaceGenerator;
 using Speckle.Core.Logging;
 
 namespace Speckle.Autofac.DependencyInjection;
 
+[GenerateAutoInterface]
 public class UnitOfWorkFactory : IUnitOfWorkFactory
 {
   private readonly ILifetimeScope _parentScope;

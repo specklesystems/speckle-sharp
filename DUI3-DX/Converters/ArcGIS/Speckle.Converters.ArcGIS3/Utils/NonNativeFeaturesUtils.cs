@@ -13,14 +13,14 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 {
-  private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
+  private readonly ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public NonNativeFeaturesUtils(
-    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
+    ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IArcGISFieldUtils fieldsUtils,
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils,
@@ -49,12 +49,13 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
         (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
 
         // add dictionnary item if doesn't exist yet
-        if (!geometryGroups.ContainsKey(parentPath))
+        if (!geometryGroups.TryGetValue(parentPath, out var value))
         {
-          geometryGroups[parentPath] = (new List<ACG.Geometry>(), parentId);
+          value = (new List<ACG.Geometry>(), parentId);
+          geometryGroups[parentPath] = value;
         }
 
-        geometryGroups[parentPath].geometries.Add(geom);
+        value.geometries.Add(geom);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {

@@ -5,15 +5,15 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBEllipseToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBEllipseToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBEllipseToSpeckleConverter(
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    ITypedConverter<AG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
@@ -26,8 +26,8 @@ public class DBEllipseToSpeckleConverter : IHostObjectToSpeckleConversion
 
   public SOG.Ellipse RawConvert(ADB.Ellipse target)
   {
-    SOG.Plane plane = _planeConverter.RawConvert(new AG.Plane(target.Center, target.MajorAxis, target.MinorAxis));
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
+    SOG.Plane plane = _planeConverter.Convert(new AG.Plane(target.Center, target.MajorAxis, target.MinorAxis));
+    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
 
     // the start and end param corresponds to start and end angle in radians
     SOP.Interval trim = new(target.StartAngle, target.EndAngle);

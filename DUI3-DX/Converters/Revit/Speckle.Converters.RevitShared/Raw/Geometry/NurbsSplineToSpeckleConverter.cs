@@ -5,17 +5,17 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, SOG.Curve>
+public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.Curve>
 {
   private readonly IRevitVersionConversionHelper _conversionHelper;
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ScalingServiceToSpeckle _scalingService;
 
   public NurbsSplineToSpeckleConverter(
     IRevitVersionConversionHelper conversionHelper,
     IRevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
     ScalingServiceToSpeckle scalingService
   )
   {
@@ -25,18 +25,18 @@ public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, SOG.C
     _scalingService = scalingService;
   }
 
-  public SOG.Curve RawConvert(DB.NurbSpline target)
+  public SOG.Curve Convert(DB.NurbSpline target)
   {
     var units = _contextStack.Current.SpeckleUnits;
 
     var points = new List<double>();
     foreach (var p in target.CtrlPoints)
     {
-      var point = _xyzToPointConverter.RawConvert(p);
+      var point = _xyzToPointConverter.Convert(p);
       points.AddRange(new List<double> { point.x, point.y, point.z });
     }
 
-    var coords = target.Tessellate().SelectMany(xyz => _xyzToPointConverter.RawConvert(xyz).ToList()).ToList();
+    var coords = target.Tessellate().SelectMany(xyz => _xyzToPointConverter.Convert(xyz).ToList()).ToList();
 
     return new SOG.Curve()
     {

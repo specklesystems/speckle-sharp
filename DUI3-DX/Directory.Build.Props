@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-    <Import Project="../Directory.Build.props"/>
-    <PropertyGroup>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    </PropertyGroup>
+  <Import Project="../Directory.Build.props"/>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="PolySharp" Version="1.14.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.14.1"/>
+    <PackageReference Include="Speckle.InterfaceGenerator" Version="0.9.4"/>
+  </ItemGroup>
 </Project>

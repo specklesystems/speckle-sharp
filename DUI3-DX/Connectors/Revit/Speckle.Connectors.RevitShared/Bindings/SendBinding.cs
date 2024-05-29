@@ -9,6 +9,7 @@ using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
@@ -72,10 +73,6 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private async Task HandleSend(string modelCardId)
   {
-    // POC: probably the CTS SHOULD be injected as InstancePerLifetimeScope and then
-    // it can be injected where needed instead of passing it around like a bomb :D
-    CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
-
     // POC: this try catch pattern is coming from Rhino. I see there is a semi implemented "SpeckleTopLevelExceptionHandler"
     // above that wraps the call of this HandleSend, but it currently is not doing anything - resulting in all errors from here
     // bubbling up to the bridge.
@@ -83,8 +80,13 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     {
       if (Store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No publish model card was found.");
       }
+
+      // POC: probably the CTS SHOULD be injected as InstancePerLifetimeScope and then
+      // it can be injected where needed instead of passing it around like a bomb :D
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       using IUnitOfWork<SendOperation<ElementId>> sendOperation = _unitOfWorkFactory.Resolve<
         SendOperation<ElementId>
@@ -95,6 +97,12 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
         .GetObjectIds()
         .Select(id => ElementId.Parse(id))
         .ToList();
+
+      if (revitObjects.Count == 0)
+      {
+        // Handle as CARD ERROR in this function
+        throw new SpeckleSendFilterException("No objects were found to convert. Please update your publish filter!");
+      }
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),
@@ -125,13 +133,14 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
       Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
+    // Catch here specific exceptions if they related to model card.
+    catch (SpeckleSendFilterException e)
+    {
+      Commands.SetModelError(modelCardId, e);
+    }
     catch (OperationCanceledException)
     {
       return;
-    }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
-    {
-      Commands.SetModelError(modelCardId, e);
     }
   }
 

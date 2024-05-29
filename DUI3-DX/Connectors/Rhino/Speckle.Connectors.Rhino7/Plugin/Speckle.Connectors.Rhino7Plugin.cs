@@ -1,9 +1,7 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using Rhino.PlugIns;
+using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.Files;
-using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Core.Kits;
@@ -25,7 +23,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   private IRhinoPlugin? _rhinoPlugin;
 
   protected override string LocalPlugInName => "Speckle (New UI)";
-  public AutofacContainer? Container { get; private set; }
+  public SpeckleContainer? Container { get; private set; }
 
   public SpeckleConnectorsRhino7Plugin()
   {
@@ -45,19 +43,18 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   {
     try
     {
-      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolver.OnAssemblyResolve<SpeckleConnectorsRhino7Plugin>;
 
-      Container = new AutofacContainer(new StorageInfo());
+      var builder = SpeckleContainerBuilder.CreateInstance();
 
       // Register Settings
       var rhinoSettings = new RhinoSettings(HostApplications.Rhino, HostAppVersion.v7);
 
       // POC: We must load the Rhino connector module manually because we only search for DLL files when calling `LoadAutofacModules`,
       // but the Rhino connector has `.rhp` as it's extension.
-      Container
-        .AddModule(new AutofacRhinoModule())
-        .LoadAutofacModules(rhinoSettings.Modules)
-        .AddSingletonInstance(rhinoSettings)
+      Container = builder
+        .LoadAutofacModules(Assembly.GetExecutingAssembly(), rhinoSettings.Modules)
+        .AddSingleton(rhinoSettings)
         .Build();
 
       // Resolve root plugin object and initialise.
@@ -77,25 +74,5 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
   {
     _rhinoPlugin?.Shutdown();
     base.OnShutdown();
-  }
-
-  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    Assembly? assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(SpeckleConnectorsRhino7Plugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly;
   }
 }

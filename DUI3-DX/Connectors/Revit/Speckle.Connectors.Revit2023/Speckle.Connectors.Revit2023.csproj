@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
@@ -31,7 +31,6 @@
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile"  NoWarn="NU1903"/>
     <PackageReference Include="Revit.Async" Version="2.0.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" />
   </ItemGroup>
 

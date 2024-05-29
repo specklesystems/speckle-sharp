@@ -8,13 +8,13 @@ using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
+public class GisRasterToSpeckleConverter : ITypedConverter<Raster, RasterElement>
 {
-  private readonly IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public GisRasterToSpeckleConverter(
-    IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter,
+    ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter,
     IConversionContextStack<Map, Unit> contextStack
   )
   {
@@ -22,7 +22,7 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((Raster)target);
+  public Base Convert(object target) => Convert((Raster)target);
 
   private List<double> GetRasterMeshCoords(Raster target, List<List<byte>> pixelValsPerBand)
   {
@@ -102,7 +102,7 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
     return newColors;
   }
 
-  public RasterElement RawConvert(Raster target)
+  public RasterElement Convert(Raster target)
   {
     // assisting variables
     var extent = target.GetExtent();

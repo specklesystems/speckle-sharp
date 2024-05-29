@@ -4,17 +4,17 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
+public class NurbsCurveConverter : ITypedConverter<RG.NurbsCurve, SOG.Curve>
 {
-  private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Polyline, SOG.Polyline> _polylineConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsCurveConverter(
-    IRawConversion<RG.Polyline, SOG.Polyline> polylineConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Polyline, SOG.Polyline> polylineConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
@@ -34,7 +34,7 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
   /// It adds 1 extra knot at the start and end of the vector by repeating the first and last value.
   /// This is because Rhino's standard of (controlPoints + degree + 1) wasn't followed on other software.
   /// </remarks>
-  public SOG.Curve RawConvert(RG.NurbsCurve target)
+  public SOG.Curve Convert(RG.NurbsCurve target)
   {
     target.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
     if (target.IsClosed)
@@ -42,7 +42,7 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
       poly.Add(poly[0]);
     }
 
-    SOG.Polyline displayValue = _polylineConverter.RawConvert(poly);
+    SOG.Polyline displayValue = _polylineConverter.Convert(poly);
 
     var nurbsCurve = target.ToNurbsCurve();
 
@@ -60,10 +60,10 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
       degree = nurbsCurve.Degree,
       periodic = nurbsCurve.IsPeriodic,
       rational = nurbsCurve.IsRational,
-      domain = _intervalConverter.RawConvert(nurbsCurve.Domain),
+      domain = _intervalConverter.Convert(nurbsCurve.Domain),
       closed = nurbsCurve.IsClosed,
       length = nurbsCurve.GetLength(),
-      bbox = _boxConverter.RawConvert(new RG.Box(nurbsCurve.GetBoundingBox(true)))
+      bbox = _boxConverter.Convert(new RG.Box(nurbsCurve.GetBoundingBox(true)))
     };
 
     return myCurve;

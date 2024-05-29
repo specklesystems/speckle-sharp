@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GraphQL;
 using Speckle.Automate.Sdk.Schema;
+using Speckle.Automate.Sdk.Schema.Triggers;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -75,9 +76,14 @@ public class AutomationContext
   /// <exception cref="SpeckleException">Throws if commit object is null.</exception>
   public async Task<Base> ReceiveVersion()
   {
-    Commit? commit = await SpeckleClient
-      .CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId)
-      .ConfigureAwait(false);
+    // TODO: this is a quick hack to keep implementation consistency. Move to proper receive many versions
+    if (AutomationRunData.Triggers.First() is not VersionCreationTrigger trigger)
+    {
+      throw new SpeckleException("Processed automation run data without any triggers");
+    }
+    var versionId = trigger.Payload.VersionId;
+
+    Commit? commit = await SpeckleClient.CommitGet(AutomationRunData.ProjectId, versionId).ConfigureAwait(false);
     Base? commitRootObject = await Operations
       .Receive(commit.referencedObject, _serverTransport, _memoryTransport)
       .ConfigureAwait(false);
@@ -86,9 +92,7 @@ public class AutomationContext
       throw new SpeckleException("Commit root object was null");
     }
 
-    Console.WriteLine(
-      $"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {AutomationRunData.VersionId}"
-    );
+    Console.WriteLine($"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {versionId}");
     return commitRootObject;
   }
 
@@ -103,19 +107,8 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    if (modelName == AutomationRunData.BranchName)
-    {
-      throw new ArgumentException(
-        $"The target model: {modelName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
-        nameof(modelName)
-      );
-    }
-
-    string rootObjectId = await Operations
-      .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
-      .ConfigureAwait(false);
-
     Branch branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
+
     if (branch is null)
     {
       // Create the branch with the specified name
@@ -123,6 +116,45 @@ public class AutomationContext
         .BranchCreate(new BranchCreateInput() { streamId = AutomationRunData.ProjectId, name = modelName })
         .ConfigureAwait(false);
     }
+    else
+    {
+      // Confirm target branch is not the same as source branch
+      if (branch.id == null)
+      {
+        throw new SpeckleException("Cannot use the branch without its id");
+      }
+
+      foreach (var trigger in AutomationRunData.Triggers)
+      {
+        switch (trigger)
+        {
+          case VersionCreationTrigger versionCreationTrigger:
+          {
+            if (versionCreationTrigger.Payload.ModelId == branch.id)
+            {
+              throw new SpeckleException(
+                $$"""
+                The target model: {{modelName}} cannot match the model
+                 that triggered this automation:
+                 {{versionCreationTrigger.Payload.ModelId}}
+                """
+              );
+            }
+            continue;
+          }
+          default:
+          {
+            // TODO: How should we handle unknown trigger types?
+            continue;
+          }
+        }
+      }
+    }
+
+    string rootObjectId = await Operations
+      .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
+      .ConfigureAwait(false);
+
     string versionId = await SpeckleClient
       .CommitCreate(
         new CommitCreateInput
@@ -154,7 +186,21 @@ public class AutomationContext
     List<string> linkResources = new();
     if (includeSourceModelVersion)
     {
-      linkResources.Add($@"{AutomationRunData.ModelId}@{AutomationRunData.VersionId}");
+      foreach (var trigger in AutomationRunData.Triggers)
+      {
+        switch (trigger)
+        {
+          case VersionCreationTrigger versionCreationTrigger:
+          {
+            linkResources.Add($@"{versionCreationTrigger.Payload.ModelId}@{versionCreationTrigger.Payload.VersionId}");
+            break;
+          }
+          default:
+          {
+            throw new SpeckleException($"Could not link resource specified by {trigger.TriggerType} trigger");
+          }
+        }
+      }
     }
 
     if (resourceIds is not null)
@@ -189,54 +235,29 @@ public class AutomationContext
       {
         Query =
           @"
-            mutation ReportFunctionRunStatus(
-                $automationId: String!,
-                $automationRevisionId: String!,
-                $automationRunId: String!,
-                $versionId: String!,
-                $functionId: String!,
-                $functionName: String!,
-                $functionLogo: String,
-                $runStatus: AutomationRunStatus!
-                $elapsed: Float!
-                $resultVersionIds: [String!]!
+            mutation AutomateFunctionRunStatusReport(
+                $functionRunId: String!
+                $status: AutomateRunStatus!
                 $statusMessage: String
-                $objectResults: JSONObject
+                $results: JSONObject
+                $contextView: String
             ){
-              automationMutations {
-                functionRunStatusReport(input: {
-                  automationId: $automationId
-                  automationRevisionId: $automationRevisionId
-                  automationRunId: $automationRunId
-                  versionId: $versionId
-                  functionRuns: [{
-                    functionId: $functionId,
-                    functionName: $functionName,
-                    functionLogo: $functionLogo,
-                    status: $runStatus,
-                    elapsed: $elapsed,
-                    resultVersionIds: $resultVersionIds,
-                    statusMessage: $statusMessage,
-                    results: $objectResults,
-                  }]
+                automateFunctionRunStatusReport(input: {
+                    functionRunId: $functionRunId
+                    status: $status
+                    statusMessage: $statusMessage
+                    contextView: $contextView
+                    results: $results
                 })
-              }
             }
         ",
         Variables = new
         {
-          automationId = AutomationRunData.AutomationId,
-          automationRevisionId = AutomationRunData.AutomationRevisionId,
-          automationRunId = AutomationRunData.AutomationRunId,
-          versionId = AutomationRunData.VersionId,
-          functionId = AutomationRunData.FunctionId,
-          functionName = AutomationRunData.FunctionName,
-          functionLogo = AutomationRunData.FunctionLogo,
-          runStatus = RunStatus,
+          functionRunId = AutomationRunData.FunctionRunId,
+          status = RunStatus,
           statusMessage = AutomationResult.StatusMessage,
-          elapsed = Elapsed.TotalSeconds,
-          resultVersionIds = AutomationResult.ResultVersions,
-          objectResults,
+          contextView = ContextView,
+          results = objectResults,
         }
       };
     await SpeckleClient.ExecuteGraphQLRequest<Dictionary<string, object>>(request).ConfigureAwait(false);

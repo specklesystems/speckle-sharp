@@ -2,7 +2,7 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SurfaceToHostConverter : IRawConversion<SOG.Surface, RG.NurbsSurface>
+public class SurfaceToHostConverter : ITypedConverter<SOG.Surface, RG.NurbsSurface>
 {
   /// <summary>
   /// Converts a raw Speckle surface to a Rhino NURBS surface.
@@ -10,7 +10,7 @@ public class SurfaceToHostConverter : IRawConversion<SOG.Surface, RG.NurbsSurfac
   /// <param name="target">The raw Speckle surface to convert.</param>
   /// <returns>The converted Rhino NURBS surface.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.NurbsSurface RawConvert(SOG.Surface target)
+  public RG.NurbsSurface Convert(SOG.Surface target)
   {
     // Create rhino surface
     var points = target.GetControlPoints().ToList();

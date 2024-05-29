@@ -57,7 +57,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     // POC: not sure why this would ever be null, is this needed?
     _revitContext.UIApplication.NotNull();
 
-    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+    var doc = _revitContext.UIApplication.ActiveUIDocument?.Document;
     if (doc is null)
     {
       return null;
@@ -91,7 +91,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
     var elementIds = model.SendFilter.NotNull().GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Any())
+    if (elementIds.Count != 0)
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;
