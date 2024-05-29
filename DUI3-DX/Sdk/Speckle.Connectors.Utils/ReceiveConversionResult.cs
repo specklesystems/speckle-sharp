@@ -28,7 +28,7 @@ public sealed class ReceiveConversionResult
 
   public string? TargetId => Target?.id;
 
-  public string? TargetType => Target?.speckle_type.Split(new[] { '.' }).Last();
+  public string? TargetType => Target?.speckle_type.Split('.').Last();
   public string? TargetAppId => Target?.applicationId;
 
   [MemberNotNullWhen(true, nameof(Result))]
