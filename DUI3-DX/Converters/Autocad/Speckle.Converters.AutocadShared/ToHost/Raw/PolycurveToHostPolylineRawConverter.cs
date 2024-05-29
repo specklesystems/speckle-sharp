@@ -49,7 +49,7 @@ public class PolycurveToHostPolylineRawConverter : ITypedConverter<SOG.Polycurve
           angle = angle < 0 ? angle + 2 * Math.PI : angle;
           if (angle is null)
           {
-            throw new ArgumentNullException(nameof(arc), "Cannot convert arc without angle value.");
+            throw new ArgumentNullException(nameof(target), "Cannot convert arc without angle value.");
           }
 
           var bulge = Math.Tan((double)angle / 4) * BulgeDirection(arc.startPoint, arc.midPoint, arc.endPoint);

@@ -5,7 +5,7 @@
         <AssemblyName>Objects.Converter.Civil3D2023</AssemblyName>
         <RootNamespace>Objects.Converter.Civil</RootNamespace>
         <PackageId>Speckle.Objects.Converter.Civil2023</PackageId>
-        <DefineConstants>$(DefineConstants);CIVIL2023</DefineConstants>
+        <DefineConstants>$(DefineConstants);CIVIL2023;CIVIL;CIVIL2021_OR_GREATER;CIVIL2022_OR_GREATER;CIVIL2023_OR_GREATER</DefineConstants>
         <Description>Converter for Civil3D 2023</Description>
         <PackageTags>$(PackageTags) objects converter civil3d</PackageTags>
         <CopyToKitFolder>true</CopyToKitFolder>

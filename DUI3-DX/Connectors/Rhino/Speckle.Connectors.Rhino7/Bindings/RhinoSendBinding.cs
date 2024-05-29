@@ -153,7 +153,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .Where(obj => obj != null)
         .ToList();
 
-      if (!rhinoObjects.Any())
+      if (rhinoObjects.Count == 0)
       {
         // Handle as CARD ERROR in this function
         throw new SpeckleSendFilterException("No objects were found to convert. Please update your publish filter!");

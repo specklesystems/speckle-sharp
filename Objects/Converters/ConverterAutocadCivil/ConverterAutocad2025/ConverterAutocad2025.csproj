@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Objects.Converter.Autocad2025</AssemblyName>
+    <RootNamespace>Objects.Converter.Autocad</RootNamespace>
+    <DefineConstants>$(DefineConstants);AUTOCAD2025</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Autocad2025</PackageId>
+    <Product>Objects.Converter.Autocad2025</Product>
+    <Description>Converter for Autocad 2025</Description>
+    <PackageTags>$(PackageTags) objects converter autocad</PackageTags>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2025.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+  </ItemGroup>
+
+</Project>
