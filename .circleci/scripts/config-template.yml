@@ -7,7 +7,7 @@ orbs:
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
   docker: circleci/docker@2.2.0
-
+  macos: circleci/macos@2.4.1
 # The main workflows for our monorepo pipeline.
 
 workflows:
@@ -274,7 +274,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-mac:
     macos:
-      xcode: 12.5.1
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
     parameters:
       slnname:
         type: string
@@ -303,6 +304,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./
@@ -581,7 +583,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-archicad-add-on-mac: # build Archicad C++ add-on
     macos:
-      xcode: 12.5.1
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
     parameters:
       archicadversion:
         type: string
@@ -593,6 +596,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./
