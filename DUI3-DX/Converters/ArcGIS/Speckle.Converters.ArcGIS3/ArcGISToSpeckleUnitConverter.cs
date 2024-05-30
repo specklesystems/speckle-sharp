@@ -7,28 +7,30 @@ namespace Speckle.Converters.ArcGIS3;
 
 public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
 {
-  private readonly Dictionary<int, string> _unitMapping = new();
+  private static readonly IReadOnlyDictionary<int, string> s_unitMapping = Create();
 
-  private ArcGISToSpeckleUnitConverter()
+  private static IReadOnlyDictionary<int, string> Create()
   {
     // POC: we should have a unit test to confirm these are as expected and don't change
     // more units: https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8349.html
-    _unitMapping[LinearUnit.Millimeters.FactoryCode] = Units.Millimeters;
-    _unitMapping[LinearUnit.Centimeters.FactoryCode] = Units.Centimeters;
-    _unitMapping[LinearUnit.Meters.FactoryCode] = Units.Meters;
-    _unitMapping[LinearUnit.Kilometers.FactoryCode] = Units.Kilometers;
-    _unitMapping[LinearUnit.Inches.FactoryCode] = Units.Inches;
-    _unitMapping[LinearUnit.Feet.FactoryCode] = Units.Feet;
-    _unitMapping[LinearUnit.Yards.FactoryCode] = Units.Yards;
-    _unitMapping[LinearUnit.Miles.FactoryCode] = Units.Miles;
-    _unitMapping[9003] = Units.USFeet;
+    var dict = new Dictionary<int, string>();
+    dict[LinearUnit.Millimeters.FactoryCode] = Units.Millimeters;
+    dict[LinearUnit.Centimeters.FactoryCode] = Units.Centimeters;
+    dict[LinearUnit.Meters.FactoryCode] = Units.Meters;
+    dict[LinearUnit.Kilometers.FactoryCode] = Units.Kilometers;
+    dict[LinearUnit.Inches.FactoryCode] = Units.Inches;
+    dict[LinearUnit.Feet.FactoryCode] = Units.Feet;
+    dict[LinearUnit.Yards.FactoryCode] = Units.Yards;
+    dict[LinearUnit.Miles.FactoryCode] = Units.Miles;
+    dict[9003] = Units.USFeet;
+    return dict;
   }
 
   public string ConvertOrThrow(Unit hostUnit)
   {
     int linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).FactoryCode;
 
-    if (_unitMapping.TryGetValue(linearUnit, out string? value))
+    if (s_unitMapping.TryGetValue(linearUnit, out string? value))
     {
       return value;
     }
