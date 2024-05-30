@@ -5,6 +5,7 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Models.Extensions;
@@ -306,6 +307,7 @@ public class BrowserBridge : IBridge
     ShowDevToolsAction?.Invoke();
   }
 
+  [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Url run as process")]
   public void OpenUrl(string url)
   {
     Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
