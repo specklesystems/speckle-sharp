@@ -104,8 +104,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = layer.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedLayers.Add(layer);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedLayers.Add(layer);
+    }
   }
 
   private void SubscribeToTableDataSourceChange(StandaloneTable table)
@@ -115,8 +118,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = table.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedTables.Add(table);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedTables.Add(table);
+    }
   }
 
   private void SubscribeToAnyDataSourceChange(Table layerTable)

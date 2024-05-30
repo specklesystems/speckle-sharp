@@ -7,31 +7,28 @@ namespace Speckle.Converters.ArcGIS3;
 
 public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
 {
-  private static readonly IReadOnlyDictionary<string, string> s_unitMapping = Create();
+  private readonly Dictionary<int, string> _unitMapping = new();
 
-  private static IReadOnlyDictionary<string, string> Create()
+  private ArcGISToSpeckleUnitConverter()
   {
-    var dict = new Dictionary<string, string>();
     // POC: we should have a unit test to confirm these are as expected and don't change
-    //_unitMapping[LinearUnit.] = Units.Meters;
-    dict[LinearUnit.Millimeters.Name] = Units.Millimeters;
-    dict[LinearUnit.Centimeters.Name] = Units.Centimeters;
-    dict[LinearUnit.Meters.Name] = Units.Meters;
-    dict[LinearUnit.Kilometers.Name] = Units.Kilometers;
-    dict[LinearUnit.Inches.Name] = Units.Inches;
-    dict[LinearUnit.Feet.Name] = Units.Feet;
-    dict[LinearUnit.Yards.Name] = Units.Yards;
-    dict[LinearUnit.Miles.Name] = Units.Miles;
-    //_unitMapping[LinearUnit.Decimeters] = Units.;
-    //_unitMapping[LinearUnit.NauticalMiles] = Units.;
-    return dict;
+    // more units: https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8349.html
+    _unitMapping[LinearUnit.Millimeters.FactoryCode] = Units.Millimeters;
+    _unitMapping[LinearUnit.Centimeters.FactoryCode] = Units.Centimeters;
+    _unitMapping[LinearUnit.Meters.FactoryCode] = Units.Meters;
+    _unitMapping[LinearUnit.Kilometers.FactoryCode] = Units.Kilometers;
+    _unitMapping[LinearUnit.Inches.FactoryCode] = Units.Inches;
+    _unitMapping[LinearUnit.Feet.FactoryCode] = Units.Feet;
+    _unitMapping[LinearUnit.Yards.FactoryCode] = Units.Yards;
+    _unitMapping[LinearUnit.Miles.FactoryCode] = Units.Miles;
+    _unitMapping[9003] = Units.USFeet;
   }
 
   public string ConvertOrThrow(Unit hostUnit)
   {
-    var linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).Name;
+    int linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).FactoryCode;
 
-    if (s_unitMapping.TryGetValue(linearUnit, out string? value))
+    if (_unitMapping.TryGetValue(linearUnit, out string? value))
     {
       return value;
     }

@@ -8,20 +8,14 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<ACG.EllipticArcSegment, SOG.Polyline> _arcConverter;
-  private readonly ITypedConverter<ACG.CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter,
-    ITypedConverter<ACG.EllipticArcSegment, SOG.Polyline> arcConverter,
-    ITypedConverter<ACG.CubicBezierSegment, SOG.Polyline> bezierConverter
+    ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
-    _arcConverter = arcConverter;
-    _bezierConverter = bezierConverter;
   }
 
   public SOG.Polyline Convert(ACG.ReadOnlySegmentCollection target)
@@ -34,27 +28,39 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
     {
       len += segment.Length;
 
-      // do something specific per segment type
+      // specific conversion per segment type
       switch (segment.SegmentType)
       {
         case ACG.SegmentType.Line:
-          points.Add(_pointConverter.Convert(segment.StartPoint));
-          points.Add(_pointConverter.Convert(segment.EndPoint));
+          points = AddPtsToPolylinePts(
+            points,
+            new List<SOG.Point>()
+            {
+              _pointConverter.Convert(segment.StartPoint),
+              _pointConverter.Convert(segment.EndPoint)
+            }
+          );
           break;
-        case ACG.SegmentType.Bezier:
-          var segmentBezier = (ACG.CubicBezierSegment)segment;
-          points.AddRange(_bezierConverter.Convert(segmentBezier).GetPoints());
-          break;
-        case ACG.SegmentType.EllipticArc:
-          var segmentElliptic = (ACG.EllipticArcSegment)segment;
-          points.AddRange(_arcConverter.Convert(segmentElliptic).GetPoints());
-          break;
+        default:
+          throw new SpeckleConversionException($"Segment of type '{segment.SegmentType}' cannot be converted");
       }
     }
-    // var box = _boxConverter.Convert(target.Extent);
     SOG.Polyline polyline =
       new(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), _contextStack.Current.SpeckleUnits) { };
 
     return polyline;
+  }
+
+  private List<SOG.Point> AddPtsToPolylinePts(List<SOG.Point> points, List<SOG.Point> newSegmentPts)
+  {
+    if (points.Count == 0 || points[^1] != newSegmentPts[0])
+    {
+      points.AddRange(newSegmentPts);
+    }
+    else
+    {
+      points.AddRange(newSegmentPts.GetRange(1, newSegmentPts.Count - 1));
+    }
+    return points;
   }
 }

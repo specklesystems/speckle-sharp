@@ -100,7 +100,7 @@ Target(
 
 Target(
   BUILD,
-  DependsOn(RESTORE, BUILD_SERVER_VERSION),
+  DependsOn(RESTORE),
   Consts.Solutions,
   s =>
   {
