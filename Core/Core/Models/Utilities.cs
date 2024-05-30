@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -210,5 +211,39 @@ public static class Utilities
     {
       yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
     }
+  }
+
+  /// <summary>
+  /// Utility function to flatten a conversion result that might have nested lists of objects.
+  /// This happens, for example, in the case of multiple display value fallbacks for a given object.
+  /// </summary>
+  /// <remarks>
+  ///   Assuming native objects are not inherited from IList.
+  /// </remarks>
+  /// <param name="item"> Object to flatten</param>
+  /// <returns> Flattened objects after to host.</returns>
+  public static List<object> FlattenToHostConversionResult(object item)
+  {
+    List<object> convertedList = new();
+    Stack<object> stack = new();
+    stack.Push(item);
+
+    while (stack.Count > 0)
+    {
+      object current = stack.Pop();
+      if (current is IList list)
+      {
+        foreach (object subItem in list)
+        {
+          stack.Push(subItem);
+        }
+      }
+      else
+      {
+        convertedList.Add(current);
+      }
+    }
+
+    return convertedList;
   }
 }

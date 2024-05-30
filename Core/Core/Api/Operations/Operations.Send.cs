@@ -92,7 +92,7 @@ public static partial class Operations
 
       var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
-      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, cancellationToken);
+      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, false, cancellationToken);
 
       foreach (var t in transports)
       {

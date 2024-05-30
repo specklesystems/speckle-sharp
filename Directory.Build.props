@@ -36,9 +36,8 @@
       CS1591;CS1573;
       <!-- Globalization rules -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
-      NU1701;
       <!--Others we don't want-->
-      CA1815;CA1054;$(NoWarn)
+      CA1815;CA1852;CA1812;CA1003;CA2109;CA1848;$(NoWarn)
     </NoWarn>
     
     <WarningsAsErrors>
@@ -127,7 +126,7 @@
     <!-- Expose the repository root to all projects -->
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic
     complexity threshold -->
