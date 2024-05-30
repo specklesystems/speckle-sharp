@@ -35,8 +35,8 @@ public sealed class SendConversionResult
   [JsonIgnore]
   public object Target { get; }
 
-  public string TargetId { get; }
-  public string TargetType { get; }
+  public string TargetId { get; set; }
+  public string TargetType { get; set; }
 
   [MemberNotNullWhen(true, nameof(Result))]
   [MemberNotNullWhen(true, nameof(ResultId))]

@@ -52,7 +52,7 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       ?? throw new SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed, type not found: " + typeName
       );
-    var obj = Activator.CreateInstance(type);
+    var obj = Activator.CreateInstance(type, true);
     serializer.Populate(jsonObject.CreateReader(), obj);
 
     // Store the JSON property names in the object for later comparison
