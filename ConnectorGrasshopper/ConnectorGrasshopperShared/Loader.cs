@@ -49,7 +49,7 @@ public class Loader : GH_AssemblyPriority
     Setup.Init(GetRhinoHostAppVersion(), HostApplications.Rhino.Slug, logConfig);
 
     Instances.CanvasCreated += OnCanvasCreated;
-#if RHINO7
+#if RHINO7_OR_GREATER
     if (Instances.RunningHeadless)
     {
       // If GH is running headless, we listen for document added/removed events.
@@ -492,7 +492,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void DisposeHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     _headlessDoc?.Dispose();
 #endif
     _headlessDoc = null;
@@ -500,7 +500,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void SetupHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
     //   SpeckleGHSettings.HeadlessTemplateFilename);
     // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
@@ -521,7 +521,7 @@ public class Loader : GH_AssemblyPriority
   /// <returns></returns>
   public static RhinoDoc GetCurrentDocument()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null)
     {
       Console.WriteLine(
