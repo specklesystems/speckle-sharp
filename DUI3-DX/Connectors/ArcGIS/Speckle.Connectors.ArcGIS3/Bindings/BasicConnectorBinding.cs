@@ -1,6 +1,4 @@
 using System.Reflection;
-using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
@@ -85,7 +83,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       .Run(() =>
       {
         List<MapMember> mapMembers = GetMapMembers(objectIds, mapView);
+        ClearSelectionInTOC();
         ClearSelection();
+        SelectMapMembersInTOC(mapMembers);
         SelectMapMembers(mapMembers);
         mapView.ZoomToSelected();
       })
@@ -125,26 +125,39 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     }
   }
 
+  private void ClearSelectionInTOC()
+  {
+    MapView.Active.ClearTOCSelection();
+  }
+
   private void SelectMapMembers(List<MapMember> mapMembers)
   {
     foreach (var member in mapMembers)
     {
-      if (member is FeatureLayer featureLayer)
+      if (member is FeatureLayer layer)
       {
-        using RowCursor rowCursor = featureLayer.Search();
-        while (rowCursor.MoveNext())
-        {
-          using (var row = rowCursor.Current)
-          {
-            if (row is not Feature feature)
-            {
-              continue;
-            }
-            Geometry geometry = feature.GetShape();
-            MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
-          }
-        }
+        layer.Select();
       }
     }
+  }
+
+  private void SelectMapMembersInTOC(List<MapMember> mapMembers)
+  {
+    List<Layer> layers = new();
+    List<StandaloneTable> tables = new();
+
+    foreach (MapMember member in mapMembers)
+    {
+      if (member is Layer layer)
+      {
+        layers.Add(layer);
+      }
+      else if (member is StandaloneTable table)
+      {
+        tables.Add(table);
+      }
+    }
+    MapView.Active.SelectLayers(layers);
+    // MapView.Active.SelectStandaloneTables(tables); // clears previous selection, not clear how to ADD selection instead
   }
 }
