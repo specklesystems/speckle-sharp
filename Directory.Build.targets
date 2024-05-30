@@ -41,14 +41,6 @@
           Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(KitFolder)/'"/>
   </Target>
 
-  <!--
-  Reports the current build version number in the build logs.
-  -->
-  <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
-    <Message
-      Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)"
-      Importance="high"/>
-  </Target>
 
   <!--
   Deep clean target will remove all bin/ and obj/ folders from the monorepo. Can be invoked by

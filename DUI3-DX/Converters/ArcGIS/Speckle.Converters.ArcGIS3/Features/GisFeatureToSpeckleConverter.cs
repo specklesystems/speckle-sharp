@@ -3,6 +3,7 @@ using Speckle.Core.Models;
 using ArcGIS.Core.Data;
 using Speckle.Converters.ArcGIS3.Geometry;
 using Speckle.Converters.Common;
+using Speckle.Converters.ArcGIS3.Utils;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -57,32 +58,23 @@ public class GisFeatureToSpeckleConverter : ITypedConverter<Row, SGIS.GisFeature
     IReadOnlyList<Field> fields = target.GetFields();
     foreach (Field field in fields)
     {
-      string name = field.Name;
       // POC: check for all possible reserved Shape names
       if (field.FieldType == FieldType.Geometry) // ignore the field with geometry itself
       {
         hasGeometry = true;
-        geometryField = name;
+        geometryField = field.Name;
       }
       // Raster FieldType is not properly supported through API
       else if (
         field.FieldType == FieldType.Raster || field.FieldType == FieldType.Blob || field.FieldType == FieldType.XML
       )
       {
-        attributes[name] = null;
+        attributes[field.Name] = null;
       }
       // to not break serializer (DateOnly) and to simplify complex types
-      else if (
-        field.FieldType == FieldType.DateOnly
-        || field.FieldType == FieldType.TimeOnly
-        || field.FieldType == FieldType.TimestampOffset
-      )
-      {
-        attributes[name] = target[name]?.ToString();
-      }
       else
       {
-        attributes[name] = target[name];
+        attributes[field.Name] = GISAttributeFieldType.FieldValueToSpeckle(target, field);
       }
     }
 

@@ -7,7 +7,5 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 public interface IArcGISFieldUtils
 {
   public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat);
-  public object? FieldValueToNativeType(FieldType fieldType, object? value);
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target);
-  public FieldType GetFieldTypeFromInt(int fieldType);
 }

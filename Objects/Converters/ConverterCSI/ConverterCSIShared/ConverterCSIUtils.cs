@@ -4,6 +4,7 @@ using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
 using System;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI;
 
@@ -26,14 +27,18 @@ public partial class ConverterCSI
       return _modelUnits;
     }
 
-    var units = Model.GetPresentUnits();
-    if (units != 0)
+    eForce forceUnits = eForce.NotApplicable;
+    eLength lengthUnits = eLength.NotApplicable;
+    eTemperature temperatureUnits = eTemperature.NotApplicable;
+    _ = Model.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
+
+    if (lengthUnits == eLength.NotApplicable)
     {
-      string[] unitsCat = units.ToString().Split('_');
-      _modelUnits = unitsCat[1];
-      return _modelUnits;
+      throw new SpeckleException("Unable to retreive valid length units from the ETABS document");
     }
-    return null;
+
+    _modelUnits = lengthUnits.ToString();
+    return _modelUnits;
   }
 
   public double ScaleToNative(double value, string units)

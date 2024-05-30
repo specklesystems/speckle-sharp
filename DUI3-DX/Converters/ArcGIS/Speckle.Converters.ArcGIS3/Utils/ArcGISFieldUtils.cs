@@ -16,54 +16,6 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     _characterCleaner = characterCleaner;
   }
 
-  public object? FieldValueToNativeType(FieldType fieldType, object? value)
-  {
-    // Geometry: ignored
-    // Blob, Raster, TimestampOffset, XML: converted to String (field type already converted to String on Send)
-    switch (fieldType)
-    {
-      case FieldType.GUID:
-        return value;
-      case FieldType.OID:
-        return value;
-    }
-
-    if (value is not null)
-    {
-      try
-      {
-        switch (fieldType)
-        {
-          case FieldType.String:
-            return (string)value;
-          case FieldType.Single:
-            return (float)(double)value;
-          case FieldType.Integer:
-            // need this step because sent "ints" seem to be received as "longs"
-            return (int)(long)value;
-          case FieldType.BigInteger:
-            return (long)value;
-          case FieldType.SmallInteger:
-            return (short)(long)value;
-          case FieldType.Double:
-            return (double)value;
-          case FieldType.Date:
-            return DateTime.Parse((string)value, null);
-          case FieldType.DateOnly:
-            return DateOnly.Parse((string)value);
-          case FieldType.TimeOnly:
-            return TimeOnly.Parse((string)value);
-        }
-      }
-      catch (InvalidCastException)
-      {
-        return value;
-      }
-    }
-
-    return value;
-  }
-
   public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat)
   {
     foreach (FieldDescription field in fields)
@@ -79,7 +31,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
           // POC: get all values in a correct format
           try
           {
-            rowBuffer[key] = FieldValueToNativeType(fieldType, value);
+            rowBuffer[key] = GISAttributeFieldType.SpeckleValueToNativeFieldType(fieldType, value);
           }
           catch (GeodatabaseFeatureException)
           {
@@ -101,11 +53,6 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     return rowBuffer;
   }
 
-  public FieldType GetFieldTypeFromInt(int fieldType)
-  {
-    return (FieldType)fieldType;
-  }
-
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target)
   {
     List<FieldDescription> fields = new();
@@ -121,7 +68,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
           if (field.Value is not null)
           {
             string key = field.Key;
-            FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
+            FieldType fieldType = GISAttributeFieldType.FieldTypeToNative(field.Value);
 
             FieldDescription fieldDescription =
               new(_characterCleaner.CleanCharacters(key), fieldType) { AliasName = key };
