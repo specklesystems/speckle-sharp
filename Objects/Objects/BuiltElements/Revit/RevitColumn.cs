@@ -15,7 +15,7 @@ public class RevitColumn : Column
     string family,
     string type,
     ICurve baseLine,
-    Level level,
+    Level? level,
     Level? topLevel,
     string? units,
     string? elementId,
@@ -35,12 +35,6 @@ public class RevitColumn : Column
     this.topOffset = topOffset;
     this.rotation = rotation;
     this.parameters = parameters?.ToBase();
-  }
-
-  public new Level? level
-  {
-    get => base.level;
-    set => base.level = value;
   }
 
   public Level? topLevel { get; set; }

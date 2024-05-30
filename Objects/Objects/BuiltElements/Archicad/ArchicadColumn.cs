@@ -26,7 +26,7 @@ public class ArchicadColumn : Column
   public override Level? level
   {
     get => archicadLevel;
-    protected set
+    internal set
     {
       if (value is ArchicadLevel or null)
       {

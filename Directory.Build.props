@@ -31,7 +31,7 @@
     <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
       <!--Disabled by design-->
-      CA5399;CA1862;CS9057;
+      CA5399;CA1862;
       <!--XML comment-->
       CS1591;CS1573;
       <!-- Globalization rules -->

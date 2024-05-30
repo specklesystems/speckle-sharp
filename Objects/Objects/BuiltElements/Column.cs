@@ -20,7 +20,7 @@ public class Column : Base, IDisplayValue<IReadOnlyList<Base>>
 
   public ICurve baseLine { get; set; }
 
-  public virtual Level? level { get; protected set; }
+  public virtual Level? level { get; internal set; }
 
   public string? units { get; set; }
 

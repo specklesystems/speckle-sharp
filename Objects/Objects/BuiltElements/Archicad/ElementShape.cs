@@ -3,6 +3,7 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad;
 
@@ -31,14 +32,15 @@ public sealed class ElementShape : Base
     {
       this.startPoint = startPoint;
       this.endPoint = endPoint;
-      this.units = Units.Meters;
       this.arcAngle = arcAngle ?? 0;
       this.bodyFlag = bodyFlag;
     }
 
     public Point startPoint { get; set; }
     public Point endPoint { get; set; }
-    public string units { get; set; }
+
+    [JsonIgnore]
+    public string units => Units.Meters;
     public double arcAngle { get; set; }
     public bool? bodyFlag { get; set; }
     public double length { get; set; }
@@ -55,11 +57,10 @@ public sealed class ElementShape : Base
     public Polyline(List<PolylineSegment> segments)
     {
       this.polylineSegments = segments;
-      this.units = Units.Meters;
-      ;
     }
 
-    public string units { get; set; }
+    [JsonIgnore]
+    public string units => Units.Meters;
 
     public List<PolylineSegment> polylineSegments { get; set; } = new();
     public double length { get; set; }
