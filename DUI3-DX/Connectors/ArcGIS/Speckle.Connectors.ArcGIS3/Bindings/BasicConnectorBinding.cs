@@ -1,6 +1,4 @@
 using System.Reflection;
-using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
@@ -19,8 +17,6 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 {
   public string Name => "baseBinding";
   public IBridge Parent { get; }
-
-  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
 
   public BasicConnectorBindingCommands Commands { get; }
   private readonly DocumentModelStore _store;
@@ -55,10 +51,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
-  public async void HighlightModel(string modelCardId)
-  {
-    MapView mapView = MapView.Active;
+  public void HighlightObjects(List<string> objectIds) => HighlightObjectsOnView(objectIds);
 
+  public void HighlightModel(string modelCardId)
+  {
     var model = _store.GetModelById(modelCardId);
 
     if (model is null)
@@ -75,19 +71,27 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      objectIds = receiverModelCard.ReceiveResult?.GetSuccessfulResultIds();
+      objectIds = receiverModelCard.ReceiveResult?.GetSuccessfulResultIds().NotNull();
     }
 
     if (objectIds is null)
     {
       return;
     }
+    HighlightObjectsOnView(objectIds);
+  }
+
+  private async void HighlightObjectsOnView(List<string> objectIds)
+  {
+    MapView mapView = MapView.Active;
 
     await QueuedTask
       .Run(() =>
       {
         List<MapMember> mapMembers = GetMapMembers(objectIds, mapView);
+        ClearSelectionInTOC();
         ClearSelection();
+        SelectMapMembersInTOC(mapMembers);
         SelectMapMembers(mapMembers);
         mapView.ZoomToSelected();
       })
@@ -127,26 +131,39 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     }
   }
 
+  private void ClearSelectionInTOC()
+  {
+    MapView.Active.ClearTOCSelection();
+  }
+
   private void SelectMapMembers(List<MapMember> mapMembers)
   {
     foreach (var member in mapMembers)
     {
-      if (member is FeatureLayer featureLayer)
+      if (member is FeatureLayer layer)
       {
-        using RowCursor rowCursor = featureLayer.Search();
-        while (rowCursor.MoveNext())
-        {
-          using (var row = rowCursor.Current)
-          {
-            if (row is not Feature feature)
-            {
-              continue;
-            }
-            Geometry geometry = feature.GetShape();
-            MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
-          }
-        }
+        layer.Select();
       }
     }
+  }
+
+  private void SelectMapMembersInTOC(List<MapMember> mapMembers)
+  {
+    List<Layer> layers = new();
+    List<StandaloneTable> tables = new();
+
+    foreach (MapMember member in mapMembers)
+    {
+      if (member is Layer layer)
+      {
+        layers.Add(layer);
+      }
+      else if (member is StandaloneTable table)
+      {
+        tables.Add(table);
+      }
+    }
+    MapView.Active.SelectLayers(layers);
+    // MapView.Active.SelectStandaloneTables(tables); // clears previous selection, not clear how to ADD selection instead
   }
 }
