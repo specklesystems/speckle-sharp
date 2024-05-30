@@ -5,6 +5,7 @@ using ArcGIS.Core.Data.Analyst3D;
 using ArcGIS.Core.CIM;
 using Speckle.Converters.ArcGIS3.Geometry;
 using Speckle.Core.Models;
+using Speckle.Converters.ArcGIS3.Utils;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -88,7 +89,7 @@ public class PointCloudToSpeckleConverter
     speckleLayer.name = target.Name;
     speckleLayer.units = _contextStack.Current.SpeckleUnits;
     speckleLayer.nativeGeomType = target.MapLayerType.ToString();
-    speckleLayer.geomType = "Pointcloud";
+    speckleLayer.geomType = GISLayerGeometryType.POINTCLOUD;
 
     // prepare data for pointcloud
     List<SOG.Point> specklePts = new();

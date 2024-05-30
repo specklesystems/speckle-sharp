@@ -37,7 +37,7 @@ public class VectorLayerToHostConverter : IToHostTopLevelConverter, ITypedConver
     // pointcloud layers need to be checked separately, because there is no ArcGIS Geometry type
     // for Pointcloud. In ArcGIS it's a completely different layer class, so "GetLayerGeometryType"
     // will return "Invalid" type
-    if (target.geomType == "Pointcloud")
+    if (target.geomType == GISLayerGeometryType.POINTCLOUD)
     {
       return _pointcloudLayerConverter.Convert(target).Name;
     }
