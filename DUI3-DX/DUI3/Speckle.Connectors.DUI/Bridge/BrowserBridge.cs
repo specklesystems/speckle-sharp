@@ -324,8 +324,9 @@ public class BrowserBridge : IBridge
     where T : class
   {
     string payload = JsonConvert.SerializeObject(data, _serializerOptions);
-    var script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
-
+    string requestId = $"{Guid.NewGuid()}_{eventName}";
+    _resultsStore[requestId] = payload;
+    var script = $"{FrontendBoundName}.emitResponseReady('{eventName}', '{requestId}')";
     _scriptMethod.NotNull().Invoke(script);
   }
 }
