@@ -304,6 +304,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./
@@ -595,6 +596,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./
