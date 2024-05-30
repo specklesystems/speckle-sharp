@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>Objects.Converter.Revit</RootNamespace>
+    <AssemblyName>Objects.Converter.Revit2025</AssemblyName>
+    <DefineConstants>$(DefineConstants);REVIT2025</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Revit2025</PackageId>
+    <Product>Objects.Converter.Revit2025</Product>
+    <Description>Converter for Revit 2025</Description>
+    <PackageTags>$(PackageTags) objects converter revit</PackageTags>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.Revit.API" Version="2025.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources2025\RevitSharedResources2025.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
+    <Message Text="Copying templates to kit folder" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates\2025&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\2025\&quot;" />
+  </Target>
+</Project>

@@ -86,7 +86,8 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
   private string[] GetLayerPath(TraversalContext context)
   {
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    string[] reverseOrderPath =
+      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
     return reverseOrderPath.Reverse().ToArray();
   }
 
@@ -185,10 +186,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // 3. add layer and tables to the Table Of Content
     foreach ((string, string) databaseObj in convertedGISObjects)
     {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cancellationToken);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
       // BAKE OBJECTS HERE
       // POC: QueuedTask
       var task = QueuedTask.Run(() =>

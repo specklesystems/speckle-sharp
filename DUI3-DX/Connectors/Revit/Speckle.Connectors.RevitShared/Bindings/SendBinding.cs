@@ -98,7 +98,7 @@ internal sealed class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
         .Select(id => ElementId.Parse(id))
         .ToList();
 
-      if (!revitObjects.Any())
+      if (revitObjects.Count == 0)
       {
         // Handle as CARD ERROR in this function
         throw new SpeckleSendFilterException("No objects were found to convert. Please update your publish filter!");

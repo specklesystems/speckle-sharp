@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Objects.Converter.Civil3D2022</AssemblyName>
         <RootNamespace>Objects.Converter.Civil</RootNamespace>
-        <DefineConstants>$(DefineConstants);CIVIL2022</DefineConstants>
+        <DefineConstants>$(DefineConstants);CIVIL2022;CIVIL;CIVIL2021_OR_GREATER;CIVIL2022_OR_GREATER</DefineConstants>
         <PackageId>Speckle.Objects.Converter.Civil2022</PackageId>
         <Product>Objects.Converter.Civil2022</Product>
         <Description>Converter for Civil3D 2022</Description>

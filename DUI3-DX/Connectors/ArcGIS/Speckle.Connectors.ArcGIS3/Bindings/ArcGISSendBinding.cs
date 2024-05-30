@@ -104,8 +104,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = layer.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedLayers.Add(layer);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedLayers.Add(layer);
+    }
   }
 
   private void SubscribeToTableDataSourceChange(StandaloneTable table)
@@ -115,8 +118,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = table.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedTables.Add(table);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedTables.Add(table);
+    }
   }
 
   private void SubscribeToAnyDataSourceChange(Table layerTable)
@@ -255,7 +261,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
-    using IUnitOfWork<SendOperation<MapMember>> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
+    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
     try
     {
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
@@ -286,7 +292,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
             .Where(obj => obj != null)
             .ToList();
 
-          if (!mapMembers.Any())
+          if (mapMembers.Count == 0)
           {
             // Handle as CARD ERROR in this function
             throw new SpeckleSendFilterException(
