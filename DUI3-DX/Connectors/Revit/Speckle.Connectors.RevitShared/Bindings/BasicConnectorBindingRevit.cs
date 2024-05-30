@@ -18,6 +18,8 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
   public string Name { get; private set; }
   public IBridge Parent { get; private set; }
 
+  public BasicConnectorBindingCommands Commands { get; }
+
   private readonly DocumentModelStore _store;
   private readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
@@ -83,29 +85,33 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public void HighlightModel(string modelCardId)
   {
-    // POC: don't know if we can rely on storing the ActiveUIDocument, hence getting it each time
-    var activeUIDoc =
-      _revitContext.UIApplication?.ActiveUIDocument
-      ?? throw new SpeckleException("Unable to retrieve active UI document");
-
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
     var elementIds = model.SendFilter.NotNull().GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Any())
+    if (!elementIds.Any())
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;
     }
 
+    HighlightObjectsOnView(elementIds);
+  }
+
+  public void HighlightObjects(List<string> objectIds) =>
+    HighlightObjectsOnView(objectIds.Select(ElementId.Parse).ToList());
+
+  private void HighlightObjectsOnView(List<ElementId> objectIds)
+  {
+    // POC: don't know if we can rely on storing the ActiveUIDocument, hence getting it each time
+    var activeUIDoc =
+      _revitContext.UIApplication?.ActiveUIDocument
+      ?? throw new SpeckleException("Unable to retrieve active UI document");
+
     // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
     RevitTask.RunAsync(() =>
     {
-      activeUIDoc.Selection.SetElementIds(elementIds);
-      activeUIDoc.ShowElements(elementIds);
+      activeUIDoc.Selection.SetElementIds(objectIds);
+      activeUIDoc.ShowElements(objectIds);
     });
   }
-
-  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
-
-  public BasicConnectorBindingCommands Commands { get; }
 }
