@@ -194,16 +194,14 @@ public partial class ConverterRevit
         (ICurve)baseGeometry,
         ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT),
         ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM),
+        ModelUnits,
+        revitWall.Id.ToString(),
         GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET),
         GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET),
         revitWall.Flipped,
-        GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT),
-        revitWall.Id.ToString()
-      )
-      {
-        height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM)
-      };
-
+        GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT)
+      );
     //CreateVoids(revitWall, speckleWall);
 
     if (revitWall.CurtainGrid is not CurtainGrid grid)

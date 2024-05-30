@@ -9,7 +9,7 @@ public class Brace : Base, IDisplayValue<IReadOnlyList<Base>>
 {
   public Brace() { }
 
-  public Brace(ICurve baseLine, string units, IReadOnlyList<Mesh>? displayValue = null)
+  public Brace(ICurve baseLine, string? units, IReadOnlyList<Mesh>? displayValue = null)
   {
     this.baseLine = baseLine;
     this.units = units;
@@ -18,7 +18,7 @@ public class Brace : Base, IDisplayValue<IReadOnlyList<Base>>
 
   public ICurve baseLine { get; set; }
 
-  public string units { get; set; }
+  public string? units { get; set; }
 
   [DetachProperty]
   public IReadOnlyList<Base> displayValue { get; set; }

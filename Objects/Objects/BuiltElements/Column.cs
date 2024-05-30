@@ -10,7 +10,7 @@ public class Column : Base, IDisplayValue<IReadOnlyList<Base>>
 {
   public Column() { }
 
-  public Column(ICurve baseLine, string units, Level? level = null, IReadOnlyList<Mesh>? displayValue = null)
+  public Column(ICurve baseLine, string? units, Level? level = null, IReadOnlyList<Mesh>? displayValue = null)
   {
     this.baseLine = baseLine;
     this.units = units;
@@ -20,9 +20,9 @@ public class Column : Base, IDisplayValue<IReadOnlyList<Base>>
 
   public ICurve baseLine { get; set; }
 
-  public Level? level { get; protected set; }
+  public virtual Level? level { get; protected set; }
 
-  public string units { get; set; }
+  public string? units { get; set; }
 
   [DetachProperty]
   public IReadOnlyList<Base> displayValue { get; set; }

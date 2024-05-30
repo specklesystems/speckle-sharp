@@ -11,7 +11,7 @@ public class Wall : Base, IDisplayValue<IReadOnlyList<Base>>
 
   public Wall(
     double height,
-    string units,
+    string? units,
     ICurve baseLine,
     Level? level = null,
     IReadOnlyList<Mesh>? displayValue = null,
@@ -28,7 +28,7 @@ public class Wall : Base, IDisplayValue<IReadOnlyList<Base>>
 
   public double height { get; set; }
 
-  public string units { get; set; }
+  public string? units { get; set; }
   public ICurve baseLine { get; set; }
   public virtual Level? level { get; internal set; }
 

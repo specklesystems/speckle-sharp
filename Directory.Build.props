@@ -19,7 +19,7 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">false</IsDesktopBuild>
     
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
@@ -31,7 +31,7 @@
     <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
       <!--Disabled by design-->
-      CA5399;CA1862;
+      CA5399;CA1862;CS9057;
       <!--XML comment-->
       CS1591;CS1573;
       <!-- Globalization rules -->

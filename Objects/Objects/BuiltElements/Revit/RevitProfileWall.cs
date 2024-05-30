@@ -16,7 +16,7 @@ public class RevitProfileWall : Wall
     Polycurve profile,
     Level level,
     double height,
-    string units,
+    string? units,
     string? elementId,
     LocationLine locationLine = LocationLine.Interior,
     bool structural = false,

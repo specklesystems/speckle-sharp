@@ -17,7 +17,7 @@ public class Duct : Base, IDisplayValue<IReadOnlyList<Base>>
     double height,
     double diameter,
     double length,
-    string units,
+    string? units,
     double velocity = 0,
     IReadOnlyList<Mesh>? displayValue = null
   )
@@ -42,7 +42,7 @@ public class Duct : Base, IDisplayValue<IReadOnlyList<Base>>
   public double length { get; set; }
   public double velocity { get; set; }
 
-  public string units { get; set; }
+  public string? units { get; set; }
 
   [DetachProperty]
   public IReadOnlyList<Base> displayValue { get; set; }

@@ -17,7 +17,7 @@ public class RevitWall : Wall
     Level level,
     Level? topLevel,
     double height,
-    string units,
+    string? units,
     string? elementId,
     double baseOffset = 0,
     double topOffset = 0,

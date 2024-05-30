@@ -17,7 +17,7 @@ public class RevitColumn : Column
     ICurve baseLine,
     Level level,
     Level? topLevel,
-    string units,
+    string? units,
     string? elementId,
     double baseOffset = 0,
     double topOffset = 0,
