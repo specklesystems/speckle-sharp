@@ -17,6 +17,7 @@ using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Objects.BuiltElements.Civil;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
+using CivilDataField = Objects.Other.Civil.CivilDataField;
 using Polycurve = Objects.Geometry.Polycurve;
 using Featureline = Objects.BuiltElements.Featureline;
 using Line = Objects.Geometry.Line;
@@ -1015,20 +1016,30 @@ public partial class ConverterAutocadCivil
     };
 
     // assign additional structure props
+    try { speckleStructure["grate"] = structure.Grate; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["station"] = structure.Station; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["network"] = structure.NetworkName; } catch (Exception ex) when (!ex.IsFatal()) { }
     AddNameAndDescriptionProperty(structure.Name, structure.Description, speckleStructure);
-
-    try
-    {
-      speckleStructure["grate"] = structure.Grate;
-      speckleStructure["station"] = structure.Station;
-      speckleStructure["network"] = structure.NetworkName;
-    }
-    catch (Exception e) when (!e.IsFatal())
-    {
-      // Couldn't set non-essential structure properties
-    }
+    speckleStructure["partData"] = PartDataRecordToSpeckle(structure.PartData);
 
     return speckleStructure;
+  }
+
+  // part data
+  /// <summary>
+  /// Converts PartData into a list of DataField
+  /// </summary>
+  private List<CivilDataField> PartDataRecordToSpeckle(PartDataRecord partData)
+  {
+    List<CivilDataField> fields = new();
+
+    foreach (PartDataField partField in partData.GetAllDataFields())
+    {
+      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Units.ToString(), partField.Context.ToString(), partField.Value);
+      fields.Add(field);
+    }
+
+    return fields;
   }
 
   // pipes
@@ -1059,6 +1070,7 @@ public partial class ConverterAutocadCivil
 
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
+    specklePipe["partData"] = PartDataRecordToSpeckle(pipe.PartData);
 
     try { specklePipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["slope"] = pipe.Slope; } catch(Exception ex) when(!ex.IsFatal()) { }
