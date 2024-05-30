@@ -19,8 +19,6 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
   private readonly DocumentModelStore _store;
   private readonly AutocadSettings _settings;
 
-  public void HighlightObjects(List<string> objectIds) => throw new NotImplementedException();
-
   public BasicConnectorBindingCommands Commands { get; }
 
   public AutocadBasicConnectorBinding(DocumentModelStore store, AutocadSettings settings, IBridge parent)
@@ -64,6 +62,16 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
+  public void HighlightObjects(List<string> objectIds)
+  {
+    // POC: Will be addressed to move it into AutocadContext!
+    var doc = Application.DocumentManager.MdiActiveDocument;
+
+    var dbObjects = doc.GetObjects(objectIds);
+    var acadObjectIds = dbObjects.Select(tuple => tuple.Root.Id).ToArray();
+    HighlightObjectsOnView(acadObjectIds);
+  }
+
   public void HighlightModel(string modelCardId)
   {
     // POC: Will be addressed to move it into AutocadContext!
@@ -99,6 +107,13 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
       Commands.SetModelError(modelCardId, new OperationCanceledException("No objects found to highlight."));
       return;
     }
+
+    HighlightObjectsOnView(objectIds);
+  }
+
+  private void HighlightObjectsOnView(ObjectId[] objectIds)
+  {
+    var doc = Application.DocumentManager.MdiActiveDocument;
 
     Parent.RunOnMainThread(() =>
     {
