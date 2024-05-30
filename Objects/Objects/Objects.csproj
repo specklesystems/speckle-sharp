@@ -21,7 +21,7 @@
       CA1708; CA1711; CA1716; CA1724; CA1725;
       CA1819;
       CA2201; CA2225;
-      CS0659; CS0661; CS0728;
+      CS0659; CS0661; CS0728; CS8618;
       IDE0041; IDE0060; IDE1006;
     </WarningsNotAsErrors>
   </PropertyGroup>
