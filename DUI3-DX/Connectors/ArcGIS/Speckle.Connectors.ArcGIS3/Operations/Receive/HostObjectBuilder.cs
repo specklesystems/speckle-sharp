@@ -63,7 +63,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     {
       return LayerFactory.Instance
         .CreateLayer(
-          new Uri($"{_contextStack.Current.Document.SpeckleDatabasePath}/{databaseObj.Item2}"),
+          new Uri(
+            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
+          ),
           _contextStack.Current.Document.Map,
           layerName: databaseObj.Item1
         )
@@ -73,7 +75,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     {
       return StandaloneTableFactory.Instance
         .CreateStandaloneTable(
-          new Uri($"{_contextStack.Current.Document.SpeckleDatabasePath}/{databaseObj.Item2}"),
+          new Uri(
+            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
+          ),
           _contextStack.Current.Document.Map,
           tableName: databaseObj.Item1
         )
