@@ -1,4 +1,3 @@
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -8,9 +7,9 @@ namespace Speckle.Converters.ArcGIS3.Geometry;
 
 public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
-  public PointToHostConverter(IConversionContextStack<Map, ACG.Unit> contextStack)
+  public PointToHostConverter(IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack)
   {
     _contextStack = contextStack;
   }

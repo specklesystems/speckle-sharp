@@ -1,4 +1,3 @@
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
@@ -7,11 +6,11 @@ namespace Speckle.Converters.ArcGIS3.Features;
 public class PolyineFeatureToSpeckleConverter : ITypedConverter<ACG.Polyline, IReadOnlyList<SOG.Polyline>>
 {
   private readonly ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public PolyineFeatureToSpeckleConverter(
     ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter,
-    IConversionContextStack<Map, ACG.Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _segmentConverter = segmentConverter;
@@ -27,8 +26,8 @@ public class PolyineFeatureToSpeckleConverter : ITypedConverter<ACG.Polyline, IR
     // segmentize the polylines with curves using precision value of the Map's Spatial Reference
     if (target.HasCurves is true)
     {
-      double tolerance = _contextStack.Current.Document.SpatialReference.XYTolerance;
-      double conversionFactorToMeter = _contextStack.Current.Document.SpatialReference.Unit.ConversionFactor;
+      double tolerance = _contextStack.Current.Document.Map.SpatialReference.XYTolerance;
+      double conversionFactorToMeter = _contextStack.Current.Document.Map.SpatialReference.Unit.ConversionFactor;
       var densifiedPolyline = ACG.GeometryEngine.Instance.DensifyByDeviation(
         target,
         tolerance * conversionFactorToMeter

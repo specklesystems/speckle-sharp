@@ -3,19 +3,17 @@ using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data.Raster;
 using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
-using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GisRasterToSpeckleConverter : ITypedConverter<Raster, RasterElement>
 {
-  private readonly ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly ITypedConverter<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public GisRasterToSpeckleConverter(
     ITypedConverter<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter,
-    IConversionContextStack<Map, Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _geometryConverter = geometryConverter;

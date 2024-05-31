@@ -1,6 +1,5 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
 using Speckle.Core.Models;
 using Speckle.Converters.ArcGIS3.Geometry;
 
@@ -8,11 +7,11 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class MultipatchFeatureToSpeckleConverter : ITypedConverter<ACG.Multipatch, IReadOnlyList<Base>>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
   private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public MultipatchFeatureToSpeckleConverter(
-    IConversionContextStack<Map, ACG.Unit> contextStack,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack,
     ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {

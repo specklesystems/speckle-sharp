@@ -2,7 +2,6 @@ using System.Diagnostics;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -17,14 +16,14 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
   private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public NonNativeFeaturesUtils(
     ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IArcGISFieldUtils fieldsUtils,
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils,
-    IConversionContextStack<Map, ACG.Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _gisGeometryConverter = gisGeometryConverter;
@@ -102,7 +101,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     SchemaBuilder schemaBuilder = new(geodatabase);
 
     // get Spatial Reference from the document
-    ACG.SpatialReference spatialRef = _contextStack.Current.Document.SpatialReference;
+    ACG.SpatialReference spatialRef = _contextStack.Current.Document.Map.SpatialReference;
 
     // TODO: create Fields
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);

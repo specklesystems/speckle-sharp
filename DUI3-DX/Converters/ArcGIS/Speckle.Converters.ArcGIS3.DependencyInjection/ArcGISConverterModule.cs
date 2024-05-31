@@ -1,5 +1,4 @@
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
@@ -23,6 +22,6 @@ public class ArcGISConverterModule : ISpeckleModule
     builder.AddScoped<IHostToSpeckleUnitConverter<Unit>, ArcGISToSpeckleUnitConverter>();
 
     // single stack per conversion
-    builder.AddScoped<IConversionContextStack<Map, Unit>, ArcGISConversionContextStack>();
+    builder.AddScoped<IConversionContextStack<ArcGISDocument, Unit>, ArcGISConversionContextStack>();
   }
 }
