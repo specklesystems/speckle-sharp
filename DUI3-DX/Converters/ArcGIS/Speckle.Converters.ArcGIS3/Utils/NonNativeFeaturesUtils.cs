@@ -3,8 +3,6 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using Speckle.Converters.Common;
-using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 using Speckle.Core.Logging;
 
@@ -12,24 +10,15 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 {
-  private readonly ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
-  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IFeatureClassUtils _featureClassUtils;
-  private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public NonNativeFeaturesUtils(
-    ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
-    IArcGISFieldUtils fieldsUtils,
     IFeatureClassUtils featureClassUtils,
-    IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
-    _gisGeometryConverter = gisGeometryConverter;
-    _fieldsUtils = fieldsUtils;
     _featureClassUtils = featureClassUtils;
-    _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
   }
 
@@ -95,8 +84,8 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 
   private string CreateDatasetInDatabase(string speckle_type, List<ACG.Geometry> geomList, string? parentId)
   {
-    string databasePath = _arcGISProjectUtils.GetDatabasePath();
-    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
+    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
+      new(_contextStack.Current.Document.SpeckleDatabasePath);
     Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
     SchemaBuilder schemaBuilder = new(geodatabase);
 

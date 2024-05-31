@@ -16,7 +16,6 @@ namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 public class ArcGISHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
-  private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly INonNativeFeaturesUtils _nonGisFeaturesUtils;
 
   // POC: figure out the correct scope to only initialize on Receive
@@ -25,14 +24,12 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   public ArcGISHostObjectBuilder(
     IRootToHostConverter converter,
-    IArcGISProjectUtils arcGISProjectUtils,
     IConversionContextStack<ArcGISDocument, Unit> contextStack,
     INonNativeFeaturesUtils nonGisFeaturesUtils,
     GraphTraversal traverseFunction
   )
   {
     _converter = converter;
-    _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
     _nonGisFeaturesUtils = nonGisFeaturesUtils;
     _traverseFunction = traverseFunction;
@@ -60,13 +57,13 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return (objPath, converted);
   }
 
-  public string AddDatasetsToMap((string, string) databaseObj, string databasePath)
+  public string AddDatasetsToMap((string, string) databaseObj)
   {
     try
     {
       return LayerFactory.Instance
         .CreateLayer(
-          new Uri($"{databasePath}\\{databaseObj.Item2}"),
+          new Uri($"{_contextStack.Current.Document.SpeckleDatabasePath}/{databaseObj.Item2}"),
           _contextStack.Current.Document.Map,
           layerName: databaseObj.Item1
         )
@@ -76,7 +73,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     {
       return StandaloneTableFactory.Instance
         .CreateStandaloneTable(
-          new Uri($"{databasePath}\\{databaseObj.Item2}"),
+          new Uri($"{_contextStack.Current.Document.SpeckleDatabasePath}/{databaseObj.Item2}"),
           _contextStack.Current.Document.Map,
           tableName: databaseObj.Item1
         )
@@ -115,11 +112,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
   {
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
-
-    // create and add Geodatabase to a project
-
-    string databasePath = _arcGISProjectUtils.GetDatabasePath();
-    _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     var objectsToConvert = _traverseFunction
@@ -194,7 +186,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         try
         {
-          bakedLayersURIs.Add(AddDatasetsToMap(databaseObj, databasePath));
+          bakedLayersURIs.Add(AddDatasetsToMap(databaseObj));
         }
         catch (Exception e) when (!e.IsFatal())
         {
