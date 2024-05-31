@@ -28,6 +28,7 @@ public static class Utilities
   /// </summary>
   /// <remarks>If running in Rhino >7, Rhino7 will be used as fallback.</remarks>
   /// <returns><see cref="VersionedHostApplications.Grasshopper7"/> when Rhino 7 is running, <see cref="VersionedHostApplications.Grasshopper8"/> when Rhino 8 is running, <see cref="VersionedHostApplications.Grasshopper6"/> otherwise.</returns>
+  [Obsolete("Use Loader.GetGrasshopperHostAppVersion instead")]
   public static string GetVersionedAppName() => Loader.GetGrasshopperHostAppVersion();
 
   public static ISpeckleConverter GetDefaultConverter()
