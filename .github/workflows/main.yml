@@ -2,62 +2,29 @@ name: .NET Build and Publish
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev", "dui3/alpha"] # Continuous delivery on every long-lived branch
+    tags: ["3.*"] # Manual delivery on every 3.x tag
+  pull_request:
+    branches: ["main", "dev"] # Releases on every PR that targets main or dev
 
 jobs:
-  build-and-publish:
-    runs-on: windows-latest
+  build:
+    uses: ./.github/workflows/ci.yml
 
+  deploy-installers:
+    runs-on: ubuntu-latest
+    needs: build
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: 🔫 Trigger Build Installers
+        uses: ALEEF02/workflow-dispatch@v3.0.0
         with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 7.x.x
-
-      - name: NuGet Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
-
-      - name : Install GitVersion
-        uses: gittools/actions/gitversion/setup@v1.1.1
-        with:
-          versionSpec: '5.x'
-
-      - name: Determine Version
-        id: version
-        uses: gittools/actions/gitversion/execute@v1.1.1
-
-      - name: Format
-        run: ./build.ps1 format
-
-      - name: Restore
-        run: ./build.ps1 restore
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build
-        env:
-          VERSION: ${{ env.fullSemVer }}
-          FILE_VERSION: ${{ env.assemblySemFileVer }}
-        run: ./build.ps1 build
-
-      - name: Pack
-        run: ./build.ps1 zip
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: output-${{ env.fullSemVer }}.zip
-          path: output/*.*
-          compression-level: 0 # no compression
-  
-      - name: Trigger Build Installers
-        run: ./build.ps1 build-installers ${{ secrets.CONNECTORS_GH_TOKEN }} ${{ github.run_id }} ${{ env.fullSemVer }}
+          workflow: Build Installers
+          repo: specklesystems/connector-installers
+          token: ${{ secrets.CONNECTORS_GH_TOKEN }}
+          inputs: '{ "run_id": "${{ github.run_id }}", "version": "${{ needs.build.outputs.version }}" }'
+          ref: main
+          wait-for-completion: true
+          wait-for-completion-interval: 10s
+          wait-for-completion-timeout: 10m
+          display-workflow-run-url: true
+          display-workflow-run-url-interval: 10s

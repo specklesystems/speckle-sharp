@@ -6,7 +6,6 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
@@ -43,14 +42,15 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
-      // Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
-
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No download model card was found.");
       }
+
+      // Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Receive host objects
       IEnumerable<string> receivedObjectIds = await unitOfWork.Service
@@ -67,9 +67,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
       Commands.SetModelReceiveResult(modelCardId, receivedObjectIds.ToList());
     }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    // Catch here specific exceptions if they related to model card.
+    catch (OperationCanceledException)
     {
-      Commands.SetModelError(modelCardId, e);
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
+      return;
     }
   }
 

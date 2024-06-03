@@ -1,36 +1,43 @@
 name: .NET Build
 
 on:
-  pull_request:
-    branches: ["main"]
+  pull_request: # Run build on every pull request that is not to main/dev
+    branches-ignore:
+      - main
+      - dev
+  workflow_call:
+    outputs:
+      version:
+        value: ${{ jobs.build.outputs.version }}
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: windows-latest
-
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 7.x.x
+      - name: ⚒️ Run GitVersion
+        run: ./build.ps1 build-server-version
 
-      - name: NuGet Cache
-        uses: actions/cache@v4
+      - name: ⚒️ Run build
+        run: ./build.ps1
+
+      - name: ⬆️ Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}      
+          name: output-${{ env.GitVersion_FullSemVer }}
+          path: output/*.*
+          compression-level: 0 # no compression
 
-      - name: Format
-        run: ./build.ps1 format
-
-      - name: Restore
-        run: ./build.ps1 restore
-
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build
-        run: ./build.ps1 build
+      - id: set-version
+        name: Set version to output
+        run: echo "version=${{ env.GitVersion_FullSemVer }}" >> "$Env:GITHUB_OUTPUT"

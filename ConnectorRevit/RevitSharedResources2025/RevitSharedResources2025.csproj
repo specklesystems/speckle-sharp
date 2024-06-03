@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <DefineConstants>$(DefineConstants);REVIT2025</DefineConstants>
+    <RootNamespace>RevitSharedResources</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.Revit.API" Version="2025.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\RevitSharedResources\RevitSharedResources.projitems" Label="Shared" />
+
+</Project>

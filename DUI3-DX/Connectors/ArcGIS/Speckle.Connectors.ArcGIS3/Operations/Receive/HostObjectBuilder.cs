@@ -59,30 +59,35 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return (objPath, converted);
   }
 
-  public void AddDatasetsToMap((string, string) databaseObj, string databasePath)
+  public string AddDatasetsToMap((string, string) databaseObj, string databasePath)
   {
     try
     {
-      LayerFactory.Instance.CreateLayer(
-        new Uri($"{databasePath}\\{databaseObj.Item2}"),
-        _contextStack.Current.Document,
-        layerName: databaseObj.Item1
-      );
+      return LayerFactory.Instance
+        .CreateLayer(
+          new Uri($"{databasePath}\\{databaseObj.Item2}"),
+          _contextStack.Current.Document,
+          layerName: databaseObj.Item1
+        )
+        .URI;
     }
     catch (ArgumentException)
     {
-      StandaloneTableFactory.Instance.CreateStandaloneTable(
-        new Uri($"{databasePath}\\{databaseObj.Item2}"),
-        _contextStack.Current.Document,
-        tableName: databaseObj.Item1
-      );
+      return StandaloneTableFactory.Instance
+        .CreateStandaloneTable(
+          new Uri($"{databasePath}\\{databaseObj.Item2}"),
+          _contextStack.Current.Document,
+          tableName: databaseObj.Item1
+        )
+        .URI;
     }
   }
 
   private string[] GetLayerPath(TraversalContext context)
   {
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    string[] reverseOrderPath =
+      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
     return reverseOrderPath.Reverse().ToArray();
   }
 
@@ -176,24 +181,29 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
 
     int bakeCount = 0;
+    List<string> bakedLayersURIs = new();
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
     // 3. add layer and tables to the Table Of Content
     foreach ((string, string) databaseObj in convertedGISObjects)
     {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cancellationToken);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
       // BAKE OBJECTS HERE
       // POC: QueuedTask
       var task = QueuedTask.Run(() =>
       {
-        AddDatasetsToMap(databaseObj, databasePath);
+        try
+        {
+          bakedLayersURIs.Add(AddDatasetsToMap(databaseObj, databasePath));
+        }
+        catch (Exception e) when (!e.IsFatal())
+        {
+          // log error ("Layer X couldn't be added to Map"), but not cancel all operations
+        }
         onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
       });
       task.Wait(cancellationToken);
     }
 
-    return objectIds;
+    return bakedLayersURIs;
   }
 }

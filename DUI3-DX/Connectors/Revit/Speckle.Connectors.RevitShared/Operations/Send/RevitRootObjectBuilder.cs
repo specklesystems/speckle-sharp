@@ -1,6 +1,7 @@
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
+using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
@@ -56,7 +57,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
     if (revitElements.Count == 0)
     {
-      throw new InvalidOperationException("No objects were found. Please update your send filter!");
+      throw new SpeckleSendFilterException("No objects were found. Please update your send filter!");
     }
 
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
@@ -121,9 +122,9 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     {
       flatPathName += pathItem;
       Collection childCollection;
-      if (_collectionCache.ContainsKey(flatPathName))
+      if (_collectionCache.TryGetValue(flatPathName, out Collection? collection))
       {
-        childCollection = _collectionCache[flatPathName];
+        childCollection = collection;
       }
       else
       {

@@ -21,16 +21,16 @@
       CA1708; CA1711; CA1716; CA1724; CA1725;
       CA1819; CS8618;
       CA2201; CA2225;
-      CS0659; CS0661; CS0728;
+      CS0659; CS0661; CS0728; CS8618;
       IDE0041; IDE0060; IDE1006;
     </NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <InternalsVisibleTo Include="Objects.Tests.Unit" />
+    <InternalsVisibleTo Include="Objects.Tests.Unit"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" Private="false" ExactVersion="false" />
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" Private="false" ExactVersion="false"/>
   </ItemGroup>
 </Project>

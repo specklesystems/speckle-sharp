@@ -1,5 +1,7 @@
 using System.Reflection;
 using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -49,5 +51,113 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
-  public void HighlightModel(string modelCardId) => throw new System.NotImplementedException();
+  public async void HighlightModel(string modelCardId)
+  {
+    MapView mapView = MapView.Active;
+
+    var model = _store.GetModelById(modelCardId);
+
+    if (model is null)
+    {
+      return;
+    }
+
+    var objectIds = new List<string>();
+
+    if (model is SenderModelCard senderModelCard)
+    {
+      objectIds = senderModelCard.SendFilter.NotNull().GetObjectIds();
+    }
+
+    if (model is ReceiverModelCard receiverModelCard)
+    {
+      objectIds = receiverModelCard.ReceiveResult?.BakedObjectIds.NotNull();
+    }
+
+    if (objectIds is null)
+    {
+      return;
+    }
+
+    await QueuedTask
+      .Run(() =>
+      {
+        List<MapMember> mapMembers = GetMapMembers(objectIds, mapView);
+        ClearSelectionInTOC();
+        ClearSelection();
+        SelectMapMembersInTOC(mapMembers);
+        SelectMapMembers(mapMembers);
+        mapView.ZoomToSelected();
+      })
+      .ConfigureAwait(false);
+  }
+
+  private List<MapMember> GetMapMembers(List<string> objectIds, MapView mapView)
+  {
+    List<MapMember> mapMembers = new();
+
+    foreach (string objectId in objectIds)
+    {
+      MapMember mapMember = mapView.Map.FindLayer(objectId);
+      if (mapMember is null)
+      {
+        mapMember = mapView.Map.FindStandaloneTable(objectId);
+      }
+      if (mapMember is null)
+      {
+        continue;
+      }
+      mapMembers.Add(mapMember);
+    }
+
+    return mapMembers;
+  }
+
+  private void ClearSelection()
+  {
+    List<Layer> mapMembers = MapView.Active.Map.GetLayersAsFlattenedList().ToList();
+    foreach (var member in mapMembers)
+    {
+      if (member is FeatureLayer featureLayer)
+      {
+        featureLayer.ClearSelection();
+      }
+    }
+  }
+
+  private void ClearSelectionInTOC()
+  {
+    MapView.Active.ClearTOCSelection();
+  }
+
+  private void SelectMapMembers(List<MapMember> mapMembers)
+  {
+    foreach (var member in mapMembers)
+    {
+      if (member is FeatureLayer layer)
+      {
+        layer.Select();
+      }
+    }
+  }
+
+  private void SelectMapMembersInTOC(List<MapMember> mapMembers)
+  {
+    List<Layer> layers = new();
+    List<StandaloneTable> tables = new();
+
+    foreach (MapMember member in mapMembers)
+    {
+      if (member is Layer layer)
+      {
+        layers.Add(layer);
+      }
+      else if (member is StandaloneTable table)
+      {
+        tables.Add(table);
+      }
+    }
+    MapView.Active.SelectLayers(layers);
+    // MapView.Active.SelectStandaloneTables(tables); // clears previous selection, not clear how to ADD selection instead
+  }
 }

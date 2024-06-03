@@ -3,19 +3,19 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Settings;
-using Speckle.Connectors.Utils;
 using ArcGIS.Desktop.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.Filters;
 using ArcGIS.Desktop.Editing.Events;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Core.Data;
+using Speckle.Connectors.DUI.Exceptions;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 
@@ -104,8 +104,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = layer.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedLayers.Add(layer);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedLayers.Add(layer);
+    }
   }
 
   private void SubscribeToTableDataSourceChange(StandaloneTable table)
@@ -115,8 +118,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       return;
     }
     Table layerTable = table.GetTable();
-    SubscribeToAnyDataSourceChange(layerTable);
-    SubscribedTables.Add(table);
+    if (layerTable != null)
+    {
+      SubscribeToAnyDataSourceChange(layerTable);
+      SubscribedTables.Add(table);
+    }
   }
 
   private void SubscribeToAnyDataSourceChange(Table layerTable)
@@ -255,17 +261,17 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
-    using IUnitOfWork<SendOperation<MapMember>> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
+    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<MapMember>>();
     try
     {
-      // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
-
-      // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
+        // Handle as GLOBAL ERROR at BrowserBridge
         throw new InvalidOperationException("No publish model card was found.");
       }
+
+      // Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),
@@ -285,6 +291,14 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
             .Select(id => (MapMember)MapView.Active.Map.FindLayer(id) ?? MapView.Active.Map.FindStandaloneTable(id))
             .Where(obj => obj != null)
             .ToList();
+
+          if (mapMembers.Count == 0)
+          {
+            // Handle as CARD ERROR in this function
+            throw new SpeckleSendFilterException(
+              "No objects were found to convert. Please update your publish filter!"
+            );
+          }
 
           var result = await unitOfWork.Service
             .Execute(
@@ -310,13 +324,15 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
       Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
-    catch (OperationCanceledException)
-    {
-      return;
-    }
-    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    // Catch here specific exceptions if they related to model card.
+    catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
+    }
+    catch (OperationCanceledException)
+    {
+      // SWALLOW -> UI handles it immediately, so we do not need to handle anything
+      return;
     }
   }
 

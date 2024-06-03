@@ -12,7 +12,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyTitle>ConnectorCivil2024</AssemblyTitle>
     <Product>ConnectorCivil2024</Product>
-    <DefineConstants>$(DefineConstants);CIVIL2024</DefineConstants>
+    <DefineConstants>$(DefineConstants);CIVIL2024;CIVIL;CIVIL2021_OR_GREATER;CIVIL2022_OR_GREATER;CIVIL2023_OR_GREATER;CIVIL2024_OR_GREATER</DefineConstants>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />

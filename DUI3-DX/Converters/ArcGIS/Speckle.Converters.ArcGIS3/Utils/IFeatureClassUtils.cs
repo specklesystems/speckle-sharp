@@ -21,5 +21,4 @@ public interface IFeatureClassUtils
   );
   void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);
-  public ACG.GeometryType GetGeometryTypeFromString(string target);
 }
