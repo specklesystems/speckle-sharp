@@ -7,6 +7,7 @@
     <PackageId>Speckle.Core</PackageId>
     <Product>SpeckleCore</Product>
     <RuntimeIdentifiers>win-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <UseRidGraph>true</UseRidGraph> <!-- https://learn.microsoft.com/en-us/dotnet/core/compatibility/deployment/8.0/rid-asset-list -->
     <AssemblyName>SpeckleCore2</AssemblyName>
     <Description>Core is the .NET SDK for Speckle</Description>
     <PackageTags>$(PackageTags) core</PackageTags>
@@ -42,23 +43,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="6.0.0"/>
+    <PackageReference Include="GraphQL.Client" Version="6.1.0"/>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
-    <PackageReference Include="Polly" Version="7.2.3"/>
+    <PackageReference Include="Polly" Version="8.4.0"/>
     <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1"/>
     <PackageReference Include="Polly.Extensions.Http" Version="3.0.0"/>
-    <PackageReference Include="Sentry" Version="3.33.0"/>
-    <PackageReference Include="Sentry.Serilog" Version="3.33.0"/>
-    <PackageReference Include="Serilog" Version="2.12.0"/>
-    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.3.0"/>
+    <PackageReference Include="Sentry" Version="4.7.0"/>
+    <PackageReference Include="Sentry.Serilog" Version="4.7.0"/>
+    <PackageReference Include="Serilog" Version="4.0.0"/>
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.0.3"/>
     <PackageReference Include="Serilog.Enrichers.GlobalLogContext" Version="3.0.0"/>
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0"/>
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
-    <PackageReference Include="SerilogTimings" Version="3.0.1"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1"/>
+    <PackageReference Include="Serilog.Sinks.Seq" Version="7.0.1"/>
+    <PackageReference Include="SerilogTimings" Version="3.1.0"/>
     <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2"/>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6"/> 
     <PackageReference Include="System.DoubleNumerics" Version="3.1.3"/>
+
   </ItemGroup>
 
   <!--  Ensure-->

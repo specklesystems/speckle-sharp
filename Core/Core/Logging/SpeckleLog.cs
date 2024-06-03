@@ -141,7 +141,7 @@ public static class SpeckleLog
     // Configure scope after logger created.
     SentrySdk.ConfigureScope(scope =>
     {
-      scope.User = new User { Id = id };
+      scope.User = new SentryUser { Id = id };
     });
 
     SentrySdk.ConfigureScope(scope =>
@@ -195,7 +195,7 @@ public static class SpeckleLog
     if (logConfiguration.EnhancedLogContext)
     {
       serilogLogConfiguration = serilogLogConfiguration.Enrich
-        .WithClientAgent()
+        .WithRequestHeader("User-Agent")
         .Enrich.WithClientIp()
         .Enrich.WithExceptionDetails();
     }
