@@ -10,7 +10,6 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Microsoft.CSharp.RuntimeBinder;
-using Rhino;
 using Rhino.Display;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
