@@ -106,14 +106,8 @@ public static class AutomationRunner
       {
         FunctionRunData<TInput> data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        await RunFunction(
-            automateFunction,
-            data.AutomationRunData,
-            data.SpeckleToken,
-            data.FunctionInputs
-          )
+        await RunFunction(automateFunction, data.AutomationRunData, data.SpeckleToken, data.FunctionInputs)
           .ConfigureAwait(false);
-        
       },
       pathArg
     );
@@ -137,7 +131,7 @@ public static class AutomationRunner
     rootCommand.Add(generateSchemaCommand);
 
     await rootCommand.InvokeAsync(args).ConfigureAwait(false);
-    
+
     // if we've gotten this far, the execution should technically be completed as expected
     // thus exiting with 0 is the semantically correct thing to do
     return 0;
