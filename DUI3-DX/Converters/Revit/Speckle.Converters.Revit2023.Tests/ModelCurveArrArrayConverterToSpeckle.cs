@@ -8,7 +8,9 @@ internal sealed class ModelCurveArrArrayConverterToSpeckle : ITypedConverter<IRe
 {
   private readonly ITypedConverter<IRevitModelCurveArray, Objects.Geometry.Polycurve> _modelCurveArrayConverter;
 
-  public ModelCurveArrArrayConverterToSpeckle(ITypedConverter<IRevitModelCurveArray, Objects.Geometry.Polycurve> modelCurveArrayConverter)
+  public ModelCurveArrArrayConverterToSpeckle(
+    ITypedConverter<IRevitModelCurveArray, Objects.Geometry.Polycurve> modelCurveArrayConverter
+  )
   {
     _modelCurveArrayConverter = modelCurveArrayConverter;
   }
@@ -26,4 +28,3 @@ internal sealed class ModelCurveArrArrayConverterToSpeckle : ITypedConverter<IRe
     return polycurves;
   }
 }
-

@@ -6,4 +6,3 @@ namespace Speckle.Revit2023.Interfaces;
 public interface IRevitModelCurveArray : IReadOnlyList<IRevitModelCurve> { }
 
 public interface IRevitModelCurveArrArray : IReadOnlyList<IRevitModelCurveArray> { }
-

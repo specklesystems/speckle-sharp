@@ -2,7 +2,10 @@
 
 public static class Extensions
 {
-  public static IList<IRevitElementId> GetHostedElementIds(this IRevitElement host, IRevitFilterFactory revitFilterFactory)
+  public static IList<IRevitElementId> GetHostedElementIds(
+    this IRevitElement host,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     IList<IRevitElementId> ids;
     if (host is IRevitHostObject hostObject)

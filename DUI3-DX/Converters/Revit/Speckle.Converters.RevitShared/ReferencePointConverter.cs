@@ -21,7 +21,11 @@ public class ReferencePointConverter : IReferencePointConverter
 
   private readonly Dictionary<string, DB.Transform> _docTransforms = new();
 
-  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings, IRevitFilterFactory revitFilterFactory)
+  public ReferencePointConverter(
+    IRevitConversionContextStack contextStack,
+    RevitConversionSettings revitSettings,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;
@@ -65,7 +69,8 @@ public class ReferencePointConverter : IReferencePointConverter
     var referencePointTransform = DB.Transform.Identity;
 
     // POC: bogus disposal below
-    var points = _revitFilterFactory.CreateFilteredElementCollector(_contextStack.Current.Document)
+    var points = _revitFilterFactory
+      .CreateFilteredElementCollector(_contextStack.Current.Document)
       .OfClass<DB.BasePoint>()
       .ToList();
 

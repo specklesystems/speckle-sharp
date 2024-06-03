@@ -22,19 +22,20 @@ public partial interface IRevitDocumentProxy : IRevitDocument { }
 )]
 public partial interface IRevitForgeTypeIdProxy : IRevitForgeTypeId { }
 
-
 [Proxy(
   typeof(Element),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
   new[] { "Parameter", "BoundingBox", "Geometry" }
 )]
 public partial interface IRevitElementProxy : IRevitElement { }
+
 [Proxy(
   typeof(Category),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
   new[] { "AllowsVisibilityControl", "Visible" }
 )]
-public partial interface IRevitCategoryProxy : IRevitCategory{ }
+public partial interface IRevitCategoryProxy : IRevitCategory { }
+
 [Proxy(
   typeof(ElementId),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
@@ -42,23 +43,11 @@ public partial interface IRevitCategoryProxy : IRevitCategory{ }
 )]
 public partial interface IRevitElementIdProxy : IRevitElementId { }
 
-[Proxy(
-  typeof(CurtainGrid),
-  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
-)]
+[Proxy(typeof(CurtainGrid), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
 public partial interface IRevitCurtainGridProxy : IRevitCurtainGrid { }
 
-[Proxy(
-  typeof(Wall),
-  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
-)]
-public partial interface IRevitWallProxy : IRevitWall
-{
-}
-[Proxy(
-  typeof(HostObject),
-  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
-)]
-public partial interface IRevitHostObjectProxy : IRevitHostObject
-{
-}
+[Proxy(typeof(Wall), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitWallProxy : IRevitWall { }
+
+[Proxy(typeof(HostObject), ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface)]
+public partial interface IRevitHostObjectProxy : IRevitHostObject { }

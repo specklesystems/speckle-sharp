@@ -20,11 +20,8 @@ public interface IRevitXYZ
   double DistanceTo(IRevitXYZ source);
 }
 
-
 [SuppressMessage("Design", "CA1040:Avoid empty interfaces")]
-public interface IRevitLocation
-{
-}
+public interface IRevitLocation { }
 
 public interface IRevitLocationPoint : IRevitLocation
 {

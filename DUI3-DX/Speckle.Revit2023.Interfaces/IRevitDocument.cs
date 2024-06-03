@@ -16,7 +16,7 @@ public interface IRevitForgeTypeId { }
 public interface IRevitElement
 {
   IList<IRevitElementId> GetDependentElements(IRevitElementFilter filter);
-  
+
   IRevitElementId Id { get; }
   IRevitElementId LevelId { get; }
   IRevitCategory Category { get; }
@@ -29,17 +29,22 @@ public interface IRevitCategory
 
 public interface IRevitHostObject : IRevitElement
 {
-  IList<IRevitElementId> FindInserts(bool addRectOpenings, bool includeShadows, bool includeEmbeddedWalls,
-    bool includeSharedEmbeddedInserts);
+  IList<IRevitElementId> FindInserts(
+    bool addRectOpenings,
+    bool includeShadows,
+    bool includeEmbeddedWalls,
+    bool includeSharedEmbeddedInserts
+  );
 }
-public interface IRevitElementId
-{
-}
+
+public interface IRevitElementId { }
+
 public interface IRevitCurtainGrid
 {
   ICollection<IRevitElementId> GetMullionIds();
   ICollection<IRevitElementId> GetPanelIds();
 }
+
 public interface IRevitWall : IRevitHostObject
 {
   IRevitCurtainGrid CurtainGrid { get; }
