@@ -30,6 +30,7 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using Vector = Objects.Geometry.Vector;
 using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
@@ -1128,13 +1129,143 @@ public partial class ConverterAutocadCivil
 
   // corridors
   // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
+
+  private Base AppliedSubassemblyParamToSpeckle(IAppliedSubassemblyParam param)
+  {
+    Base baseParam = new() { 
+      ["name"] = param.DisplayName,
+      ["key"] = param.KeyName, 
+      ["type"] = param.ValueType.Name, 
+      ["value"] = param.ValueAsObject,
+      ["designValue"] = param.DesignValueAsObject};
+
+    return baseParam;
+  }
+
+  private CivilAppliedSubassembly AppliedSubassemblyToSpeckle(AppliedSubassembly appliedSubassembly)
+  {
+    // get the calculated shapes
+    List<CivilCalculatedShape> speckleShapes = new();
+    foreach (CalculatedShape shape in appliedSubassembly.Shapes)
+    {
+      CivilCalculatedShape speckleShape = CalculatedShapeToSpeckle(shape);
+      speckleShapes.Add(speckleShape);
+    }
+
+    List<Base> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
+
+    CivilAppliedSubassembly speckleAppliedSubassembly = new(speckleShapes, speckleParameters);
+    return speckleAppliedSubassembly;
+  }
+
+  private CivilAppliedAssembly AppliedAssemblyToSpeckle(AppliedAssembly appliedAssembly)
+  {
+    // get the applied subassemblies
+    List<CivilAppliedSubassembly> speckleSubassemblies = new();
+    foreach (AppliedSubassembly appliedSubassembly in appliedAssembly.GetAppliedSubassemblies())
+    {
+      CivilAppliedSubassembly speckleSubassembly = AppliedSubassemblyToSpeckle(appliedSubassembly);
+      speckleSubassemblies.Add(speckleSubassembly);
+    }
+
+    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, appliedAssembly.AdjustedElevation, ModelUnits);
+    return speckleAppliedAssembly;
+  }
+
+  private CivilBaselineRegion BaselineRegionToSpeckle(BaselineRegion region)
+  {
+    // get the region assembly
+    Assembly assembly = Trans.GetObject(region.AssemblyId, OpenMode.ForRead) as Assembly;
+
+    // get the applied assemblies
+    List<CivilAppliedAssembly> speckleAppliedAssemblies = new();
+    foreach (AppliedAssembly appliedAssembly in region.AppliedAssemblies)
+    {
+      CivilAppliedAssembly speckleAssembly = AppliedAssemblyToSpeckle(appliedAssembly);
+      speckleAppliedAssemblies.Add(speckleAssembly);
+    }
+
+    // create the speckle region
+    CivilBaselineRegion speckleRegion = new(region.Name, region.StartStation, region.EndStation, assembly.Id.ToString(), assembly.Name, speckleAppliedAssemblies);
+    return speckleRegion;
+  }
+
+  private CivilCalculatedShape CalculatedShapeToSpeckle(CalculatedShape shape)
+  {
+    List<string> codes = shape.CorridorCodes.ToList();
+    List<CivilCalculatedLink> speckleLinks = new();
+    foreach (CalculatedLink link in shape.CalculatedLinks)
+    {
+      CivilCalculatedLink speckleLink = CalculatedLinkToSpeckle(link);
+      speckleLinks.Add(speckleLink);
+    }
+
+    CivilCalculatedShape speckleCalculatedShape = new(codes, speckleLinks, shape.Area, ModelUnits);
+    return speckleCalculatedShape;
+  }
+
+  private CivilCalculatedLink CalculatedLinkToSpeckle(CalculatedLink link)
+  {
+    List<string> codes = link.CorridorCodes.ToList();
+    List<CivilCalculatedPoint> specklePoints = new();
+    foreach (CalculatedPoint point in link.CalculatedPoints)
+    {
+      CivilCalculatedPoint specklePoint = CalculatedPointToSpeckle(point);
+      specklePoints.Add(specklePoint);
+    }
+
+    CivilCalculatedLink speckleLink = new(codes, specklePoints);
+    return speckleLink;
+  }
+
+  private CivilCalculatedPoint CalculatedPointToSpeckle(CalculatedPoint point)
+  {
+    Point specklePoint = PointToSpeckle(point.XYZ);
+    List<string> codes = point.CorridorCodes.ToList();
+    Vector normalBaseline = VectorToSpeckle(point.NormalToBaseline);
+    Vector normalSubAssembly = VectorToSpeckle(point.NormalToSubassembly);
+    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly);
+    return speckleCalculatedPoint;
+  }
+
+  private CivilBaseline BaselineToSpeckle(CivilDB.Baseline baseline)
+  {
+    // get the speckle regions
+    List<CivilBaselineRegion> speckleRegions = new();
+    foreach (BaselineRegion region in baseline.BaselineRegions)
+    {
+      CivilBaselineRegion speckleRegion = BaselineRegionToSpeckle(region);
+      speckleRegions.Add(speckleRegion);
+    }
+
+    // get the speckle alignment
+    var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+    CivilAlignment speckleAlignment = AlignmentToSpeckle(alignment);
+
+    // get the speckle profile
+    var profile = Trans.GetObject(baseline.ProfileId, OpenMode.ForRead) as CivilDB.Profile;
+    CivilProfile speckleProfile = ProfileToSpeckle(profile);
+
+    // create the speckle baseline
+    CivilBaseline speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile);
+
+    return speckleBaseline;
+  }
+
   public Base CorridorToSpeckle(Corridor corridor)
   {
-    List<Alignment> alignments = new();
-    List<Profile> profiles = new();
     List<Featureline> featurelines = new();
-    foreach (Baseline baseline in corridor.Baselines)
+    List<CivilBaseline> baselines = new();
+    foreach (CivilDB.Baseline baseline in corridor.Baselines)
     {
+      // create baselines if nonfeaturelinebased
+      // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
+      // and throw an exception ""This operation on feature line based baseline is invalid".
+      if (!baseline.IsFeatureLineBased())
+      {
+        CivilBaseline speckleBaseline = BaselineToSpeckle(baseline);
+        baselines.Add(speckleBaseline);
+      }      
 
       // get the collection of featurelines for this baseline
       foreach (FeatureLineCollection mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
@@ -1152,32 +1283,6 @@ public partial class ConverterAutocadCivil
           foreach (CorridorFeatureLine featureline in featurelineCollection)
           {
             featurelines.Add(FeaturelineToSpeckle(featureline));
-          }
-        }
-      }
-
-      // get alignment and profile if relevant
-      // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
-      // and throw an exception ""This operation on feature line based baseline is invalid".
-      if (!baseline.IsFeatureLineBased())
-      {
-        if (baseline.AlignmentId is ObjectId alignmentId)
-        {
-          var alignment = Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-          var convertedAlignment = AlignmentToSpeckle(alignment);
-          if (convertedAlignment != null)
-          {
-            alignments.Add(convertedAlignment);
-          }
-        }
-        
-        if (baseline.ProfileId is ObjectId profileId)
-        {
-          var profile = Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile;
-          var convertedProfile = ProfileToSpeckle(profile);
-          if (convertedProfile != null)
-          {
-            profiles.Add(convertedProfile);
           }
         }
       }
@@ -1202,9 +1307,8 @@ public partial class ConverterAutocadCivil
     }
 
     var corridorBase = new Base();
-    corridorBase["@alignments"] = alignments;
-    corridorBase["@profiles"] = profiles;
     corridorBase["@featurelines"] = featurelines;
+    corridorBase["@baselines"] = baselines;
     AddNameAndDescriptionProperty(corridor.Name, corridor.Description, corridorBase);
     corridorBase["units"] = ModelUnits;
     if (surfaces.Count > 0)
