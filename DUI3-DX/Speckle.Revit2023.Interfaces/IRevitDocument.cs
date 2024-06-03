@@ -5,6 +5,7 @@ namespace Speckle.Revit2023.Interfaces;
 public interface IRevitDocument
 {
   string PathName { get; }
+  bool IsFamilyDocument { get; }
   IRevitUnits GetUnits();
 
   IRevitElement GetElement(IRevitElementId elementId);
@@ -17,6 +18,13 @@ public interface IRevitElement
   IList<IRevitElementId> GetDependentElements(IRevitElementFilter filter);
   
   IRevitElementId Id { get; }
+  IRevitElementId LevelId { get; }
+  IRevitCategory Category { get; }
+}
+
+public interface IRevitCategory
+{
+  string Name { get; }
 }
 
 public interface IRevitHostObject : IRevitElement

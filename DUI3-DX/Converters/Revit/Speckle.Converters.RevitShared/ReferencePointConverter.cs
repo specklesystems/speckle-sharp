@@ -17,13 +17,15 @@ public class ReferencePointConverter : IReferencePointConverter
 
   private readonly RevitConversionSettings _revitSettings;
   private readonly IRevitConversionContextStack _contextStack;
+  private readonly IRevitFilterFactory _revitFilterFactory;
 
   private readonly Dictionary<string, DB.Transform> _docTransforms = new();
 
-  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings)
+  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings, IRevitFilterFactory revitFilterFactory)
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;
+    _revitFilterFactory = revitFilterFactory;
   }
 
   // POC: the original allowed for the document to be passed in
@@ -63,10 +65,8 @@ public class ReferencePointConverter : IReferencePointConverter
     var referencePointTransform = DB.Transform.Identity;
 
     // POC: bogus disposal below
-    var points = _contextStack.Current.Document
-      .CreateFilteredElementCollector()
-      .OfClass(typeof(DB.BasePoint))
-      .Cast<DB.BasePoint>()
+    var points = _revitFilterFactory.CreateFilteredElementCollector(_contextStack.Current.Document)
+      .OfClass<DB.BasePoint>()
       .ToList();
 
     var projectPoint = points.FirstOrDefault(o => o.IsShared == false);

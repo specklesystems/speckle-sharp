@@ -29,7 +29,12 @@ public partial interface IRevitForgeTypeIdProxy : IRevitForgeTypeId { }
   new[] { "Parameter", "BoundingBox", "Geometry" }
 )]
 public partial interface IRevitElementProxy : IRevitElement { }
-
+[Proxy(
+  typeof(Category),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  new[] { "AllowsVisibilityControl", "Visible" }
+)]
+public partial interface IRevitCategoryProxy : IRevitCategory{ }
 [Proxy(
   typeof(ElementId),
   ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,

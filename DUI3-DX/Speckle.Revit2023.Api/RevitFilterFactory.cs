@@ -20,6 +20,10 @@ public class RevitFilterFactory : IRevitFilterFactory
   public IRevitElementMulticategoryFilter CreateElementMulticategoryFilter(ICollection<RevitBuiltInCategory> categories, bool inverted)
   {
     return new ElementMulticategoryFilterProxy(new ElementMulticategoryFilter(categories.Select(x => (BuiltInCategory)x).ToArray(), inverted));
+  }  
+  public IRevitFilteredElementCollector CreateFilteredElementCollector(IRevitDocument document, params IRevitElementId[] elementIds)
+  {
+    return new FilteredElementCollectorProxy(new FilteredElementCollector(((IRevitDocumentProxy)document)._Instance, elementIds.Cast<IRevitElementIdProxy>().Select(x => x._Instance).ToList()));
   }
 }
 
@@ -51,4 +55,17 @@ public partial interface IRevitElementMulticategoryFilterProxy : IRevitElementMu
 )]
 public partial interface IRevitLogicalAndFilterProxy : IRevitLogicalAndFilterFilter
 {
+}
+
+[Proxy(
+  typeof(FilteredElementCollector),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
+)]
+public partial interface IRevitFilteredElementCollectorProxy : IRevitFilteredElementCollector
+{
+}
+
+public partial class FilteredElementCollectorProxy
+{
+ public IEnumerable<T> OfClass<T>() => _Instance.OfClass(typeof(T)).Cast<T>();
 }

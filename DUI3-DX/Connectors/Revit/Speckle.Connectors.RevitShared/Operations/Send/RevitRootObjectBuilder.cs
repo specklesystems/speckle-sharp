@@ -6,6 +6,8 @@ using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
+using Speckle.Revit2023.Api;
+using Speckle.Revit2023.Interfaces;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
@@ -48,7 +50,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
     foreach (var id in objects)
     {
-      var el = _contextStack.Current.Document.GetElement(id);
+      var el = _contextStack.Current.Document.GetElement(new ElementIdProxy(id));
       if (el != null)
       {
         revitElements.Add(el);
