@@ -21,3 +21,39 @@ public partial interface IRevitDocumentProxy : IRevitDocument { }
   new[] { "Equals" }
 )]
 public partial interface IRevitForgeTypeIdProxy : IRevitForgeTypeId { }
+
+
+[Proxy(
+  typeof(Element),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  new[] { "Parameter", "BoundingBox", "Geometry" }
+)]
+public partial interface IRevitElementProxy : IRevitElement { }
+
+[Proxy(
+  typeof(ElementId),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
+  new[] { "Equals" }
+)]
+public partial interface IRevitElementIdProxy : IRevitElementId { }
+
+[Proxy(
+  typeof(CurtainGrid),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
+)]
+public partial interface IRevitCurtainGridProxy : IRevitCurtainGrid { }
+
+[Proxy(
+  typeof(Wall),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
+)]
+public partial interface IRevitWallProxy : IRevitWall
+{
+}
+[Proxy(
+  typeof(HostObject),
+  ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface
+)]
+public partial interface IRevitHostObjectProxy : IRevitHostObject
+{
+}
