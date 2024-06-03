@@ -19,12 +19,24 @@ public interface ITraversalRule
   /// <param name="o"></param>
   /// <returns></returns>
   public bool DoesRuleHold(Base o);
+
+  /// <summary>
+  /// When <see langword="false"/>,
+  /// <see cref="Base"/> objects for which this rule applies,
+  /// will be filtered out from the traversal output
+  /// (but still traversed normally, as per the <see cref="MembersToTraverse"/>)
+  /// </summary>
+  /// <remarks>
+  /// This property was added to allow for easier filtering of the return of <see cref="GraphTraversal{T}.Traverse(Base)"/>.
+  /// Without the option to set some rules as false, it was necessary to duplicate part of the rules in a <see cref="System.Linq.Enumerable.Where{T}(IEnumerable{T},System.Func{T,bool})"/>
+  /// </remarks>
+  public bool ShouldReturn { get; }
 }
 
 /// <summary>
 /// The "traverse none" rule that always holds true
 /// </summary>
-public sealed class DefaultRule : ITraversalRule
+internal sealed class DefaultRule : ITraversalRule
 {
   private static DefaultRule? s_instance;
 
@@ -32,13 +44,9 @@ public sealed class DefaultRule : ITraversalRule
 
   public static DefaultRule Instance => s_instance ??= new DefaultRule();
 
-  public IEnumerable<string> MembersToTraverse(Base b)
-  {
-    return Enumerable.Empty<string>();
-  }
+  public IEnumerable<string> MembersToTraverse(Base b) => Enumerable.Empty<string>();
 
-  public bool DoesRuleHold(Base o)
-  {
-    return true;
-  }
+  public bool DoesRuleHold(Base o) => true;
+
+  public bool ShouldReturn => true;
 }
