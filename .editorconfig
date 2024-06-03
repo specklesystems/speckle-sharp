@@ -242,6 +242,7 @@ dotnet_diagnostic.ca1506.severity = warning # Avoid excessive class coupling
 dotnet_diagnostic.ca1507.severity = warning # Use nameof in place of string
 dotnet_diagnostic.ca1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics configuration file
+dotnet_diagnostic.ca1861.severity = none # Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
 
 
 # Performance rules
