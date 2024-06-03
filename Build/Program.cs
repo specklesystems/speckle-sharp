@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using Build;
 using GlobExpressions;
 using static Bullseye.Targets;
@@ -18,13 +17,14 @@ const string VERSION = "version";
 const string RESTORE_TOOLS = "restore-tools";
 const string BUILD_SERVER_VERSION = "build-server-version";
 
-var arguments = new List<string>();
+//need to pass arguments
+/*var arguments = new List<string>();
 if (args.Length > 1)
 {
   arguments = args.ToList();
   args = new[] { arguments.First() };
-  arguments = arguments.Skip(1).ToList();
-}
+  //arguments = arguments.Skip(1).ToList();
+}*/
 
 Target(
   CLEAN,
