@@ -21,6 +21,9 @@ public class RevitColumn : Column
     string? elementId,
     double baseOffset = 0,
     double topOffset = 0,
+    bool facingFlipped = false,
+    bool handFlipped = false,
+    bool isSlanted = false,
     double rotation = 0,
     IReadOnlyList<Mesh>? displayValue = null,
     List<Parameter>? parameters = null
@@ -33,6 +36,9 @@ public class RevitColumn : Column
     this.elementId = elementId;
     this.baseOffset = baseOffset;
     this.topOffset = topOffset;
+    this.facingFlipped = facingFlipped;
+    this.handFlipped = handFlipped;
+    this.isSlanted = isSlanted;
     this.rotation = rotation;
     this.parameters = parameters?.ToBase();
   }
@@ -64,7 +70,19 @@ public class RevitColumn : Column
     [SchemaParamInfo("Rotation angle in radians")] double rotation = 0,
     List<Parameter>? parameters = null
   )
-    : this(family, type, baseLine, level, topLevel, null, null, baseOffset, topOffset, rotation, null, parameters) { }
+    : this(
+      family,
+      type,
+      baseLine,
+      level,
+      topLevel,
+      null,
+      null,
+      baseOffset,
+      topOffset,
+      rotation: rotation,
+      parameters: parameters
+    ) { }
 
   [Obsolete("Use other constructors")]
   [SchemaDeprecated]
