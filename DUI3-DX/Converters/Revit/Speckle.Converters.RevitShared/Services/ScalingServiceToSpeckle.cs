@@ -35,4 +35,9 @@ public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
   {
     return _revitUnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
   }
+  
+  public double Scale(double value, DB.ForgeTypeId forgeTypeId)
+  {
+    return  DB.UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+  }
 }

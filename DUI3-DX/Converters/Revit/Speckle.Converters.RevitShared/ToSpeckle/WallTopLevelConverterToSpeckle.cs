@@ -6,6 +6,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Converters.RevitShared.Extensions;
 using Objects.BuiltElements.Revit;
+using Speckle.Revit2023.Api;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 

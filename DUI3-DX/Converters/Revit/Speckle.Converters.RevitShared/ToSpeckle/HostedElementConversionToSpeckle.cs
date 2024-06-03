@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
+using Speckle.Revit2023.Api;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 

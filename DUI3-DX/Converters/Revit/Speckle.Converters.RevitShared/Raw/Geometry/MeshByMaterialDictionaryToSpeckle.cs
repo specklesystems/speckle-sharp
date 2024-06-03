@@ -1,6 +1,7 @@
 ﻿using Objects.Other;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit2023.Api;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
