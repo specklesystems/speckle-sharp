@@ -37,7 +37,10 @@ public partial class DuiPanel : UserControl
   private IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
   {
     if (msg != WM_GETDLGCODE)
+    {
       return IntPtr.Zero;
+    }
+
     handled = true;
     return new IntPtr(DLGC_WANTCHARS | DLGC_WANTARROWS | DLGC_HASSETSEL);
   }
