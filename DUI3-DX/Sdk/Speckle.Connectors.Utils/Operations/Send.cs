@@ -47,9 +47,10 @@ public static class SendHelper
     using SQLiteTransport? localCache = useDefaultCache ? new SQLiteTransport { TransportName = "LC" } : null;
     if (localCache is not null)
     {
-      transports.Add(localCache);
+      //transports.Add(localCache);
     }
 
+    var bb = value;
     return await Send(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
   }
 
@@ -142,6 +143,9 @@ public static class SendHelper
           sendTimer.Elapsed.TotalSeconds,
           serializerReturnValue.rootObjId
         );
+      Debug.WriteLine(
+        $"Finished sending {transports.Max(t => t.SavedObjectCount)} objects after {sendTimer.Elapsed.TotalSeconds}s, result {serializerReturnValue.rootObjId}"
+      );
       return serializerReturnValue;
     }
   }

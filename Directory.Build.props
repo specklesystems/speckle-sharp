@@ -30,6 +30,8 @@
     
     <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
+      <!-- If I commit this kill Dim -->
+      CS9057;
       <!--Disabled by design-->
       CA5399;CA1862;
       <!--XML comment-->

@@ -31,12 +31,14 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   private readonly object _callbackLock = new();
 
   private readonly int _timeoutSeconds;
+  private volatile bool _useNewPipes;
 
   public ParallelServerApi(
     string baseUri,
     string authorizationToken,
     string blobStorageFolder,
     int timeoutSeconds,
+    bool useNewPipes = false,
     int numThreads = 4,
     int numBufferedOperations = 8
   )
@@ -50,6 +52,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
 
     NumThreads = numThreads;
     Tasks = new BlockingCollection<OperationTask<ServerApiOperation>>(numBufferedOperations);
+    _useNewPipes = useNewPipes;
   }
 
   public CancellationToken CancellationToken { get; set; }
@@ -207,7 +210,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
 
   protected override void ThreadMain()
   {
-    using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds);
+    using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds, _useNewPipes);
 
     serialApi.OnBatchSent = (num, size) =>
     {

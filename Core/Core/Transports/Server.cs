@@ -44,10 +44,12 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
   private const int PollInterval = 100;
 
   private Timer _writeTimer;
+  private bool _useNewPipes;
 
-  public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60)
+  public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60, bool useNewPipes = false)
   {
     Account = account;
+    _useNewPipes = useNewPipes;
     Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
   }
 
@@ -280,8 +282,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     _isWriting = true;
     using var message = new HttpRequestMessage
     {
-      RequestUri = new Uri($"/objects/{StreamId}", UriKind.Relative),
-      Method = HttpMethod.Post
+      RequestUri = new Uri(_useNewPipes ? $"/objects/v3/{StreamId}" : $"/objects/v2/{StreamId}", UriKind.Relative),
+      Method = HttpMethod.Post,
+      Headers = { }
     };
 
     using var multipart = new MultipartFormDataContent("--obj--");
@@ -544,7 +547,6 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
       postParameters.Add("objects", JsonConvert.SerializeObject(hashes));
       childrenHttpMessage.Content = new FormUrlEncodedContent(postParameters);
       childrenHttpMessage.Headers.Add("Accept", "text/plain");
-
       HttpResponseMessage childrenHttpResponse = null;
       try
       {

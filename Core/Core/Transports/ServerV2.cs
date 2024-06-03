@@ -18,7 +18,13 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
 {
   // POC: autofac uses this to construct a factory in place if this delegate and this can then be injected and parameters passed
   // this should, and I think can, come out of this class, because I think autofac does magic based on the return type
-  public delegate ITransport Factory(Account account, string streamId, int timeoutSeconds, string? blobStorageFolder);
+  public delegate ITransport Factory(
+    Account account,
+    string streamId,
+    int timeoutSeconds,
+    string? blobStorageFolder,
+    bool useNewPipes = false
+  );
 
   private readonly object _elapsedLock = new();
 
@@ -32,13 +38,20 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
   private Thread? _sendingThread;
 
   private volatile bool _shouldSendThreadRun;
+  private volatile bool _useNewPipes;
 
   /// <param name="account"></param>
   /// <param name="streamId"></param>
   /// <param name="timeoutSeconds"></param>
   /// <param name="blobStorageFolder">Defaults to <see cref="SpecklePathProvider.BlobStoragePath"/></param>
   /// <exception cref="ArgumentException"><paramref name="streamId"/> was not formatted as valid stream id</exception>
-  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
+  public ServerTransport(
+    Account account,
+    string streamId,
+    int timeoutSeconds = 60,
+    string? blobStorageFolder = null,
+    bool useNewPipes = false
+  )
   {
     if (string.IsNullOrWhiteSpace(streamId))
     {
@@ -51,6 +64,8 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     AuthorizationToken = account.token;
     TimeoutSeconds = timeoutSeconds;
     BlobStorageFolder = blobStorageFolder ?? SpecklePathProvider.BlobStoragePath();
+    _useNewPipes = useNewPipes;
+
     Initialize(account.serverInfo.url);
 
     Directory.CreateDirectory(BlobStorageFolder);
@@ -305,7 +320,7 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     SpeckleLog.Logger.Information("Initializing a new Remote Transport for {baseUri}", baseUri);
 
-    Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds)
+    Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds, _useNewPipes)
     {
       OnBatchSent = (num, size) =>
       {

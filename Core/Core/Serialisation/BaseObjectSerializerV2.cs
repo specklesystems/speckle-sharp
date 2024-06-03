@@ -103,6 +103,13 @@ public class BaseObjectSerializerV2
       _parentObjects = new HashSet<object>();
       _isBusy = false;
       _stopwatch.Stop();
+      foreach (var t in WriteTransports)
+      {
+        if (t is ServerV4 tt)
+        {
+          tt.EndWrite();
+        }
+      }
     }
   }
 
@@ -308,6 +315,7 @@ public class BaseObjectSerializerV2
       convertedBase[prop.Key] = convertedValue;
     }
 
+    convertedBase["noise"] = Guid.NewGuid();
     convertedBase["id"] = baseObj is Blob blob ? blob.id : ComputeId(convertedBase);
 
     if (closure.Count > 0)

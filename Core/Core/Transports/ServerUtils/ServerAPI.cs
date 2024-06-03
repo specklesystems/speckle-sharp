@@ -33,8 +33,15 @@ public sealed class ServerApi : IDisposable, IServerApi
   private static readonly string[] s_filenameSeparator = { "filename=" };
 
   private readonly HttpClient _client;
+  private readonly bool _useNewPipes;
 
-  public ServerApi(string baseUri, string? authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
+  public ServerApi(
+    string baseUri,
+    string? authorizationToken,
+    string blobStorageFolder,
+    int timeoutSeconds = 60,
+    bool useNewPipes = false
+  )
   {
     CancellationToken = CancellationToken.None;
 
@@ -44,10 +51,12 @@ public sealed class ServerApi : IDisposable, IServerApi
       new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
-    _client.BaseAddress = new Uri(baseUri);
+    // _client.BaseAddress = new Uri(baseUri);
+    _client.BaseAddress = new Uri("https://directly-hardy-warthog.ngrok-free.app");
     _client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
     Http.AddAuthHeader(_client, authorizationToken);
+    _useNewPipes = useNewPipes;
   }
 
   private int RetriedCount { get; set; }
@@ -400,7 +409,11 @@ public sealed class ServerApi : IDisposable, IServerApi
     CancellationToken.ThrowIfCancellationRequested();
 
     using HttpRequestMessage message =
-      new() { RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative), Method = HttpMethod.Post };
+      new()
+      {
+        RequestUri = new Uri(_useNewPipes ? $"/objects/v3/{streamId}" : $"/objects/v2/{streamId}", UriKind.Relative),
+        Method = HttpMethod.Post
+      };
 
     MultipartFormDataContent multipart = new();
 

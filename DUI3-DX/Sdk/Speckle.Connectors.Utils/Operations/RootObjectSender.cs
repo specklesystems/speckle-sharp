@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -14,11 +15,11 @@ namespace Speckle.Connectors.Utils.Operations;
 public sealed class RootObjectSender : IRootObjectSender
 {
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
-  private readonly ServerTransport.Factory _transportFactory;
+  // private readonly ServerV3.Factory _transportFactory;
 
-  public RootObjectSender(ServerTransport.Factory transportFactory)
+  public RootObjectSender()
   {
-    _transportFactory = transportFactory;
+    // _transportFactory = transportFactory;
   }
 
   public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
@@ -28,14 +29,39 @@ public sealed class RootObjectSender : IRootObjectSender
     CancellationToken ct = default
   )
   {
+    Account account = AccountManager.GetAccount(sendInfo.AccountId);
+
+    ITransport v2 = new ServerTransport(account, sendInfo.ProjectId);
+    await SendInternal(v2, commitObject, sendInfo, "V2", onOperationProgressed, ct).ConfigureAwait(false);
+
+    ITransport v3 = new ServerTransport(account, sendInfo.ProjectId, useNewPipes: true);
+    await SendInternal(v3, commitObject, sendInfo, "V3", onOperationProgressed, ct).ConfigureAwait(false);
+
+    ITransport v4 = new ServerV4(account, sendInfo.ProjectId, ct);
+    return await SendInternal(v4, commitObject, sendInfo, "V4", onOperationProgressed, ct).ConfigureAwait(false);
+  }
+
+  public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> SendInternal(
+    ITransport tr,
+    Base commitObject,
+    SendInfo sendInfo,
+    string version,
+    Action<string, double?>? onOperationProgressed = null,
+    CancellationToken ct = default
+  )
+  {
     ct.ThrowIfCancellationRequested();
 
     onOperationProgressed?.Invoke("Uploading...", null);
 
     Account account = AccountManager.GetAccount(sendInfo.AccountId);
+    var sendTimer = Stopwatch.StartNew();
 
-    ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
-    var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
+    var sendResult = await SendHelper.Send(commitObject, tr, true, null, ct).ConfigureAwait(false);
+
+    Debug.WriteLine(
+      $"{version}: Finished sending {tr.SavedObjectCount} objects after {sendTimer.Elapsed.TotalSeconds}s."
+    );
 
     ct.ThrowIfCancellationRequested();
 
