@@ -8,5 +8,6 @@ public static class ContainerRegistration
   public static void AddRevit2023(this SpeckleContainerBuilder speckleContainerBuilder)
   {
     speckleContainerBuilder.AddTransient<IRevitUnitUtils, RevitUnitUtils>();
+    speckleContainerBuilder.AddTransient<IRevitFilterFactory, RevitFilterFactory>();
   }
 }

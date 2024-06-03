@@ -5,8 +5,5 @@ namespace Speckle.Revit2023.Api;
 
 public static class DocumentExtensions
 {
-  public static DB.Element GetElement(this IRevitDocument document, DB.ElementId id)
-  {
-    return ((IRevitDocumentProxy)document)._Instance.GetElement(id);
-  }
+  public static DB.Element GetElement(this IRevitDocument document, DB.ElementId id) => ((IRevitDocumentProxy)document)._Instance.GetElement(id);
 }

@@ -6,40 +6,31 @@ namespace Speckle.Revit2023.Api;
 
 public class RevitFilterFactory : IRevitFilterFactory
 {
-  public IRevitElementIsElementTypeFilter CreateElementIsElementTypeFilter(bool inverted)
-  {
-    return new ElementIsElementTypeFilterProxy(new ElementIsElementTypeFilter());
-  }
+  public IRevitElementIsElementTypeFilter CreateElementIsElementTypeFilter(bool inverted) => new ElementIsElementTypeFilterProxy(new ElementIsElementTypeFilter());
 
-  public IRevitLogicalAndFilterFilter CreateLogicalAndFilter(params IRevitElementFilter[] filters)
-  {
-    return new LogicalAndFilterProxy(
+  public IRevitLogicalAndFilterFilter CreateLogicalAndFilter(params IRevitElementFilter[] filters) =>
+    new LogicalAndFilterProxy(
       new LogicalAndFilter(filters.Cast<IRevitElementFilterProxy>().Select(x => x._Instance).ToList())
     );
-  }
 
   public IRevitElementMulticategoryFilter CreateElementMulticategoryFilter(
     ICollection<RevitBuiltInCategory> categories,
     bool inverted
-  )
-  {
-    return new ElementMulticategoryFilterProxy(
+  ) =>
+    new ElementMulticategoryFilterProxy(
       new ElementMulticategoryFilter(categories.Select(x => (BuiltInCategory)x).ToArray(), inverted)
     );
-  }
 
   public IRevitFilteredElementCollector CreateFilteredElementCollector(
     IRevitDocument document,
     params IRevitElementId[] elementIds
-  )
-  {
-    return new FilteredElementCollectorProxy(
+  ) =>
+    new FilteredElementCollectorProxy(
       new FilteredElementCollector(
         ((IRevitDocumentProxy)document)._Instance,
         elementIds.Cast<IRevitElementIdProxy>().Select(x => x._Instance).ToList()
       )
     );
-  }
 }
 
 [Proxy(

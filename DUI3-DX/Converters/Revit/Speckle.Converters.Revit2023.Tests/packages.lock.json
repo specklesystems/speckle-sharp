@@ -122,21 +122,6 @@
         "resolved": "6.0.0",
         "contentHash": "yg72rrYDapfsIUrul7aF6wwNnTJBOFvuA9VdDTQpPa8AlAriHbufeXYLBcodKjfUdkCnaiggX1U/nEP08Zb5GA=="
       },
-      "Mapster": {
-        "type": "Transitive",
-        "resolved": "7.3.0",
-        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
-        "dependencies": {
-          "Mapster.Core": "1.2.0",
-          "Microsoft.CSharp": "4.3.0",
-          "System.Reflection.Emit": "4.3.0"
-        }
-      },
-      "Mapster.Core": {
-        "type": "Transitive",
-        "resolved": "1.2.0",
-        "contentHash": "TNdqZk2zAuBYfJF88D/3clQTOyOdqr1crU81yZQtlGa+e7FYWhJdK/buBWT+TpM3qQko9UzmzfOT4iq3JCs/ZA=="
-      },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
         "resolved": "7.0.0",
@@ -468,11 +453,6 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
-      "System.Reflection.Emit": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg=="
-      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -586,10 +566,7 @@
         }
       },
       "speckle.revit2023.interfaces": {
-        "type": "Project",
-        "dependencies": {
-          "Mapster": "[7.3.0, )"
-        }
+        "type": "Project"
       }
     }
   }
