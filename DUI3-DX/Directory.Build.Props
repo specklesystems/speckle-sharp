@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PolySharp" Version="1.14.1"/>
-    <PackageReference Include="Speckle.InterfaceGenerator" Version="0.9.4"/>
+    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="All"/>
+    <PackageReference Include="Speckle.InterfaceGenerator" Version="0.9.4" PrivateAssets="All"/>
   </ItemGroup>
 </Project>
