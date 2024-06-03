@@ -50,12 +50,3 @@ public partial class ModelCurveArrayProxy
     }
   }
 }
-
-[Proxy(
-typeof(ModelCurveArrArray),
-ImplementationOptions.UseExtendedInterfaces | ImplementationOptions.ProxyForBaseInterface,
-new[] { "GetEnumerator", "Item", "get_Item", "set_Item" }
-  )]
-public partial interface IRevitModelCurveArrArrayProxy : IRevitModelCurveArrArray { }
-
-
