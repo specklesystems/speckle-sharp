@@ -375,15 +375,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Create app bundles
                 command: |
-                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./ConnectorArchicad/ConnectorArchicad/bin/Release/net6.0/osx-arm64/publish/ ./ConnectorArchicad/ConnectorArchicad/Info.plist ./ConnectorArchicad/ConnectorArchicad/Assets/icon-mac.icns ./ConnectorArchicad/ConnectorArchicad/bin/Release/net6.0/osx-arm64/ConnectorArchicad
-                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./ConnectorArchicad/ConnectorArchicad/bin/Release/net6.0/osx-x64/publish/ ./ConnectorArchicad/ConnectorArchicad/Info.plist ./ConnectorArchicad/ConnectorArchicad/Assets/icon-mac.icns ./ConnectorArchicad/ConnectorArchicad/bin/Release/net6.0/osx-x64/ConnectorArchicad
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/<< parameters.slnname >>
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/<< parameters.slnname >>
             - run:
                 name: Zip Connector files
                 command: |
-                  cd "ConnectorArchicad/ConnectorArchicad/bin/Release/net6.0/osx-arm64/"
-                  zip -r << parameters.slug >>-mac-arm64.zip "./ConnectorArchicad.app"
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/"
+                  zip -r << parameters.slug >>-mac-arm64.zip "./<< parameters.slnname >>.app"
                   cd "../osx-x64/"
-                  zip -r << parameters.slug >>-mac-x64.zip "./ConnectorArchicad.app"
+                  zip -r << parameters.slug >>-mac-x64.zip "./<< parameters.slnname >>.app"
             # Copy installer files
             - run:
                 name: Copy files to installer
