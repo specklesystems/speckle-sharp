@@ -724,7 +724,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       attributes.Name = name;
     }
 
-    // set revit parameters as user strings
+    // set revit/gis parameters as user strings
     var paramId = parent != null ? parent.OriginalId : obj.id;
     if (StoredObjectParams.TryGetValue(paramId, out Base parameters))
     {
@@ -739,6 +739,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             var paramName = $"{convertedParameter.Item1}({member.Key})";
             attributes.SetUserString(paramName, convertedParameter.Item2);
           }
+        }
+        // attributes coming from GIS
+        else
+        {
+          string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
+          attributes.SetUserString(member.Key, userStringValue);
         }
       }
     }
