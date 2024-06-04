@@ -5,9 +5,9 @@ namespace Objects.BuiltElements;
 
 public abstract class Baseline : Base
 {
-  public Baseline() { }
+  protected Baseline() { }
 
-  public Baseline(string name, bool isFeaturelineBased)
+  protected Baseline(string name, bool isFeaturelineBased)
   {
     this.name = name;
     this.isFeaturelineBased = isFeaturelineBased;
