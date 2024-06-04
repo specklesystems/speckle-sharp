@@ -7,9 +7,10 @@ public abstract class Baseline : Base
 {
   public Baseline() { }
 
-  public Baseline(string name)
+  public Baseline(string name, bool isFeaturelineBased)
   {
     this.name = name;
+    this.isFeaturelineBased = isFeaturelineBased;
   }
 
   /// <summary>
@@ -20,12 +21,17 @@ public abstract class Baseline : Base
   /// <summary>
   /// The horizontal component of this baseline
   /// </summary>
-  public abstract Alignment alignment { get; internal set; }
+  public abstract Alignment? alignment { get; internal set; }
 
   /// <summary>
   /// The vertical component of this baseline
   /// </summary>
-  public abstract Profile profile { get; internal set; }
+  public abstract Profile? profile { get; internal set; }
+
+  [DetachProperty]
+  public Featureline? featureline { get; internal set; }
+
+  public bool isFeaturelineBased { get; set; }
 }
 
 /// <summary>
@@ -35,16 +41,18 @@ public abstract class Baseline<TA, TP> : Baseline
   where TA : Alignment
   where TP : Profile
 {
-  protected Baseline(string name, TA alignment, TP profile)
-    : base(name)
+  protected Baseline(string name, TA alignment, TP profile, Featureline? featureline, bool isFeaturelineBased)
+    : base(name, isFeaturelineBased)
   {
     this.name = name;
     typedAlignment = alignment;
     typedProfile = profile;
+    this.featureline = featureline;
+    this.isFeaturelineBased = isFeaturelineBased;
   }
 
   protected Baseline()
-    : base(string.Empty) { }
+    : base(string.Empty, false) { }
 
   [JsonIgnore]
   public TA typedAlignment { get; set; }
@@ -53,7 +61,7 @@ public abstract class Baseline<TA, TP> : Baseline
   public TP typedProfile { get; set; }
 
   [DetachProperty]
-  public override Alignment alignment
+  public override Alignment? alignment
   {
     get => typedAlignment;
     internal set
@@ -66,7 +74,7 @@ public abstract class Baseline<TA, TP> : Baseline
   }
 
   [DetachProperty]
-  public override Profile profile
+  public override Profile? profile
   {
     get => typedProfile;
     internal set

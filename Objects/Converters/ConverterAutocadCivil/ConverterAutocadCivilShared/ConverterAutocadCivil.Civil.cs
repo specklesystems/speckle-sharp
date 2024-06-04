@@ -641,7 +641,7 @@ public partial class ConverterAutocadCivil
   }
 
   // featurelines
-  public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
+  public Featureline FeaturelineToSpeckle(CivilDB.FeatureLine featureline)
   {
     // get all points
     var points = new List<Point>();
@@ -667,25 +667,18 @@ public partial class ConverterAutocadCivil
       piPoints.Add(allPoints.IndexOf(piPoint));
     }
 
-    /*
-    // get bulges at pi point indices
-    int count = (featureline.Closed) ? featureline.PointsCount : featureline.PointsCount - 1;
-    List<double> bulges = new List<double>();
-    for (int i = 0; i < count; i++) bulges.Add(featureline.GetBulge(i));
-    var piBulges = new List<double>();
-    foreach (var index in indices) piBulges.Add(bulges[index]);
-    */
-
     // get displayvalue
     var polyline = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, intersectionPoints, false));
 
     // featureline
     Featureline speckleFeatureline = new()
     {
+      points = points,
       curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits),
       units = ModelUnits,
       displayValue = new List<Polyline>() { polyline }
     };
+
     AddNameAndDescriptionProperty(featureline.Name, featureline.Description, speckleFeatureline);
     speckleFeatureline["@piPoints"] = piPoints;
     speckleFeatureline["@elevationPoints"] = ePoints;
@@ -1144,6 +1137,9 @@ public partial class ConverterAutocadCivil
 
   private CivilAppliedSubassembly AppliedSubassemblyToSpeckle(AppliedSubassembly appliedSubassembly)
   {
+    // retrieve subassembly name
+    Subassembly subassembly = Trans.GetObject(appliedSubassembly.SubassemblyId, OpenMode.ForRead) as Subassembly;
+
     // get the calculated shapes
     List<CivilCalculatedShape> speckleShapes = new();
     foreach (CalculatedShape shape in appliedSubassembly.Shapes)
@@ -1154,7 +1150,7 @@ public partial class ConverterAutocadCivil
 
     List<Base> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
 
-    CivilAppliedSubassembly speckleAppliedSubassembly = new(speckleShapes, speckleParameters);
+    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, speckleParameters);
     return speckleAppliedSubassembly;
   }
 
@@ -1230,6 +1226,8 @@ public partial class ConverterAutocadCivil
 
   private CivilBaseline BaselineToSpeckle(CivilDB.Baseline baseline)
   {
+    CivilBaseline speckleBaseline = null;
+
     // get the speckle regions
     List<CivilBaselineRegion> speckleRegions = new();
     foreach (BaselineRegion region in baseline.BaselineRegions)
@@ -1238,17 +1236,30 @@ public partial class ConverterAutocadCivil
       speckleRegions.Add(speckleRegion);
     }
 
-    // get the speckle alignment
-    var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-    CivilAlignment speckleAlignment = AlignmentToSpeckle(alignment);
+    // get profile and alignment if nonfeaturelinebased
+    // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
+    // and throw an exception ""This operation on feature line based baseline is invalid".
+    if (!baseline.IsFeatureLineBased())
+    {
+      // get the speckle alignment
+      var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+      CivilAlignment speckleAlignment = AlignmentToSpeckle(alignment);
 
-    // get the speckle profile
-    var profile = Trans.GetObject(baseline.ProfileId, OpenMode.ForRead) as CivilDB.Profile;
-    CivilProfile speckleProfile = ProfileToSpeckle(profile);
+      // get the speckle profile
+      var profile = Trans.GetObject(baseline.ProfileId, OpenMode.ForRead) as CivilDB.Profile;
+      CivilProfile speckleProfile = ProfileToSpeckle(profile);
 
-    // create the speckle baseline
-    CivilBaseline speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile);
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile);
+    }
+    else
+    {
+      // get the baseline featureline
+      var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
+      Featureline speckleFeatureline = FeaturelineToSpeckle(featureline);
 
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleFeatureline);
+    }
+    
     return speckleBaseline;
   }
 
@@ -1258,14 +1269,8 @@ public partial class ConverterAutocadCivil
     List<CivilBaseline> baselines = new();
     foreach (CivilDB.Baseline baseline in corridor.Baselines)
     {
-      // create baselines if nonfeaturelinebased
-      // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
-      // and throw an exception ""This operation on feature line based baseline is invalid".
-      if (!baseline.IsFeatureLineBased())
-      {
-        CivilBaseline speckleBaseline = BaselineToSpeckle(baseline);
-        baselines.Add(speckleBaseline);
-      }      
+      CivilBaseline speckleBaseline = BaselineToSpeckle(baseline);
+      baselines.Add(speckleBaseline);  
 
       // get the collection of featurelines for this baseline
       foreach (FeatureLineCollection mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines

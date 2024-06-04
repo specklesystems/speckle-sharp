@@ -206,7 +206,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
               @base = CorridorToSpeckle(o);
               break;
             case CivilDB.FeatureLine o:
-              @base = FeatureLineToSpeckle(o);
+              @base = FeaturelineToSpeckle(o);
               break;
             case CivilDB.Structure o:
               @base = StructureToSpeckle(o);

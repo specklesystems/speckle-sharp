@@ -23,6 +23,25 @@ public class CivilBaseline : Baseline<CivilAlignment, CivilProfile>
     this.endStation = endStation;
     this.alignment = alignment;
     this.profile = profile;
+    isFeaturelineBased = false;
+  }
+
+  public CivilBaseline(
+    string name,
+    List<CivilBaselineRegion> regions,
+    List<double> stations,
+    double startStation,
+    double endStation,
+    Featureline featureline
+  )
+  {
+    this.name = name;
+    this.regions = regions;
+    this.stations = stations;
+    this.startStation = startStation;
+    this.endStation = endStation;
+    this.featureline = featureline;
+    isFeaturelineBased = true;
   }
 
   public List<CivilBaselineRegion> regions { get; set; }
