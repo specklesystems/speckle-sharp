@@ -1,3 +1,4 @@
+using Speckle.Core.Logging;
 using System.Text.Json;
 
 namespace Speckle.Automate.Sdk.Test;
@@ -10,7 +11,7 @@ public class TestAppSettings
   public string? SpeckleAutomationId { get; set; }
 }
 
-public static class TestEnvironment
+public static class TestAutomateEnvironment
 {
   public static TestAppSettings? AppSettings { get; private set; }
 
@@ -20,7 +21,7 @@ public static class TestEnvironment
 
     if (value is null)
     {
-      throw new Exception($"Cannot run tests without a {environmentVariableName} environment variable");
+      throw new SpeckleException($"Cannot run tests without a {environmentVariableName} environment variable");
     }
 
     return value;
@@ -41,7 +42,7 @@ public static class TestEnvironment
     var path = "./appsettings.json";
     var json = File.ReadAllText(path);
 
-    TestAppSettings appSettings = JsonSerializer.Deserialize<TestAppSettings>(json ?? "{}");
+    var appSettings = JsonSerializer.Deserialize<TestAppSettings>(json);
 
     AppSettings = appSettings;
 
@@ -53,11 +54,12 @@ public static class TestEnvironment
     return GetAppSettings()?.SpeckleToken ?? GetEnvironmentVariable("SPECKLE_TOKEN");
   }
 
-  public static string GetSpeckleServerUrl()
+  public static Uri GetSpeckleServerUrl()
   {
-    return GetAppSettings()?.SpeckleServerUrl
-      ?? TryGetEnvironmentVariable("SPECKLE_SERVER_URL")
-      ?? "http://127.0.0.1:3000";
+    var urlString =
+      GetAppSettings()?.SpeckleServerUrl ?? TryGetEnvironmentVariable("SPECKLE_SERVER_URL") ?? "http://127.0.0.1:3000";
+
+    return new Uri(urlString);
   }
 
   public static string GetSpeckleProjectId()

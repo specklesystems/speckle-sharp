@@ -32,8 +32,8 @@ public static class TestAutomateUtils
                 """,
         variables: new
         {
-          automationId = TestEnvironment.GetSpeckleAutomationId(),
-          projectId = TestEnvironment.GetSpeckleProjectId()
+          automationId = TestAutomateEnvironment.GetSpeckleAutomationId(),
+          projectId = TestAutomateEnvironment.GetSpeckleProjectId()
         }
       );
 
@@ -47,9 +47,9 @@ public static class TestAutomateUtils
 
     var data = new AutomationRunData()
     {
-      ProjectId = TestEnvironment.GetSpeckleProjectId(),
-      SpeckleServerUrl = TestEnvironment.GetSpeckleServerUrl(),
-      AutomationId = TestEnvironment.GetSpeckleAutomationId(),
+      ProjectId = TestAutomateEnvironment.GetSpeckleProjectId(),
+      SpeckleServerUrl = TestAutomateEnvironment.GetSpeckleServerUrl().ToString(),
+      AutomationId = TestAutomateEnvironment.GetSpeckleAutomationId(),
       AutomationRunId = runData["automationRunId"],
       FunctionRunId = runData["functionRunId"],
       Triggers = new List<AutomationRunTriggerBase>()
