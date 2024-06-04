@@ -4,8 +4,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <UseWpf>true</UseWpf>
   </PropertyGroup>
-
-  <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
   
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -32,6 +30,16 @@
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile"  NoWarn="NU1903"/>
     <PackageReference Include="Revit.Async" Version="2.0.1" />
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Speckle.Connectors.RevitShared\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="..\Speckle.Connectors.RevitShared\**\*.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <Target AfterTargets="Clean" Name="CleanAddinFolder">
