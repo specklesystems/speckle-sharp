@@ -4,8 +4,6 @@
     <PlatformTarget>x64</PlatformTarget>
     <UseWpf>true</UseWpf>
   </PropertyGroup>
-
-  <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
   
   <ItemGroup>
     <Reference Include="PresentationCore" />
