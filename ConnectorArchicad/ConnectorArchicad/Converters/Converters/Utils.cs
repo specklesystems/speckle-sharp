@@ -68,6 +68,14 @@ public static class Utils
     };
   }
 
+  public static Vector ScaleToNative(Vector vector, string? units = null)
+  {
+    units ??= vector.units;
+    var scale = Units.GetConversionFactor(units, Units.Meters);
+
+    return new Vector(vector.x * scale, vector.y * scale, vector.z * scale);
+  }
+
   public static Polycurve PolycurveToSpeckle(ElementShape.Polyline archiPolyline)
   {
     var poly = new Polycurve
