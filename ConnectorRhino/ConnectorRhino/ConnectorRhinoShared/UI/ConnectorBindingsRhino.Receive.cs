@@ -651,19 +651,39 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           break;
 
         case Group o: // this is a GIS object
+
+          StoredObjectParams.TryGetValue(obj.id, out Base parameters);
+          Dictionary<string, object> paramMembers = parameters?.GetMembers(DynamicBaseMemberType.Dynamic);
+
           foreach (var groupObject in Doc.Objects.FindByGroup(o.Index))
           {
             groupObject.Attributes.LayerIndex = layer.Index;
+
+            // set application id
+            var appId = parent != null ? parent.applicationId : obj.applicationId;
+            groupObject.Attributes.SetUserString(ApplicationIdKey, appId);
+
+            if (paramMembers != null)
+            {
+              foreach (var member in paramMembers)
+              {
+                string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
+                groupObject.Attributes.SetUserString(member.Key, userStringValue);
+              }
+            }
+
+            groupObject.CommitChanges();
           }
 
-          if (StoredObjectParams.TryGetValue(obj.id, out Base parameters))
+          if (parent != null)
           {
-            foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-            {
-              string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
-              o.SetUserString(member.Key, userStringValue);
-            }
+            parent.Update(o.Id.ToString());
           }
+          else
+          {
+            appObj.Update(o.Id.ToString());
+          }
+          bakedCount++;
           break;
 
         case ViewInfo o: // this is a view, baked during conversion
