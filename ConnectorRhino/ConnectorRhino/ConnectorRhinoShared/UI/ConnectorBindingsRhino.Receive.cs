@@ -415,8 +415,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         return null;
       }
 
-      // get parameters
-      var parameters = current["parameters"] as Base;
+      // get parameters and attributes from revit/gis
+      var parameters = current["parameters"] as Base ?? current["attributes"] as Base;
 
       //Handle convertable objects
       if (converter.CanConvertToNative(current))
@@ -590,7 +590,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // assign layer
           attributes.LayerIndex = layer.Index;
 
-          // handle user info, application id, revit parameters
+          // handle user info, application id, revit/gis parameters
           SetUserInfo(obj, attributes, converter, parent);
 
           Guid id = Doc.Objects.Add(o, attributes);
@@ -708,12 +708,13 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       attributes.Name = name;
     }
 
-    // set revit parameters as user strings
+    // set revit/gis parameters as user strings
     var paramId = parent != null ? parent.OriginalId : obj.id;
     if (StoredObjectParams.TryGetValue(paramId, out Base parameters))
     {
       foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
       {
+        // parameters coming from revit, value Base is Objects.BuiltElements.Revit.Parameter
         if (member.Value is Base parameter)
         {
           var convertedParameter = converter.ConvertToNative(parameter) as Tuple<string, string>;
@@ -722,6 +723,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             var paramName = $"{convertedParameter.Item1}({member.Key})";
             attributes.SetUserString(paramName, convertedParameter.Item2);
           }
+        }
+        else // attributes coming from gis are directly on Base
+        {
+          string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
+          attributes.SetUserString(member.Key, userStringValue);
         }
       }
     }
