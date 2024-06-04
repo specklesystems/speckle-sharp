@@ -7,7 +7,7 @@ using ConnectorArchicad.Communication.Commands;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetElementBaseData : GetDataBase, ICommand<IEnumerable<DirectShape>>
+sealed internal class GetElementBaseData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
   [JsonObject(MemberSerialization.OptIn)]
   private sealed class Result
@@ -19,17 +19,13 @@ sealed internal class GetElementBaseData : GetDataBase, ICommand<IEnumerable<Dir
   public GetElementBaseData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
     : base(applicationIds, sendProperties, sendListingParameters) { }
 
-  public async Task<IEnumerable<DirectShape>> Execute()
+  public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
   {
-    Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+    dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
       "GetElementBaseData",
       new Parameters(ApplicationIds, SendProperties, SendListingParameters)
     );
-    foreach (var directShape in result.Datas)
-    {
-      directShape.units = Units.Meters;
-    }
 
-    return result.Datas;
+    return (Speckle.Newtonsoft.Json.Linq.JArray)result["elements"];
   }
 }

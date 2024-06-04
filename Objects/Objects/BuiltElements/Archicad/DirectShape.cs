@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad;
 
@@ -16,7 +18,10 @@ public class DirectShape : Base
 
   // Element base
   public string elementType { get; set; }
+
   public List<Classification> classifications { get; set; }
+  public Base? elementProperties { get; set; }
+  public Base? componentProperties { get; set; }
 
   public ArchicadLevel level { get; set; }
 
