@@ -8,31 +8,27 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3;
 
-public record ArcGISDocument(Project Project, Map Map, Uri SpeckleDatabasePath);
-
-// POC: Suppressed naming warning for now, but we should evaluate if we should follow this or disable it.
-[SuppressMessage(
-  "Naming",
-  "CA1711:Identifiers should not have incorrect suffix",
-  Justification = "Name ends in Stack but it is in fact a Stack, just not inheriting from `System.Collections.Stack`"
-)]
-public class ArcGISConversionContextStack : ConversionContextStack<ArcGISDocument, ACG.Unit>
+public class ArcGISDocument
 {
-  public ArcGISConversionContextStack(IHostToSpeckleUnitConverter<ACG.Unit> unitConverter)
-    : base(
-      new ArcGISDocument(Project.Current, MapView.Active.Map, EnsureOrAddSpeckleDatabase()),
-      MapView.Active.Map.SpatialReference.Unit,
-      unitConverter
-    ) { }
+  public Project Project { get; }
+  public Map Map { get; }
+  public Uri SpeckleDatabasePath { get; }
+
+  public ArcGISDocument()
+  {
+    Project = Project.Current;
+    Map = MapView.Active.Map;
+    SpeckleDatabasePath = EnsureOrAddSpeckleDatabase();
+  }
 
   private const string FGDB_NAME = "Speckle.gdb";
 
-  public static Uri EnsureOrAddSpeckleDatabase()
+  public Uri EnsureOrAddSpeckleDatabase()
   {
     return AddDatabaseToProject(GetDatabasePath());
   }
 
-  public static Uri GetDatabasePath()
+  public Uri GetDatabasePath()
   {
     try
     {
@@ -57,7 +53,7 @@ public class ArcGISConversionContextStack : ConversionContextStack<ArcGISDocumen
     }
   }
 
-  public static Uri AddDatabaseToProject(Uri databasePath)
+  public Uri AddDatabaseToProject(Uri databasePath)
   {
     // Create a FileGeodatabaseConnectionPath with the name of the file geodatabase you wish to create
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(databasePath);
@@ -96,4 +92,19 @@ public class ArcGISConversionContextStack : ConversionContextStack<ArcGISDocumen
 
     return databasePath;
   }
+}
+
+// POC: Suppressed naming warning for now, but we should evaluate if we should follow this or disable it.
+[SuppressMessage(
+  "Naming",
+  "CA1711:Identifiers should not have incorrect suffix",
+  Justification = "Name ends in Stack but it is in fact a Stack, just not inheriting from `System.Collections.Stack`"
+)]
+public class ArcGISConversionContextStack : ConversionContextStack<ArcGISDocument, ACG.Unit>
+{
+  public ArcGISConversionContextStack(
+    IHostToSpeckleUnitConverter<ACG.Unit> unitConverter,
+    ArcGISDocument arcGisDocument
+  )
+    : base(arcGisDocument, MapView.Active.Map.SpatialReference.Unit, unitConverter) { }
 }
