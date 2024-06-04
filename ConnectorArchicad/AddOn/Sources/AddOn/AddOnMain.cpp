@@ -90,46 +90,41 @@ public:
 private:
 	GS::UniString GetPlatformSpecificExecutablePath ()
 	{
-#if defined (macintosh)
-		static const char* FileName = "ConnectorArchicad";
-#else
-		static const char* FileName = "ConnectorArchicad.exe";
-#endif
-		static const char* FolderNameCommon = "Common";
-		static const char* FolderName = "ConnectorArchicad";
-
 		IO::Location ownFileLoc;
 		auto err = ACAPI_GetOwnLocation (&ownFileLoc);
 		if (err != NoError) {
 			return "";
 		}
 
+#if defined (macintosh)
+		static const char* ProductionConnector = "../../../Common/ConnectorArchicad/ConnectorArchicad.app/Contents/MacOS/ConnectorArchicad";
+#else
+		static const char* ProductionConnector = "../../../Common/ConnectorArchicad/ConnectorArchicad.exe";
+#endif
+
 		IO::Location location (ownFileLoc);
-		location.DeleteLastLocalName ();
-		location.DeleteLastLocalName ();
-		location.DeleteLastLocalName ();
-		location.AppendToLocal (IO::Name (FolderNameCommon));
-		location.AppendToLocal (IO::Name (FolderName));
-		location.AppendToLocal (IO::Name (FileName));
+		location.AppendToLocal (IO::RelativeLocation (ProductionConnector));
 
 		bool exist (false);
 		err = IO::fileSystem.Contains (location, &exist);
 		if (err != NoError || !exist) {
 			location = ownFileLoc;
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
 
-			location.AppendToLocal (IO::Name (FolderName));
-			location.AppendToLocal (IO::Name ("bin"));
+#if defined (macintosh)
 #ifdef DEBUG
-			location.AppendToLocal (IO::Name ("Debug"));
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Debug/net6.0/ConnectorArchicad";
 #else
-			location.AppendToLocal (IO::Name ("Release"));
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Release/net6.0/ConnectorArchicad";
 #endif
-			location.AppendToLocal (IO::Name ("net6.0"));
-			location.AppendToLocal (IO::Name (FileName));
+#else
+#ifdef DEBUG
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Debug/net6.0/ConnectorArchicad.exe";
+#else
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Release/net6.0/ConnectorArchicad.exe";
+#endif
+#endif
+
+			location.AppendToLocal (IO::RelativeLocation (DevelopmentConnector));
 		}
 
 		GS::UniString executableStr;
