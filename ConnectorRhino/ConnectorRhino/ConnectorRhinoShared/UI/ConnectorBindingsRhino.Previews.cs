@@ -100,7 +100,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       || @object.speckle_type.Contains("View")
       || @object.speckle_type.Contains("Level")
       || @object.speckle_type.Contains("GridLine")
-      || @object.speckle_type.Contains("Collection");
+      || @object.speckle_type.Contains("Collection")
+      || @object.speckle_type.Contains("PolygonElement");
   }
 
   public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)

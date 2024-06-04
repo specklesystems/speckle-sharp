@@ -650,6 +650,22 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           bakedCount++;
           break;
 
+        case Group o: // this is a GIS object
+          foreach (var groupObject in Doc.Objects.FindByGroup(o.Index))
+          {
+            groupObject.Attributes.LayerIndex = layer.Index;
+          }
+
+          if (StoredObjectParams.TryGetValue(obj.id, out Base parameters))
+          {
+            foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+            {
+              string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
+              o.SetUserString(member.Key, userStringValue);
+            }
+          }
+          break;
+
         case ViewInfo o: // this is a view, baked during conversion
           appObj.Update(o.Name);
           bakedCount++;
@@ -708,7 +724,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       attributes.Name = name;
     }
 
-    // set revit/gis parameters as user strings
+    // set revit parameters as user strings
     var paramId = parent != null ? parent.OriginalId : obj.id;
     if (StoredObjectParams.TryGetValue(paramId, out Base parameters))
     {
@@ -723,11 +739,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             var paramName = $"{convertedParameter.Item1}({member.Key})";
             attributes.SetUserString(paramName, convertedParameter.Item2);
           }
-        }
-        else // attributes coming from gis are directly on Base
-        {
-          string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
-          attributes.SetUserString(member.Key, userStringValue);
         }
       }
     }

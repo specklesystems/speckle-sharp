@@ -7,6 +7,7 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.Curve;
 using Objects.Geometry;
+using Objects.GIS;
 using Objects.Other;
 using Objects.Primitive;
 using Objects.Structural.Geometry;
@@ -513,6 +514,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = AlignmentToNative(o);
           break;
 
+        case PolygonElement o:
+          rhinoObj = PolygonElementToNative(o);
+          break;
+
         case Level o:
           rhinoObj = LevelToNative(o);
           break;
@@ -735,6 +740,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Instance _:
       case GridLine _:
       case Alignment _:
+      case PolygonElement _:
       case Level _:
       case Dimension _:
       case Collection c when !c.collectionType.ToLower().Contains("model"):
