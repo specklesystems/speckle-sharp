@@ -1,5 +1,4 @@
 ﻿using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;

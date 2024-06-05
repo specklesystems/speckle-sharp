@@ -1,7 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
-using Speckle.Connectors.Utils;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;

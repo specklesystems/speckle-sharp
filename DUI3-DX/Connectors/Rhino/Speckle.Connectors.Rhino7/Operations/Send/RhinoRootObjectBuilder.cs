@@ -4,7 +4,6 @@ using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
-using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
