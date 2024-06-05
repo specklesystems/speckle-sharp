@@ -9,10 +9,11 @@ public class Report : Base
 
 public enum Status
 {
-  SUCCESS,
-  INFO, // Not in use yet, maybe later as discussed
-  WARNING, // Not in use yet, maybe later as discussed
-  ERROR
+  NONE = 0, // Do not fucking use
+  SUCCESS = 1,
+  INFO = 2, // Not in use yet, maybe later as discussed
+  WARNING = 3, // Not in use yet, maybe later as discussed
+  ERROR = 4
 }
 
 public class SendConversionResult : ConversionResult
