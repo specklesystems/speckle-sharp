@@ -1,6 +1,7 @@
 ﻿using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
@@ -18,7 +19,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     _converter = converter;
   }
 
-  public SendConversionResults Build(
+  public RootObjectBuilderResult Build(
     IReadOnlyList<AutocadRootObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -40,7 +41,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     int count = 0;
 
     List<SendConversionResult> results = new(objects.Count);
-    foreach (var (root, applicationId) in objects)
+    foreach (var (dbObject, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
 
@@ -56,12 +57,12 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
         }
         else
         {
-          converted = _converter.Convert(root);
+          converted = _converter.Convert(dbObject);
           converted.applicationId = applicationId;
         }
 
         // Create and add a collection for each layer if not done so already.
-        if ((root as Entity)?.Layer is string layer)
+        if ((dbObject as Entity)?.Layer is string layer)
         {
           if (!collectionCache.TryGetValue(layer, out Collection? collection))
           {
@@ -73,17 +74,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
           collection.elements.Add(converted);
         }
 
-        results.Add(new(root, root.GetType().Name, applicationId, converted));
+        results.Add(new(Status.SUCCESS, applicationId, dbObject.GetType().ToString(), converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(root, root.GetType().Name, applicationId, ex));
+        results.Add(new(Status.ERROR, applicationId, dbObject.GetType().ToString(), null, ex));
         // POC: add logging
       }
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
 
-    return new(results, modelWithLayers);
+    return new(modelWithLayers, results);
   }
 }
