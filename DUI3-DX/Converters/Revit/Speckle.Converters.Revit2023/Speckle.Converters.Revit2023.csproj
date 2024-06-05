@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Speckle.Converters.RevitShared\**\*.cs" />
+    <Compile Include="..\Speckle.Converters.RevitShared\**\*.cs" Exclude="..\Speckle.Converters.RevitShared\obj\**\*.*"/>
   </ItemGroup>
 
 </Project>

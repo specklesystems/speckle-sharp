@@ -33,10 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Speckle.Connectors.RevitShared\**\*.cs" />
+    <Compile Include="..\Speckle.Connectors.RevitShared\**\*.cs"  Exclude="..\Speckle.Connectors.RevitShared\obj\**\*.*"/>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="..\Speckle.Connectors.RevitShared\**\*.xaml">
+    <Page Include="..\Speckle.Connectors.RevitShared\**\*.xaml"  Exclude="..\Speckle.Connectors.RevitShared\obj\**\*.*">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
