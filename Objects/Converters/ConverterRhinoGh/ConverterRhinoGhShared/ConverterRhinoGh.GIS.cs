@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
-using RG = Rhino.Geometry;
 using Objects.GIS;
 using Speckle.Core.Models;
 using RH = Rhino.DocObjects;
-using System.Drawing;
 using System.Linq;
+using Rhino.Geometry;
 
 namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
   // polygon element
+  // NOTE: class no longer in use? from 2.19
   public ApplicationObject PolygonElementToNative(PolygonElement poly)
   {
     var appObj = new ApplicationObject(poly.id, poly.speckle_type) { applicationId = poly.applicationId };
@@ -35,40 +35,76 @@ public partial class ConverterRhinoGh
           continue;
         }
 
-        foreach (var displayObject in display)
+        foreach (object displayObject in display)
         {
-          if (displayObject is Objects.Geometry.Mesh mesh)
+          if (displayObject is Base baseObj)
           {
-            RG.Mesh convertedMesh = MeshToNative(mesh);
-
-            // get attributes
-            var attribute = new RH.ObjectAttributes();
-
-            // display
-            var renderMaterial = mesh[@"renderMaterial"] as Other.RenderMaterial;
-            if (renderMaterial != null)
+            if (ConvertToNative(baseObj) is GeometryBase convertedObject)
             {
-              attribute.ObjectColor = Color.FromArgb(renderMaterial.diffuse);
-              attribute.ColorSource = RH.ObjectColorSource.ColorFromObject;
-            }
-
-            // render material
-            if (renderMaterial != null)
-            {
-              var material = RenderMaterialToNative(renderMaterial);
-              attribute.MaterialIndex = GetMaterialIndex(material?.Name);
-              attribute.MaterialSource = RH.ObjectMaterialSource.MaterialFromObject;
-            }
-
-            // add mesh to doc
-            Guid id = Doc.Objects.Add(convertedMesh, attribute);
-            if (id != Guid.Empty)
-            {
-              addedGeometry.Add(id);
+              Guid id = Doc.Objects.Add(convertedObject);
+              if (id != Guid.Empty)
+              {
+                addedGeometry.Add(id);
+              }
             }
           }
         }
       }
+    }
+
+    if (addedGeometry.Count == 0)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No meshes were created for group");
+      return appObj;
+    }
+
+    int groupIndex = Doc.Groups.Add(groupName, addedGeometry);
+    if (groupIndex == -1)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add group to doc");
+      return appObj;
+    }
+
+    RH.Group convertedGroup = Doc.Groups.FindIndex(groupIndex);
+
+    // update appobj
+    appObj.Update(convertedItem: convertedGroup, createdIds: addedGeometry.Select(o => o.ToString()).ToList());
+
+    return appObj;
+  }
+
+  // gis feature
+  public ApplicationObject GisFeatureToNative(GisFeature feature)
+  {
+    var appObj = new ApplicationObject(feature.id, feature.speckle_type) { applicationId = feature.applicationId };
+
+    // get the group name
+    var commitInfo = GetCommitInfo();
+    string groupName = $"{commitInfo} - " + feature.id;
+    if (Doc.Groups.FindName(groupName) is RH.Group existingGroup)
+    {
+      Doc.Groups.Delete(existingGroup);
+    }
+
+    List<Guid> addedGeometry = new();
+    if (feature.displayValue is List<Base> displayValue && displayValue.Count > 0)
+    {
+      foreach (Base displayObj in displayValue)
+      {
+        if (ConvertToNative(displayObj) is GeometryBase convertedObject)
+        {
+          Guid id = Doc.Objects.Add(convertedObject);
+          if (id != Guid.Empty)
+          {
+            addedGeometry.Add(id);
+          }
+        }
+      }
+    }
+    else
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No display value was found");
+      return appObj;
     }
 
     if (addedGeometry.Count == 0)
