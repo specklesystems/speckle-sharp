@@ -16,12 +16,12 @@ public class PointCloudToSpeckleConverter
 {
   private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
   private readonly ITypedConverter<ACG.Envelope, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public PointCloudToSpeckleConverter(
     ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter,
     ITypedConverter<ACG.Envelope, SOG.Box> boxConverter,
-    IConversionContextStack<Map, ACG.Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -77,7 +77,7 @@ public class PointCloudToSpeckleConverter
     SGIS.VectorLayer speckleLayer = new();
 
     // get document CRS (for writing geometry coords)
-    var spatialRef = _contextStack.Current.Document.SpatialReference;
+    var spatialRef = _contextStack.Current.Document.Map.SpatialReference;
     speckleLayer.crs = new SGIS.CRS
     {
       wkt = spatialRef.Wkt,
