@@ -29,9 +29,7 @@ public class Beam : Base, IDisplayValue<IReadOnlyList<Base>>
   #region Schema Info Constructors
   [SchemaInfo("Beam", "Creates a Speckle beam", "BIM", "Structure")]
   public Beam([SchemaMainParam] ICurve baseLine)
-  {
-    this.baseLine = baseLine;
-  }
+    : this(baseLine, null, null) { }
 
   #endregion
 }
