@@ -65,7 +65,7 @@ public class ReceiveConversionResult : ConversionResult
 /// send conversion result or a receive conversion result - but i do not believe this requires fully separate classes, especially
 /// for what this is meant to be at its core: a list of green or red checkmarks in the UI. To make DX easier, the two classes above embody
 /// this one and provided clean constructors for each case.
-/// POC: Inherits from Base so we can attach the conversion report to the root commit object. Can be revisted later.
+/// POC: Inherits from Base so we can attach the conversion report to the root commit object. Can be revisited later (it's not a problem to not inherit from base).
 /// </summary>
 public abstract class ConversionResult : Base
 {

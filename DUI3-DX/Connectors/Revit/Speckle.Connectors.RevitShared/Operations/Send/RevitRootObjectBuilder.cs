@@ -5,6 +5,7 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
 
@@ -31,7 +32,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     };
   }
 
-  public SendConversionResults Build(
+  public RootObjectBuilderResult Build(
     IReadOnlyList<ElementId> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -90,18 +91,18 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
         }
 
         collection.elements.Add(converted);
-        results.Add(new(revitElement, revitElement.GetType().Name, applicationId, converted));
+        results.Add(new(Status.SUCCESS, applicationId, revitElement.GetType().Name, converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(revitElement, revitElement.GetType().Name, applicationId, ex));
+        results.Add(new(Status.ERROR, applicationId, revitElement.GetType().Name, null, ex));
         // POC: add logging
       }
 
       onOperationProgressed?.Invoke("Converting", (double)++countProgress / revitElements.Count);
     }
 
-    return new(results, _rootObject);
+    return new(_rootObject, results);
   }
 
   /// <summary>
