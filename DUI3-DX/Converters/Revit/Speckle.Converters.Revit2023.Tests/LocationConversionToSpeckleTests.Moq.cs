@@ -11,7 +11,7 @@ namespace Speckle.Converters.Revit2023.Tests;
 
 public class ModelCurveArrayToSpeckleConverterTests_Moq
 {
-  private readonly MockRepository _repository = new (MockBehavior.Strict);
+  private readonly MockRepository _repository = new(MockBehavior.Strict);
 
   private readonly Mock<IRevitConversionContextStack> _revitConversionContextStack;
   private readonly Mock<IScalingServiceToSpeckle> _scalingServiceToSpeckle;
@@ -19,17 +19,14 @@ public class ModelCurveArrayToSpeckleConverterTests_Moq
 
   public ModelCurveArrayToSpeckleConverterTests_Moq()
   {
-    _revitConversionContextStack =
-      _repository.Create<IRevitConversionContextStack>();
-    _scalingServiceToSpeckle =
-        _repository.Create<IScalingServiceToSpeckle>();
-    _curveConverter =
-          _repository.Create<ITypedConverter<IRevitCurve, ICurve>>();
+    _revitConversionContextStack = _repository.Create<IRevitConversionContextStack>();
+    _scalingServiceToSpeckle = _repository.Create<IScalingServiceToSpeckle>();
+    _curveConverter = _repository.Create<ITypedConverter<IRevitCurve, ICurve>>();
   }
 
   [TearDown]
   public void Verify() => _repository.VerifyAll();
-  
+
   [Test]
   public void Convert_Empty()
   {

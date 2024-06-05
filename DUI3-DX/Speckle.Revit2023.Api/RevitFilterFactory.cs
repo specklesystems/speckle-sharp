@@ -6,7 +6,8 @@ namespace Speckle.Revit2023.Api;
 
 public class RevitFilterFactory : IRevitFilterFactory
 {
-  public IRevitElementIsElementTypeFilter CreateElementIsElementTypeFilter(bool inverted) => new ElementIsElementTypeFilterProxy(new ElementIsElementTypeFilter());
+  public IRevitElementIsElementTypeFilter CreateElementIsElementTypeFilter(bool inverted) =>
+    new ElementIsElementTypeFilterProxy(new ElementIsElementTypeFilter());
 
   public IRevitLogicalAndFilterFilter CreateLogicalAndFilter(params IRevitElementFilter[] filters) =>
     new LogicalAndFilterProxy(
