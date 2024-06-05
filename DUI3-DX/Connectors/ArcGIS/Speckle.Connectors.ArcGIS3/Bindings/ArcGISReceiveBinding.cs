@@ -51,7 +51,7 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
       using IUnitOfWork<ReceiveOperation> unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
 
       // Receive host objects
-      var conversionResults = await unitOfWork.Service
+      var receiveOperationResults = await unitOfWork.Service
         .Execute(
           modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId.NotNull(),
@@ -63,7 +63,11 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      Commands.SetModelReceiveResult(modelCardId, conversionResults);
+      Commands.SetModelReceiveResult(
+        modelCardId,
+        receiveOperationResults.BakedObjectIds,
+        receiveOperationResults.ConversionResults
+      );
     }
     // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)

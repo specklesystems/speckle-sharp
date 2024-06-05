@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
-using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
 
@@ -105,7 +105,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return vectorLayers.Count + rasterLayers.Count > 0;
   }
 
-  public IReadOnlyList<ReceiveConversionResult> Build(
+  public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -131,6 +131,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     // 1. convert everything
     List<ReceiveConversionResult> results = new(objectsToConvert.Count);
+    List<string> bakedObjectIds = new();
     foreach (var item in objectsToConvert)
     {
       (string[] path, Base obj, string? parentId) = item;
@@ -141,19 +142,25 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         {
           var result = ConvertNativeLayers((Collection)obj, path, objectIds);
           convertedGISObjects.Add(result);
-          results.Add(new(obj, result.converted, result.path));
+          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
+          // TODO: is the type in here basically a GIS Layer?
+          results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
+          bakedObjectIds.Add(result.path);
         }
         else
         {
           var result = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
           convertedGeometries[obj.id] = result;
 
-          results.Add(new(obj, result.converted, result.path)); //POC: what native id?, path may not be unique
+          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
+          results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
+          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis
+          // bakedObjectIds.Add(result.path);
         }
       }
       catch (Exception ex) when (!ex.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
-        results.Add(new(obj, ex));
+        results.Add(new(Status.ERROR, obj, null, null, ex));
       }
       onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
     }
@@ -175,6 +182,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
     }
 
-    return results;
+    // TODO: validated a correct set regarding bakedobject ids
+    return new(bakedObjectIds, results);
   }
 }

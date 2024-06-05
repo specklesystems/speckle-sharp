@@ -71,7 +71,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      objectIds = receiverModelCard.ReceiveResult?.GetSuccessfulResultIds().NotNull();
+      objectIds = receiverModelCard.BakedObjectIds.NotNull();
     }
 
     if (objectIds is null)

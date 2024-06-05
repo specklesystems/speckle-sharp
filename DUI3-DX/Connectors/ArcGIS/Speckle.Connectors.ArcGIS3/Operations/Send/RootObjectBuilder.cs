@@ -2,6 +2,7 @@ using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
@@ -21,7 +22,7 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
     _unitOfWorkFactory = unitOfWorkFactory;
   }
 
-  public SendConversionResults Build(
+  public RootObjectBuilderResult Build(
     IReadOnlyList<MapMember> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -62,17 +63,17 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
 
         // add to host
         collectionHost.elements.Add(converted);
-        results.Add(new(mapMember, mapMember.GetType().Name, applicationId, converted));
+        results.Add(new(Status.SUCCESS, applicationId, mapMember.GetType().Name, converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(mapMember, mapMember.GetType().Name, applicationId, ex));
+        results.Add(new(Status.ERROR, applicationId, mapMember.GetType().Name, null, ex));
         // POC: add logging
       }
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
 
-    return new(results, rootObjectCollection);
+    return new(rootObjectCollection, results);
   }
 }

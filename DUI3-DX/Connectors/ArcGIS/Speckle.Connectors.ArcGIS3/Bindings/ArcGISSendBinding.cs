@@ -322,7 +322,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         })
         .ConfigureAwait(false);
 
-      Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults.Results);
+      Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
     // Catch here specific exceptions if they related to model card.
     catch (SpeckleSendFilterException e)
