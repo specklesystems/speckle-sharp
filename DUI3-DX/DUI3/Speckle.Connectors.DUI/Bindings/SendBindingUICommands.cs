@@ -1,5 +1,5 @@
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Conversion;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -8,7 +8,7 @@ public class SendBindingUICommands : BasicConnectorBindingCommands
 {
   private const string REFRESH_SEND_FILTERS_UI_COMMAND_NAME = "refreshSendFilters";
   private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
-  private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
+  private const string SET_MODEL_SEND_RESULT_UI_COMMAND_NAME = "setModelSendResult";
 
   public SendBindingUICommands(IBridge bridge)
     : base(bridge) { }
@@ -19,13 +19,13 @@ public class SendBindingUICommands : BasicConnectorBindingCommands
   public void SetModelsExpired(IEnumerable<string> expiredModelIds) =>
     Bridge.Send(SET_MODELS_EXPIRED_UI_COMMAND_NAME, expiredModelIds);
 
-  public void SetModelCreatedVersionId(
+  public void SetModelSendResult(
     string modelCardId,
     string versionId,
-    IReadOnlyList<SendConversionResult> sendConversionResults
+    IEnumerable<SendConversionResult> sendConversionResults
   ) =>
     Bridge.Send(
-      SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME,
+      SET_MODEL_SEND_RESULT_UI_COMMAND_NAME,
       new
       {
         modelCardId,

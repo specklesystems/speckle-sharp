@@ -6,6 +6,7 @@ using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
 
@@ -23,14 +24,14 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     _unitOfWorkFactory = unitOfWorkFactory;
   }
 
-  public SendConversionResults Build(
+  public RootObjectBuilderResult Build(
     IReadOnlyList<RhinoObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   ) => ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
 
-  private SendConversionResults ConvertObjects(
+  private RootObjectBuilderResult ConvertObjects(
     IReadOnlyList<RhinoObject> rhinoObjects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -45,7 +46,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
-    Dictionary<int, Collection> layerCollectionCache = new(); // POC: This seems to always start empty, so it's not caching anything out here.
+    Dictionary<int, Collection> layerCollectionCache = new();
 
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);
@@ -62,7 +63,6 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
       try
       {
         // get from cache or convert:
-        // POC: We're not using the cache here yet but should once the POC is working.
         // What we actually do here is check if the object has been previously converted AND has not changed.
         // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
         Base converted;
@@ -82,12 +82,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // add to host
         collectionHost.elements.Add(converted);
 
-        results.Add(new(rhinoObject, rhinoObject.ObjectType.ToString(), applicationId, converted));
+        results.Add(new(Status.SUCCESS, applicationId, rhinoObject.ObjectType.ToString(), converted));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(rhinoObject, rhinoObject.ObjectType.ToString(), applicationId, ex));
-        // POC: add logging
+        results.Add(new(Status.ERROR, applicationId, rhinoObject.ObjectType.ToString(), null, ex));
       }
 
       onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
@@ -97,7 +96,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     }
 
     // 5. profit
-    return new(results, rootObjectCollection);
+    return new(rootObjectCollection, results);
   }
 
   /// <summary>

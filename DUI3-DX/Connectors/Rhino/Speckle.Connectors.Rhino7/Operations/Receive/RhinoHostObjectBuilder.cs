@@ -1,8 +1,8 @@
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
-using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -27,7 +27,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public IReadOnlyList<ReceiveConversionResult> Build(
+  public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -50,10 +50,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   }
 
   // POC: Potentially refactor out into an IObjectBaker.
-  private IReadOnlyList<ReceiveConversionResult> BakeObjects(
-    IEnumerable<TraversalContext> objectsGraph,
-    string baseLayerName
-  )
+  private HostObjectBuilderResult BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
   {
     RhinoDoc doc = _contextStack.Current.Document;
     var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
@@ -85,6 +82,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     using var noDraw = new DisableRedrawScope(doc.Views);
 
     var conversionResults = new List<ReceiveConversionResult>();
+    var bakedObjectIds = new List<string>();
 
     foreach (TraversalContext tc in objectsGraph)
     {
@@ -102,16 +100,17 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         var conversionIds = HandleConversionResult(result, tc.Current, layerIndex);
         foreach (var r in conversionIds)
         {
-          conversionResults.Add(new(tc.Current, result, r));
+          conversionResults.Add(new(Status.SUCCESS, tc.Current, r, result.GetType().ToString()));
+          bakedObjectIds.Add(r);
         }
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        conversionResults.Add(new(tc.Current, ex));
+        conversionResults.Add(new(Status.ERROR, tc.Current, null, null, ex));
       }
     }
 
-    return conversionResults;
+    return new(bakedObjectIds, conversionResults);
   }
 
   private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
