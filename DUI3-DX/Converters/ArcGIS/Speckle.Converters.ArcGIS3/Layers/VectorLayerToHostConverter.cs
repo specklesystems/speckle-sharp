@@ -1,5 +1,4 @@
 using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
@@ -43,8 +42,8 @@ public class VectorLayerToHostConverter : IToHostTopLevelConverter, ITypedConver
     }
 
     // check if Speckle VectorLayer should become a FeatureClass, StandaloneTable or PointcloudLayer
-    GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
-    if (geomType != GeometryType.Unknown) // feature class
+    ACG.GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+    if (geomType != ACG.GeometryType.Unknown) // feature class
     {
       return _featureClassConverter.Convert(target).GetName();
     }

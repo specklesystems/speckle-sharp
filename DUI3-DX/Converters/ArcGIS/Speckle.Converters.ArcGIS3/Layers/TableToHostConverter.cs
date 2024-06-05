@@ -5,6 +5,7 @@ using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common.Objects;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -12,23 +13,23 @@ public class TableLayerToHostConverter : ITypedConverter<VectorLayer, Table>
 {
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
-  private readonly IArcGISProjectUtils _arcGISProjectUtils;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public TableLayerToHostConverter(
     IFeatureClassUtils featureClassUtils,
-    IArcGISProjectUtils arcGISProjectUtils,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack,
     IArcGISFieldUtils fieldsUtils
   )
   {
     _featureClassUtils = featureClassUtils;
-    _arcGISProjectUtils = arcGISProjectUtils;
+    _contextStack = contextStack;
     _fieldsUtils = fieldsUtils;
   }
 
   public Table Convert(VectorLayer target)
   {
-    string databasePath = _arcGISProjectUtils.GetDatabasePath();
-    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
+    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
+      new(_contextStack.Current.Document.SpeckleDatabasePath);
     Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
     SchemaBuilder schemaBuilder = new(geodatabase);
 

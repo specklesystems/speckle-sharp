@@ -16,13 +16,13 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
   private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
     ITypedConverter<Row, GisFeature> gisFeatureConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISFieldUtils fieldsUtils,
-    IConversionContextStack<Map, Unit> contextStack
+    IConversionContextStack<ArcGISDocument, Unit> contextStack
   )
   {
     _gisFeatureConverter = gisFeatureConverter;
@@ -55,7 +55,7 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
     VectorLayer speckleLayer = new();
 
     // get document CRS (for writing geometry coords)
-    var spatialRef = _contextStack.Current.Document.SpatialReference;
+    var spatialRef = _contextStack.Current.Document.Map.SpatialReference;
     speckleLayer.crs = new CRS
     {
       wkt = spatialRef.Wkt,

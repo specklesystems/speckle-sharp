@@ -8,29 +8,27 @@ using ArcGIS.Core.Geometry;
 using Objects.GIS;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Converters.ArcGIS3;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
 public class ArcGISHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
-  private readonly IArcGISProjectUtils _arcGISProjectUtils;
   private readonly INonNativeFeaturesUtils _nonGisFeaturesUtils;
 
   // POC: figure out the correct scope to only initialize on Receive
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, Unit> _contextStack;
   private readonly GraphTraversal _traverseFunction;
 
   public ArcGISHostObjectBuilder(
     IRootToHostConverter converter,
-    IArcGISProjectUtils arcGISProjectUtils,
-    IConversionContextStack<Map, Unit> contextStack,
+    IConversionContextStack<ArcGISDocument, Unit> contextStack,
     INonNativeFeaturesUtils nonGisFeaturesUtils,
     GraphTraversal traverseFunction
   )
   {
     _converter = converter;
-    _arcGISProjectUtils = arcGISProjectUtils;
     _contextStack = contextStack;
     _nonGisFeaturesUtils = nonGisFeaturesUtils;
     _traverseFunction = traverseFunction;
@@ -58,23 +56,31 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return (objPath, converted);
   }
 
-  public void AddDatasetsToMap((string path, string converted) databaseObj, string databasePath)
+  public string AddDatasetsToMap((string, string) databaseObj)
   {
     try
     {
-      LayerFactory.Instance.CreateLayer(
-        new Uri($"{databasePath}\\{databaseObj.converted}"),
-        _contextStack.Current.Document,
-        layerName: databaseObj.path
-      );
+      return LayerFactory.Instance
+        .CreateLayer(
+          new Uri(
+            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
+          ),
+          _contextStack.Current.Document.Map,
+          layerName: databaseObj.Item1
+        )
+        .URI;
     }
     catch (ArgumentException)
     {
-      StandaloneTableFactory.Instance.CreateStandaloneTable(
-        new Uri($"{databasePath}\\{databaseObj.converted}"),
-        _contextStack.Current.Document,
-        tableName: databaseObj.path
-      );
+      return StandaloneTableFactory.Instance
+        .CreateStandaloneTable(
+          new Uri(
+            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
+          ),
+          _contextStack.Current.Document.Map,
+          tableName: databaseObj.Item1
+        )
+        .URI;
     }
   }
 
@@ -109,11 +115,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
   {
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
-
-    // create and add Geodatabase to a project
-
-    string databasePath = _arcGISProjectUtils.GetDatabasePath();
-    _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     var objectsToConvert = _traverseFunction
@@ -170,7 +171,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      AddDatasetsToMap(databaseObj, databasePath);
+      AddDatasetsToMap(databaseObj);
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
     }
 
