@@ -75,7 +75,7 @@ public class ArcGISDocument
       // POC: customize the exception type
       throw new ArgumentException($"Invalid path: {databasePath}");
     }
-    var fGdbName = databasePath.LocalPath;
+    var fGdbName = databasePath.Segments[^1];
     Item folderToAdd = ItemFactory.Instance.Create(parentFolder);
     // POC: QueuedTask
     QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
