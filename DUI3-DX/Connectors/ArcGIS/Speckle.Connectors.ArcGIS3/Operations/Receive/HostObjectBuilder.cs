@@ -145,7 +145,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
           // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
           // TODO: is the type in here basically a GIS Layer?
           results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
-          bakedObjectIds.Add(result.path);
         }
         else
         {
@@ -154,7 +153,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
           // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
           results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
-          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis
+          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis (weird is subjective)
           // bakedObjectIds.Add(result.path);
         }
       }
@@ -178,7 +177,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      AddDatasetsToMap(databaseObj);
+      bakedObjectIds.Add(AddDatasetsToMap(databaseObj));
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
     }
 
