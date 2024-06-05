@@ -518,6 +518,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = PolygonElementToNative(o);
           break;
 
+        case GisFeature o:
+          rhinoObj = GisFeatureToNative(o);
+          break;
+
         case Level o:
           rhinoObj = LevelToNative(o);
           break;
@@ -741,6 +745,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case GridLine _:
       case Alignment _:
       case PolygonElement _:
+      case GisFeature _:
       case Level _:
       case Dimension _:
       case Collection c when !c.collectionType.ToLower().Contains("model"):

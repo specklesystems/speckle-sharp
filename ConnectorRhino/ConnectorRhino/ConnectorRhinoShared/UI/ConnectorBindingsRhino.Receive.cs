@@ -569,29 +569,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
             continue;
           }
-          var attributes = new ObjectAttributes();
 
-          // handle display style
-          Base display = obj["displayStyle"] as Base ?? obj["@displayStyle"] as Base;
-          Base render = obj["renderMaterial"] as Base ?? obj["@renderMaterial"] as Base;
-          if (display != null)
-          {
-            var convertedDisplay = converter.ConvertToNative(display) as ObjectAttributes;
-            if (convertedDisplay is not null)
-            {
-              attributes = convertedDisplay;
-            }
-          }
-          else if (render != null)
-          {
-            attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
-          }
-
-          // assign layer
-          attributes.LayerIndex = layer.Index;
-
-          // handle user info, application id, revit/gis parameters
-          SetUserInfo(obj, attributes, converter, parent);
+          // create attributes with layer, display and render, user info, application id, revit/gis parameters
+          ObjectAttributes attributes = CreateAttributesFromObject(
+            obj,
+            layer.Index,
+            converter,
+            out RenderMaterial renderMaterial,
+            parent
+          );
 
           Guid id = Doc.Objects.Add(o, attributes);
           if (id == Guid.Empty)
@@ -621,22 +607,26 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           bakedCount++;
 
           // handle render material
-          if (render != null)
+          if (renderMaterial is not null)
           {
-            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial;
-            if (convertedMaterial is not null)
-            {
-              RhinoObject rhinoObject = Doc.Objects.FindId(id);
-              rhinoObject.RenderMaterial = convertedMaterial;
-              rhinoObject.CommitChanges();
-            }
+            RhinoObject rhinoObject = Doc.Objects.FindId(id);
+            rhinoObject.RenderMaterial = renderMaterial;
+            rhinoObject.CommitChanges();
           }
 
           break;
 
         case RhinoObject o: // this was prbly a block instance, baked during conversion
-          o.Attributes.LayerIndex = layer.Index; // assign layer
-          SetUserInfo(obj, o.Attributes, converter, parent); // handle user info, including application id
+          // create attributes with layer, display and render, user info, application id, revit/gis parameters
+          ObjectAttributes objectAttributes = CreateAttributesFromObject(
+            obj,
+            layer.Index,
+            converter,
+            out RenderMaterial objectRenderMaterial,
+            parent
+          );
+
+          o.Attributes = objectAttributes;
           o.CommitChanges();
           if (parent != null)
           {
@@ -655,21 +645,23 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           StoredObjectParams.TryGetValue(obj.id, out Base parameters);
           Dictionary<string, object> paramMembers = parameters?.GetMembers(DynamicBaseMemberType.Dynamic);
 
-          foreach (var groupObject in Doc.Objects.FindByGroup(o.Index))
+          foreach (RhinoObject groupObject in Doc.Objects.FindByGroup(o.Index))
           {
-            groupObject.Attributes.LayerIndex = layer.Index;
+            // create attributes with layer, display and render, user info, application id, revit/gis parameters
+            ObjectAttributes groupAttributes = CreateAttributesFromObject(
+              obj,
+              layer.Index,
+              converter,
+              out RenderMaterial groupRenderMaterial,
+              parent
+            );
 
-            // set application id
-            var appId = parent != null ? parent.applicationId : obj.applicationId;
-            groupObject.Attributes.SetUserString(ApplicationIdKey, appId);
+            groupObject.Attributes = groupAttributes;
 
-            if (paramMembers != null)
+            // handle render material
+            if (groupRenderMaterial is not null)
             {
-              foreach (var member in paramMembers)
-              {
-                string userStringValue = member.Value is object value ? value.ToString() : string.Empty;
-                groupObject.Attributes.SetUserString(member.Key, userStringValue);
-              }
+              groupObject.RenderMaterial = groupRenderMaterial;
             }
 
             groupObject.CommitChanges();
@@ -711,13 +703,36 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
   }
 
-  private void SetUserInfo(
+  private ObjectAttributes CreateAttributesFromObject(
     Base obj,
-    ObjectAttributes attributes,
+    int layerIndex,
     ISpeckleConverter converter,
+    out RenderMaterial renderMaterial,
     ApplicationObject parent = null
   )
   {
+    ObjectAttributes attributes = new();
+    renderMaterial = null;
+
+    // handle display style
+    Base display = obj["displayStyle"] as Base ?? obj["@displayStyle"] as Base;
+    Base render = obj["renderMaterial"] as Base ?? obj["@renderMaterial"] as Base;
+    if (display != null)
+    {
+      var convertedDisplay = converter.ConvertToNative(display) as ObjectAttributes;
+      if (convertedDisplay is not null)
+      {
+        attributes = convertedDisplay;
+      }
+    }
+    else if (render != null)
+    {
+      attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
+    }
+
+    // assign layer
+    attributes.LayerIndex = layerIndex;
+
     // set user strings
     if (obj[UserStrings] is Base userStrings)
     {
@@ -768,6 +783,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         }
       }
     }
+
+    // render material
+    if (render is not null)
+    {
+      renderMaterial = converter.ConvertToNative(render) as RenderMaterial;
+    }
+
+    return attributes;
   }
 
   // Clears the stored objects, params, and preview objects
