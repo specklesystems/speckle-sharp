@@ -1,4 +1,3 @@
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -10,11 +9,11 @@ namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Circle, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public CircleToHostConverter(
     ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
-    IConversionContextStack<Map, ACG.Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _pointConverter = pointConverter;

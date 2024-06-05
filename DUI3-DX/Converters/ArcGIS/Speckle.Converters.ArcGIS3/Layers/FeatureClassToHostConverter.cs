@@ -1,9 +1,9 @@
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
-using ArcGIS.Core.Geometry;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
@@ -15,19 +15,19 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
   private readonly ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISFieldUtils _fieldsUtils;
-  private readonly IArcGISProjectUtils _arcGISProjectUtils;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public FeatureClassToHostConverter(
     ITypedConverter<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISFieldUtils fieldsUtils,
-    IArcGISProjectUtils arcGISProjectUtils
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _gisGeometryConverter = gisGeometryConverter;
     _featureClassUtils = featureClassUtils;
     _fieldsUtils = fieldsUtils;
-    _arcGISProjectUtils = arcGISProjectUtils;
+    _contextStack = contextStack;
   }
 
   private List<GisFeature> RecoverOutdatedGisFeatures(VectorLayer target)
@@ -74,10 +74,10 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
 
   public FeatureClass Convert(VectorLayer target)
   {
-    GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+    ACG.GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
 
-    string databasePath = _arcGISProjectUtils.GetDatabasePath();
-    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
+    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
+      new(_contextStack.Current.Document.SpeckleDatabasePath);
     Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
     SchemaBuilder schemaBuilder = new(geodatabase);
 
@@ -87,7 +87,7 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
     {
       wktString = target.crs.wkt.ToString();
     }
-    SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
+    ACG.SpatialReference spatialRef = ACG.SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
     // create Fields
     List<FieldDescription> fields = _fieldsUtils.GetFieldsFromSpeckleLayer(target);

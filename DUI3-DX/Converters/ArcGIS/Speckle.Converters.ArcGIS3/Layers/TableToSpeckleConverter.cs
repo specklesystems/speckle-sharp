@@ -4,7 +4,6 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -14,15 +13,10 @@ public class StandaloneTableToSpeckleConverter
     ITypedConverter<StandaloneTable, VectorLayer>
 {
   private readonly ITypedConverter<Row, GisFeature> _gisFeatureConverter;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
 
-  public StandaloneTableToSpeckleConverter(
-    ITypedConverter<Row, GisFeature> gisFeatureConverter,
-    IConversionContextStack<Map, Unit> contextStack
-  )
+  public StandaloneTableToSpeckleConverter(ITypedConverter<Row, GisFeature> gisFeatureConverter)
   {
     _gisFeatureConverter = gisFeatureConverter;
-    _contextStack = contextStack;
   }
 
   public Base Convert(object target)

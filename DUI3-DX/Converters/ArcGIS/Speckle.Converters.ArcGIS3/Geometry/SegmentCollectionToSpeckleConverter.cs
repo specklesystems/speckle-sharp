@@ -1,4 +1,3 @@
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
@@ -6,11 +5,11 @@ namespace Speckle.Converters.ArcGIS3.Geometry;
 
 public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
   private readonly ITypedConverter<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public SegmentCollectionToSpeckleConverter(
-    IConversionContextStack<Map, ACG.Unit> contextStack,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack,
     ITypedConverter<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
