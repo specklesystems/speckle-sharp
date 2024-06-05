@@ -641,10 +641,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           break;
 
         case Group o: // this is a GIS object
-
-          StoredObjectParams.TryGetValue(obj.id, out Base parameters);
-          Dictionary<string, object> paramMembers = parameters?.GetMembers(DynamicBaseMemberType.Dynamic);
-
           foreach (RhinoObject groupObject in Doc.Objects.FindByGroup(o.Index))
           {
             // create attributes with layer, display and render, user info, application id, revit/gis parameters
@@ -655,6 +651,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
               out RenderMaterial groupRenderMaterial,
               parent
             );
+
+            groupAttributes.AddToGroup(o.Index);
 
             groupObject.Attributes = groupAttributes;
 

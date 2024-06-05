@@ -54,7 +54,7 @@ public partial class ConverterRhinoGh
 
     if (addedGeometry.Count == 0)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No meshes were created for group");
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No objects were created for group");
       return appObj;
     }
 
@@ -86,30 +86,51 @@ public partial class ConverterRhinoGh
       Doc.Groups.Delete(existingGroup);
     }
 
-    List<Guid> addedGeometry = new();
+    // for gis features, we are assuming that the `displayValue prop` should be converted first
+    // if there are no objects in `displayValue`, then we will fall back to check for convertible objects in `geometries`
+    List<GeometryBase> convertedObjects = new();
     if (feature.displayValue is List<Base> displayValue && displayValue.Count > 0)
     {
       foreach (Base displayObj in displayValue)
       {
         if (ConvertToNative(displayObj) is GeometryBase convertedObject)
         {
-          Guid id = Doc.Objects.Add(convertedObject);
-          if (id != Guid.Empty)
-          {
-            addedGeometry.Add(id);
-          }
+          convertedObjects.Add(convertedObject);
+        }
+      }
+    }
+    else if (feature.geometry is List<Base> geometries && geometries.Count > 0)
+    {
+      foreach (Base displayObj in geometries)
+      {
+        if (ConvertToNative(displayObj) is GeometryBase convertedObject)
+        {
+          convertedObjects.Add(convertedObject);
         }
       }
     }
     else
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No display value was found");
+      appObj.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: "No objects in displayValue or geometries was found"
+      );
       return appObj;
+    }
+
+    List<Guid> addedGeometry = new();
+    foreach (GeometryBase convertedObject in convertedObjects)
+    {
+      Guid id = Doc.Objects.Add(convertedObject);
+      if (id != Guid.Empty)
+      {
+        addedGeometry.Add(id);
+      }
     }
 
     if (addedGeometry.Count == 0)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No meshes were created for group");
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No objects were created for group");
       return appObj;
     }
 
