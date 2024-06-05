@@ -53,7 +53,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Receive host objects
-      IReadOnlyList<ReceiveConversionResult> conversionResults = await unitOfWork.Service
+      var operationResults = await unitOfWork.Service
         .Execute(
           modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId.NotNull(),
@@ -65,7 +65,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      Commands.SetModelReceiveResult(modelCardId, conversionResults);
+      Commands.SetModelReceiveResult(modelCardId, operationResults.BakedObjectIds, operationResults.ConversionResults);
     }
     // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)

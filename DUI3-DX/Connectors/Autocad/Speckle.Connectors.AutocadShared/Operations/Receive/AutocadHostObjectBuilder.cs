@@ -4,6 +4,7 @@ using Speckle.Connectors.Autocad.HostApp.Extensions;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Models;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
@@ -27,7 +28,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     _autocadLayerManager = autocadLayerManager;
   }
 
-  public IReadOnlyList<ReceiveConversionResult> Build(
+  public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -46,23 +47,29 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     HashSet<string> uniqueLayerNames = new();
 
     List<ReceiveConversionResult> results = new();
+    List<string> bakedObjectIds = new();
     foreach (var tc in _traversalFunction.TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken))
     {
       try
       {
-        var convertedObjects = ConvertObject(tc, baseLayerPrefix, uniqueLayerNames);
+        var convertedObjects = ConvertObject(tc, baseLayerPrefix, uniqueLayerNames).ToList();
 
         results.AddRange(
-          convertedObjects.Select(e => new ReceiveConversionResult(tc.Current, e, e.Handle.Value.ToString()))
+          convertedObjects.Select(
+            e =>
+              new ReceiveConversionResult(Status.SUCCESS, tc.Current, e.Handle.Value.ToString(), e.GetType().ToString())
+          )
         );
+
+        bakedObjectIds.AddRange(convertedObjects.Select(e => e.Handle.Value.ToString()));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        results.Add(new(tc.Current, ex));
+        results.Add(new(Status.ERROR, tc.Current, null, null, ex));
       }
     }
 
-    return results;
+    return new(bakedObjectIds, results);
   }
 
   private IEnumerable<Entity> ConvertObject(TraversalContext tc, string baseLayerPrefix, ISet<string> uniqueLayerNames)
