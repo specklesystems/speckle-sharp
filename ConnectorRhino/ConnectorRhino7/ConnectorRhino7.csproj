@@ -5,14 +5,14 @@
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
-    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
+    <RhinoMacLauncher>7</RhinoMacLauncher>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
     <Product>ConnectorRhino7</Product>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-
+    <RhinoPluginType>grasshopper</RhinoPluginType>
     <!--NOTE-->
     <!--
     Since Rhino uses mono we build for win-x64 also on mac
@@ -25,6 +25,7 @@
     <UseWpf>true</UseWpf>
     <DefineConstants>$(DefineConstants);RHINO7;RHINO6_OR_GREATER;RHINO7_OR_GREATER</DefineConstants>
     <OutputType>Library</OutputType>
+    <RhinoPluginType>rhp</RhinoPluginType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
