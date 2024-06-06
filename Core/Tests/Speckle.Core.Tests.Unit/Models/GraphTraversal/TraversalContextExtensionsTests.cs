@@ -29,6 +29,16 @@ public class TraversalContextExtensionsTests
   }
 
   [TestCaseSource(nameof(TestDepths))]
+  public void GetAscendant(int depth)
+  {
+    var testData = CreateLinkedList(depth, i => new());
+
+    var all = TraversalContextExtensions.GetAscendants(testData).ToArray();
+
+    Assert.That(all, Has.Length.EqualTo(depth));
+  }
+
+  [TestCaseSource(nameof(TestDepths))]
   public void GetAscendantOfType_AllBase(int depth)
   {
     var testData = CreateLinkedList(depth, i => new());

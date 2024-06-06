@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
@@ -79,10 +80,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private bool HasGISParent(TraversalContext context)
   {
-    List<Base> gisLayers = context.GetAscendantWhere(IsGISType).Where(obj => obj != context.Current).ToList();
+    List<Base> gisLayers = context.GetAscendants().Where(IsGISType).Where(obj => obj != context.Current).ToList();
     return gisLayers.Count > 0;
   }
 
+  [Pure]
   private static bool IsGISType(Base obj)
   {
     return obj is RasterLayer or VectorLayer;

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Speckle.Core.Models.GraphTraversal;
@@ -12,6 +12,7 @@ public static class TraversalContextExtensions
   /// </summary>
   /// <param name="context"></param>
   /// <returns></returns>
+  [Pure]
   public static IEnumerable<string> GetPropertyPath(this TraversalContext context)
   {
     TraversalContext? head = context;
@@ -28,33 +29,31 @@ public static class TraversalContextExtensions
   }
 
   /// <summary>
-  /// Walks up the tree, returning all <typeparamref name="T"/> typed ascendant, starting the <typeparamref name="T"/> closest <paramref name="context"/>,
-  /// walking up <see cref="TraversalContext.Parent"/> nodes
+  /// Walks up the tree, returning all ascendant, including <paramref name="context"/>
   /// </summary>
   /// <param name="context"></param>
-  /// <returns></returns>
-  public static IEnumerable<T> GetAscendantOfType<T>(this TraversalContext context)
-    where T : Base
-  {
-    return GetAscendantWhere(context, tc => tc is T).Cast<T>();
-  }
-
-  /// <summary>
-  /// Walks up the tree, returning all <see cref="Base"/> typed ascendant, starting the <typeparamref name="T"/> closest <paramref name="context"/>,
-  /// walking up <see cref="TraversalContext.Parent"/> nodes
-  /// </summary>
-  /// <param name="context"></param>
-  /// <returns></returns>
-  public static IEnumerable<Base> GetAscendantWhere(this TraversalContext context, Func<Base, bool> predicate)
+  /// <returns><paramref name="context"/> and all its ascendants</returns>
+  [Pure]
+  public static IEnumerable<Base> GetAscendants(this TraversalContext context)
   {
     TraversalContext? head = context;
     do
     {
-      if (predicate.Invoke(head.Current))
-      {
-        yield return head.Current;
-      }
+      yield return head.Current;
       head = head.Parent;
     } while (head != null);
+  }
+
+  /// <summary>
+  /// Walks up the tree, returning all <typeparamref name="T"/> typed ascendant, starting the <typeparamref name="T"/> closest <paramref name="context"/>,
+  /// walking up <see cref="TraversalContext.Parent"/> nodes
+  /// </summary>
+  /// <param name="context"></param>
+  /// <returns><paramref name="context"/> and all its ascendants</returns>
+  [Pure]
+  public static IEnumerable<T> GetAscendantOfType<T>(this TraversalContext context)
+    where T : Base
+  {
+    return context.GetAscendants().OfType<T>();
   }
 }
