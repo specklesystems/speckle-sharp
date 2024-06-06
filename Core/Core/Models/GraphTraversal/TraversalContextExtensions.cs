@@ -49,7 +49,7 @@ public static class TraversalContextExtensions
   /// walking up <see cref="TraversalContext.Parent"/> nodes
   /// </summary>
   /// <param name="context"></param>
-  /// <returns><paramref name="context"/> and all its ascendants</returns>
+  /// <returns><paramref name="context"/> and all its ascendants of type <typeparamref name="T"/></returns>
   [Pure]
   public static IEnumerable<T> GetAscendantOfType<T>(this TraversalContext context)
     where T : Base
