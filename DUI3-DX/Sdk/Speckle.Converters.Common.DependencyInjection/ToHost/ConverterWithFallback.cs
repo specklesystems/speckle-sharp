@@ -14,12 +14,10 @@ namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 /// <seealso cref="ConverterWithoutFallback"/>
 public sealed class ConverterWithFallback : IRootToHostConverter
 {
-  private readonly IConverterResolver<IToHostTopLevelConverter> _toHost;
   private readonly ConverterWithoutFallback _baseConverter;
 
   public ConverterWithFallback(IConverterResolver<IToHostTopLevelConverter> toHost)
   {
-    _toHost = toHost;
     _baseConverter = new ConverterWithoutFallback(toHost);
   }
 
@@ -31,7 +29,7 @@ public sealed class ConverterWithFallback : IRootToHostConverter
   /// Fallbacks to display value if a direct conversion is not possible.</returns>
   /// <remarks>
   /// The conversion is done in the following order of preference:
-  /// 1. Direct conversion using the <see cref="ConverterWithoutFallback.TryConvert(Base, out object?)"/> method.
+  /// 1. Direct conversion using the <see cref="ConverterWithoutFallback"/>.
   /// 2. Fallback to display value using the <see cref="Speckle.Core.Models.Extensions.BaseExtensions.TryGetDisplayValue{T}"/> method, if a direct conversion is not possible.
   ///
   /// If the direct conversion is not available and there is no displayValue, a <see cref="System.NotSupportedException"/> is thrown.
@@ -39,12 +37,12 @@ public sealed class ConverterWithFallback : IRootToHostConverter
   /// <exception cref="System.NotSupportedException">Thrown when no conversion is found for <paramref name="target"/>.</exception>
   public object Convert(Base target)
   {
-    var typeName = target.GetType().Name;
+    Type type = target.GetType();
 
     // Direct conversion if a converter is found
-    if (_baseConverter.TryConvert(target, out object? result))
+    if (_baseConverter.TryGetConverter(type, out IToHostTopLevelConverter? result))
     {
-      return result;
+      return result.Convert(target);
     }
 
     // Fallback to display value if it exists.
@@ -54,24 +52,13 @@ public sealed class ConverterWithFallback : IRootToHostConverter
       return FallbackToDisplayValue(displayValue);
     }
 
-    // Throw instead of null-return!
-    throw new NotSupportedException($"No conversion found for {typeName}");
+    throw new NotSupportedException($"No conversion found for {type}");
   }
 
   private object FallbackToDisplayValue(IReadOnlyList<Base> displayValue)
   {
-    // Create a temp Displayable object that handles the displayValue.
     var tempDisplayableObject = new DisplayableObject(displayValue);
 
-    var displayableObjectConverter = _toHost.GetConversionForType(typeof(DisplayableObject));
-
-    // It is not guaranteed that a fallback converter has been registered in all connectors
-    if (displayableObjectConverter == null)
-    {
-      throw new InvalidOperationException("No converter for fallback displayable objects was found.");
-    }
-
-    // Run the conversion, which will (or could?) return an `IEnumerable`. We don't care at this point, connector will.
-    return displayableObjectConverter.Convert(tempDisplayableObject);
+    return _baseConverter.Convert(tempDisplayableObject);
   }
 }

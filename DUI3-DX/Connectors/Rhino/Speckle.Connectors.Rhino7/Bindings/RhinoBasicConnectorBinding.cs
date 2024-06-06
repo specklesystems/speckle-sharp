@@ -52,6 +52,21 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
+  public void HighlightObjects(List<string> objectIds)
+  {
+    var objects = GetObjectsFromIds(objectIds);
+
+    if (objects.rhinoObjects.Count == 0 && objects.groups.Count == 0)
+    {
+      throw new InvalidOperationException(
+        "Highlighting RhinoObject is not successful.",
+        new ArgumentException($"{objectIds} is not a valid id", nameof(objectIds))
+      );
+    }
+
+    HighlightObjectsOnView(objects.rhinoObjects, objects.groups);
+  }
+
   public void HighlightModel(string modelCardId)
   {
     var objectIds = new List<string>();
@@ -62,9 +77,9 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
       objectIds = sender.SendFilter.NotNull().GetObjectIds();
     }
 
-    if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
+    if (myModel is ReceiverModelCard receiver && receiver.BakedObjectIds != null)
     {
-      objectIds = receiver.ReceiveResult.BakedObjectIds.NotNull();
+      objectIds = receiver.BakedObjectIds;
     }
 
     if (objectIds.Count == 0)
@@ -73,23 +88,55 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
       return;
     }
 
-    List<RhinoObject> rhinoObjects = objectIds
-      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
-      .Where(o => o != null)
-      .ToList();
+    var objects = GetObjectsFromIds(objectIds);
 
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
 
-    if (rhinoObjects.Count == 0)
+    if (objects.rhinoObjects.Count == 0 && objects.groups.Count == 0)
     {
       Commands.SetModelError(modelCardId, new OperationCanceledException("No objects found to highlight."));
       return;
     }
 
-    RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
+    HighlightObjectsOnView(objects.rhinoObjects, objects.groups);
+  }
+
+  private (List<RhinoObject> rhinoObjects, List<Group> groups) GetObjectsFromIds(List<string> objectIds)
+  {
+    List<RhinoObject> rhinoObjects = objectIds
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
+      .Where(o => o != null)
+      .ToList();
+
+    // POC: On receive we group objects if return multiple objects
+    List<Group> groups = objectIds
+      .Select((id) => RhinoDoc.ActiveDoc.Groups.FindId(new Guid(id)))
+      .Where(o => o != null)
+      .ToList();
+
+    return (rhinoObjects, groups);
+  }
+
+  private void HighlightObjectsOnView(IReadOnlyList<RhinoObject> rhinoObjects, IReadOnlyList<Group> groups)
+  {
+    RhinoDoc.ActiveDoc.Objects.UnselectAll();
+    List<RhinoObject> rhinoObjectsToSelect = new(rhinoObjects);
+
+    foreach (Group group in groups)
+    {
+      int groupIndex = RhinoDoc.ActiveDoc.Groups.Find(group.Name);
+      if (groupIndex < 0)
+      {
+        continue;
+      }
+      var allRhinoObjects = RhinoDoc.ActiveDoc.Objects.GetObjectList(ObjectType.AnyObject);
+      var subRhinoObjects = allRhinoObjects.Where(o => o.GetGroupList().Contains(groupIndex));
+      rhinoObjectsToSelect.AddRange(subRhinoObjects);
+    }
+    RhinoDoc.ActiveDoc.Objects.Select(rhinoObjectsToSelect.Select(o => o.Id));
 
     // Calculate the bounding box of the selected objects
-    BoundingBox boundingBox = BoundingBoxExtensions.UnionRhinoObjects(rhinoObjects);
+    BoundingBox boundingBox = BoundingBoxExtensions.UnionRhinoObjects(rhinoObjectsToSelect);
 
     // Zoom to the calculated bounding box
     if (boundingBox.IsValid)

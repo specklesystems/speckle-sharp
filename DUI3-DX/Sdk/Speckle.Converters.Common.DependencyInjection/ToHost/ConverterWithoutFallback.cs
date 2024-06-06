@@ -21,20 +21,22 @@ public sealed class ConverterWithoutFallback : IRootToHostConverter
 
   public object Convert(Base target)
   {
-    if (TryConvert(target, out object? result))
+    if (!TryGetConverter(target.GetType(), out IToHostTopLevelConverter? converter))
     {
-      return result;
+      throw new NotSupportedException($"No conversion found for {target.GetType()}");
     }
-    throw new NotSupportedException($"No conversion found for {target.GetType()}");
+
+    object result = converter.Convert(target);
+    return result;
   }
 
-  internal bool TryConvert(Base target, [NotNullWhen(true)] out object? result)
+  internal bool TryGetConverter(Type target, [NotNullWhen(true)] out IToHostTopLevelConverter? result)
   {
     // Direct conversion if a converter is found
-    var objectConverter = _toHost.GetConversionForType(target.GetType());
+    var objectConverter = _toHost.GetConversionForType(target);
     if (objectConverter != null)
     {
-      result = objectConverter.Convert(target);
+      result = objectConverter;
       return true;
     }
 

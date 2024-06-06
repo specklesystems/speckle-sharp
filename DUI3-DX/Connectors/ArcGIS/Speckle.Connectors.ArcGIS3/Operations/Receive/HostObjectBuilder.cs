@@ -1,13 +1,12 @@
-using System.Diagnostics;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
 using Objects.GIS;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
 
@@ -49,11 +48,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return ($"{string.Join("\\", objPath)}", converted, parentId);
   }
 
-  public (string, string) ConvertNativeLayers(Base obj, string[] path, List<string> objectIds)
+  public (string path, string converted) ConvertNativeLayers(Collection obj, string[] path, List<string> objectIds)
   {
     string converted = (string)_converter.Convert(obj);
     objectIds.Add(obj.id);
-    string objPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+    string objPath = $"{string.Join("\\", path)}\\{obj.name}";
     return (objPath, converted);
   }
 
@@ -106,7 +105,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return vectorLayers.Count + rasterLayers.Count > 0;
   }
 
-  public IEnumerable<string> Build(
+  public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -128,9 +127,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     int count = 0;
     Dictionary<string, (string path, Geometry converted, string? parentId)> convertedGeometries = new();
     List<string> objectIds = new();
-    List<(string, string)> convertedGISObjects = new();
+    List<(string path, string converted)> convertedGISObjects = new();
 
     // 1. convert everything
+    List<ReceiveConversionResult> results = new(objectsToConvert.Count);
+    List<string> bakedObjectIds = new();
     foreach (var item in objectsToConvert)
     {
       (string[] path, Base obj, string? parentId) = item;
@@ -139,68 +140,48 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         if (obj is VectorLayer or Objects.GIS.RasterLayer)
         {
-          // POC: QueuedTask
-          var task = QueuedTask.Run(() =>
-          {
-            convertedGISObjects.Add(ConvertNativeLayers(obj, path, objectIds));
-          });
-          task.Wait(cancellationToken);
-
-          onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+          var result = ConvertNativeLayers((Collection)obj, path, objectIds);
+          convertedGISObjects.Add(result);
+          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
+          // TODO: is the type in here basically a GIS Layer?
+          results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
         }
         else
         {
-          // POC: QueuedTask
-          QueuedTask.Run(() =>
-          {
-            convertedGeometries[obj.id] = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
-          });
-          onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
+          var result = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
+          convertedGeometries[obj.id] = result;
+
+          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
+          results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
+          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis (weird is subjective)
+          // bakedObjectIds.Add(result.path);
         }
       }
-      catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+      catch (Exception ex) when (!ex.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
-        // POC: report, etc.
-        Debug.WriteLine("conversion error happened.");
+        results.Add(new(Status.ERROR, obj, null, null, ex));
       }
+      onOperationProgressed?.Invoke("Converting", (double)++count / allCount);
     }
 
     // 2. convert Database entries with non-GIS geometry datasets
-    try
-    {
-      onOperationProgressed?.Invoke("Writing to Database", null);
-      convertedGISObjects.AddRange(_nonGisFeaturesUtils.WriteGeometriesToDatasets(convertedGeometries));
-    }
-    catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
-    {
-      // POC: report, etc.
-      Debug.WriteLine("conversion error happened.");
-    }
+
+    onOperationProgressed?.Invoke("Writing to Database", null);
+    convertedGISObjects.AddRange(_nonGisFeaturesUtils.WriteGeometriesToDatasets(convertedGeometries));
 
     int bakeCount = 0;
-    List<string> bakedLayersURIs = new();
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
     // 3. add layer and tables to the Table Of Content
-    foreach ((string, string) databaseObj in convertedGISObjects)
+    foreach (var databaseObj in convertedGISObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
+
       // BAKE OBJECTS HERE
-      // POC: QueuedTask
-      var task = QueuedTask.Run(() =>
-      {
-        try
-        {
-          bakedLayersURIs.Add(AddDatasetsToMap(databaseObj));
-        }
-        catch (Exception e) when (!e.IsFatal())
-        {
-          // log error ("Layer X couldn't be added to Map"), but not cancel all operations
-        }
-        onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
-      });
-      task.Wait(cancellationToken);
+      bakedObjectIds.Add(AddDatasetsToMap(databaseObj));
+      onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
     }
 
-    return bakedLayersURIs;
+    // TODO: validated a correct set regarding bakedobject ids
+    return new(bakedObjectIds, results);
   }
 }

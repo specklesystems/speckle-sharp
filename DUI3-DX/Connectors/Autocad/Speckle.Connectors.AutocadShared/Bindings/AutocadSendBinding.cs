@@ -163,7 +163,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         .ConfigureAwait(false);
 
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.convertedReferences)
+      foreach (var kvp in sendResult.ConvertedReferences)
       {
         _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
       }
@@ -171,7 +171,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
-      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
+      Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
     // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)

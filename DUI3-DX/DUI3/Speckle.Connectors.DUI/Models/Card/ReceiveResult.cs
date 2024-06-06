@@ -1,7 +1,5 @@
-namespace Speckle.Connectors.DUI.Models.Card;
-
-public class ReceiveResult
-{
-  public List<string>? BakedObjectIds { get; set; }
-  public bool Display { get; set; }
-}
+// using Speckle.Connectors.Utils.Builders;
+//
+// namespace Speckle.Connectors.DUI.Models.Card;
+//
+// public record ReceiveResult(bool Display, HostObjectBuilderResult ReceiveConversionResults);

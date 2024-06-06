@@ -10,8 +10,8 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Autofac;
 using Speckle.Connectors.ArcGIS.Filters;
+using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.DUI;
-using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
@@ -33,7 +33,7 @@ public class ArcGISConnectorModule : ISpeckleModule
 
     // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for ArcGIS only!
     // On SendOperation, once we called QueuedTask, it expect to run everything on same thread.
-    builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
+    builder.AddSingletonInstance<ISyncToThread, SyncToQueuedTask>();
 
     builder.AddSingleton<DocumentModelStore, ArcGISDocumentStore>();
 

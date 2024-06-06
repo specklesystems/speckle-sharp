@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Models;
+﻿using Speckle.Connectors.Utils.Conversion;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Utils.Builders;
 
@@ -16,7 +17,7 @@ public interface IHostObjectBuilder
   /// <returns> List of application ids.</returns> // POC: Where we will return these ids will matter later when we target to also cache received application ids.
   /// <remarks>Project and model name are needed for now to construct host app objects into related layers or filters.
   /// POC: we might consider later to have HostObjectBuilderContext? that might hold all possible data we will need.</remarks>
-  IEnumerable<string> Build(
+  HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -24,3 +25,8 @@ public interface IHostObjectBuilder
     CancellationToken cancellationToken
   );
 }
+
+public record HostObjectBuilderResult(
+  IEnumerable<string> BakedObjectIds,
+  IEnumerable<ReceiveConversionResult> ConversionResults
+);

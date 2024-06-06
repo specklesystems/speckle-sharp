@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using Autodesk.AutoCAD.DatabaseServices;
+﻿using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
@@ -18,7 +18,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     _converter = converter;
   }
 
-  public Base Build(
+  public RootObjectBuilderResult Build(
     IReadOnlyList<AutocadRootObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
@@ -39,7 +39,8 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
-    foreach (var (root, applicationId) in objects)
+    List<SendConversionResult> results = new(objects.Count);
+    foreach (var (dbObject, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
 
@@ -55,18 +56,12 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
         }
         else
         {
-          converted = _converter.Convert(root);
-
-          if (converted == null)
-          {
-            continue;
-          }
-
+          converted = _converter.Convert(dbObject);
           converted.applicationId = applicationId;
         }
 
         // Create and add a collection for each layer if not done so already.
-        if ((root as Entity)?.Layer is string layer)
+        if ((dbObject as Entity)?.Layer is string layer)
         {
           if (!collectionCache.TryGetValue(layer, out Collection? collection))
           {
@@ -78,22 +73,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
           collection.elements.Add(converted);
         }
 
-        onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
+        results.Add(new(Status.SUCCESS, applicationId, dbObject.GetType().ToString(), converted));
       }
-      catch (SpeckleConversionException e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        Console.WriteLine(e);
+        results.Add(new(Status.ERROR, applicationId, dbObject.GetType().ToString(), null, ex));
+        // POC: add logging
       }
-      catch (NotSupportedException e)
-      {
-        Console.WriteLine(e);
-      }
-      catch (Exception e) when (!e.IsFatal())
-      {
-        Debug.WriteLine(e.Message);
-      }
+
+      onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
 
-    return modelWithLayers;
+    return new(modelWithLayers, results);
   }
 }

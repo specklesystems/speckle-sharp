@@ -62,6 +62,16 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
+  public void HighlightObjects(List<string> objectIds)
+  {
+    // POC: Will be addressed to move it into AutocadContext!
+    var doc = Application.DocumentManager.MdiActiveDocument;
+
+    var dbObjects = doc.GetObjects(objectIds);
+    var acadObjectIds = dbObjects.Select(tuple => tuple.Root.Id).ToArray();
+    HighlightObjectsOnView(acadObjectIds);
+  }
+
   public void HighlightModel(string modelCardId)
   {
     // POC: Will be addressed to move it into AutocadContext!
@@ -88,7 +98,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      var dbObjects = doc.GetObjects((receiverModelCard.ReceiveResult?.BakedObjectIds).NotNull());
+      var dbObjects = doc.GetObjects(receiverModelCard.BakedObjectIds.NotNull());
       objectIds = dbObjects.Select(tuple => tuple.Root.Id).ToArray();
     }
 
@@ -97,6 +107,13 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
       Commands.SetModelError(modelCardId, new OperationCanceledException("No objects found to highlight."));
       return;
     }
+
+    HighlightObjectsOnView(objectIds);
+  }
+
+  private void HighlightObjectsOnView(ObjectId[] objectIds)
+  {
+    var doc = Application.DocumentManager.MdiActiveDocument;
 
     Parent.RunOnMainThread(() =>
     {

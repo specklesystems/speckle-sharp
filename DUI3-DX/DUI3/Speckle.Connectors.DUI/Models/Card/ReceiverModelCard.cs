@@ -7,5 +7,5 @@ public class ReceiverModelCard : ModelCard
   public string? SelectedVersionId { get; set; }
   public string? LatestVersionId { get; set; }
   public bool HasDismissedUpdateWarning { get; set; }
-  public ReceiveResult? ReceiveResult { get; set; }
+  public List<string>? BakedObjectIds { get; set; }
 }

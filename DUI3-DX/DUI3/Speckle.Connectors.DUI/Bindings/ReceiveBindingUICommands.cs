@@ -1,5 +1,5 @@
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils.Conversion;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -11,14 +11,20 @@ public class ReceiveBindingUICommands : BasicConnectorBindingCommands
   public ReceiveBindingUICommands(IBridge bridge)
     : base(bridge) { }
 
-  public void SetModelReceiveResult(string modelCardId, List<string> bakedObjectIds)
+  public void SetModelReceiveResult(
+    string modelCardId,
+    IEnumerable<string> bakedObjectIds,
+    IEnumerable<ConversionResult> conversionResults
+  )
   {
-    ReceiverModelCardResult res =
-      new()
+    Bridge.Send(
+      SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME,
+      new
       {
         ModelCardId = modelCardId,
-        ReceiveResult = new ReceiveResult() { BakedObjectIds = bakedObjectIds }
-      };
-    Bridge.Send(SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME, res);
+        bakedObjectIds,
+        conversionResults
+      }
+    );
   }
 }

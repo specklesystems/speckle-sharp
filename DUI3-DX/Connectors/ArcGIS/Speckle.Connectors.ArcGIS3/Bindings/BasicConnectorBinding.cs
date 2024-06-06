@@ -51,10 +51,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
-  public async void HighlightModel(string modelCardId)
-  {
-    MapView mapView = MapView.Active;
+  public void HighlightObjects(List<string> objectIds) => HighlightObjectsOnView(objectIds);
 
+  public void HighlightModel(string modelCardId)
+  {
     var model = _store.GetModelById(modelCardId);
 
     if (model is null)
@@ -71,13 +71,19 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      objectIds = receiverModelCard.ReceiveResult?.BakedObjectIds.NotNull();
+      objectIds = receiverModelCard.BakedObjectIds.NotNull();
     }
 
     if (objectIds is null)
     {
       return;
     }
+    HighlightObjectsOnView(objectIds);
+  }
+
+  private async void HighlightObjectsOnView(List<string> objectIds)
+  {
+    MapView mapView = MapView.Active;
 
     await QueuedTask
       .Run(() =>

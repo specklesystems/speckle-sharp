@@ -21,6 +21,8 @@ public interface IBasicConnectorBinding : IBinding
   /// <param name="modelCardId"></param>
   public void HighlightModel(string modelCardId);
 
+  public void HighlightObjects(List<string> objectIds);
+
   public BasicConnectorBindingCommands Commands { get; }
 }
 

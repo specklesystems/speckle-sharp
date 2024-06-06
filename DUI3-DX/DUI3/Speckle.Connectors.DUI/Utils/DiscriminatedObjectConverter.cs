@@ -52,7 +52,7 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       ?? throw new SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed, type not found: " + typeName
       );
-    var obj = Activator.CreateInstance(type);
+    var obj = Activator.CreateInstance(type, true);
     serializer.Populate(jsonObject.CreateReader(), obj);
 
     // Store the JSON property names in the object for later comparison
@@ -101,6 +101,7 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       // the call above is causing load of all assemblies (which is also possibly not good)
       // AND it explodes for me loading an exception, so at the last this should
       // catch System.Reflection.ReflectionTypeLoadException (and anthing else DefinedTypes might throw)
+      // LATER COMMENT: Since discriminated object is only used in DUI3 models, we could restrict to only "this" assembly?
       catch (ReflectionTypeLoadException ex)
       {
         // POC: logging

@@ -2,6 +2,7 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -26,7 +27,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public IEnumerable<string> Build(
+  public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
     string modelName,
@@ -38,25 +39,18 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
     var objectsToConvert = _traverseFunction
-      .Traverse(rootObject)
-      .Where(obj => obj.Current is not Collection)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current))
-      .ToArray();
+      .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
+      .Where(obj => obj.Current is not Collection);
 
-    var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
+    var conversionResults = BakeObjects(objectsToConvert, baseLayerName);
 
     _contextStack.Current.Document.Views.Redraw();
 
-    return convertedIds;
+    return conversionResults;
   }
 
   // POC: Potentially refactor out into an IObjectBaker.
-  private List<string> BakeObjects(
-    IReadOnlyCollection<(string[], Base)> objects,
-    string baseLayerName,
-    Action<string, double?>? onOperationProgressed,
-    CancellationToken cancellationToken
-  )
+  private HostObjectBuilderResult BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
   {
     RhinoDoc doc = _contextStack.Current.Document;
     var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
@@ -85,48 +79,38 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     rootLayerIndex = doc.Layers.Add(new Layer { Name = baseLayerName });
     cache.Add(baseLayerName, rootLayerIndex);
 
-    var newObjectIds = new List<string>();
-    var count = 0;
-
-    // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
-    var conversionExceptions = new List<Exception>();
-
     using var noDraw = new DisableRedrawScope(doc.Views);
 
-    foreach ((string[] path, Base baseObj) in objects)
+    var conversionResults = new List<ReceiveConversionResult>();
+    var bakedObjectIds = new List<string>();
+
+    foreach (TraversalContext tc in objectsGraph)
     {
       try
       {
-        cancellationToken.ThrowIfCancellationRequested();
+        var path = GetLayerPath(tc);
 
         var fullLayerName = string.Join(Layer.PathSeparator, path);
         var layerIndex = cache.TryGetValue(fullLayerName, out int value)
           ? value
           : GetAndCreateLayerFromPath(path, baseLayerName, cache);
 
-        onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / objects.Count);
+        var result = _converter.Convert(tc.Current);
 
-        var result = _converter.Convert(baseObj);
-
-        var conversionIds = HandleConversionResult(result, baseObj, layerIndex);
-        newObjectIds.AddRange(conversionIds);
+        var conversionIds = HandleConversionResult(result, tc.Current, layerIndex);
+        foreach (var r in conversionIds)
+        {
+          conversionResults.Add(new(Status.SUCCESS, tc.Current, r, result.GetType().ToString()));
+          bakedObjectIds.Add(r);
+        }
       }
-      catch (OperationCanceledException)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        throw;
-      }
-      catch (Exception e) when (!e.IsFatal())
-      {
-        conversionExceptions.Add(e);
+        conversionResults.Add(new(Status.ERROR, tc.Current, null, null, ex));
       }
     }
 
-    if (conversionExceptions.Count != 0)
-    {
-      throw new AggregateException("Conversion failed for some objects.", conversionExceptions);
-    }
-
-    return newObjectIds;
+    return new(bakedObjectIds, conversionResults);
   }
 
   private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
