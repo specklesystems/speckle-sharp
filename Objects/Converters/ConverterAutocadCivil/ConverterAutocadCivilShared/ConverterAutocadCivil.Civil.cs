@@ -12,7 +12,6 @@ using CivilDB = Autodesk.Civil.DatabaseServices;
 using Civil = Autodesk.Civil;
 using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Objects.BuiltElements.Civil;
 using Alignment = Objects.BuiltElements.Alignment;
@@ -1016,11 +1015,18 @@ public partial class ConverterAutocadCivil
     };
 
     // assign additional structure props
-    try { speckleStructure["grate"] = structure.Grate; } catch (Exception ex) when (!ex.IsFatal()) { }
-    try { speckleStructure["station"] = structure.Station; } catch (Exception ex) when (!ex.IsFatal()) { }
-    try { speckleStructure["network"] = structure.NetworkName; } catch (Exception ex) when (!ex.IsFatal()) { }
     AddNameAndDescriptionProperty(structure.Name, structure.Description, speckleStructure);
     speckleStructure["partData"] = PartDataRecordToSpeckle(structure.PartData);
+
+    try { speckleStructure["station"] = structure.Station; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["network"] = structure.NetworkName; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["rotation"] = structure.Rotation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["sumpDepth"] = structure.SumpDepth; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["rimElevation"] = structure.RimElevation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["sumpElevation"] = structure.SumpElevation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["lengthOuter"] = structure.Length; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["lengthInner"] = structure.InnerLength; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["structureId"] = structure.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return speckleStructure;
   }
@@ -1035,29 +1041,37 @@ public partial class ConverterAutocadCivil
 
     foreach (PartDataField partField in partData.GetAllDataFields())
     {
-      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Units.ToString(), partField.Context.ToString(), partField.Value);
+      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Value, partField.Units, partField.Context.ToString());
       fields.Add(field);
     }
 
     return fields;
   }
 
+#if CIVIL2022_OR_GREATER
+  /// <summary>
+  /// Converts PressureNetworkPartData into a list of DataField
+  /// </summary>
+  private List<CivilDataField> PartDataRecordToSpeckle(PressureNetworkPartData partData)
+  {
+    List<CivilDataField> fields = new();
+
+    foreach (PressurePartProperty partField in partData)
+    {
+      CivilDataField field = new(partField.Name, partField.GetType().ToString(), partField.Value, null, null, partField.DisplayName);
+      fields.Add(field);
+    }
+
+    return fields;
+  }
+#endif
+
   // pipes
   // TODO: add pressure fittings
   public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
   {
-    // get the pipe curve
-    ICurve curve;
-    switch (pipe.SubEntityType)
-    {
-      case PipeSubEntityType.Straight:
-        var line = new Acad.LineSegment3d(pipe.StartPoint, pipe.EndPoint);
-        curve = LineToSpeckle(line);
-        break;
-      default:
-        curve = CurveToSpeckle(pipe.BaseCurve);
-        break;
-    }
+    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
+
 
     Pipe specklePipe = new()
     {
@@ -1081,8 +1095,9 @@ public partial class ConverterAutocadCivil
     try { specklePipe["endOffset"] = pipe.EndOffset; } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["startStation"] = pipe.StartStation; } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["endStation"] = pipe.EndStation; } catch(Exception ex) when(!ex.IsFatal()) { }
-    try { specklePipe["startStructure"] = pipe.StartStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
-    try { specklePipe["endStructure"] = pipe.EndStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["startStructureId"] = pipe.StartStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["endStructureId"] = pipe.EndStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["pipeId"] = pipe.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return specklePipe;
   }
@@ -1090,17 +1105,7 @@ public partial class ConverterAutocadCivil
   public Pipe PipeToSpeckle(PressurePipe pipe)
   {
     // get the pipe curve
-    ICurve curve;
-    switch (pipe.BaseCurve)
-    {
-      case AcadDB.Line:
-        var line = new LineSegment3d(pipe.StartPoint, pipe.EndPoint);
-        curve = LineToSpeckle(line);
-        break;
-      default:
-        curve = CurveToSpeckle(pipe.BaseCurve);
-        break;
-    }
+    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
 
     Pipe specklePipe = new()
     {
@@ -1113,8 +1118,11 @@ public partial class ConverterAutocadCivil
 
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
-    specklePipe["isPressurePipe"] = true;
+#if CIVIL2022_OR_GREATER
+    specklePipe["partData"] = PartDataRecordToSpeckle(pipe.PartData);
+#endif
 
+    specklePipe["isPressurePipe"] = true;
     try { specklePipe["partType"] = pipe.PartType.ToString(); } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["slope"] = pipe.Slope; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["network"] = pipe.NetworkName; } catch (Exception e) when (!e.IsFatal()) { }
@@ -1122,6 +1130,7 @@ public partial class ConverterAutocadCivil
     try { specklePipe["endOffset"] = pipe.EndOffset; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["startStation"] = pipe.StartStation; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["endStation"] = pipe.EndStation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["pipeId"] = pipe.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return specklePipe;
   }
