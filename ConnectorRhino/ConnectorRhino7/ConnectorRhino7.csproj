@@ -5,14 +5,14 @@
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
-    <RhinoMacLauncher>7</RhinoMacLauncher>
+    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
     <Product>ConnectorRhino7</Product>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <RhinoPluginType>grasshopper</RhinoPluginType>
+
     <!--NOTE-->
     <!--
     Since Rhino uses mono we build for win-x64 also on mac
