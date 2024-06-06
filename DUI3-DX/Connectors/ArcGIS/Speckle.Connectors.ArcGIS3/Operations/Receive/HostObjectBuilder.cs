@@ -150,6 +150,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return new(bakedObjectIds, results);
   }
 
+  [Pure]
   private static string[] GetLayerPath(TraversalContext context)
   {
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
@@ -158,6 +159,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return reverseOrderPath.Reverse().ToArray();
   }
 
+  [Pure]
   private static bool HasGISParent(TraversalContext context)
   {
     List<Base> gisLayers = context.GetAscendants().Where(IsGISType).Where(obj => obj != context.Current).ToList();
