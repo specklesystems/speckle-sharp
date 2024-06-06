@@ -70,26 +70,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
   }
 
-  private string[] GetLayerPath(TraversalContext context)
-  {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath =
-      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
-  }
-
-  private bool HasGISParent(TraversalContext context)
-  {
-    List<Base> gisLayers = context.GetAscendants().Where(IsGISType).Where(obj => obj != context.Current).ToList();
-    return gisLayers.Count > 0;
-  }
-
-  [Pure]
-  private static bool IsGISType(Base obj)
-  {
-    return obj is RasterLayer or VectorLayer;
-  }
-
   public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
@@ -168,5 +148,25 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
+  }
+
+  private static string[] GetLayerPath(TraversalContext context)
+  {
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] reverseOrderPath =
+      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    return reverseOrderPath.Reverse().ToArray();
+  }
+
+  private static bool HasGISParent(TraversalContext context)
+  {
+    List<Base> gisLayers = context.GetAscendants().Where(IsGISType).Where(obj => obj != context.Current).ToList();
+    return gisLayers.Count > 0;
+  }
+
+  [Pure]
+  private static bool IsGISType(Base obj)
+  {
+    return obj is RasterLayer or VectorLayer;
   }
 }
