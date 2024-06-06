@@ -5,11 +5,9 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Converters.ArcGIS3.Utils;
 using ArcGIS.Core.Geometry;
-using Objects.GIS;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
-using System.Linq.Expressions;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -49,30 +47,21 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return ($"{string.Join("\\", objPath)}", converted, parentId, obj);
   }
 
-  public (string path, string converted) ConvertNativeLayers(Collection obj, string[] path, List<string> objectIds)
-  {
-    string converted = (string)_converter.Convert(obj);
-    objectIds.Add(obj.id);
-    string objPath = $"{string.Join("\\", path)}\\{obj.name}";
-    return (objPath, converted);
-  }
-
-  public ReceiveConversionResult AddDatasetsToMap(
-    (string layerName, string datasetId) databaseObj,
-    List<(
-      bool isGisLayer,
-      bool status,
-      Base obj,
-      string? datasetId,
-      int? rowIndexNonGis,
-      Exception? exception
-    )> resultTracker,
-    MapView mapView
+  public (string layerNestedPath, string datasetId) ConvertNativeLayers(
+    Collection obj,
+    string[] path,
+    List<string> objectIds
   )
   {
-    string mapLayerURI;
-    ReceiveConversionResult result;
+    string datasetId = (string)_converter.Convert(obj);
+    objectIds.Add(obj.id);
+    string objPath = $"{string.Join("\\", path)}\\{obj.name}";
+    return (objPath, datasetId);
+  }
 
+  public string AddDatasetsToMap((string layerName, string datasetId) databaseObj)
+  {
+    string mapLayerURI;
     try
     {
       mapLayerURI = LayerFactory.Instance
@@ -97,28 +86,81 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         )
         .URI;
     }
+    return mapLayerURI;
+  }
 
-    foreach (var converted in resultTracker)
+  private void ConstructReport(
+    List<ReceiveConversionResult> results,
+    string datasetId,
+    string mapLayerURI,
+    List<(
+      bool isGisLayer,
+      bool status,
+      Base obj,
+      string? datasetId,
+      int? rowIndexNonGis,
+      Exception? exception
+    )> resultTracker,
+    Map map
+  )
+  {
+    for (int i = resultTracker.Count - 1; i >= 0; i--)
     {
+      var converted = resultTracker[i];
       if (converted.status is false)
       {
         continue;
       }
 
-      if (databaseObj.datasetId == converted.datasetId)
+      if (datasetId == converted.datasetId)
       {
-        MapMember member = mapView.Map.FindLayer(mapLayerURI);
+        MapMember member = map.FindLayer(mapLayerURI);
         if (member is FeatureLayer featLayer)
         {
           // for GIS layers, just get created layer URI
-          result = new(Status.SUCCESS, converted.obj, mapLayerURI, $"{featLayer.GetType()}: {featLayer.ShapeType}");
-          if (converted.isGisLayer is false) { }
-          return result;
+          if (converted.isGisLayer is true)
+          {
+            results.Add(
+              new(Status.SUCCESS, converted.obj, $"{mapLayerURI}", $"{featLayer.GetType()}: {featLayer.ShapeType}")
+            );
+            resultTracker.RemoveAt(i);
+            return;
+          }
+          results.Add(
+            new(
+              Status.SUCCESS,
+              converted.obj,
+              $"{mapLayerURI}_speckleRowIndex_{converted.rowIndexNonGis}",
+              $"{featLayer.GetType()}: {featLayer.ShapeType}"
+            )
+          );
+          resultTracker.RemoveAt(i);
+          return;
+        }
+
+        if (member is RasterLayer rasterLayer)
+        {
+          results.Add(new(Status.SUCCESS, converted.obj, $"{mapLayerURI}", $"{rasterLayer.GetType()}"));
+          resultTracker.RemoveAt(i);
+          return;
+        }
+
+        if (member is LasDatasetLayer pointcloudLayer)
+        {
+          results.Add(new(Status.SUCCESS, converted.obj, $"{mapLayerURI}", $"{pointcloudLayer.GetType()}"));
+          resultTracker.RemoveAt(i);
+          return;
+        }
+
+        StandaloneTable table = map.FindStandaloneTable(mapLayerURI);
+        if (table != null)
+        {
+          results.Add(new(Status.SUCCESS, converted.obj, $"{mapLayerURI}", $"{table.GetType()}"));
+          resultTracker.RemoveAt(i);
+          return;
         }
       }
     }
-
-    return result;
   }
 
   private string[] GetLayerPath(TraversalContext context)
@@ -131,8 +173,8 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private bool HasGISParent(TraversalContext context)
   {
-    List<VectorLayer> vectorLayers = context
-      .GetAscendantOfType<VectorLayer>()
+    List<Objects.GIS.VectorLayer> vectorLayers = context
+      .GetAscendantOfType<Objects.GIS.VectorLayer>()
       .Where(obj => obj != context.Current)
       .ToList();
     List<Objects.GIS.RasterLayer> rasterLayers = context
@@ -183,13 +225,13 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        if (obj is VectorLayer or Objects.GIS.RasterLayer)
+        if (obj is Objects.GIS.VectorLayer or Objects.GIS.RasterLayer)
         {
           var result = ConvertNativeLayers((Collection)obj, path, objectIds);
           savedDatasets.Add(result);
           // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
           // TODO: is the type in here basically a GIS Layer?
-          resultTracker.Add((true, true, obj, result.path, null, null));
+          resultTracker.Add((true, true, obj, result.datasetId, null, null));
           // results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
         }
         else
@@ -223,9 +265,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      // bakedLayerIds.
-      results.Add(AddDatasetsToMap(dataset, resultTracker, _contextStack.Current.Document.Map));
-      ////////////////////////////////////////////////////////// results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
+      var layerMapURI = AddDatasetsToMap(dataset);
+      bakedLayerIds.Add(layerMapURI);
+      ConstructReport(results, dataset.datasetId, layerMapURI, resultTracker, _contextStack.Current.Document.Map);
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / savedDatasets.Count);
     }
 

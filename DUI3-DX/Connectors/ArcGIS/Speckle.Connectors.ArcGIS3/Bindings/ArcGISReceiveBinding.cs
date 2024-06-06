@@ -63,6 +63,7 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
+      modelCard.BakedObjectIds = receiveOperationResults.BakedObjectIds.ToList();
       Commands.SetModelReceiveResult(
         modelCardId,
         receiveOperationResults.BakedObjectIds,

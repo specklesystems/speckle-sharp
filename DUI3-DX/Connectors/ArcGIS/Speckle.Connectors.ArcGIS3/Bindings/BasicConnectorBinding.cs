@@ -104,10 +104,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     foreach (string objectId in objectIds)
     {
-      MapMember mapMember = mapView.Map.FindLayer(objectId);
+      string mapURI = objectId.Split("_speckleRowIndex_")[0];
+      MapMember mapMember = mapView.Map.FindLayer(mapURI);
       if (mapMember is null)
       {
-        mapMember = mapView.Map.FindStandaloneTable(objectId);
+        mapMember = mapView.Map.FindStandaloneTable(mapURI);
       }
       if (mapMember is null)
       {
