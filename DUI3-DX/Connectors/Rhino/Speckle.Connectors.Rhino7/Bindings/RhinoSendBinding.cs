@@ -15,6 +15,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models;
 using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -42,6 +43,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// </summary>
   private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
+  private readonly ISendConversionCache? _sendConversionCache;
+
   public RhinoSendBinding(
     DocumentModelStore store,
     RhinoIdleManager idleManager,
@@ -50,7 +53,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
-    CancellationManager cancellationManager
+    CancellationManager cancellationManager,
+    ISendConversionCache? sendConversionCache = null
   )
   {
     _store = store;
@@ -60,6 +64,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _sendFilters = sendFilters.ToList();
     _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
+    _sendConversionCache = sendConversionCache;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
     SubscribeToRhinoEvents();
@@ -177,12 +182,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.ConvertedReferences)
-      {
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      }
-
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
@@ -216,10 +215,13 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
+    _sendConversionCache?.EvictObjects(objectIdsList);
+
     foreach (SenderModelCard modelCard in senders)
     {
-      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
-      var isExpired = modelCard.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
+      var modelCardObjectIds = modelCard.SendFilter.NotNull().GetObjectIds();
+      var intersection = modelCardObjectIds.Intersect(objectIdsList).ToList();
+      var isExpired = intersection.Count != 0;
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());

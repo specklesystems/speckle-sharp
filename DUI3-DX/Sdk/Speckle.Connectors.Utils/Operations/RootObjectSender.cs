@@ -1,3 +1,4 @@
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -15,10 +16,12 @@ public sealed class RootObjectSender : IRootObjectSender
 {
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
   private readonly ServerTransport.Factory _transportFactory;
+  private readonly ISendConversionCache? _sendConversionCache;
 
-  public RootObjectSender(ServerTransport.Factory transportFactory)
+  public RootObjectSender(ServerTransport.Factory transportFactory, ISendConversionCache? sendConversionCache = null)
   {
     _transportFactory = transportFactory;
+    _sendConversionCache = sendConversionCache;
   }
 
   public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
@@ -36,6 +39,8 @@ public sealed class RootObjectSender : IRootObjectSender
 
     ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
+
+    _sendConversionCache?.StoreSendResult(sendInfo.ProjectId, sendResult.convertedReferences);
 
     ct.ThrowIfCancellationRequested();
 
