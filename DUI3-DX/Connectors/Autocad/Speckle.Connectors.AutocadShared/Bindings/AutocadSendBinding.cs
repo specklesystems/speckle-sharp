@@ -14,6 +14,7 @@ using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -29,6 +30,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
+  private readonly ISendConversionCache? _sendConversionCache;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -47,7 +49,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
-    IUnitOfWorkFactory unitOfWorkFactory
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache? sendConversionCache = null
   )
   {
     _store = store;
@@ -56,7 +59,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     _autocadSettings = autocadSettings;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
-
+    _sendConversionCache = sendConversionCache;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
 
@@ -94,6 +97,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     var senders = _store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
+
+    _sendConversionCache?.EvictObjects(objectIdsList);
 
     foreach (SenderModelCard modelCard in senders)
     {
@@ -162,14 +167,14 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         )
         .ConfigureAwait(false);
 
-      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.ConvertedReferences)
-      {
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      }
-
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      modelCard.ChangedObjectIds = new();
+      // // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+      // foreach (var kvp in sendResult.ConvertedReferences)
+      // {
+      //   _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      // }
+      //
+      // // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      // modelCard.ChangedObjectIds = new();
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
