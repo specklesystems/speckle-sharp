@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Autofac.Core;
 using Speckle.InterfaceGenerator;
-using Speckle.Core.Logging;
 
 namespace Speckle.Autofac.DependencyInjection;
 
@@ -32,7 +31,10 @@ public class UnitOfWorkFactory : IUnitOfWorkFactory
       childScope?.Dispose();
 
       // POC: check exception and how to pass this further up
-      throw new SpeckleException($"Dependency error resolving {typeof(TService)} within  UnitOfWorkFactory", dre);
+      throw new DependencyResolutionException(
+        $"Dependency error resolving {typeof(TService)} within UnitOfWorkFactory",
+        dre
+      );
     }
   }
 }
