@@ -1,4 +1,5 @@
 ﻿using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Runtime;
 using Speckle.Connectors.Autocad.Operations.Send;
 
 namespace Speckle.Connectors.Autocad.HostApp.Extensions;
@@ -17,12 +18,25 @@ public static class DocumentExtensions
         if (long.TryParse(objectIdHandle, out long parsedId))
         {
           Handle handle = new(parsedId);
-          if (doc.Database.TryGetObjectId(handle, out ObjectId myObjectId))
+          // Note: Fatal crash happens here when objects are deleted, so we need to catch it.
+          try
           {
-            if (tr.GetObject(myObjectId, OpenMode.ForRead) is DBObject dbObject)
+            if (doc.Database.TryGetObjectId(handle, out ObjectId myObjectId))
             {
-              objects.Add(new(dbObject, objectIdHandle));
+              if (tr.GetObject(myObjectId, OpenMode.ForRead) is DBObject dbObject)
+              {
+                objects.Add(new(dbObject, objectIdHandle));
+              }
             }
+          }
+          catch (Autodesk.AutoCAD.Runtime.Exception e)
+          {
+            if (e.ErrorStatus == ErrorStatus.WasErased)
+            {
+              continue;
+            }
+
+            throw;
           }
         }
       }
