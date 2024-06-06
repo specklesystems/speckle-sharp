@@ -5,6 +5,7 @@ using ArcGIS.Core.Data.Exceptions;
 using Speckle.Converters.Common;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
@@ -23,32 +24,44 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
   }
 
   public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
-    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId)> convertedObjs
+    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId, Base baseObj)> convertedObjs,
+    List<(
+      bool isGisLayer,
+      bool status,
+      Base obj,
+      string? datasetId,
+      int? rowIndexNonGis,
+      Exception? exception
+    )> resultTracker
   )
   {
     List<(string, string)> result = new();
+    bool isGisCurrent = false;
+
     // 1. Sort features into groups by path and geom type
-    Dictionary<string, (List<ACG.Geometry> geometries, string? parentId)> geometryGroups = new();
+    Dictionary<string, (List<ACG.Geometry> geometries, string? parentId, List<Base> baseObjs)> geometryGroups = new();
     foreach (var item in convertedObjs)
     {
       try
       {
         string objId = item.Key;
-        (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
+        (string parentPathForLayerNesting, ACG.Geometry geom, string? parentId, Base baseObj) = item.Value;
 
         // add dictionnary item if doesn't exist yet
         // Key must be unique per parent and speckle_type
         // Key is composed of parentId and parentPath (that contains speckle_type)
-        string uniqueKey = $"{parentId}_{parentPath}";
-        if (!geometryGroups.TryGetValue(uniqueKey, out (List<ACG.Geometry> geometries, string? parentId) value))
+        string uniqueKey = $"{parentId}_{parentPathForLayerNesting}";
+        if (!geometryGroups.TryGetValue(uniqueKey, out (List<ACG.Geometry>, string?, List<Base>) value))
         {
-          geometryGroups[uniqueKey] = (new List<ACG.Geometry>(), parentId);
+          geometryGroups[uniqueKey] = (new List<ACG.Geometry>(), parentId, new List<Base>());
         }
 
         geometryGroups[uniqueKey].geometries.Add(geom);
+        geometryGroups[uniqueKey].baseObjs.Add(baseObj);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
+        resultTracker.Add((isGisCurrent, false, item.Value.baseObj, null, null, ex));
         // POC: report, etc.
         Debug.WriteLine($"conversion error happened. {ex.Message}");
       }
@@ -59,22 +72,37 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     {
       try
       {
-        string uniqueKey = item.Key; // parentId_parentPath
-        string parentPath = uniqueKey.Split('_', 2)[^1];
-        string speckle_type = parentPath.Split("\\")[^1];
-        (List<ACG.Geometry> geomList, string? parentId) = item.Value;
+        (List<ACG.Geometry> geometries, string? parentId, List<Base> baseObjs) = item.Value;
+        string uniqueKey = item.Key; // parentId_parentPathForLayerNesting
+        string parentPathForLayerNesting = uniqueKey.Split('_', 2)[^1];
+        string speckle_type = parentPathForLayerNesting.Split("\\")[^1];
         try
         {
-          string converted = CreateDatasetInDatabase(speckle_type, geomList, parentId);
-          result.Add((parentPath, converted));
+          string datasetId = CreateDatasetInDatabase(speckle_type, geometries, parentId);
+          result.Add((parentPathForLayerNesting, datasetId));
+
+          int rowIndex = 0;
+          foreach (Base baseObj in item.Value.baseObjs)
+          {
+            resultTracker.Add((isGisCurrent, true, baseObj, datasetId, rowIndex, null));
+            rowIndex += 1;
+          }
         }
-        catch (GeodatabaseGeometryException)
+        catch (GeodatabaseGeometryException ex)
         {
+          foreach (Base baseObj in item.Value.baseObjs)
+          {
+            resultTracker.Add((isGisCurrent, false, baseObj, null, null, ex));
+          }
           // do nothing if conversion of some geometry groups fails
         }
       }
-      catch (Exception e) when (!e.IsFatal())
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        foreach (Base baseObj in item.Value.baseObjs)
+        {
+          resultTracker.Add((isGisCurrent, false, baseObj, null, null, ex));
+        }
         // POC: report, etc.
         Debug.WriteLine("conversion error happened.");
       }
