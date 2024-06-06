@@ -97,11 +97,11 @@ public static class GISAttributeFieldType
         return fieldType switch
         {
           FieldType.String => (string)value,
-          FieldType.Single => (float)(double)value,
-          FieldType.Integer => (int)(long)value, // need this step because sent "ints" seem to be received as "longs"
-          FieldType.BigInteger => (long)value,
-          FieldType.SmallInteger => (short)(long)value,
-          FieldType.Double => (double)value,
+          FieldType.Single => Convert.ToSingle(value),
+          FieldType.Integer => Convert.ToInt32(value), // need this step because sent "ints" seem to be received as "longs"
+          FieldType.BigInteger => Convert.ToInt64(value),
+          FieldType.SmallInteger => Convert.ToInt16(value),
+          FieldType.Double => Convert.ToDouble(value),
           FieldType.Date => DateTime.Parse((string)value, null),
           FieldType.DateOnly => DateOnly.Parse((string)value),
           FieldType.TimeOnly => TimeOnly.Parse((string)value),
