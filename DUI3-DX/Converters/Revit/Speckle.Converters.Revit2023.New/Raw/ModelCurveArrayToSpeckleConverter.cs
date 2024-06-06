@@ -3,7 +3,6 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
-using SOG = Objects.Geometry;
 
 namespace Speckle.Converters.Revit2023;
 

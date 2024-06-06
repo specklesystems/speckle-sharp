@@ -1,28 +1,17 @@
 using Autodesk.Revit.DB;
-using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.ToSpeckle;
+using Speckle.Core.Models;
+using Speckle.Revit.Api;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Raw;
 
-internal sealed class ModelCurveArrArrayConverterToSpeckle : ITypedConverter<DB.ModelCurveArrArray, SOG.Polycurve[]>
+internal sealed class ModelCurveArrArrayConverterToSpeckle : ConverterAdapter<DB.ModelCurveArrArray, IRevitModelCurveArrArray, ModelCurveArrArrayProxy>
 {
-  private readonly ITypedConverter<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
-
-  public ModelCurveArrArrayConverterToSpeckle(ITypedConverter<ModelCurveArray, Polycurve> modelCurveArrayConverter)
+  public ModelCurveArrArrayConverterToSpeckle(ITypedConverter<IRevitModelCurveArrArray, Base> converter) : base(converter)
   {
-    _modelCurveArrayConverter = modelCurveArrayConverter;
   }
 
-  public SOG.Polycurve[] Convert(ModelCurveArrArray target)
-  {
-    var polycurves = new Polycurve[target.Size];
-    var revitArrays = target.Cast<ModelCurveArray>().ToArray();
-
-    for (int i = 0; i < polycurves.Length; i++)
-    {
-      polycurves[i] = _modelCurveArrayConverter.Convert(revitArrays[i]);
-    }
-
-    return polycurves;
-  }
+  protected override ModelCurveArrArrayProxy Create(ModelCurveArrArray target) => new (target);
 }

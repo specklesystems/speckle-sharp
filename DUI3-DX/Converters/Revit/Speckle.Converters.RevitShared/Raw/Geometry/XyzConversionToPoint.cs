@@ -1,31 +1,15 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Converters.RevitShared.Services;
+using Speckle.Core.Models;
+using Speckle.Revit.Api;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class XyzConversionToPoint : ITypedConverter<DB.XYZ, SOG.Point>
+public class XyzConversionToPoint  : ConverterAdapter<DB.XYZ, IRevitXYZ, XYZProxy>
 {
-  private readonly IScalingServiceToSpeckle _toSpeckleScalingService;
-  private readonly IRevitConversionContextStack _contextStack;
-
-  public XyzConversionToPoint(
-    IScalingServiceToSpeckle toSpeckleScalingService,
-    IRevitConversionContextStack contextStack
-  )
+  public XyzConversionToPoint(ITypedConverter<IRevitXYZ, Base> converter) : base(converter)
   {
-    _toSpeckleScalingService = toSpeckleScalingService;
-    _contextStack = contextStack;
   }
 
-  public SOG.Point Convert(DB.XYZ target)
-  {
-    var pointToSpeckle = new SOG.Point(
-      _toSpeckleScalingService.ScaleLength(target.X),
-      _toSpeckleScalingService.ScaleLength(target.Y),
-      _toSpeckleScalingService.ScaleLength(target.Z),
-      _contextStack.Current.SpeckleUnits
-    );
-    return pointToSpeckle;
-  }
+  protected override XYZProxy Create(DB.XYZ target) => new (target);
 }
