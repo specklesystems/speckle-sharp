@@ -37,7 +37,6 @@
       <!-- Globalization rules -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       <!--Others we don't want-->
-      CS9057;
       CA1815;CA1852;CA1812;CA1003;CA2109;CA1848;$(NoWarn)
     </NoWarn>
     
