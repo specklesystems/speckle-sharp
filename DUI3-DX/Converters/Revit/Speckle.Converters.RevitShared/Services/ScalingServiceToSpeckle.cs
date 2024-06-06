@@ -1,20 +1,24 @@
-using Autodesk.Revit.DB;
-using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Converters.Common;
+using Speckle.InterfaceGenerator;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Services;
 
 // POC: feels like this is a context thing and we should be calculating this occasionally?
 // needs some thought as to how it could be be done, could leave as is for now
-public sealed class ScalingServiceToSpeckle
+[GenerateAutoInterface]
+public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
 {
   private readonly double _defaultLengthConversionFactor;
+  private readonly IRevitUnitUtils _revitUnitUtils;
 
   // POC: this seems like the reverse relationship
-  public ScalingServiceToSpeckle(IRevitConversionContextStack contextStack)
+  public ScalingServiceToSpeckle(IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack, IRevitUnitUtils revitUnitUtils)
   {
+    _revitUnitUtils = revitUnitUtils;
     // POC: this is accurate for the current context stack
-    Units documentUnits = contextStack.Current.Document.GetUnits();
-    FormatOptions formatOptions = documentUnits.GetFormatOptions(SpecTypeId.Length);
+    var documentUnits = contextStack.Current.Document.GetUnits();
+    var formatOptions = documentUnits.GetFormatOptions(_revitUnitUtils.Length);
     var lengthUnitsTypeId = formatOptions.GetUnitTypeId();
     _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
   }
@@ -26,14 +30,14 @@ public sealed class ScalingServiceToSpeckle
   public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
 
   // POC: not sure about this???
-  public double Scale(double value, ForgeTypeId forgeTypeId)
+  public double Scale(double value, IRevitForgeTypeId forgeTypeId)
   {
     return ScaleStatic(value, forgeTypeId);
   }
 
   // POC: not sure why this is needed???
-  private static double ScaleStatic(double value, ForgeTypeId forgeTypeId)
+  private double ScaleStatic(double value, IRevitForgeTypeId forgeTypeId)
   {
-    return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+    return _revitUnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
   }
 }

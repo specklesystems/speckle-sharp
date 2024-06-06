@@ -20,6 +20,8 @@
       "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2023\\Speckle.Converters.Autocad2023.csproj",
       "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.AutocadShared\\Speckle.Converters.AutocadShared.shproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.DependencyInjection\\Speckle.Converters.Revit2023.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.New\\Speckle.Converters.Revit2023.New.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.Tests\\Speckle.Converters.Revit2023.Tests.csproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023\\Speckle.Converters.Revit2023.csproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
       "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7.DependencyInjection\\Speckle.Converters.Rhino7.DependencyInjection.csproj",

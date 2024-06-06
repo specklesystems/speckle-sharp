@@ -10,13 +10,13 @@ public class ArcToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Arc>
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public ArcToSpeckleConverter(
     IRevitConversionContextStack contextStack,
     ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
     ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _contextStack = contextStack;

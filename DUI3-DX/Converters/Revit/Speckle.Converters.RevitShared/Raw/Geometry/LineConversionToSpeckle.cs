@@ -9,12 +9,12 @@ public class LineConversionToSpeckle : ITypedConverter<DB.Line, SOG.Line>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
     IRevitConversionContextStack contextStack,
     ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _contextStack = contextStack;

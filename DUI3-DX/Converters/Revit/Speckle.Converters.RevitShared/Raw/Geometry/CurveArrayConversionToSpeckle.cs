@@ -10,12 +10,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public sealed class CurveArrayConversionToSpeckle : ITypedConverter<DB.CurveArray, SOG.Polycurve>
 {
   private readonly IRevitConversionContextStack _contextStack;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
   private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
   public CurveArrayConversionToSpeckle(
     IRevitConversionContextStack contextStack,
-    ScalingServiceToSpeckle scalingService,
+    IScalingServiceToSpeckle scalingService,
     ITypedConverter<DB.Curve, ICurve> curveConverter
   )
   {

@@ -6,11 +6,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public class VectorToSpeckleConverter : ITypedConverter<DB.XYZ, SOG.Vector>
 {
   private readonly IReferencePointConverter _referencePointConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public VectorToSpeckleConverter(
     IReferencePointConverter referencePointConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _referencePointConverter = referencePointConverter;

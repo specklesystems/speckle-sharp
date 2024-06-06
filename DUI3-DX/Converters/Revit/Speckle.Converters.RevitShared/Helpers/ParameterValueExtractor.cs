@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Api;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
@@ -11,10 +12,10 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // POC: there are a lot of public methods here. Maybe consider consolodating
 public class ParameterValueExtractor
 {
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
   private readonly Dictionary<string, HashSet<BuiltInParameter>> _uniqueIdToUsedParameterSetMap = new();
 
-  public ParameterValueExtractor(ScalingServiceToSpeckle scalingService)
+  public ParameterValueExtractor(IScalingServiceToSpeckle scalingService)
   {
     _scalingService = scalingService;
   }
@@ -54,7 +55,7 @@ public class ParameterValueExtractor
       element,
       builtInParameter,
       StorageType.Double,
-      (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
+      (parameter) => _scalingService.Scale(parameter.AsDouble(), new ForgeTypeIdProxy(parameter.GetUnitTypeId()))
     );
     if (number.HasValue)
     {
@@ -71,7 +72,7 @@ public class ParameterValueExtractor
     return GetValueGeneric<double?>(
       parameter,
       StorageType.Double,
-      (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
+      (parameter) => _scalingService.Scale(parameter.AsDouble(), new ForgeTypeIdProxy(parameter.GetUnitTypeId()))
     );
   }
 

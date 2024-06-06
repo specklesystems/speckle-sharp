@@ -10,13 +10,13 @@ public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.
   private readonly IRevitVersionConversionHelper _conversionHelper;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public NurbsSplineToSpeckleConverter(
     IRevitVersionConversionHelper conversionHelper,
     IRevitConversionContextStack contextStack,
     ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _conversionHelper = conversionHelper;

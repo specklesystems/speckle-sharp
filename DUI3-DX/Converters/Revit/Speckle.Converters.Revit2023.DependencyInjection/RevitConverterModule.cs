@@ -17,7 +17,7 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddSingleton(new RevitContext());
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
-    builder.AddScoped<ScalingServiceToSpeckle>();
+    builder.AddScoped<IScalingServiceToSpeckle, ScalingServiceToSpeckle>();
 
     // POC: the concrete type can come out if we remove all the reference to it
     builder.AddScoped<IRevitConversionContextStack, RevitConversionContextStack>();

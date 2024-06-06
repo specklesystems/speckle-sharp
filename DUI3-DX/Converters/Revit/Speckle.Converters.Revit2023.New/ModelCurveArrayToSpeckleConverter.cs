@@ -1,21 +1,22 @@
-using Objects;
+﻿using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Interfaces;
+using SOG = Objects.Geometry;
 
-namespace Speckle.Converters.RevitShared.Raw;
+namespace Speckle.Converters.Revit2023;
 
-internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.ModelCurveArray, SOG.Polycurve>
+public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitModelCurveArray, SOG.Polycurve>
 {
-  private readonly IRevitConversionContextStack _contextStack;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
   private readonly IScalingServiceToSpeckle _scalingService;
-  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
 
   public ModelCurveArrayToSpeckleConverter(
-    IRevitConversionContextStack contextStack,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     IScalingServiceToSpeckle scalingService,
-    ITypedConverter<DB.Curve, ICurve> curveConverter
+    ITypedConverter<IRevitCurve, ICurve> curveConverter
   )
   {
     _contextStack = contextStack;
@@ -23,10 +24,12 @@ internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.Mod
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(DB.ModelCurveArray target)
+  public SOG.Polycurve Convert(IRevitModelCurveArray target) => Convert((IReadOnlyList<IRevitModelCurve>)target);
+
+  public SOG.Polycurve Convert(IReadOnlyList<IRevitModelCurve> target)
   {
     SOG.Polycurve polycurve = new();
-    var curves = target.Cast<DB.ModelCurve>().Select(mc => mc.GeometryCurve).ToArray();
+    var curves = target.Select(mc => mc.GeometryCurve).ToArray();
 
     if (curves.Length == 0)
     {
@@ -36,7 +39,7 @@ internal sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<DB.Mod
     var start = curves[0].GetEndPoint(0);
     var end = curves[^1].GetEndPoint(1);
     polycurve.units = _contextStack.Current.SpeckleUnits;
-    polycurve.closed = start.DistanceTo(end) < RevitConversionContextStack.TOLERANCE;
+    polycurve.closed = start.DistanceTo(end) < RevitConstants.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
 
     polycurve.segments.AddRange(curves.Select(x => _curveConverter.Convert(x)));

@@ -8,12 +8,12 @@ public class CircleToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Circle>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public CircleToSpeckleConverter(
     IRevitConversionContextStack contextStack,
     ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _contextStack = contextStack;
