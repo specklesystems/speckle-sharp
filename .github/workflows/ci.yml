@@ -24,7 +24,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x.x
+          global-json-file: ./global.json
       - name: ⚒️ Run GitVersion
         run: ./build.ps1 build-server-version
 
