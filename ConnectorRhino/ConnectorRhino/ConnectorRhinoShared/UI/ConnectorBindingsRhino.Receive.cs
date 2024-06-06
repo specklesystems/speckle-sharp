@@ -641,19 +641,19 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           break;
 
         case Group o: // this is a GIS object
+          // create attributes with layer, display and render, user info, application id, revit/gis parameters
+          ObjectAttributes groupAttributes = CreateAttributesFromObject(
+            obj,
+            layer.Index,
+            converter,
+            out RenderMaterial groupRenderMaterial,
+            parent
+          );
+
+          groupAttributes.AddToGroup(o.Index);
+
           foreach (RhinoObject groupObject in Doc.Objects.FindByGroup(o.Index))
           {
-            // create attributes with layer, display and render, user info, application id, revit/gis parameters
-            ObjectAttributes groupAttributes = CreateAttributesFromObject(
-              obj,
-              layer.Index,
-              converter,
-              out RenderMaterial groupRenderMaterial,
-              parent
-            );
-
-            groupAttributes.AddToGroup(o.Index);
-
             groupObject.Attributes = groupAttributes;
 
             // handle render material
