@@ -50,7 +50,7 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddSingleton<IBinding, BasicConnectorBindingRevit>();
     builder.AddSingleton<IBasicConnectorBinding, BasicConnectorBindingRevit>();
     builder.AddSingleton<IBinding, SelectionBinding>();
-    builder.AddSingleton<IBinding, SendBinding>();
+    builder.AddSingleton<IBinding, RevitSendBinding>();
     //no receive?
     builder.AddSingleton<IRevitIdleManager, RevitIdleManager>();
 

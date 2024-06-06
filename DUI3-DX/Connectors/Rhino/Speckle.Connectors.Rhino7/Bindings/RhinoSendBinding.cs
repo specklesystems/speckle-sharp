@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -132,11 +131,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
-  [SuppressMessage(
-    "Maintainability",
-    "CA1506:Avoid excessive class coupling",
-    Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
-  )]
   public async Task Send(string modelCardId)
   {
     using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<RhinoObject>>();
@@ -183,7 +177,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         .ConfigureAwait(false);
 
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      modelCard.ChangedObjectIds = new();
+      // modelCard.ChangedObjectIds = new();
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
@@ -219,8 +213,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
     foreach (SenderModelCard modelCard in senders)
     {
-      var modelCardObjectIds = modelCard.SendFilter.NotNull().GetObjectIds();
-      var intersection = modelCardObjectIds.Intersect(objectIdsList).ToList();
+      var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
       var isExpired = intersection.Count != 0;
       if (isExpired)
       {
