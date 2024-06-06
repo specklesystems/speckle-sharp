@@ -49,7 +49,8 @@ public class Loader : GH_AssemblyPriority
     Setup.Init(GetRhinoHostAppVersion(), HostApplications.Rhino.Slug, logConfig);
 
     Instances.CanvasCreated += OnCanvasCreated;
-#if RHINO7
+
+#if RHINO7_OR_GREATER
     if (Instances.RunningHeadless)
     {
       // If GH is running headless, we listen for document added/removed events.
@@ -492,7 +493,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void DisposeHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     _headlessDoc?.Dispose();
 #endif
     _headlessDoc = null;
@@ -500,7 +501,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void SetupHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
     //   SpeckleGHSettings.HeadlessTemplateFilename);
     // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
@@ -510,7 +511,8 @@ public class Loader : GH_AssemblyPriority
 
     _headlessDoc = RhinoDoc.CreateHeadless(null);
     Console.WriteLine(
-      $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+      $"Speckle - Backup headless doc is ready: '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+    Console.WriteLine("Speckle - To modify the units in a headless run, you can override the 'RhinoDoc.ActiveDoc' in the '.gh' file using a c#/python script.");
 #endif
   }
 
@@ -521,14 +523,18 @@ public class Loader : GH_AssemblyPriority
   /// <returns></returns>
   public static RhinoDoc GetCurrentDocument()
   {
-#if RHINO7
-    if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null)
+#if RHINO7_OR_GREATER
+    if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null && _headlessDoc != null)
     {
+      // Running headless, with no ActiveDoc override and _headlessDoc was correctly initialised.
+      // Only time the _headlessDoc is not set is upon document opening, where the components will
+      // check for this as their normal initialisation routine, but the document will be refreshed on every solution run.
       Console.WriteLine(
-        $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        $"Speckle - Fetching headless doc '{_headlessDoc?.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
       Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
       return _headlessDoc;
     }
+    
     return RhinoDoc.ActiveDoc;
 #else
     return RhinoDoc.ActiveDoc;

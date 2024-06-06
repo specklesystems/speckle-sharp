@@ -42,10 +42,13 @@ public abstract class GraphTraversal<T>
       T head = stack[headIndex];
       stack.RemoveAt(headIndex);
 
-      yield return head;
-
       Base current = head.Current;
       var activeRule = GetActiveRuleOrDefault(current);
+
+      if (activeRule.ShouldReturn)
+      {
+        yield return head;
+      }
 
       foreach (string childProp in activeRule.MembersToTraverse(current))
       {
