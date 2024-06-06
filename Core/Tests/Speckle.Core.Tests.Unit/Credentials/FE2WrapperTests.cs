@@ -42,7 +42,7 @@ public class Fe2WrapperTests
     Assert.That(streamWrapper, Is.Not.Null);
     Assert.That(streamWrapper.Type, Is.EqualTo(expectedType));
     Assert.That(streamWrapper.StreamId, Is.EqualTo(expectedProjectId));
-    Assert.That(streamWrapper.BranchName, Is.EqualTo(expectedBranchId));
+    Assert.That(streamWrapper.BranchId, Is.EqualTo(expectedBranchId));
     Assert.That(streamWrapper.CommitId, Is.EqualTo(expectedCommitId));
     Assert.That(streamWrapper.ObjectId, Is.EqualTo(expectedObjectId));
   }
