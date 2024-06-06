@@ -88,23 +88,30 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     await QueuedTask
       .Run(() =>
       {
-        List<MapMember> mapMembers = GetMapMembers(objectIds, mapView);
+        Dictionary<string, (MapMember member, List<int>? rows)> mapMembersRows = GetMapMembers(objectIds, mapView);
         ClearSelectionInTOC();
         ClearSelection();
-        SelectMapMembersInTOC(mapMembers);
-        SelectMapMembers(mapMembers);
+        SelectMapMembersInTOC(mapMembersRows.Values.ToList().Select(x => x.member).ToList());
+        SelectMapMembers(mapMembersRows);
         mapView.ZoomToSelected();
       })
       .ConfigureAwait(false);
   }
 
-  private List<MapMember> GetMapMembers(List<string> objectIds, MapView mapView)
+  private Dictionary<string, (MapMember member, List<int>? rows)> GetMapMembers(List<string> objectIds, MapView mapView)
   {
-    List<MapMember> mapMembers = new();
+    Dictionary<string, (MapMember member, List<int>? rows)> mapMembersRows = new();
 
     foreach (string objectId in objectIds)
     {
-      string mapURI = objectId.Split("_speckleRowIndex_")[0];
+      List<string> uriRows = objectId.Split("_speckleRowIndex_").ToList();
+      string mapURI = uriRows[0];
+      int? index = null;
+      if (uriRows.Count > 1)
+      {
+        index = int.Parse(uriRows[1]);
+      }
+
       MapMember mapMember = mapView.Map.FindLayer(mapURI);
       if (mapMember is null)
       {
@@ -114,10 +121,30 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       {
         continue;
       }
-      mapMembers.Add(mapMember);
+      else
+      {
+        mapMembersRows[mapMember.URI] = (mapMember, null);
+      }
+
+      // add rows if applicable
+      if (index == null)
+      {
+        mapMembersRows[mapMember.URI] = (mapMember, null);
+      }
+      else
+      {
+        if (!mapMembersRows.TryGetValue(mapMember.URI, out _))
+        {
+          mapMembersRows[mapMember.URI] = (mapMember, new List<int>());
+        }
+        else
+        {
+          mapMembersRows[mapMember.URI].rows?.Add((int)index);
+        }
+      }
     }
 
-    return mapMembers;
+    return mapMembersRows;
   }
 
   private void ClearSelection()
@@ -137,13 +164,21 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     MapView.Active.ClearTOCSelection();
   }
 
-  private void SelectMapMembers(List<MapMember> mapMembers)
+  private void SelectMapMembers(Dictionary<string, (MapMember member, List<int>? rows)> mapMemberRows)
   {
-    foreach (var member in mapMembers)
+    foreach (var data in mapMemberRows)
     {
-      if (member is FeatureLayer layer)
+      if (data.Value.member is FeatureLayer layer)
       {
-        layer.Select();
+        if (data.Value.rows == null)
+        {
+          layer.Select();
+        }
+        else
+        {
+          // POC: select by rows instead
+          layer.Select();
+        }
       }
     }
   }

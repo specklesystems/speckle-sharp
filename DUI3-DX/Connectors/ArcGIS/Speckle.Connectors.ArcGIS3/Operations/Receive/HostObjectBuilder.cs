@@ -89,6 +89,33 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     return mapLayerURI;
   }
 
+  private void AddErrorsToReport(
+    List<ReceiveConversionResult> results,
+    List<(
+      bool isGisLayer,
+      bool status,
+      Base obj,
+      string? datasetId,
+      int? rowIndexNonGis,
+      Exception? exception
+    )> resultTracker
+  )
+  {
+    for (int i = resultTracker.Count - 1; i >= 0; i--)
+    {
+      var converted = resultTracker[i];
+      if (converted.status is false)
+      {
+        results.Add(new(Status.ERROR, converted.obj, null, null, converted.exception));
+        resultTracker.RemoveAt(i);
+      }
+      else
+      {
+        // missed objects, do something
+      }
+    }
+  }
+
   private void ConstructReport(
     List<ReceiveConversionResult> results,
     string datasetId,
@@ -270,8 +297,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       ConstructReport(results, dataset.datasetId, layerMapURI, resultTracker, _contextStack.Current.Document.Map);
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / savedDatasets.Count);
     }
-
+    AddErrorsToReport(results, resultTracker);
     // TODO: validated a correct set regarding bakedobject ids
+    // bakedLayerIds is just layer IDs, no row information!
     return new(bakedLayerIds, results);
   }
 }
