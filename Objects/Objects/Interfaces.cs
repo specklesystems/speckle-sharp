@@ -110,5 +110,16 @@ public interface IDisplayValue<T>
   T displayValue { get; set; }
 }
 
+/// <summary>
+/// Represents a calculated object for civil disciplines
+/// </summary>
+public interface ICivilCalculatedObject
+{
+  /// <summary>
+  /// <see cref="codes"/> for this calculated object.
+  /// </summary>
+  List<string> codes { get; set; }
+}
+
 
 #endregion
