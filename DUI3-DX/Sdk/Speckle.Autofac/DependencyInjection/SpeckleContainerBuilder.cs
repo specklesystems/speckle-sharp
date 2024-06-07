@@ -201,6 +201,19 @@ public class SpeckleContainerBuilder
     return this;
   }
 
+  //Scans assembly for classes that implement the same name interface and registers as transient
+  public SpeckleContainerBuilder ScanAssembly(Assembly assembly)
+  {
+    ContainerBuilder.RegisterAssemblyTypes(assembly)
+      .Where(t => t.IsClass)
+      .As(GetInterfacesWithNameName).InstancePerDependency();
+    return this;
+  }
+
+  public SpeckleContainerBuilder ScanAssemblyOfType<T>() => ScanAssembly(typeof(T).Assembly);
+
+  private static IEnumerable<Type> GetInterfacesWithNameName(Type type) => type.GetInterfaces().Where(i => i.Name == "I" + type.Name);
+
   public SpeckleContainer Build()
   {
     var container = ContainerBuilder.Build();

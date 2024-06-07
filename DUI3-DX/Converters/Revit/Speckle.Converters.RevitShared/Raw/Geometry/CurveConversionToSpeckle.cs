@@ -1,10 +1,12 @@
 using Objects;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
+using Speckle.Revit.Api;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>
+public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>, ITypedConverter<IRevitCurve, ICurve>
 {
   private readonly ITypedConverter<DB.Line, SOG.Line> _lineConverter;
   private readonly ITypedConverter<DB.Arc, SOG.Arc> _arcConverter;
@@ -44,4 +46,6 @@ public class CurveConversionToSpeckle : ITypedConverter<DB.Curve, ICurve>
       _ => throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}")
     };
   }
+
+  public ICurve Convert(IRevitCurve target) => Convert(((CurveProxy)target)._Instance);
 }
