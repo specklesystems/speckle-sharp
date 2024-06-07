@@ -236,16 +236,7 @@ public class BrowserBridge : IBridge
 
       NotifyUIMethodCallResultReady(requestId, resultJson);
     }
-    catch (SpeckleException e)
-    {
-      // TODO: properly log the exeception.
-      var serializedError = JsonConvert.SerializeObject(
-        new { Error = e.Message, InnerError = e.InnerException?.Message },
-        _serializerOptions
-      );
-
-      NotifyUIMethodCallResultReady(requestId, serializedError);
-    }
+    // TOP-LEVEL: Where we report unhandled exceptions as global toast notification in UI!
     catch (Exception e) when (!e.IsFatal())
     {
       ReportUnhandledError(requestId, e);
