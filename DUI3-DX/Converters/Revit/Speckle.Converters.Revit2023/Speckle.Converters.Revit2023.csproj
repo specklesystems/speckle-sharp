@@ -9,19 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
+    <PackageReference Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.11" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     <ProjectReference Include="..\Speckle.Converters.Revit2023.New\Speckle.Converters.Revit2023.New.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Speckle.Revit2023.Api">
-      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Speckle.Revit2023.Interfaces">
-      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

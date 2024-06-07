@@ -10,14 +10,5 @@
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     <ProjectReference Include="..\Speckle.Converters.Revit2023\Speckle.Converters.Revit2023.csproj"/>
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Speckle.Revit2023.Api">
-      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Speckle.Revit2023.Interfaces">
-      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Interfaces.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 
 </Project>
