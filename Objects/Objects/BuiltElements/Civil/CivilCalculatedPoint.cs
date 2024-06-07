@@ -8,12 +8,19 @@ public class CivilCalculatedPoint : Base, ICivilCalculatedObject
 {
   public CivilCalculatedPoint() { }
 
-  public CivilCalculatedPoint(Point point, List<string> codes, Vector normalToBaseline, Vector normalToSubassembly)
+  public CivilCalculatedPoint(
+    Point point,
+    List<string> codes,
+    Vector normalToBaseline,
+    Vector normalToSubassembly,
+    Point stationOffsetElevationToBaseline
+  )
   {
     this.point = point;
     this.codes = codes;
     this.normalToBaseline = normalToBaseline;
     this.normalToSubassembly = normalToSubassembly;
+    this.stationOffsetElevationToBaseline = stationOffsetElevationToBaseline;
   }
 
   public Point point { get; set; }
@@ -23,4 +30,6 @@ public class CivilCalculatedPoint : Base, ICivilCalculatedObject
   public Vector normalToBaseline { get; set; }
 
   public Vector normalToSubassembly { get; set; }
+
+  public Point stationOffsetElevationToBaseline { get; set; }
 }

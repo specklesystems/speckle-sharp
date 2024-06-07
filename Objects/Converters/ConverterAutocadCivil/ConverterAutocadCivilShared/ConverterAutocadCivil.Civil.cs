@@ -1029,7 +1029,7 @@ public partial class ConverterAutocadCivil
 
     foreach (PartDataField partField in partData.GetAllDataFields())
     {
-      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Units.ToString(), partField.Context.ToString(), partField.Value);
+      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Value, partField.Units.ToString(),partField.Context.ToString(), null);
       fields.Add(field);
     }
 
@@ -1123,15 +1123,9 @@ public partial class ConverterAutocadCivil
   // corridors
   // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
 
-  private Base AppliedSubassemblyParamToSpeckle(IAppliedSubassemblyParam param)
+  private CivilDataField AppliedSubassemblyParamToSpeckle(IAppliedSubassemblyParam param)
   {
-    Base baseParam = new() { 
-      ["name"] = param.DisplayName,
-      ["key"] = param.KeyName, 
-      ["type"] = param.ValueType.Name, 
-      ["value"] = param.ValueAsObject,
-      ["designValue"] = param.DesignValueAsObject};
-
+    CivilDataField baseParam = new(param.KeyName, param.ValueType.Name, param.ValueAsObject, null, null, param.DisplayName);
     return baseParam;
   }
 
@@ -1148,9 +1142,10 @@ public partial class ConverterAutocadCivil
       speckleShapes.Add(speckleShape);
     }
 
-    List<Base> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
+    Point soePoint = PointToSpeckle(appliedSubassembly.OriginStationOffsetElevationToBaseline);
+    List<CivilDataField> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
 
-    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, speckleParameters);
+    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, soePoint, speckleParameters);
     return speckleAppliedSubassembly;
   }
 
@@ -1173,11 +1168,14 @@ public partial class ConverterAutocadCivil
     // get the region assembly
     Assembly assembly = Trans.GetObject(region.AssemblyId, OpenMode.ForRead) as Assembly;
 
-    // get the applied assemblies
+    // get the applied assemblies by station
     List<CivilAppliedAssembly> speckleAppliedAssemblies = new();
-    foreach (AppliedAssembly appliedAssembly in region.AppliedAssemblies)
+    double[] sortedStations = region.SortedStations();
+    for (int i = 0; i < sortedStations.Length; i++)
     {
-      CivilAppliedAssembly speckleAssembly = AppliedAssemblyToSpeckle(appliedAssembly);
+      double station = sortedStations[i];
+      CivilAppliedAssembly speckleAssembly = AppliedAssemblyToSpeckle(region.AppliedAssemblies[i]);
+      speckleAssembly["station"] = station;
       speckleAppliedAssemblies.Add(speckleAssembly);
     }
 
@@ -1220,7 +1218,8 @@ public partial class ConverterAutocadCivil
     List<string> codes = point.CorridorCodes.ToList();
     Vector normalBaseline = VectorToSpeckle(point.NormalToBaseline);
     Vector normalSubAssembly = VectorToSpeckle(point.NormalToSubassembly);
-    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly);
+    Point soePoint = PointToSpeckle(point.StationOffsetElevationToBaseline);
+    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly, soePoint);
     return speckleCalculatedPoint;
   }
 
