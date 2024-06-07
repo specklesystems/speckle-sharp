@@ -97,29 +97,17 @@ public static class AutomationRunner
   public static async Task<int> Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
     where TInput : struct
   {
-    int returnCode = 0; // This is the CLI return code, defaults to 0 (Success), change to 1 to flag a failed run.
-
     Argument<string> pathArg = new(name: "Input Path", description: "A file path to retrieve function inputs");
     RootCommand rootCommand = new();
 
     rootCommand.AddArgument(pathArg);
     rootCommand.SetHandler(
-      async (inputPath) =>
+      async inputPath =>
       {
-        FunctionRunData<TInput>? data = FunctionRunDataParser.FromPath<TInput>(inputPath);
+        FunctionRunData<TInput> data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        AutomationContext context = await RunFunction(
-            automateFunction,
-            data.AutomationRunData,
-            data.SpeckleToken,
-            data.FunctionInputs
-          )
+        await RunFunction(automateFunction, data.AutomationRunData, data.SpeckleToken, data.FunctionInputs)
           .ConfigureAwait(false);
-
-        if (context.RunStatus != AutomationStatusMapping.Get(AutomationStatus.Succeeded))
-        {
-          returnCode = 1; // Flag run as failed.
-        }
       },
       pathArg
     );
@@ -135,7 +123,7 @@ public static class AutomationRunner
         JSchemaGenerator generator = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         generator.GenerationProviders.Add(new SpeckleSecretProvider());
         JSchema schema = generator.Generate(typeof(TInput));
-        schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
+        schema.ToString(SchemaVersion.Draft2019_09);
         File.WriteAllText(schemaFilePath, schema.ToString());
       },
       schemaFilePathArg
@@ -144,7 +132,9 @@ public static class AutomationRunner
 
     await rootCommand.InvokeAsync(args).ConfigureAwait(false);
 
-    return returnCode;
+    // if we've gotten this far, the execution should technically be completed as expected
+    // thus exiting with 0 is the semantically correct thing to do
+    return 0;
   }
 }
 

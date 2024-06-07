@@ -24,7 +24,24 @@ public partial class DuiPanel : UserControl
       var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
       DataContext = viewModel;
       AvaloniaHost.Content = new MainUserControl();
+      AvaloniaHost.MessageHook += AvaloniaHost_MessageHook;
     }
     catch (Exception ex) when (!ex.IsFatal()) { }
+  }
+
+  private const UInt32 DLGC_WANTARROWS = 0x0001;
+  private const UInt32 DLGC_HASSETSEL = 0x0008;
+  private const UInt32 DLGC_WANTCHARS = 0x0080;
+  private const UInt32 WM_GETDLGCODE = 0x0087;
+
+  private IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+  {
+    if (msg != WM_GETDLGCODE)
+    {
+      return IntPtr.Zero;
+    }
+
+    handled = true;
+    return new IntPtr(DLGC_WANTCHARS | DLGC_WANTARROWS | DLGC_HASSETSEL);
   }
 }
