@@ -249,39 +249,29 @@ public partial class ConverterRevit
   public Base ColumnToSpeckle(DB.FamilyInstance revitColumn, out List<string> notes)
   {
     notes = new List<string>();
-    var symbol = revitColumn.Document.GetElement(revitColumn.GetTypeId()) as FamilySymbol;
+    var symbol = (FamilySymbol)revitColumn.Document.GetElement(revitColumn.GetTypeId());
 
-    var speckleColumn = new RevitColumn();
-    speckleColumn.family = symbol.FamilyName;
-    speckleColumn.type = revitColumn.Document.GetElement(revitColumn.GetTypeId()).Name;
-    speckleColumn.level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-    speckleColumn.topLevel = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-    speckleColumn.baseOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-    speckleColumn.topOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-    speckleColumn.facingFlipped = revitColumn.FacingFlipped;
-    speckleColumn.handFlipped = revitColumn.HandFlipped;
-    speckleColumn.isSlanted = revitColumn.IsSlantedColumn;
-    //speckleColumn.structural = revitColumn.StructuralType == StructuralType.Column;
+    RevitLevel level = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+    RevitLevel topLevel = ConvertAndCacheLevel(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+    double baseOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
+    double topOffset = GetParamValue<double>(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
 
     //geometry
     var baseGeometry = LocationToSpeckle(revitColumn);
     var baseLine = baseGeometry as ICurve;
 
-    //make line from point and height
     if (baseLine == null && baseGeometry is Point basePoint)
+    //make line from point and height
     {
-      if (
-        symbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased
-        || symbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased
-      )
+      if (symbol.Family.FamilyPlacementType is FamilyPlacementType.OneLevelBased or FamilyPlacementType.WorkPlaneBased)
       {
         return RevitInstanceToSpeckle(revitColumn, out notes, null);
       }
 
-      var elevation = speckleColumn.topLevel.elevation;
+      var elevation = topLevel.elevation;
       baseLine = new Line(
         basePoint,
-        new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits),
+        new Point(basePoint.x, basePoint.y, elevation + topOffset, ModelUnits),
         ModelUnits
       );
     }
@@ -291,7 +281,25 @@ public partial class ConverterRevit
       return RevitElementToSpeckle(revitColumn, out notes);
     }
 
-    speckleColumn.baseLine = baseLine; //all speckle columns should be line based
+    double rotation = revitColumn.Location is LocationPoint location ? location.Rotation : 0;
+
+    var speckleColumn = new RevitColumn(
+      symbol.FamilyName,
+      revitColumn.Document.GetElement(revitColumn.GetTypeId()).Name,
+      baseLine, //all speckle columns should be line based
+      level,
+      topLevel,
+      ModelUnits,
+      revitColumn.Id.ToString(),
+      baseOffset,
+      topOffset,
+      revitColumn.FacingFlipped,
+      revitColumn.HandFlipped,
+      revitColumn.IsSlantedColumn,
+      rotation,
+      GetElementDisplayValue(revitColumn)
+    //structural: revitColumn.StructuralType == StructuralType.Column;
+    );
 
     GetAllRevitParamsAndIds(
       speckleColumn,
@@ -306,13 +314,6 @@ public partial class ConverterRevit
         "SCHEDULE_TOP_LEVEL_OFFSET_PARAM"
       }
     );
-
-    if (revitColumn.Location is LocationPoint)
-    {
-      speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
-    }
-
-    speckleColumn.displayValue = GetElementDisplayValue(revitColumn);
 
     return speckleColumn;
   }
