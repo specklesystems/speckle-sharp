@@ -1,6 +1,7 @@
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
@@ -12,13 +13,15 @@ namespace Speckle.Connectors.ArcGis.Operations.Send;
 /// <summary>
 /// Stateless builder object to turn an ISendFilter into a <see cref="Base"/> object
 /// </summary>
-public class RootObjectBuilder : IRootObjectBuilder<MapMember>
+public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly ISendConversionCache? _sendConversionCache;
 
-  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
+  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache? sendConversionCache = null)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
+    _sendConversionCache = sendConversionCache;
   }
 
   public RootObjectBuilderResult Build(
@@ -48,8 +51,8 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
       {
         Base converted;
         if (
-          !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference? value)
+          _sendConversionCache != null
+          && _sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value)
         )
         {
           converted = value;

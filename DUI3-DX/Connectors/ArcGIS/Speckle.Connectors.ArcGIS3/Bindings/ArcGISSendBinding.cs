@@ -16,8 +16,8 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Core.Data;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -31,8 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
-
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  private readonly ISendConversionCache? _sendConversionCache;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -46,14 +45,15 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,
-    CancellationManager cancellationManager
+    CancellationManager cancellationManager,
+    ISendConversionCache? sendConversionCache = null
   )
   {
     _store = store;
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendFilters = sendFilters.ToList();
     _cancellationManager = cancellationManager;
-
+    _sendConversionCache = sendConversionCache;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
     SubscribeToArcGISEvents();
@@ -277,9 +277,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        "ArcGIS",
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        "ArcGIS"
       );
 
       var sendResult = await QueuedTask
@@ -308,15 +306,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
               cts.Token
             )
             .ConfigureAwait(false);
-
-          // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-          foreach (var kvp in result.ConvertedReferences)
-          {
-            _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-          }
-
-          // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-          modelCard.ChangedObjectIds = new();
 
           return result;
         })
@@ -347,6 +336,8 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     List<string> expiredSenderIds = new();
     string[] objectIdsList = ChangedObjectIds.ToArray();
 
+    _sendConversionCache?.EvictObjects(objectIdsList);
+
     foreach (SenderModelCard sender in senders)
     {
       var objIds = sender.SendFilter.NotNull().GetObjectIds();
@@ -355,7 +346,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       if (isExpired)
       {
         expiredSenderIds.Add(sender.ModelCardId.NotNull());
-        sender.ChangedObjectIds.UnionWith(intersection.NotNull());
 
         // Update the model card object Ids
         if (idsDeleted && sender.SendFilter is ArcGISSelectionFilter filter)

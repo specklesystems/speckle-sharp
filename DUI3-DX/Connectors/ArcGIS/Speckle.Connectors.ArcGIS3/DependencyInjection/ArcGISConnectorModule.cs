@@ -53,7 +53,7 @@ public class ArcGISConnectorModule : ISpeckleModule
 
     // register send operation and dependencies
     builder.AddScoped<SendOperation<MapMember>>();
-    builder.AddScoped<RootObjectBuilder>();
-    builder.AddSingleton<IRootObjectBuilder<MapMember>, RootObjectBuilder>();
+    builder.AddScoped<ArcGISRootObjectBuilder>();
+    builder.AddSingleton<IRootObjectBuilder<MapMember>, ArcGISRootObjectBuilder>();
   }
 }
