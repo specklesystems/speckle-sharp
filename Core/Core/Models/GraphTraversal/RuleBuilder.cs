@@ -8,19 +8,26 @@ namespace Speckle.Core.Models.GraphTraversal;
 /// Specifies what members to traverse if any provided <see cref="_conditions"/> are met.
 /// </summary>
 /// <remarks>Follows the builder pattern to ensure that a rule is complete before usable, see usages</remarks>
-public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
+public sealed class TraversalRule : ITraversalBuilderReturn, ITraversalBuilderTraverse
 {
   private readonly List<WhenCondition> _conditions;
-  private SelectMembers _membersToTraverse;
+  private SelectMembers? _membersToTraverse;
+  public bool ShouldReturn { get; private set; } = true;
 
   private TraversalRule()
   {
     _conditions = new List<WhenCondition>();
   }
 
-  public ITraversalRule ContinueTraversing(SelectMembers membersToTraverse)
+  public ITraversalBuilderReturn ContinueTraversing(SelectMembers membersToTraverse)
   {
     this._membersToTraverse = membersToTraverse;
+    return this;
+  }
+
+  public ITraversalRule ShouldReturnToOutput(bool shouldReturn = true)
+  {
+    ShouldReturn = shouldReturn;
     return this;
   }
 
@@ -45,7 +52,7 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
 
   IEnumerable<string> ITraversalRule.MembersToTraverse(Base o)
   {
-    return _membersToTraverse(o).Distinct(); //TODO distinct is expensive, there may be a better way for us to avoid duplicates
+    return _membersToTraverse!(o).Distinct(); //TODO distinct is expensive, there may be a better way for us to avoid duplicates
   }
 
   /// <returns>a new Traversal Rule to be initialised using the Builder Pattern interfaces</returns>
@@ -58,7 +65,7 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
 public delegate bool WhenCondition(Base o);
 
 /// <summary>
-/// Interface for traversal rule in a building (unusable) state
+/// Builder Pattern Interface for a traversal rule in a partially built (unusable state)
 /// </summary>
 public interface ITraversalBuilderWhen
 {
@@ -76,12 +83,23 @@ public interface ITraversalBuilderWhen
 public delegate IEnumerable<string> SelectMembers(Base o);
 
 /// <summary>
-/// Interface for traversal rule in a building (unusable) state
+/// Builder Pattern Interface for a traversal rule in a partially built (unusable state)
 /// </summary>
 public interface ITraversalBuilderTraverse : ITraversalBuilderWhen
 {
   /// <seealso cref="ITraversalRule.MembersToTraverse"/>
   /// <param name="membersToTraverse">Function returning the members that should be traversed for objects where this rule holds <see langword = "true"/></param>
   /// <returns>Traversal rule in a usable state</returns>
-  ITraversalRule ContinueTraversing(SelectMembers membersToTraverse);
+  ITraversalBuilderReturn ContinueTraversing(SelectMembers membersToTraverse);
+}
+
+/// <summary>
+/// Builder Pattern Interface for a traversal rule in a usable state, with an (optional) final step to set the value of <see cref="ITraversalRule.ShouldReturn"/>
+/// </summary>
+public interface ITraversalBuilderReturn : ITraversalRule
+{
+  /// <seealso cref="ITraversalRule.MembersToTraverse"/>
+  /// <param name="shouldReturn">value to set <see cref="ITraversalRule.ShouldReturn"/></param>
+  /// <returns>Traversal rule in a usable state</returns>
+  ITraversalRule ShouldReturnToOutput(bool shouldReturn = true);
 }
