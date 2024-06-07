@@ -184,7 +184,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
       var hostAppName = HostApplications.Rhino.Slug;
       var hostAppVersion = Utils.GetRhinoHostAppVersion();
-      SpeckleLog.Initialize(HostApplications.Rhino.Slug, Utils.GetRhinoHostAppVersion());
+      SpeckleLog.Initialize(HostApplications.Rhino.Slug, Utils.GetRhinoHostAppVersion(), logConfig);
       SpeckleLog.Logger.Information(
         "Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}",
         hostAppName,

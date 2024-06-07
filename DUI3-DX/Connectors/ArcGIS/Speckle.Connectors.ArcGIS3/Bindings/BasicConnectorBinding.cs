@@ -1,5 +1,4 @@
 using System.Reflection;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
@@ -41,7 +40,15 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).NotNull().GetVersion();
 
-  public DocumentInfo GetDocumentInfo() => new(Project.Current.URI, Project.Current.Name, Project.Current.Name);
+  public DocumentInfo? GetDocumentInfo()
+  {
+    if (MapView.Active is null)
+    {
+      return null;
+    }
+
+    return new DocumentInfo(MapView.Active.Map.URI, MapView.Active.Map.Name, MapView.Active.Map.Name);
+  }
 
   public DocumentModelStore GetDocumentState() => _store;
 
