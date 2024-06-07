@@ -12,5 +12,5 @@ public struct AutomationRunData
   public string AutomationId { get; set; }
   public string AutomationRunId { get; set; }
   public string FunctionRunId { get; set; }
-  public List<AutomationRunTriggerBase> Triggers { get; set; }
+  public List<VersionCreationTrigger> Triggers { get; set; }
 }

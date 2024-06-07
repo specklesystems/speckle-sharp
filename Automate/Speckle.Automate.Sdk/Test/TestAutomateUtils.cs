@@ -52,10 +52,7 @@ public static class TestAutomateUtils
       AutomationId = TestAutomateEnvironment.GetSpeckleAutomationId(),
       AutomationRunId = runData["automationRunId"],
       FunctionRunId = runData["functionRunId"],
-      Triggers = new List<AutomationRunTriggerBase>()
-      {
-        new VersionCreationTrigger(modelId: modelId, versionId: versionId)
-      }
+      Triggers = new List<VersionCreationTrigger> { new(modelId: modelId, versionId: versionId) }
     };
 
     return data;

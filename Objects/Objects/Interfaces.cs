@@ -28,7 +28,7 @@ public interface IHasArea
   /// <summary>
   /// The area of the object
   /// </summary>
-  double area { get; set; }
+  double area { get; }
 }
 
 /// <summary>
@@ -39,7 +39,7 @@ public interface IHasVolume
   /// <summary>
   /// The volume of the object
   /// </summary>
-  double volume { get; set; }
+  double volume { get; }
 }
 
 /// <summary>
@@ -50,12 +50,14 @@ public interface ICurve
   /// <summary>
   /// The length of the curve.
   /// </summary>
-  double length { get; set; }
+  double length { get; }
 
   /// <summary>
   /// The numerical domain driving the curve's internal parametrization.
   /// </summary>
-  Interval domain { get; set; }
+  Interval domain { get; }
+
+  string units { get; }
 }
 
 /// <summary>
@@ -101,13 +103,13 @@ public interface ITransformable
 /// Expected to be either a <see cref="Base"/> type or a <see cref="List{T}"/> of <see cref="Base"/>s,
 /// most likely <see cref="Mesh"/> or <see cref="Polyline"/>.
 /// </typeparam>
-public interface IDisplayValue<T>
+public interface IDisplayValue<out T>
 {
   /// <summary>
   /// <see cref="displayValue"/> <see cref="Base"/>(s) will be used to display this <see cref="Base"/>
   /// if a native displayable object cannot be converted.
   /// </summary>
-  T displayValue { get; set; }
+  T displayValue { get; }
 }
 
 /// <summary>
