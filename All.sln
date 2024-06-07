@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transports", "Transports", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Objects", "Objects", "{E3916A0F-68D5-4C84-ACAE-41547F75E454}"
 	ProjectSection(SolutionItems) = preProject
-		Objects\Directory.Build.Props = Objects\Directory.Build.Props
+		Objects\Directory.Build.props = Objects\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Converters", "Converters", "{4DE5ED81-2A55-4C23-A05F-3C9B9B06F85D}"
@@ -457,7 +457,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DllConflictManagement", "Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DUI3-DX", "DUI3-DX", "{9DB74760-01DE-4AC1-A81B-BC7784351D22}"
 	ProjectSection(SolutionItems) = preProject
-		DUI3-DX\Directory.Build.Props = DUI3-DX\Directory.Build.Props
+		DUI3-DX\Directory.Build.props = DUI3-DX\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{4838C66E-8677-4FBD-9609-25376042E981}"
