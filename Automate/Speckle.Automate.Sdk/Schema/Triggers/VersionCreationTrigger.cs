@@ -10,7 +10,7 @@ public class VersionCreationTrigger : AutomationRunTriggerBase
   public VersionCreationTrigger(string modelId, string versionId)
   {
     TriggerType = "versionCreation";
-    Payload = new VersionCreationTriggerPayload() { ModelId = modelId, VersionId = versionId };
+    Payload = new VersionCreationTriggerPayload { ModelId = modelId, VersionId = versionId };
   }
 }
 

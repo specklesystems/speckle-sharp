@@ -8,5 +8,6 @@ public enum AutomationStatus
   Initializing,
   Running,
   Failed,
-  Succeeded
+  Succeeded,
+  Exception
 }
