@@ -11,7 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ISlopeArrowExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SlopeArrowExtractor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IReferencePointConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CategoryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
@@ -50,10 +49,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrArrayToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrayToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RevitConversionSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CeilingTopLevelConverterToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeTopLevelConverterToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ElementTopLevelConverterToSpeckleLegacy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceTopLevelConverterToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FootPrintRoofToSpeckleTopLevelConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ExtrusionRoofToSpeckleTopLevelConverter.cs" />
