@@ -9,6 +9,18 @@ namespace Speckle.Autofac.DependencyInjection;
 
 public class SpeckleContainerBuilder
 {
+  private readonly struct SpeckleContainerContext : ISpeckleContainerContext
+  {
+    private readonly IComponentContext _componentContext;
+
+    public SpeckleContainerContext(IComponentContext componentContext)
+    {
+      _componentContext = componentContext;
+    }
+
+    public T Resolve<T>() 
+      where T : notnull => _componentContext.Resolve<T>();
+  }
   private static readonly Type s_moduleType = typeof(ISpeckleModule);
   private readonly IStorageInfo _storageInfo;
 
@@ -159,8 +171,14 @@ public class SpeckleContainerBuilder
   {
     ContainerBuilder.RegisterType<T>().As<TInterface>().InstancePerLifetimeScope();
     return this;
-  }
+  } 
 
+  public SpeckleContainerBuilder AddScoped<T>(Func<ISpeckleContainerContext, T> action)
+    where T : notnull
+  {
+    ContainerBuilder.Register<T>(c => action(new SpeckleContainerContext(c))).InstancePerLifetimeScope();
+    return this;
+  } 
   public SpeckleContainerBuilder AddScoped<T>()
     where T : class
   {
@@ -175,7 +193,7 @@ public class SpeckleContainerBuilder
     ContainerBuilder.RegisterType<T>().As<TInterface>().InstancePerDependency();
     return this;
   }
-
+  
   public SpeckleContainerBuilder AddTransient<T>()
     where T : class
   {

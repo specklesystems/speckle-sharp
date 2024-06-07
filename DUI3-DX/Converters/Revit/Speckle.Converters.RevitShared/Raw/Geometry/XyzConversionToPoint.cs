@@ -1,13 +1,12 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class XyzConversionToPoint  : ConverterAdapter<DB.XYZ, IRevitXYZ, XYZProxy>
+public class XyzConversionToPoint  : ConverterAdapter<DB.XYZ, IRevitXYZ, XYZProxy, SOG.Point>
 {
-  public XyzConversionToPoint(ITypedConverter<IRevitXYZ, Base> converter) : base(converter)
+  public XyzConversionToPoint(ITypedConverter<IRevitXYZ, SOG.Point> converter) : base(converter)
   {
   }
 

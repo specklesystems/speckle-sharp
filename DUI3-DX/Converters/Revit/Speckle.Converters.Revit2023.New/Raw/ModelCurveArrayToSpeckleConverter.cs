@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
-
+#pragma warning disable IDE0130
 namespace Speckle.Converters.Revit2023;
 
 public sealed class ModelCurveArrayToSpeckleConverter : ITypedConverter<IRevitModelCurveArray, SOG.Polycurve>

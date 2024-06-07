@@ -6,6 +6,7 @@ using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Converters.RevitShared.ToSpeckle;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.DependencyInjection;
 
@@ -21,6 +22,8 @@ public class RevitConverterModule : ISpeckleModule
 
     // POC: the concrete type can come out if we remove all the reference to it
     builder.AddScoped<IRevitConversionContextStack, RevitConversionContextStack>();
+    builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>>(c =>
+      (RevitConversionContextStack)c.Resolve<IRevitConversionContextStack>());
 
     builder.AddScoped<IReferencePointConverter, ReferencePointConverter>();
     builder.AddScoped<RevitConversionSettings>();

@@ -1,7 +1,7 @@
 ﻿using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Revit.Interfaces;
-
+#pragma warning disable IDE0130
 namespace Speckle.Converters.Revit2023;
 
 internal sealed class ModelCurveArrArrayConverterToSpeckle : ITypedConverter<IRevitModelCurveArrArray, Polycurve[]>

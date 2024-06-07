@@ -5,7 +5,7 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class LocationConversionToSpeckle : ConverterAdapter<DB.Location, IRevitLocation, LocationProxy>
+public class LocationConversionToSpeckle : ConverterAdapter<DB.Location, IRevitLocation, LocationProxy, Base>
 {
   public LocationConversionToSpeckle(ITypedConverter<IRevitLocation, Base> converter) : base(converter)
   {
