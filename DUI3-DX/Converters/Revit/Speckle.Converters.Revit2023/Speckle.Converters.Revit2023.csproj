@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
-    <PackageReference Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.11" />
+    <PackageReference Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.12" />
   </ItemGroup>
 
   <ItemGroup>

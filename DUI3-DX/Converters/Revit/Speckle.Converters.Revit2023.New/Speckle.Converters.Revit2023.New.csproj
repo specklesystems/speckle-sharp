@@ -7,7 +7,7 @@
     <RootNamespace>Speckle.Converters.Revit2023</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.11" />
+    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
