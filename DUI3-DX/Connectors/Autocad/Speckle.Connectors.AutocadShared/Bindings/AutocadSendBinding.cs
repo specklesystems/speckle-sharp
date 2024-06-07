@@ -10,7 +10,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
@@ -36,11 +35,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
-
-  /// <summary>
-  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
-  /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public AutocadSendBinding(
     DocumentModelStore store,
@@ -107,7 +101,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 
@@ -153,9 +146,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        _autocadSettings.HostAppInfo.Name,
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        _autocadSettings.HostAppInfo.Name
       );
 
       var sendResult = await uow.Service

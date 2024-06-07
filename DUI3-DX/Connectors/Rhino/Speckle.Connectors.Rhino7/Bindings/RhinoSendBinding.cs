@@ -11,7 +11,6 @@ using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Caching;
@@ -36,11 +35,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
-
-  /// <summary>
-  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
-  /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   private readonly ISendConversionCache? _sendConversionCache;
 
@@ -162,9 +156,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        _rhinoSettings.HostAppInfo.Name,
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        _rhinoSettings.HostAppInfo.Name
       );
 
       var sendResult = await unitOfWork.Service
@@ -175,9 +167,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
           cts.Token
         )
         .ConfigureAwait(false);
-
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      // modelCard.ChangedObjectIds = new();
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
@@ -218,7 +207,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection.NotNull());
       }
     }
 

@@ -12,7 +12,6 @@ using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -23,11 +22,6 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
-
-  /// <summary>
-  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
-  /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   private readonly RevitSettings _revitSettings;
   private readonly IRevitIdleManager _idleManager;
@@ -103,9 +97,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        _revitSettings.HostSlug.NotNull(),
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        _revitSettings.HostSlug.NotNull()
       );
 
       var sendResult = await sendOperation.Service
@@ -176,11 +168,10 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     foreach (SenderModelCard modelCard in senders)
     {
       var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
-      bool isExpired = modelCard.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      bool isExpired = intersection.Count != 0;
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 
