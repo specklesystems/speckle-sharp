@@ -3,7 +3,6 @@ using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.DUI.Models.Card;
@@ -62,13 +61,6 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     return new List<ISendFilter> { new RevitSelectionFilter() { IsDefault = true } };
   }
 
-  public async Task Send(string modelCardId)
-  {
-    await SpeckleTopLevelExceptionHandler
-      .Run(() => HandleSend(modelCardId), HandleSpeckleException, HandleUnexpectedException, HandleFatalException)
-      .ConfigureAwait(false);
-  }
-
   public void CancelSend(string modelCardId)
   {
     CancellationManager.CancelOperation(modelCardId);
@@ -76,11 +68,9 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
   public SendBindingUICommands Commands { get; }
 
-  private async Task HandleSend(string modelCardId)
+  public async Task Send(string modelCardId)
   {
-    // POC: this try catch pattern is coming from Rhino. I see there is a semi implemented "SpeckleTopLevelExceptionHandler"
-    // above that wraps the call of this HandleSend, but it currently is not doing anything - resulting in all errors from here
-    // bubbling up to the bridge.
+    // Note: removed top level handling thing as it was confusing me
     try
     {
       if (Store.GetModelById(modelCardId) is not SenderModelCard modelCard)
@@ -127,16 +117,6 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
         )
         .ConfigureAwait(false);
 
-      // // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      // foreach (var kvp in sendResult.ConvertedReferences)
-      // {
-      //   _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      // }
-      //
-      // // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      // modelCard.ChangedObjectIds = new();
-
-      //TODO: send full send resul to UI?
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
     // Catch here specific exceptions if they related to model card.
@@ -153,27 +133,6 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
-  }
-
-  private bool HandleSpeckleException(SpeckleException spex)
-  {
-    // POC: do something here
-
-    return false;
-  }
-
-  private bool HandleUnexpectedException(Exception ex)
-  {
-    // POC: do something here
-
-    return false;
-  }
-
-  private bool HandleFatalException(Exception ex)
-  {
-    // POC: do something here
-
-    return false;
   }
 
   /// <summary>

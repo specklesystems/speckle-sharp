@@ -31,7 +31,7 @@ public static class DocumentExtensions
           }
           catch (Autodesk.AutoCAD.Runtime.Exception e)
           {
-            if (e.ErrorStatus == ErrorStatus.WasErased)
+            if (e.ErrorStatus == ErrorStatus.WasErased) // Note: TBD if we want to catch more things in here. For now maybe not, but it does seem like this function gets into "crashes the host app territory"
             {
               continue;
             }
