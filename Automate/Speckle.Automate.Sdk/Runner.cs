@@ -108,7 +108,12 @@ public static class AutomationRunner
       {
         FunctionRunData<TInput> data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        var context = await RunFunction(automateFunction, data.AutomationRunData, data.SpeckleToken, data.FunctionInputs)
+        var context = await RunFunction(
+            automateFunction,
+            data.AutomationRunData,
+            data.SpeckleToken,
+            data.FunctionInputs
+          )
           .ConfigureAwait(false);
 
         exitCode = context.RunStatus == "EXCEPTION" ? 1 : 0;
