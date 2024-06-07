@@ -559,8 +559,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Revit202
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Revit2023.New", "DUI3-DX\Converters\Revit\Speckle.Converters.Revit2023.New\Speckle.Converters.Revit2023.New.csproj", "{8DD75E36-8D82-4B6A-B965-3D24763B1D10}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Speckle.Converters.RevitShared", "DUI3-DX\Converters\Revit\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.shproj", "{E1C43415-3200-45F4-8BF9-A4DD7D7F2ED6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
