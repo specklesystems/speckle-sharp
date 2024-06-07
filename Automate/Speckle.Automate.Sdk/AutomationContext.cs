@@ -317,6 +317,8 @@ public class AutomationContext
 
   public void MarkRunFailed(string statusMessage) => MarkRun(AutomationStatus.Failed, statusMessage);
 
+  public void MarkRunException(string? statusMessage) => MarkRun(AutomationStatus.Exception, statusMessage);
+
   public void MarkRunSuccess(string? statusMessage) => MarkRun(AutomationStatus.Succeeded, statusMessage);
 
   /// <summary>
