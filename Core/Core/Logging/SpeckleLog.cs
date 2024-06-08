@@ -204,7 +204,7 @@ public static class SpeckleLog
       // }
       // else
       // {
-    
+
       s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
       var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
 
@@ -258,7 +258,6 @@ public static class SpeckleLog
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
-
 
     if (s_isMachineIdUsed)
     {
