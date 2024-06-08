@@ -173,13 +173,6 @@ public static class SpeckleLog
     SpeckleLogConfiguration logConfiguration
   )
   {
-    // TODO: check if we have write permissions to the file.
-    // if not, disable file sink, even if its enabled in the config
-    // show a warning about that...
-    var canLogToFile = true;
-    s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
-    var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
-
     var fileVersionInfo = GetFileVersionInfo();
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
       .Is(logConfiguration.MinimumLevel)
@@ -200,8 +193,21 @@ public static class SpeckleLog
         .Enrich.WithExceptionDetails();
     }
 
-    if (logConfiguration.LogToFile && canLogToFile)
+    if (logConfiguration.LogToFile)
     {
+      // TODO: check if we have write permissions to the file.
+      // if not, disable file sink, even if its enabled in the config
+      // show a warning about that...
+      // if (!canLogToFile)
+      // {
+      //   logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
+      // }
+      // else
+      // {
+    
+      s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
+      var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
+
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
         logFilePath,
         rollingInterval: RollingInterval.Day,
@@ -253,10 +259,6 @@ public static class SpeckleLog
 
     var logger = serilogLogConfiguration.CreateLogger();
 
-    if (logConfiguration.LogToFile && !canLogToFile)
-    {
-      logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
-    }
 
     if (s_isMachineIdUsed)
     {
