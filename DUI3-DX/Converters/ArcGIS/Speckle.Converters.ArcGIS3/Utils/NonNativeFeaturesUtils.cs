@@ -78,16 +78,24 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       List<ACG.Geometry> geomList = item.Value;
       try
       {
-        string converted = CreateDatasetInDatabase(uniqueKey, geomList);
+        CreateDatasetInDatabase(uniqueKey, geomList);
       }
-      catch (GeodatabaseGeometryException)
+      catch (GeodatabaseGeometryException ex)
       {
         // do nothing if writing of some geometry groups fails
+        // record in a conversionTracker:
+        foreach (var conversionItem in conversionTracker)
+        {
+          if (conversionItem.Value.DatasetId == uniqueKey)
+          {
+            conversionTracker[conversionItem.Key].AddException(ex);
+          }
+        }
       }
     }
   }
 
-  private string CreateDatasetInDatabase(string featureClassName, List<ACG.Geometry> geomList)
+  private void CreateDatasetInDatabase(string featureClassName, List<ACG.Geometry> geomList)
   {
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
       new(_contextStack.Current.Document.SpeckleDatabasePath);
@@ -139,7 +147,5 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     {
       _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, geomList, fields);
     });
-
-    return featureClassName;
   }
 }
