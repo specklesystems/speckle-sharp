@@ -20,9 +20,9 @@ public sealed class RootObjectSender : IRootObjectSender
   /// <summary>
   /// The send conversion cache is <i>optional</i>: some connectors might not have it, therefore it's nullable!
   /// </summary>
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public RootObjectSender(ServerTransport.Factory transportFactory, ISendConversionCache? sendConversionCache = null)
+  public RootObjectSender(ServerTransport.Factory transportFactory, ISendConversionCache sendConversionCache)
   {
     _transportFactory = transportFactory;
     _sendConversionCache = sendConversionCache;
@@ -44,7 +44,7 @@ public sealed class RootObjectSender : IRootObjectSender
     ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
-    _sendConversionCache?.StoreSendResult(sendInfo.ProjectId, sendResult.convertedReferences);
+    _sendConversionCache.StoreSendResult(sendInfo.ProjectId, sendResult.convertedReferences);
 
     ct.ThrowIfCancellationRequested();
 
