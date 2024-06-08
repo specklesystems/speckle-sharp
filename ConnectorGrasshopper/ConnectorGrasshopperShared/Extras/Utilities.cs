@@ -10,7 +10,6 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Microsoft.CSharp.RuntimeBinder;
-using Rhino;
 using Rhino.Display;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
@@ -27,17 +26,9 @@ public static class Utilities
   /// Gets the appropriate Grasshopper App name depending on the Version of Rhino currently running.
   /// </summary>
   /// <remarks>If running in Rhino >7, Rhino7 will be used as fallback.</remarks>
-  /// <returns><see cref="VersionedHostApplications.Grasshopper7"/> when Rhino 7 is running, <see cref="VersionedHostApplications.Grasshopper6"/> otherwise.</returns>
-  public static string GetVersionedAppName()
-  {
-    var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
-    if (RhinoApp.Version.Major >= 7)
-    {
-      version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
-    }
-
-    return version;
-  }
+  /// <returns><see cref="VersionedHostApplications.Grasshopper7"/> when Rhino 7 is running, <see cref="VersionedHostApplications.Grasshopper8"/> when Rhino 8 is running, <see cref="VersionedHostApplications.Grasshopper6"/> otherwise.</returns>
+  [Obsolete("Use Loader.GetGrasshopperHostAppVersion instead")]
+  public static string GetVersionedAppName() => Loader.GetGrasshopperHostAppVersion();
 
   public static ISpeckleConverter GetDefaultConverter()
   {

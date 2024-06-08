@@ -25,6 +25,7 @@
     <UseWpf>true</UseWpf>
     <DefineConstants>$(DefineConstants);RHINO7;RHINO6_OR_GREATER;RHINO7_OR_GREATER</DefineConstants>
     <OutputType>Library</OutputType>
+    <RhinoPluginType>rhp</RhinoPluginType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
