@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
@@ -9,6 +10,7 @@ using Objects.GIS;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
+using RasterLayer = Objects.GIS.RasterLayer;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -34,75 +36,38 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  public (string path, Geometry converted, string? parentId) ConvertNonNativeGeometries(
-    Base obj,
-    string[] path,
-    string? parentId,
-    List<string> objectIds
-  )
+  private (string path, Geometry converted) ConvertNonNativeGeometries(Base obj, string[] path)
   {
     Geometry converted = (Geometry)_converter.Convert(obj);
-    objectIds.Add(obj.id);
     List<string> objPath = path.ToList();
     objPath.Add(obj.speckle_type.Split(".")[^1]);
-    return ($"{string.Join("\\", objPath)}", converted, parentId);
+    return (string.Join("\\", objPath), converted);
   }
 
-  public (string path, string converted) ConvertNativeLayers(Collection obj, string[] path, List<string> objectIds)
+  private (string path, string converted) ConvertNativeLayers(Collection obj, string[] path)
   {
     string converted = (string)_converter.Convert(obj);
-    objectIds.Add(obj.id);
     string objPath = $"{string.Join("\\", path)}\\{obj.name}";
     return (objPath, converted);
   }
 
-  public string AddDatasetsToMap((string, string) databaseObj)
+  private string AddDatasetsToMap((string nestedLayerName, string datasetId) databaseObj)
   {
+    Uri uri =
+      new(
+        $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.datasetId}"
+      );
+    Map map = _contextStack.Current.Document.Map;
     try
     {
-      return LayerFactory.Instance
-        .CreateLayer(
-          new Uri(
-            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
-          ),
-          _contextStack.Current.Document.Map,
-          layerName: databaseObj.Item1
-        )
-        .URI;
+      return LayerFactory.Instance.CreateLayer(uri, map, layerName: databaseObj.nestedLayerName).URI;
     }
     catch (ArgumentException)
     {
       return StandaloneTableFactory.Instance
-        .CreateStandaloneTable(
-          new Uri(
-            $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.Item2}"
-          ),
-          _contextStack.Current.Document.Map,
-          tableName: databaseObj.Item1
-        )
+        .CreateStandaloneTable(uri, map, tableName: databaseObj.nestedLayerName)
         .URI;
     }
-  }
-
-  private string[] GetLayerPath(TraversalContext context)
-  {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath =
-      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
-  }
-
-  private bool HasGISParent(TraversalContext context)
-  {
-    List<VectorLayer> vectorLayers = context
-      .GetAscendantOfType<VectorLayer>()
-      .Where(obj => obj != context.Current)
-      .ToList();
-    List<Objects.GIS.RasterLayer> rasterLayers = context
-      .GetAscendantOfType<Objects.GIS.RasterLayer>()
-      .Where(obj => obj != context.Current)
-      .ToList();
-    return vectorLayers.Count + rasterLayers.Count > 0;
   }
 
   public HostObjectBuilderResult Build(
@@ -116,31 +81,31 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
-    // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
+      .Where(ctx => ctx.Current is not Collection || IsGISType(ctx.Current))
       .Where(ctx => HasGISParent(ctx) is false)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current, ctx.Parent?.Current.id))
       .ToList();
 
     int allCount = objectsToConvert.Count;
     int count = 0;
-    Dictionary<string, (string path, Geometry converted, string? parentId)> convertedGeometries = new();
-    List<string> objectIds = new();
+    Dictionary<TraversalContext, (string path, Geometry converted)> convertedGeometries = new();
     List<(string path, string converted)> convertedGISObjects = new();
 
     // 1. convert everything
     List<ReceiveConversionResult> results = new(objectsToConvert.Count);
     List<string> bakedObjectIds = new();
-    foreach (var item in objectsToConvert)
+    foreach (TraversalContext ctx in objectsToConvert)
     {
-      (string[] path, Base obj, string? parentId) = item;
+      string[] path = GetLayerPath(ctx);
+      Base obj = ctx.Current;
+
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        if (obj is VectorLayer or Objects.GIS.RasterLayer)
+        if (IsGISType(obj))
         {
-          var result = ConvertNativeLayers((Collection)obj, path, objectIds);
+          var result = ConvertNativeLayers((Collection)obj, path);
           convertedGISObjects.Add(result);
           // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
           // TODO: is the type in here basically a GIS Layer?
@@ -148,8 +113,8 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         }
         else
         {
-          var result = ConvertNonNativeGeometries(obj, path, parentId, objectIds);
-          convertedGeometries[obj.id] = result;
+          var result = ConvertNonNativeGeometries(obj, path);
+          convertedGeometries[ctx] = result;
 
           // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
           results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
@@ -183,5 +148,27 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
+  }
+
+  [Pure]
+  private static string[] GetLayerPath(TraversalContext context)
+  {
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] reverseOrderPath =
+      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
+    return reverseOrderPath.Reverse().ToArray();
+  }
+
+  [Pure]
+  private static bool HasGISParent(TraversalContext context)
+  {
+    List<Base> gisLayers = context.GetAscendants().Where(IsGISType).Where(obj => obj != context.Current).ToList();
+    return gisLayers.Count > 0;
+  }
+
+  [Pure]
+  private static bool IsGISType(Base obj)
+  {
+    return obj is RasterLayer or VectorLayer;
   }
 }
