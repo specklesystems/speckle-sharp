@@ -26,7 +26,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
   private readonly RevitSettings _revitSettings;
   private readonly IRevitIdleManager _idleManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
   public RevitSendBinding(
     IRevitIdleManager idleManager,
@@ -35,7 +35,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     IBridge bridge,
     IUnitOfWorkFactory unitOfWorkFactory,
     RevitSettings revitSettings,
-    ISendConversionCache? sendConversionCache = null
+    ISendConversionCache sendConversionCache
   )
     : base("sendBinding", store, bridge, revitContext)
   {
@@ -163,7 +163,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    _sendConversionCache?.EvictObjects(objectIdsList);
+    _sendConversionCache.EvictObjects(objectIdsList);
 
     foreach (SenderModelCard modelCard in senders)
     {

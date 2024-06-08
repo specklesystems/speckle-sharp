@@ -336,7 +336,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     List<string> expiredSenderIds = new();
     string[] objectIdsList = ChangedObjectIds.ToArray();
 
-    _sendConversionCache?.EvictObjects(objectIdsList);
+    _sendConversionCache.EvictObjects(objectIdsList);
 
     foreach (SenderModelCard sender in senders)
     {

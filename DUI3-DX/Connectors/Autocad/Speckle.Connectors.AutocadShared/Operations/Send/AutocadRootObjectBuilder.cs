@@ -14,9 +14,9 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
 {
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter, ISendConversionCache? sendConversionCache = null)
+  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter, ISendConversionCache sendConversionCache)
   {
     _converter = converter;
     _sendConversionCache = sendConversionCache;
@@ -52,10 +52,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
       try
       {
         Base converted;
-        if (
-          _sendConversionCache != null
-          && _sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;

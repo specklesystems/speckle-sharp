@@ -36,7 +36,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
   public RhinoSendBinding(
     DocumentModelStore store,
@@ -47,7 +47,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,
-    ISendConversionCache? sendConversionCache = null
+    ISendConversionCache sendConversionCache
   )
   {
     _store = store;
@@ -198,7 +198,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    _sendConversionCache?.EvictObjects(objectIdsList);
+    _sendConversionCache.EvictObjects(objectIdsList);
 
     foreach (SenderModelCard modelCard in senders)
     {

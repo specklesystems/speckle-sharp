@@ -19,9 +19,9 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache? sendConversionCache = null)
+  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
@@ -71,10 +71,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
         Base converted;
 
-        if (
-          _sendConversionCache != null
-          && _sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;

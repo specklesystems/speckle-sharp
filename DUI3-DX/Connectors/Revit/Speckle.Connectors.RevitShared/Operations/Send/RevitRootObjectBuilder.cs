@@ -19,12 +19,12 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
   private readonly IRevitConversionContextStack _contextStack;
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
   public RevitRootObjectBuilder(
     IRootToSpeckleConverter converter,
     IRevitConversionContextStack contextStack,
-    ISendConversionCache? sendConversionCache = null
+    ISendConversionCache sendConversionCache
   )
   {
     _converter = converter;
@@ -83,10 +83,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
       try
       {
         Base converted;
-        if (
-          _sendConversionCache != null
-          && _sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;

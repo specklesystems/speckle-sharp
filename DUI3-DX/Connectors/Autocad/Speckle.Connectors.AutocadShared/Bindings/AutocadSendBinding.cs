@@ -29,7 +29,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -44,7 +44,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
     IUnitOfWorkFactory unitOfWorkFactory,
-    ISendConversionCache? sendConversionCache = null
+    ISendConversionCache sendConversionCache
   )
   {
     _store = store;
@@ -92,7 +92,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    _sendConversionCache?.EvictObjects(objectIdsList);
+    _sendConversionCache.EvictObjects(objectIdsList);
 
     foreach (SenderModelCard modelCard in senders)
     {
