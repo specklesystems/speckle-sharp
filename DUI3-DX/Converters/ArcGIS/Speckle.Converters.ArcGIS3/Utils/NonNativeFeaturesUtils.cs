@@ -53,6 +53,14 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           }
 
           geometryGroups[uniqueKey].Add(geom);
+
+          // record changes in conversion tracker
+          conversionTracker[item.Key].AddDatasetId(uniqueKey);
+          conversionTracker[item.Key].AddDatasetRow(geometryGroups[uniqueKey].Count - 1);
+        }
+        else
+        {
+          throw new ArgumentException($"Unexpected geometry and datasetId values: {geom}, {datasetId}");
         }
       }
       catch (Exception ex) when (!ex.IsFatal())

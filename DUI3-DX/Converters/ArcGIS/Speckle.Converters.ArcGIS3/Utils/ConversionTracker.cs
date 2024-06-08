@@ -21,6 +21,16 @@ public struct ObjectConversionTracker
     MappedLayerURI = null;
   }
 
+  public void AddDatasetId(string datasetId)
+  {
+    DatasetId = datasetId;
+  }
+
+  public void AddDatasetRow(int datasetRow)
+  {
+    DatasetRow = datasetRow;
+  }
+
   public ObjectConversionTracker(Base baseObj, string nestedLayerName)
   {
     Base = baseObj;
