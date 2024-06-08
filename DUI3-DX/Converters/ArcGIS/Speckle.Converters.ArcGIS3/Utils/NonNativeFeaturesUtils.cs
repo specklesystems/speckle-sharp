@@ -23,35 +23,42 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     _contextStack = contextStack;
   }
 
-  public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
-    Dictionary<TraversalContext, (string parentPath, ACG.Geometry geom)> convertedObjs
+  public void WriteGeometriesToDatasets(
+    // Dictionary<TraversalContext, (string nestedParentPath, ACG.Geometry geom)> conversionTracker
+    Dictionary<TraversalContext, ObjectConversionTracker> conversionTracker
   )
   {
-    List<(string parentPath, string converted)> result = new();
     // 1. Sort features into groups by path and geom type
-    Dictionary<string, (List<ACG.Geometry> geometries, string? parentId)> geometryGroups = new();
-    foreach (var item in convertedObjs)
+    Dictionary<string, List<ACG.Geometry>> geometryGroups = new();
+    foreach (var item in conversionTracker)
     {
       try
       {
-        TraversalContext context = item.Key;
-        (string parentPath, ACG.Geometry geom) = item.Value;
-
-        string? parentId = context.Parent?.Current.id;
-        // add dictionnary item if doesn't exist yet
-        // Key must be unique per parent and speckle_type
-        // Key is composed of parentId and parentPath (that contains speckle_type)
-        string uniqueKey = $"{parentId}_{parentPath}";
-        if (!geometryGroups.TryGetValue(uniqueKey, out _))
+        ACG.Geometry? geom = item.Value.HostAppGeom;
+        string? datasetId = item.Value.DatasetId;
+        if (geom != null && datasetId == null) // only non-native geomerties, not written into a dataset yet
         {
-          geometryGroups[uniqueKey] = (new List<ACG.Geometry>(), parentId);
-        }
+          string nestedParentPath = item.Value.NestedLayerName;
+          string speckle_type = nestedParentPath.Split('\\')[^1];
 
-        geometryGroups[uniqueKey].geometries.Add(geom);
+          TraversalContext context = item.Key;
+          string? parentId = context.Parent?.Current.id;
+
+          // add dictionnary item if doesn't exist yet
+          // Key must be unique per parent and speckle_type
+          string uniqueKey = $"speckleTYPE_{speckle_type}_speckleID_{parentId}";
+          if (!geometryGroups.TryGetValue(uniqueKey, out _))
+          {
+            geometryGroups[uniqueKey] = new List<ACG.Geometry>();
+          }
+
+          geometryGroups[uniqueKey].Add(geom);
+        }
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
         // POC: report, etc.
+        conversionTracker[item.Key].AddException(ex);
         Debug.WriteLine($"conversion error happened. {ex.Message}");
       }
     }
@@ -59,24 +66,20 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     // 2. for each group create a Dataset and add geometries there as Features
     foreach (var item in geometryGroups)
     {
-      string uniqueKey = item.Key; // parentId_parentPath
-      string parentPath = uniqueKey.Split('_', 2)[^1];
-      string speckle_type = parentPath.Split('\\')[^1];
-      (List<ACG.Geometry> geomList, string? parentId) = item.Value;
+      string uniqueKey = item.Key;
+      List<ACG.Geometry> geomList = item.Value;
       try
       {
-        string converted = CreateDatasetInDatabase(speckle_type, geomList, parentId);
-        result.Add((parentPath, converted));
+        string converted = CreateDatasetInDatabase(uniqueKey, geomList);
       }
       catch (GeodatabaseGeometryException)
       {
         // do nothing if writing of some geometry groups fails
       }
     }
-    return result;
   }
 
-  private string CreateDatasetInDatabase(string speckle_type, List<ACG.Geometry> geomList, string? parentId)
+  private string CreateDatasetInDatabase(string featureClassName, List<ACG.Geometry> geomList)
   {
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
       new(_contextStack.Current.Document.SpeckleDatabasePath);
@@ -88,9 +91,6 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 
     // TODO: create Fields
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
-
-    // TODO: generate meaningful name
-    string featureClassName = $"speckleTYPE_{speckle_type}_speckleID_{parentId}";
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())

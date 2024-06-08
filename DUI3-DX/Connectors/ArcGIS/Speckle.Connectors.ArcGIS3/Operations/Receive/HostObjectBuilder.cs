@@ -36,37 +36,20 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  private (string path, Geometry converted) ConvertNonNativeGeometries(Base obj, string[] path)
+  private string AddDatasetsToMap(ObjectConversionTracker conversionTracker)
   {
-    Geometry converted = (Geometry)_converter.Convert(obj);
-    List<string> objPath = path.ToList();
-    objPath.Add(obj.speckle_type.Split(".")[^1]);
-    return (string.Join("\\", objPath), converted);
-  }
+    string? datasetId = conversionTracker.DatasetId; // should not ne null here
+    string nestedLayerName = conversionTracker.NestedLayerName;
 
-  private (string path, string converted) ConvertNativeLayers(Collection obj, string[] path)
-  {
-    string converted = (string)_converter.Convert(obj);
-    string objPath = $"{string.Join("\\", path)}\\{obj.name}";
-    return (objPath, converted);
-  }
-
-  private string AddDatasetsToMap((string nestedLayerName, string datasetId) databaseObj)
-  {
-    Uri uri =
-      new(
-        $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.datasetId}"
-      );
+    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     Map map = _contextStack.Current.Document.Map;
     try
     {
-      return LayerFactory.Instance.CreateLayer(uri, map, layerName: databaseObj.nestedLayerName).URI;
+      return LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName).URI;
     }
     catch (ArgumentException)
     {
-      return StandaloneTableFactory.Instance
-        .CreateStandaloneTable(uri, map, tableName: databaseObj.nestedLayerName)
-        .URI;
+      return StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName).URI;
     }
   }
 
@@ -89,8 +72,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     int allCount = objectsToConvert.Count;
     int count = 0;
-    Dictionary<TraversalContext, (string path, Geometry converted)> convertedGeometries = new();
-    List<(string path, string converted)> convertedGISObjects = new();
+    Dictionary<TraversalContext, ObjectConversionTracker> conversionTracker = new();
 
     // 1. convert everything
     List<ReceiveConversionResult> results = new(objectsToConvert.Count);
@@ -105,21 +87,15 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         if (IsGISType(obj))
         {
-          var result = ConvertNativeLayers((Collection)obj, path);
-          convertedGISObjects.Add(result);
-          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
-          // TODO: is the type in here basically a GIS Layer?
-          results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
+          string nestedLayerPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          string datasetId = (string)_converter.Convert(obj);
+          conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, datasetId);
         }
         else
         {
-          var result = ConvertNonNativeGeometries(obj, path);
-          convertedGeometries[ctx] = result;
-
-          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
-          results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
-          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis (weird is subjective)
-          // bakedObjectIds.Add(result.path);
+          string nestedLayerPath = $"{string.Join("\\", path)}\\{obj.speckle_type.Split(".")[^1]}";
+          Geometry converted = (Geometry)_converter.Convert(obj);
+          conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, converted);
         }
       }
       catch (Exception ex) when (!ex.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
@@ -130,20 +106,20 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
 
     // 2. convert Database entries with non-GIS geometry datasets
-
     onOperationProgressed?.Invoke("Writing to Database", null);
-    convertedGISObjects.AddRange(_nonGisFeaturesUtils.WriteGeometriesToDatasets(convertedGeometries));
+    _nonGisFeaturesUtils.WriteGeometriesToDatasets(conversionTracker);
 
+    // 3. add layer and tables to the Table Of Content
     int bakeCount = 0;
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
-    // 3. add layer and tables to the Table Of Content
-    foreach (var databaseObj in convertedGISObjects)
+    foreach (var item in conversionTracker)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      bakedObjectIds.Add(AddDatasetsToMap(databaseObj));
-      onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
+      bakedObjectIds.Add(AddDatasetsToMap(item.Value));
+      // results.Add(new(Status.SUCCESS, obj, null, null));
+      onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
 
     // TODO: validated a correct set regarding bakedobject ids
