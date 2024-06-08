@@ -31,7 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -46,7 +46,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager,
-    ISendConversionCache? sendConversionCache = null
+    ISendConversionCache sendConversionCache
   )
   {
     _store = store;

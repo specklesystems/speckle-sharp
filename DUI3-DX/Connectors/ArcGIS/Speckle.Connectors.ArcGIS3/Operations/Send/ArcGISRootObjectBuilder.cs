@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
@@ -16,9 +17,9 @@ namespace Speckle.Connectors.ArcGis.Operations.Send;
 public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-  private readonly ISendConversionCache? _sendConversionCache;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache? sendConversionCache = null)
+  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
@@ -41,6 +42,8 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
     Collection rootObjectCollection = new(); //TODO: Collections
 
     List<SendConversionResult> results = new(objects.Count);
+    var cacheHitCount = 0;
+
     foreach (MapMember mapMember in objects)
     {
       ct.ThrowIfCancellationRequested();
@@ -50,12 +53,10 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
       try
       {
         Base converted;
-        if (
-          _sendConversionCache != null
-          && _sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
+          cacheHitCount++;
         }
         else
         {
@@ -75,6 +76,11 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
+
+    // POC: Log would be nice, or can be removed.
+    Debug.WriteLine(
+      $"Cache hit count {cacheHitCount} out of {objects.Count} ({(double)cacheHitCount / objects.Count})"
+    );
 
     return new(rootObjectCollection, results);
   }
