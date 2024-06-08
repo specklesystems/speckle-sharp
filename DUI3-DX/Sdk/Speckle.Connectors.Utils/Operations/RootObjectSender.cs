@@ -16,6 +16,10 @@ public sealed class RootObjectSender : IRootObjectSender
 {
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
   private readonly ServerTransport.Factory _transportFactory;
+
+  /// <summary>
+  /// The send conversion cache is <i>optional</i>: some connectors might not have it, therefore it's nullable!
+  /// </summary>
   private readonly ISendConversionCache? _sendConversionCache;
 
   public RootObjectSender(ServerTransport.Factory transportFactory, ISendConversionCache? sendConversionCache = null)
