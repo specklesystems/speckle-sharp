@@ -1,5 +1,7 @@
-﻿using Autodesk.AutoCAD.DatabaseServices;
+﻿using System.Diagnostics;
+using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
@@ -12,10 +14,12 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
 {
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter)
+  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter, ISendConversionCache sendConversionCache)
   {
     _converter = converter;
+    _sendConversionCache = sendConversionCache;
   }
 
   public RootObjectBuilderResult Build(
@@ -40,6 +44,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     int count = 0;
 
     List<SendConversionResult> results = new(objects.Count);
+    var cacheHitCount = 0;
     foreach (var (dbObject, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
@@ -47,12 +52,10 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
       try
       {
         Base converted;
-        if (
-          !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value) // POC: Interface out constructing keys here to use it otherplaces with a same code. -> https://spockle.atlassian.net/browse/CNX-9313
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
+          cacheHitCount++;
         }
         else
         {
@@ -83,6 +86,11 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
+
+    // POC: Log would be nice, or can be removed.
+    Debug.WriteLine(
+      $"Cache hit count {cacheHitCount} out of {objects.Count} ({(double)cacheHitCount / objects.Count})"
+    );
 
     return new(modelWithLayers, results);
   }

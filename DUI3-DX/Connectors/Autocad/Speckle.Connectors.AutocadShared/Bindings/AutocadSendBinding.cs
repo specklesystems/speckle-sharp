@@ -10,10 +10,10 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -29,16 +29,12 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
+  private readonly ISendConversionCache _sendConversionCache;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
-
-  /// <summary>
-  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
-  /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public AutocadSendBinding(
     DocumentModelStore store,
@@ -47,7 +43,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
-    IUnitOfWorkFactory unitOfWorkFactory
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache sendConversionCache
   )
   {
     _store = store;
@@ -56,7 +53,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     _autocadSettings = autocadSettings;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
-
+    _sendConversionCache = sendConversionCache;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
 
@@ -95,6 +92,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
+    _sendConversionCache.EvictObjects(objectIdsList);
+
     foreach (SenderModelCard modelCard in senders)
     {
       var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
@@ -102,7 +101,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 
@@ -148,9 +146,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        _autocadSettings.HostAppInfo.Name,
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        _autocadSettings.HostAppInfo.Name
       );
 
       var sendResult = await uow.Service
@@ -161,15 +157,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
           cts.Token
         )
         .ConfigureAwait(false);
-
-      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.ConvertedReferences)
-      {
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      }
-
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      modelCard.ChangedObjectIds = new();
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }

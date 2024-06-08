@@ -20,7 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitSendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\DocumentModelStorageSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\IdStorageSchema.cs" />

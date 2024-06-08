@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -12,9 +11,9 @@ using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Models;
 using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -37,10 +36,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  /// <summary>
-  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
-  /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  private readonly ISendConversionCache _sendConversionCache;
 
   public RhinoSendBinding(
     DocumentModelStore store,
@@ -50,7 +46,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
-    CancellationManager cancellationManager
+    CancellationManager cancellationManager,
+    ISendConversionCache sendConversionCache
   )
   {
     _store = store;
@@ -60,6 +57,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _sendFilters = sendFilters.ToList();
     _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
+    _sendConversionCache = sendConversionCache;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
     SubscribeToRhinoEvents();
@@ -127,11 +125,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
-  [SuppressMessage(
-    "Maintainability",
-    "CA1506:Avoid excessive class coupling",
-    Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
-  )]
   public async Task Send(string modelCardId)
   {
     using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<RhinoObject>>();
@@ -163,9 +156,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         modelCard.AccountId.NotNull(),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
-        _rhinoSettings.HostAppInfo.Name,
-        _convertedObjectReferences,
-        modelCard.ChangedObjectIds
+        _rhinoSettings.HostAppInfo.Name
       );
 
       var sendResult = await unitOfWork.Service
@@ -176,15 +167,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
           cts.Token
         )
         .ConfigureAwait(false);
-
-      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.ConvertedReferences)
-      {
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      }
-
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      modelCard.ChangedObjectIds = new();
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
     }
@@ -216,14 +198,15 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
+    _sendConversionCache.EvictObjects(objectIdsList);
+
     foreach (SenderModelCard modelCard in senders)
     {
       var intersection = modelCard.SendFilter.NotNull().GetObjectIds().Intersect(objectIdsList).ToList();
-      var isExpired = modelCard.SendFilter.NotNull().CheckExpiry(ChangedObjectIds.ToArray());
+      var isExpired = intersection.Count != 0;
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId.NotNull());
-        modelCard.ChangedObjectIds.UnionWith(intersection.NotNull());
       }
     }
 
