@@ -36,27 +36,46 @@ public class AllRevitCategories : IAllRevitCategories
       return elementType;
     }
 
-    var matchingType = revitDocumentAggregateCache
-      .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
-      .GetAllObjects()
-      .Where(catInfo => catInfo.ElementTypeType == typeof(T) && catInfo.BuiltInCategories.Count == 0)
-      .FirstOrDefault();
+    IRevitCategoryInfo matchingType;
+
+    if (revitDocumentAggregateCache is null)
+    {
+      matchingType = elementType;
+    }
+    else
+    {
+      matchingType = revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
+        .GetAllObjects()
+        .Where(catInfo => catInfo.ElementTypeType == typeof(T) && catInfo.BuiltInCategories.Count == 0)
+        .FirstOrDefault();
+    }
 
     if (matchingType != null)
     {
       return matchingType;
     }
 
-    var categoryInfo = revitDocumentAggregateCache
-      .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
-      .GetOrAdd(
-        typeof(T).Name,
-        () =>
-        {
-          return new RevitCategoryInfo(typeof(T).Name, null, typeof(T), new List<BuiltInCategory>());
-        },
-        out _
-      );
+    IRevitCategoryInfo categoryInfo;
+
+    if (revitDocumentAggregateCache is null)
+    {
+      categoryInfo = new RevitCategoryInfo(typeof(T).Name, null, typeof(T), new List<BuiltInCategory>());
+    }
+    else
+    {
+      categoryInfo = revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
+        .GetOrAdd(
+          typeof(T).Name,
+          () =>
+          {
+            return new RevitCategoryInfo(typeof(T).Name, null, typeof(T), new List<BuiltInCategory>());
+          },
+          out _
+        );
+    }
+
 
     return categoryInfo;
   }
@@ -126,32 +145,45 @@ public class AllRevitCategories : IAllRevitCategories
     {
       return categoryInfo;
     }
-
+    
     categoryName = CategoryNameFormatted(categoryName);
-    var revitCategoryInfoCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>();
 
-    categoryInfo = revitCategoryInfoCache.TryGet(categoryName);
-    if (categoryInfo != null)
+    IRevitObjectCache<IRevitCategoryInfo> revitCategoryInfoCache;
+    if (revitDocumentAggregateCache is not null)
     {
-      return categoryInfo;
-    }
+      revitCategoryInfoCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>();
 
-    foreach (var info in revitCategoryInfoCache.GetAllObjects())
-    {
-      if (categoryName.IndexOf(info.CategoryName, StringComparison.OrdinalIgnoreCase) >= 0)
+      categoryInfo = revitCategoryInfoCache.TryGet(categoryName);
+      if (categoryInfo != null)
       {
-        return info;
+        return categoryInfo;
       }
-      foreach (var alias in info.CategoryAliases)
+      else
       {
-        if (categoryName.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
-        {
-          return info;
-        }
+        return SHC.Undefined;
       }
     }
-
-    return SHC.Undefined;
+    else
+    {
+      return SHC.Undefined;
+    }
+    
+    // foreach (var info in revitCategoryInfoCache.GetAllObjects())
+    // {
+    //   if (categoryName.IndexOf(info.CategoryName, StringComparison.OrdinalIgnoreCase) >= 0)
+    //   {
+    //     return info;
+    //   }
+    //   foreach (var alias in info.CategoryAliases)
+    //   {
+    //     if (categoryName.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+    //     {
+    //       return info;
+    //     }
+    //   }
+    // }
+    //
+    // return SHC.Undefined;
   }
   #endregion
 
@@ -173,29 +205,43 @@ public class AllRevitCategories : IAllRevitCategories
     // pre 2.16 we're passing the "category" string
     else
     {
-      var revitCat = revitDocumentAggregateCache
-        .GetOrInitializeWithDefaultFactory<Category>()
-        .TryGet(unformattedCatName);
-
-      if (revitCat == null)
+      if (revitDocumentAggregateCache is null)
       {
         return null;
       }
+      else
+      {
+        var revitCat = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<Category>()
+          .TryGet(unformattedCatName);
 
-      bic = Categories.GetBuiltInCategory(revitCat);
-      formattedName = CategoryNameFormatted(unformattedCatName);
+        if (revitCat == null)
+        {
+          return null;
+        }
+
+        bic = Categories.GetBuiltInCategory(revitCat);
+        formattedName = CategoryNameFormatted(unformattedCatName);
+      }
     }
 
-    return revitDocumentAggregateCache
-      .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
-      .GetOrAdd(
-        formattedName,
-        () =>
-        {
-          return new RevitCategoryInfo(formattedName, null, null, new List<BuiltInCategory> { bic });
-        },
-        out _
-      );
+    if (revitDocumentAggregateCache is null)
+    {
+      return new RevitCategoryInfo(formattedName, null, null, new List<BuiltInCategory> { bic });
+    }
+    else
+    {
+      return revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
+        .GetOrAdd(
+          formattedName,
+          () =>
+          {
+            return new RevitCategoryInfo(formattedName, null, null, new List<BuiltInCategory> { bic });
+          },
+          out _
+        );
+    }
   }
 
   private static string CategoryNameFormatted(string name)

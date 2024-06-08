@@ -140,6 +140,12 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
       appObj.Update(logItem: $"Could not find valid incoming type for element of type \"{element.speckle_type}\"");
     }
     var typeInfo = AllCategories.GetRevitCategoryInfo<T>(element);
+
+    if (revitDocumentAggregateCache is null)
+    {
+      return default;
+    }
+    
     var types = revitDocumentAggregateCache
       .GetOrInitializeWithDefaultFactory<List<ElementType>>()
       .GetOrAddGroupOfTypes(typeInfo);

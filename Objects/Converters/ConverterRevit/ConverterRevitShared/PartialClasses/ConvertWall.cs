@@ -264,19 +264,31 @@ public partial class ConverterRevit
       return children;
     }
 
-    var allSubelementsInView = revitDocumentAggregateCache
-      .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
-      .GetOrAdd(
-        category.ToString(),
-        () =>
-        {
-          using var filter = new ElementCategoryFilter(category);
-          using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+    var allSubelementsInView = new HashSet<ElementId>();
 
-          return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
-        },
-        out _
-      );
+    if (revitDocumentAggregateCache is null)
+    {
+      var filter = new ElementCategoryFilter(category);
+      var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+      allSubelementsInView = new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+    }
+    else
+    {
+      allSubelementsInView = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
+        .GetOrAdd(
+          category.ToString(),
+          () =>
+          {
+            using var filter = new ElementCategoryFilter(category);
+            using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+            return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+          },
+          out _
+        );
+    }
 
     return children.Where(allSubelementsInView.Contains);
   }

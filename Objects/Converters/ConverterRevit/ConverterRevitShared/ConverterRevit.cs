@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +110,7 @@ public partial class ConverterRevit : ISpeckleConverter
     Report.Log($"Using converter: {Name} v{ver}");
   }
 
-  private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+  private IRevitDocumentAggregateCache? revitDocumentAggregateCache;
   private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
   private TransactionManager transactionManager;
 
