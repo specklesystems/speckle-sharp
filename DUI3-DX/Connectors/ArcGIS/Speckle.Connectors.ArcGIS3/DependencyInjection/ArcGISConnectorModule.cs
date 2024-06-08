@@ -14,6 +14,7 @@ using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -55,5 +56,8 @@ public class ArcGISConnectorModule : ISpeckleModule
     builder.AddScoped<SendOperation<MapMember>>();
     builder.AddScoped<ArcGISRootObjectBuilder>();
     builder.AddSingleton<IRootObjectBuilder<MapMember>, ArcGISRootObjectBuilder>();
+
+    // register send conversion cache
+    builder.AddSingleton<ISendConversionCache, SendConversionCache>();
   }
 }
