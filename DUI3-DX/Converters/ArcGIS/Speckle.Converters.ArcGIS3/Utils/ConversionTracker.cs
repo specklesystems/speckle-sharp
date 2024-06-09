@@ -1,3 +1,4 @@
+using ArcGIS.Desktop.Mapping;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
@@ -7,6 +8,7 @@ public struct ObjectConversionTracker
   public Base Base { get; set; }
   public string NestedLayerName { get; set; }
   public ACG.Geometry? HostAppGeom { get; set; }
+  public MapMember? HostAppMapMember { get; set; }
   public string? DatasetId { get; set; }
   public int? DatasetRow { get; set; }
   public string? MappedLayerURI { get; set; }
@@ -29,6 +31,16 @@ public struct ObjectConversionTracker
   public void AddDatasetRow(int datasetRow)
   {
     DatasetRow = datasetRow;
+  }
+
+  public void AddConvertedMapMember(MapMember mapMember)
+  {
+    HostAppMapMember = mapMember;
+  }
+
+  public void AddLayerURI(string layerURIstring)
+  {
+    MappedLayerURI = layerURIstring;
   }
 
   public ObjectConversionTracker(Base baseObj, string nestedLayerName)

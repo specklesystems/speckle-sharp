@@ -36,7 +36,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  private string AddDatasetsToMap(ObjectConversionTracker conversionTracker)
+  private void AddDatasetsToMap(ObjectConversionTracker conversionTracker)
   {
     string? datasetId = conversionTracker.DatasetId; // should not ne null here
     string nestedLayerName = conversionTracker.NestedLayerName;
@@ -45,11 +45,15 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     Map map = _contextStack.Current.Document.Map;
     try
     {
-      return LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName).URI;
+      var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
+      conversionTracker.AddConvertedMapMember(layer);
+      conversionTracker.AddLayerURI(layer.URI);
     }
     catch (ArgumentException)
     {
-      return StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName).URI;
+      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
+      conversionTracker.AddConvertedMapMember(table);
+      conversionTracker.AddLayerURI(table.URI);
     }
   }
 
@@ -117,8 +121,31 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      bakedObjectIds.Add(AddDatasetsToMap(item.Value));
-      // results.Add(new(Status.SUCCESS, obj, null, null));
+      var tracker = item.Value;
+      if (tracker.Exception != null)
+      {
+        results.Add(new(Status.ERROR, tracker.Base, null, null, tracker.Exception));
+      }
+      else
+      {
+        AddDatasetsToMap(tracker);
+        conversionTracker[item.Key] = tracker; // not strictly necessary, just keeps the conversionTracker object updated
+        bakedObjectIds.Add(tracker.MappedLayerURI == null ? "" : tracker.MappedLayerURI);
+
+        // prioritize individual hostAppGeometry type, if available:
+        if (tracker.HostAppGeom != null)
+        {
+          results.Add(
+            new(Status.SUCCESS, tracker.Base, tracker.HostAppGeom.GetType().ToString(), tracker.MappedLayerURI)
+          );
+        }
+        else
+        {
+          results.Add(
+            new(Status.SUCCESS, tracker.Base, tracker.HostAppMapMember?.GetType().ToString(), tracker.MappedLayerURI)
+          );
+        }
+      }
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
 

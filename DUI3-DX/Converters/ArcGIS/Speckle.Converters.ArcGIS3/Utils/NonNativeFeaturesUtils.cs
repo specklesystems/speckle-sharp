@@ -83,7 +83,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       catch (GeodatabaseGeometryException ex)
       {
         // do nothing if writing of some geometry groups fails
-        // record in a conversionTracker:
+        // only record in conversionTracker:
         foreach (var conversionItem in conversionTracker)
         {
           if (conversionItem.Value.DatasetId == uniqueKey)
