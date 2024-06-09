@@ -36,25 +36,30 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  private void AddDatasetsToMap(ObjectConversionTracker conversionTracker)
+  private void AddDatasetsToMap(
+    Dictionary<TraversalContext, ObjectConversionTracker> conversionTracker,
+    TraversalContext key
+  )
   {
-    string? datasetId = conversionTracker.DatasetId; // should not ne null here
-    string nestedLayerName = conversionTracker.NestedLayerName;
+    ObjectConversionTracker trackerItem = conversionTracker[key];
+    string? datasetId = trackerItem.DatasetId; // should not ne null here
+    string nestedLayerName = trackerItem.NestedLayerName;
 
     Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     Map map = _contextStack.Current.Document.Map;
     try
     {
       var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
-      conversionTracker.AddConvertedMapMember(layer);
-      conversionTracker.AddLayerURI(layer.URI);
+      trackerItem.AddConvertedMapMember(layer);
+      trackerItem.AddLayerURI(layer.URI);
     }
     catch (ArgumentException)
     {
       var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
-      conversionTracker.AddConvertedMapMember(table);
-      conversionTracker.AddLayerURI(table.URI);
+      trackerItem.AddConvertedMapMember(table);
+      trackerItem.AddLayerURI(table.URI);
     }
+    conversionTracker[key] = trackerItem;
   }
 
   public HostObjectBuilderResult Build(
@@ -121,28 +126,27 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       cancellationToken.ThrowIfCancellationRequested();
 
       // BAKE OBJECTS HERE
-      var tracker = item.Value;
-      if (tracker.Exception != null)
+      if (item.Value.Exception != null)
       {
-        results.Add(new(Status.ERROR, tracker.Base, null, null, tracker.Exception));
+        results.Add(new(Status.ERROR, item.Value.Base, null, null, item.Value.Exception));
       }
       else
       {
-        AddDatasetsToMap(tracker);
-        conversionTracker[item.Key] = tracker; // not strictly necessary, just keeps the conversionTracker object updated
+        AddDatasetsToMap(conversionTracker, item.Key);
+        var tracker = conversionTracker[item.Key]; // updated tracker object
         bakedObjectIds.Add(tracker.MappedLayerURI == null ? "" : tracker.MappedLayerURI);
 
         // prioritize individual hostAppGeometry type, if available:
         if (tracker.HostAppGeom != null)
         {
           results.Add(
-            new(Status.SUCCESS, tracker.Base, tracker.HostAppGeom.GetType().ToString(), tracker.MappedLayerURI)
+            new(Status.SUCCESS, tracker.Base, tracker.MappedLayerURI, tracker.HostAppGeom.GetType().ToString())
           );
         }
         else
         {
           results.Add(
-            new(Status.SUCCESS, tracker.Base, tracker.HostAppMapMember?.GetType().ToString(), tracker.MappedLayerURI)
+            new(Status.SUCCESS, tracker.Base, tracker.MappedLayerURI, tracker.HostAppMapMember?.GetType().ToString())
           );
         }
       }
