@@ -1,19 +1,20 @@
-using Objects.Primitive;
+﻿using Objects.Primitive;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-public class LineConversionToSpeckle : ITypedConverter<DB.Line, SOG.Line>
+public class LineConversionToSpeckle : ITypedConverter<IRevitLine, SOG.Line>
 {
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
   private readonly IScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
-    IRevitConversionContextStack contextStack,
-    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
     IScalingServiceToSpeckle scalingService
   )
   {
@@ -22,7 +23,7 @@ public class LineConversionToSpeckle : ITypedConverter<DB.Line, SOG.Line>
     _scalingService = scalingService;
   }
 
-  public SOG.Line Convert(DB.Line target) =>
+  public SOG.Line Convert(IRevitLine target) =>
     new()
     {
       units = _contextStack.Current.SpeckleUnits,
