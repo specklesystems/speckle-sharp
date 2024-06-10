@@ -61,9 +61,9 @@
       },
       "Speckle.InterfaceGenerator": {
         "type": "Direct",
-        "requested": "[0.9.4, )",
-        "resolved": "0.9.4",
-        "contentHash": "QfeKjhXq5Qc9CMdUxluK7x0jhNWwyqqGDfVcEXgiObJLTHTa1MBuJLN5LEWa8FYgB6iyjk3nCAYYtIfJbk1qUg=="
+        "requested": "[0.9.5, )",
+        "resolved": "0.9.5",
+        "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -346,11 +346,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit2023.Interfaces": {
-        "type": "Transitive",
-        "resolved": "0.1.1-preview.0.12",
-        "contentHash": "0+HZVdrzBAiLrXndmB/sLubFnxaEXJ4mFjT23nKQgW3ZrsYeHErkI1PDERhT9SDF9TSvpJUynK1W1NPF129gWA=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -546,8 +541,7 @@
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.12, )"
+          "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
