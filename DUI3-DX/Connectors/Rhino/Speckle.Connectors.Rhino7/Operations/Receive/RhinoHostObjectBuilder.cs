@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -175,7 +176,8 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     return previousLayer.Index;
   }
 
-  private string[] GetLayerPath(TraversalContext context)
+  [Pure]
+  private static string[] GetLayerPath(TraversalContext context)
   {
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
     string[] reverseOrderPath =

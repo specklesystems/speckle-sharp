@@ -5,6 +5,7 @@ using ArcGIS.Core.Data.Exceptions;
 using Speckle.Converters.Common;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
@@ -23,24 +24,25 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
   }
 
   public List<(string parentPath, string converted)> WriteGeometriesToDatasets(
-    Dictionary<string, (string parentPath, ACG.Geometry geom, string? parentId)> convertedObjs
+    Dictionary<TraversalContext, (string parentPath, ACG.Geometry geom)> convertedObjs
   )
   {
-    List<(string, string)> result = new();
+    List<(string parentPath, string converted)> result = new();
     // 1. Sort features into groups by path and geom type
     Dictionary<string, (List<ACG.Geometry> geometries, string? parentId)> geometryGroups = new();
     foreach (var item in convertedObjs)
     {
       try
       {
-        string objId = item.Key;
-        (string parentPath, ACG.Geometry geom, string? parentId) = item.Value;
+        TraversalContext context = item.Key;
+        (string parentPath, ACG.Geometry geom) = item.Value;
 
+        string? parentId = context.Parent?.Current.id;
         // add dictionnary item if doesn't exist yet
         // Key must be unique per parent and speckle_type
         // Key is composed of parentId and parentPath (that contains speckle_type)
         string uniqueKey = $"{parentId}_{parentPath}";
-        if (!geometryGroups.TryGetValue(uniqueKey, out (List<ACG.Geometry> geometries, string? parentId) value))
+        if (!geometryGroups.TryGetValue(uniqueKey, out _))
         {
           geometryGroups[uniqueKey] = (new List<ACG.Geometry>(), parentId);
         }
@@ -57,26 +59,18 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     // 2. for each group create a Dataset and add geometries there as Features
     foreach (var item in geometryGroups)
     {
+      string uniqueKey = item.Key; // parentId_parentPath
+      string parentPath = uniqueKey.Split('_', 2)[^1];
+      string speckle_type = parentPath.Split('\\')[^1];
+      (List<ACG.Geometry> geomList, string? parentId) = item.Value;
       try
       {
-        string uniqueKey = item.Key; // parentId_parentPath
-        string parentPath = uniqueKey.Split('_', 2)[^1];
-        string speckle_type = parentPath.Split("\\")[^1];
-        (List<ACG.Geometry> geomList, string? parentId) = item.Value;
-        try
-        {
-          string converted = CreateDatasetInDatabase(speckle_type, geomList, parentId);
-          result.Add((parentPath, converted));
-        }
-        catch (GeodatabaseGeometryException)
-        {
-          // do nothing if conversion of some geometry groups fails
-        }
+        string converted = CreateDatasetInDatabase(speckle_type, geomList, parentId);
+        result.Add((parentPath, converted));
       }
-      catch (Exception e) when (!e.IsFatal())
+      catch (GeodatabaseGeometryException)
       {
-        // POC: report, etc.
-        Debug.WriteLine("conversion error happened.");
+        // do nothing if writing of some geometry groups fails
       }
     }
     return result;

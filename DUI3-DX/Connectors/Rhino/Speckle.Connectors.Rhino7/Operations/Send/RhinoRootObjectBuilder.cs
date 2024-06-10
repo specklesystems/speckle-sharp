@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Rhino.DocObjects;
 using Rhino;
 using Speckle.Core.Models;
@@ -5,6 +6,7 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
@@ -17,10 +19,12 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
+  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
+    _sendConversionCache = sendConversionCache;
   }
 
   public RootObjectBuilderResult Build(
@@ -49,6 +53,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);
+    var cacheHitCount = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -65,12 +70,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // What we actually do here is check if the object has been previously converted AND has not changed.
         // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
         Base converted;
-        if (
-          !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value)
-        )
+
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
+          cacheHitCount++;
         }
         else
         {
@@ -93,6 +97,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
       // Thread.Sleep(550);
     }
+
+    // POC: Log would be nice, or can be removed.
+    Debug.WriteLine(
+      $"Cache hit count {cacheHitCount} out of {rhinoObjects.Count} ({(double)cacheHitCount / rhinoObjects.Count})"
+    );
 
     // 5. profit
     return new(rootObjectCollection, results);

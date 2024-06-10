@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
@@ -17,12 +19,17 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
   private readonly IRevitConversionContextStack _contextStack;
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public RevitRootObjectBuilder(IRootToSpeckleConverter converter, IRevitConversionContextStack contextStack)
+  public RevitRootObjectBuilder(
+    IRootToSpeckleConverter converter,
+    IRevitConversionContextStack contextStack,
+    ISendConversionCache sendConversionCache
+  )
   {
     _converter = converter;
     _contextStack = contextStack;
-
+    _sendConversionCache = sendConversionCache;
     // Note, this class is instantiated per unit of work (aka per send operation), so we can safely initialize what we need in here.
     _collectionCache = new Dictionary<string, Collection>();
     _rootObject = new Collection()
@@ -62,7 +69,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     }
 
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
-
+    var cacheHitCount = 0;
     List<SendConversionResult> results = new(revitElements.Count);
     foreach (Element revitElement in revitElements)
     {
@@ -76,12 +83,10 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
       try
       {
         Base converted;
-        if (
-          !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
+          cacheHitCount++;
         }
         else
         {
@@ -100,6 +105,11 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
       onOperationProgressed?.Invoke("Converting", (double)++countProgress / revitElements.Count);
     }
+
+    // POC: Log would be nice, or can be removed.
+    Debug.WriteLine(
+      $"Cache hit count {cacheHitCount} out of {objects.Count} ({(double)cacheHitCount / objects.Count})"
+    );
 
     return new(_rootObject, results);
   }

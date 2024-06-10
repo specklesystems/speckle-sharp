@@ -88,7 +88,7 @@ internal sealed class BasicConnectorBindingRevit : IBasicConnectorBinding
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
 
     var elementIds = model.SendFilter.NotNull().GetObjectIds().Select(ElementId.Parse).ToList();
-    if (elementIds.Count != 0)
+    if (elementIds.Count == 0)
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
       return;

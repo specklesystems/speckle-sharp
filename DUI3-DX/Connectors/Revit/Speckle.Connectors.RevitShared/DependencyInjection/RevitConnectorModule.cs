@@ -11,6 +11,7 @@ using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
@@ -50,12 +51,15 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddSingleton<IBinding, BasicConnectorBindingRevit>();
     builder.AddSingleton<IBasicConnectorBinding, BasicConnectorBindingRevit>();
     builder.AddSingleton<IBinding, SelectionBinding>();
-    builder.AddSingleton<IBinding, SendBinding>();
+    builder.AddSingleton<IBinding, RevitSendBinding>();
     //no receive?
     builder.AddSingleton<IRevitIdleManager, RevitIdleManager>();
 
     // send operation and dependencies
     builder.AddScoped<SendOperation<ElementId>>();
     builder.AddScoped<IRootObjectBuilder<ElementId>, RevitRootObjectBuilder>();
+
+    // register send conversion cache
+    builder.AddSingleton<ISendConversionCache, SendConversionCache>();
   }
 }

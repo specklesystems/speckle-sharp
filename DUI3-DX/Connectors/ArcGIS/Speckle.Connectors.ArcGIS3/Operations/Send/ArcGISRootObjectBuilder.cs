@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
@@ -12,13 +14,15 @@ namespace Speckle.Connectors.ArcGis.Operations.Send;
 /// <summary>
 /// Stateless builder object to turn an ISendFilter into a <see cref="Base"/> object
 /// </summary>
-public class RootObjectBuilder : IRootObjectBuilder<MapMember>
+public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly ISendConversionCache _sendConversionCache;
 
-  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
+  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
+    _sendConversionCache = sendConversionCache;
   }
 
   public RootObjectBuilderResult Build(
@@ -38,6 +42,8 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
     Collection rootObjectCollection = new(); //TODO: Collections
 
     List<SendConversionResult> results = new(objects.Count);
+    var cacheHitCount = 0;
+
     foreach (MapMember mapMember in objects)
     {
       ct.ThrowIfCancellationRequested();
@@ -47,12 +53,10 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
       try
       {
         Base converted;
-        if (
-          !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference? value)
-        )
+        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
+          cacheHitCount++;
         }
         else
         {
@@ -72,6 +76,11 @@ public class RootObjectBuilder : IRootObjectBuilder<MapMember>
 
       onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
     }
+
+    // POC: Log would be nice, or can be removed.
+    Debug.WriteLine(
+      $"Cache hit count {cacheHitCount} out of {objects.Count} ({(double)cacheHitCount / objects.Count})"
+    );
 
     return new(rootObjectCollection, results);
   }

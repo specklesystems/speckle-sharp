@@ -19,6 +19,7 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -61,6 +62,9 @@ public class RhinoConnectorModule : ISpeckleModule
     // register send filters
     builder.AddScoped<ISendFilter, RhinoSelectionFilter>();
     builder.AddScoped<IHostObjectBuilder, RhinoHostObjectBuilder>();
+
+    // register send conversion cache
+    builder.AddSingleton<ISendConversionCache, SendConversionCache>();
 
     // register send operation and dependencies
     builder.AddScoped<SendOperation<RhinoObject>>();
