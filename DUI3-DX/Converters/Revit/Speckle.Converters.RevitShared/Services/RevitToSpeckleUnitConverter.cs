@@ -1,27 +1,28 @@
 using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Services;
 
-public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<DB.ForgeTypeId>
+public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<IRevitForgeTypeId>
 {
-  private readonly Dictionary<DB.ForgeTypeId, string> _unitMapping = new();
+  private readonly Dictionary<IRevitForgeTypeId, string> _unitMapping = new();
 
-  public RevitToSpeckleUnitConverter()
+  public RevitToSpeckleUnitConverter(IRevitUnitUtils revitUnitUtils)
   {
-    _unitMapping[DB.UnitTypeId.Millimeters] = Units.Millimeters;
-    _unitMapping[DB.UnitTypeId.Centimeters] = Units.Centimeters;
-    _unitMapping[DB.UnitTypeId.Meters] = Units.Meters;
-    _unitMapping[DB.UnitTypeId.MetersCentimeters] = Units.Meters;
-    _unitMapping[DB.UnitTypeId.Inches] = Units.Inches;
-    _unitMapping[DB.UnitTypeId.FractionalInches] = Units.Inches;
-    _unitMapping[DB.UnitTypeId.Feet] = Units.Feet;
-    _unitMapping[DB.UnitTypeId.FeetFractionalInches] = Units.Feet;
+    _unitMapping[revitUnitUtils.Millimeters] = Units.Millimeters;
+    _unitMapping[revitUnitUtils.Centimeters] = Units.Centimeters;
+    _unitMapping[revitUnitUtils.Meters] = Units.Meters;
+    _unitMapping[revitUnitUtils.MetersCentimeters] = Units.Meters;
+    _unitMapping[revitUnitUtils.Inches] = Units.Inches;
+    _unitMapping[revitUnitUtils.FractionalInches] = Units.Inches;
+    _unitMapping[revitUnitUtils.Feet] = Units.Feet;
+    _unitMapping[revitUnitUtils.FeetFractionalInches] = Units.Feet;
   }
 
   // POC: maybe just convert, it's not a Try method
-  public string ConvertOrThrow(DB.ForgeTypeId hostUnit)
+  public string ConvertOrThrow(IRevitForgeTypeId hostUnit)
   {
     if (_unitMapping.TryGetValue(hostUnit, out string value))
     {

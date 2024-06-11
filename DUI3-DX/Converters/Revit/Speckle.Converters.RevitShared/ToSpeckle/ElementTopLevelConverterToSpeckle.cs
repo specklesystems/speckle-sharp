@@ -1,24 +1,23 @@
-using Speckle.Converters.Common;
-using Objects.BuiltElements.Revit;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
+
 
 // POC: not currently used? clearly some missing pieces
 [NameAndRankValue(nameof(IRevitElement), 0)]
-public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitElement, RevitElement>
+public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitElement, SOBR.RevitElement>
 {
-  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
 
-  public ElementTopLevelConverterToSpeckle(DisplayValueExtractor displayValueExtractor)
+  public ElementTopLevelConverterToSpeckle(IDisplayValueExtractor displayValueExtractor)
   {
     _displayValueExtractor = displayValueExtractor;
   }
-  public override RevitElement Convert(IRevitElement target)
+  public override SOBR.RevitElement Convert(IRevitElement target)
   {
-    RevitElement speckleElement = new();
+    SOBR.RevitElement speckleElement = new();
 
     var element = target.Document.GetElement(target.GetTypeId());
     var symbol = element.ToFamilySymbol();
@@ -45,7 +44,7 @@ public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<
 
     speckleElement.category = target.Category.Name;
 
-    speckleElement.displayValue = _displayValueExtractor.GetDisplayValue(((ElementProxy)target)._Instance);
+    speckleElement.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
     //GetHostedElements(speckleElement, target, out notes);
 

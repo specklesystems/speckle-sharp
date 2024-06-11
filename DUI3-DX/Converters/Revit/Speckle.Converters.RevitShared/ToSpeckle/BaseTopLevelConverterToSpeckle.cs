@@ -1,8 +1,8 @@
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
 
 // POC: maybe but could be generic abstract Converters.Common?
 // or maybe it's not actually doing very much now and can come out

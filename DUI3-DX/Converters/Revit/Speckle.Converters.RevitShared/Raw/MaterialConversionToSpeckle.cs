@@ -1,11 +1,13 @@
 ﻿using Objects.Other;
 using Speckle.Converters.Common.Objects;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023;
 
-public class MaterialConversionToSpeckle : ITypedConverter<DB.Material, RenderMaterial>
+
+public class MaterialConversionToSpeckle : ITypedConverter<IRevitMaterial, RenderMaterial>
 {
-  public RenderMaterial Convert(DB.Material target) =>
+  public RenderMaterial Convert(IRevitMaterial target) =>
     // POC: not sure we should be pulling in System.Drawing -
     // maybe this isn't a problem as it's part of the netstandard Fwk
     // ideally we'd have serialiser of our own colour class, i.e. to serialise to an uint

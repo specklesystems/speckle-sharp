@@ -1,30 +1,31 @@
-using Autodesk.Revit.DB;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Extensions;
 
 public static class ElementExtensions
 {
   // POC: should this be an injected service?
-  public static IList<ElementId> GetHostedElementIds(this Element host)
+  public static IList<IRevitElementId> GetHostedElementIds(this IRevitElement host, IRevitFilterFactory filterFactory)
   {
-    IList<ElementId> ids;
-    if (host is HostObject hostObject)
+    IList<IRevitElementId> ids;
+    var hostObject = host.ToHostObject();
+    if (hostObject is not null)
     {
       ids = hostObject.FindInserts(true, false, false, false);
     }
     else
     {
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter(
-        new List<BuiltInCategory>()
+      var typeFilter = filterFactory.CreateElementIsElementTypeFilter(true);
+      var categoryFilter = filterFactory.CreateElementMulticategoryFilter(
+        new List<RevitBuiltInCategory>()
         {
-          BuiltInCategory.OST_CLines,
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
+          RevitBuiltInCategory.OST_CLines,
+          RevitBuiltInCategory.OST_SketchLines,
+          RevitBuiltInCategory.OST_WeakDims
         },
         true
       );
-      ids = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      ids = host.GetDependentElements( filterFactory.CreateLogicalAndFilter(typeFilter, categoryFilter));
     }
 
     // dont include host elementId

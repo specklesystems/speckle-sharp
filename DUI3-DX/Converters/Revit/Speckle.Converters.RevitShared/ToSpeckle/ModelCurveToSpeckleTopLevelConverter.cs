@@ -1,28 +1,29 @@
-using Objects;
+﻿using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
+
 
 // POC: ModelCurve looks a bit bogus and we may wish to revise what that is and how it inherits
 // see https://spockle.atlassian.net/browse/CNX-9381
-[NameAndRankValue(nameof(DB.ModelCurve), 0)]
-public class ModelCurveToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeckle<DB.ModelCurve, SOBR.Curve.ModelCurve>
+[NameAndRankValue(nameof(IRevitModelCurve), 0)]
+public class ModelCurveToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeckle<IRevitModelCurve, SOBR.Curve.ModelCurve>
 {
-  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
-  private readonly IRevitConversionContextStack _conversionContext;
+  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _conversionContext;
 
   public ModelCurveToSpeckleTopLevelConverter(
-    ITypedConverter<DB.Curve, ICurve> curveConverter,
-    IRevitConversionContextStack conversionContext
+    ITypedConverter<IRevitCurve, ICurve> curveConverter,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> conversionContext
   )
   {
     _curveConverter = curveConverter;
     _conversionContext = conversionContext;
   }
 
-  public override SOBR.Curve.ModelCurve Convert(DB.ModelCurve target)
+  public override SOBR.Curve.ModelCurve Convert(IRevitModelCurve target)
   {
     var modelCurve = new SOBR.Curve.ModelCurve()
     {

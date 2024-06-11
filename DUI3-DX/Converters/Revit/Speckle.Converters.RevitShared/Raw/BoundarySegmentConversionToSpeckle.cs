@@ -1,18 +1,20 @@
 ﻿using Objects;
 using Speckle.Converters.Common.Objects;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023;
 
-public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<DB.BoundarySegment>, SOG.Polycurve>
+
+public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<IRevitBoundarySegment>, SOG.Polycurve>
 {
-  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
 
-  public BoundarySegmentConversionToSpeckle(ITypedConverter<DB.Curve, ICurve> curveConverter)
+  public BoundarySegmentConversionToSpeckle(ITypedConverter<IRevitCurve, ICurve> curveConverter)
   {
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(IList<DB.BoundarySegment> target)
+  public SOG.Polycurve Convert(IList<IRevitBoundarySegment> target)
   {
     if (target.Count == 0)
     {
@@ -22,7 +24,7 @@ public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<DB.Bound
     var poly = new SOG.Polycurve();
     foreach (var segment in target)
     {
-      DB.Curve revitCurve = segment.GetCurve();
+      IRevitCurve revitCurve = segment.GetCurve();
       var curve = _curveConverter.Convert(revitCurve);
 
       // POC: We used to attach the `elementID` of every curve in a PolyCurve as a dynamic property.

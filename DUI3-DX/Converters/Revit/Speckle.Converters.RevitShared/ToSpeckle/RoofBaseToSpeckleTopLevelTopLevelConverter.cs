@@ -1,40 +1,40 @@
-using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit.RevitRoof;
+﻿using Objects.BuiltElements.Revit.RevitRoof;
 using Speckle.Converters.Common;
-using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.RoofBase), 0)]
+[NameAndRankValue(nameof(IRevitRoofBase), 0)]
 internal sealed class RoofBaseToSpeckleTopLevelTopLevelConverter
-  : BaseTopLevelConverterToSpeckle<DB.RoofBase, RevitRoof>
+  : BaseTopLevelConverterToSpeckle<IRevitRoofBase, RevitRoof>
 {
-  private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly HostedElementConversionToSpeckle _hostedElementConverter;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IHostedElementConversionToSpeckle _hostedElementConverter;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IRevitFilterFactory _revitFilterFactory;
 
   public RoofBaseToSpeckleTopLevelTopLevelConverter(
-    DisplayValueExtractor displayValueExtractor,
-    HostedElementConversionToSpeckle hostedElementConverter,
-    ParameterObjectAssigner parameterObjectAssigner
-  )
+    IDisplayValueExtractor displayValueExtractor,
+    IHostedElementConversionToSpeckle hostedElementConverter,
+    IParameterObjectAssigner parameterObjectAssigner, IRevitFilterFactory revitFilterFactory)
   {
     _displayValueExtractor = displayValueExtractor;
     _hostedElementConverter = hostedElementConverter;
     _parameterObjectAssigner = parameterObjectAssigner;
+    _revitFilterFactory = revitFilterFactory;
   }
 
-  public override RevitRoof Convert(RoofBase target)
+  public override RevitRoof Convert(IRevitRoofBase target)
   {
     RevitRoof revitRoof = new();
-    var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());
+    var elementType = target.Document.GetElement(target.GetTypeId()).ToType().NotNull();
     revitRoof.type = elementType.Name;
     revitRoof.family = elementType.FamilyName;
 
     _parameterObjectAssigner.AssignParametersToBase(target, revitRoof);
     revitRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
-    revitRoof.elements = _hostedElementConverter.ConvertHostedElements(target.GetHostedElementIds()).ToList();
+    revitRoof.elements = _hostedElementConverter.ConvertHostedElements(target.GetHostedElementIds(_revitFilterFactory)).ToList();
 
     return revitRoof;
   }
