@@ -65,6 +65,12 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
+      "Speckle.Revit2023.Interfaces": {
+        "type": "Direct",
+        "requested": "[0.1.1-preview.0.15, )",
+        "resolved": "0.1.1-preview.0.15",
+        "contentHash": "um1LhH6YS9dYS+EbqKyD4tf65ZReYC7QYK7baOmwrq7csYG6yGNlvrYrZ01wMaFzRBRn/zd6JHrco3LmTxUC3A=="
+      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "5.1.1",
@@ -346,11 +352,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit2023.Interfaces": {
-        "type": "Transitive",
-        "resolved": "0.1.1-preview.0.14",
-        "contentHash": "nMq0UJfv4dfqxTkV9Fj4BqOqRYK4WPUrTUO4xe7KA6teu0kxe1h5qSy73s1BZxsOA+jQHqRRzah3S37XWUtQOw=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -544,7 +545,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.14, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.15, )"
         }
       },
       "Speckle.Core": {

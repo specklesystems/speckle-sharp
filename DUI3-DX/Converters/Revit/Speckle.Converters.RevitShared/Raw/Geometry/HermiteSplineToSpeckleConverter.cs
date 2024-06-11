@@ -3,12 +3,12 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-public class HermiteSplitToSpeckleConverter : ITypedConverter<IRevitHermiteSpline, SOG.Curve>
+public class HermiteSplineToSpeckleConverter : ITypedConverter<IRevitHermiteSpline, SOG.Curve>
 {
   private readonly ITypedConverter<IRevitNurbSpline, SOG.Curve> _splineConverter;
   private readonly IRevitNurbSplineUtils _revitNurbSplineUtils;
 
-  public HermiteSplitToSpeckleConverter(
+  public HermiteSplineToSpeckleConverter(
     ITypedConverter<IRevitNurbSpline, SOG.Curve> splineConverter,
     IRevitNurbSplineUtils revitNurbSplineUtils
   )
