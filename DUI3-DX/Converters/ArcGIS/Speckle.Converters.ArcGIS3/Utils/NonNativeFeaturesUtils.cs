@@ -60,6 +60,10 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           trackerItem.AddDatasetRow(geometryGroups[uniqueKey].Count - 1);
           conversionTracker[item.Key] = trackerItem;
         }
+        else if (geom == null && datasetId != null) // GIS layers, already written to a dataset
+        {
+          continue;
+        }
         else
         {
           throw new ArgumentException($"Unexpected geometry and datasetId values: {geom}, {datasetId}");
