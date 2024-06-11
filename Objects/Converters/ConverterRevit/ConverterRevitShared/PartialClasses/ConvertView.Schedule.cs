@@ -257,10 +257,22 @@ public partial class ConverterRevit
     }
     else if (info.field.FieldType == ScheduleFieldType.Instance)
     {
+      // All shared parameters also use this type, regardless of whether they are instance or type parameters.
+      // ref: https://www.revitapidocs.com/2024/9888db7d-00d0-4fd7-a1a9-cdd1fb5fce16.htm
       if (firstElement != null)
       {
         param = firstElement.get_Parameter(builtInParameter);
-        columnMetadata["IsReadOnly"] = param?.IsReadOnly;
+
+        
+
+        // if the parameter is shared, we need to check the type parameterer too
+        Parameter typeParam = null;
+        if (firstType != null)
+        {
+          typeParam = firstType.get_Parameter(builtInParameter);
+        }
+
+        columnMetadata["IsReadOnly"] = (param?.IsReadOnly ?? false) && (typeParam?.IsReadOnly ?? false);
       }
     }
     else
