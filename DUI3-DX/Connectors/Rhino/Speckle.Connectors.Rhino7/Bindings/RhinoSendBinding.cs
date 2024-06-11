@@ -1,4 +1,5 @@
 using Rhino;
+using Rhino.Commands;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -69,6 +70,15 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       Commands.RefreshSendFilters();
+    };
+
+    Command.BeginCommand += (_, e) =>
+    {
+      if (e.CommandEnglishName == "BlockEdit")
+      {
+        var selectedObject = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).First();
+        ChangedObjectIds.Add(selectedObject.Id.ToString());
+      }
     };
 
     RhinoDoc.AddRhinoObject += (_, e) =>

@@ -63,12 +63,11 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddScoped<ISendFilter, RhinoSelectionFilter>();
     builder.AddScoped<IHostObjectBuilder, RhinoHostObjectBuilder>();
 
-    // register send conversion cache
-    builder.AddSingleton<ISendConversionCache, SendConversionCache>();
-
     // register send operation and dependencies
     builder.AddScoped<SendOperation<RhinoObject>>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
+    builder.AddSingleton<ISendConversionCache, SendConversionCache>();
+    builder.AddTransient<IBlockManager<RhinoObject>, RhinoBlockManager>();
 
     builder.AddSingleton<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
   }

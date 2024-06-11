@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
@@ -20,11 +21,17 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly IBlockManager<RhinoObject> _blockManager;
 
-  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
+  public RhinoRootObjectBuilder(
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache sendConversionCache,
+    IBlockManager<RhinoObject> blockManager
+  )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
+    _blockManager = blockManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -51,10 +58,14 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
     Dictionary<int, Collection> layerCollectionCache = new();
 
+    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _blockManager.UnpackSelection(rhinoObjects);
+    // POC: we should formalise this, sooner or later - or somehow fix it a bit more
+    rootObjectCollection["instanceDefintions"] = instanceDefinitionProxies;
+
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);
     var cacheHitCount = 0;
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+    foreach (RhinoObject rhinoObject in atomicObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -70,8 +81,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // What we actually do here is check if the object has been previously converted AND has not changed.
         // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
         Base converted;
-
-        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
+        if (rhinoObject is InstanceObject)
+        {
+          converted = instanceProxies[applicationId];
+        }
+        else if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;
