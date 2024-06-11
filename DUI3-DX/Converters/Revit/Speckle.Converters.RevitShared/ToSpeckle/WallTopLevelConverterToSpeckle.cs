@@ -34,7 +34,9 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     IParameterValueExtractor parameterValueExtractor,
     IDisplayValueExtractor displayValueExtractor,
     IParameterObjectAssigner parameterObjectAssigner,
-    IRootToSpeckleConverter converter, IRevitFilterFactory revitFilterFactory)
+    IRootToSpeckleConverter converter,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _curveConverter = curveConverter;
     _levelConverter = levelConverter;

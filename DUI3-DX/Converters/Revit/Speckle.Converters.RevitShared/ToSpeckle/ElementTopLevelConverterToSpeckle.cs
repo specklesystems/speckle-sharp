@@ -4,7 +4,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 // POC: not currently used? clearly some missing pieces
 [NameAndRankValue(nameof(IRevitElement), 0)]
 public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitElement, SOBR.RevitElement>
@@ -15,6 +14,7 @@ public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<
   {
     _displayValueExtractor = displayValueExtractor;
   }
+
   public override SOBR.RevitElement Convert(IRevitElement target)
   {
     SOBR.RevitElement speckleElement = new();

@@ -16,7 +16,9 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRevitEllipse, SOG.Elli
   public EllipseToSpeckleConverter(
     IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
-    IScalingServiceToSpeckle scalingService, IRevitPlaneUtils revitPlaneUtils)
+    IScalingServiceToSpeckle scalingService,
+    IRevitPlaneUtils revitPlaneUtils
+  )
   {
     _contextStack = contextStack;
     _planeConverter = planeConverter;
@@ -26,7 +28,13 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRevitEllipse, SOG.Elli
 
   public SOG.Ellipse Convert(IRevitEllipse target)
   {
-    using (IRevitPlane basePlane = _revitPlaneUtils.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection))
+    using (
+      IRevitPlane basePlane = _revitPlaneUtils.CreateByOriginAndBasis(
+        target.Center,
+        target.XDirection,
+        target.YDirection
+      )
+    )
     {
       var trim = target.IsBound ? new Interval(target.GetEndParameter(0), target.GetEndParameter(1)) : null;
 

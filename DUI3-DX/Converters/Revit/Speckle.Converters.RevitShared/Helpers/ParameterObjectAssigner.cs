@@ -18,7 +18,9 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
 
   public ParameterObjectAssigner(
     ITypedConverter<IRevitParameter, SOBR.Parameter> paramConverter,
-    IParameterValueExtractor parameterValueExtractor, IRevitElementIdUtils revitElementIdUtils)
+    IParameterValueExtractor parameterValueExtractor,
+    IRevitElementIdUtils revitElementIdUtils
+  )
   {
     _paramConverter = paramConverter;
     _parameterValueExtractor = parameterValueExtractor;

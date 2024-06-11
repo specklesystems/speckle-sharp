@@ -15,7 +15,9 @@ public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<IRevitBoundingBo
   public BoundingBoxXYZToSpeckleConverter(
     IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
-    ITypedConverter<IRevitPlane, SOG.Plane> planeConverter, IRevitPlaneUtils revitPlaneUtils)
+    ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
+    IRevitPlaneUtils revitPlaneUtils
+  )
   {
     _contextStack = contextStack;
     _xyzToPointConverter = xyzToPointConverter;

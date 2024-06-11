@@ -4,7 +4,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023;
 
-
 public class BoundarySegmentConversionToSpeckle : ITypedConverter<IList<IRevitBoundarySegment>, SOG.Polycurve>
 {
   private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;

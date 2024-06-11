@@ -3,7 +3,8 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-public class PointConversionToSpeckle : ITypedConverter<IRevitPoint, SOG.Point> {
+public class PointConversionToSpeckle : ITypedConverter<IRevitPoint, SOG.Point>
+{
   private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
 
   public PointConversionToSpeckle(ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter)

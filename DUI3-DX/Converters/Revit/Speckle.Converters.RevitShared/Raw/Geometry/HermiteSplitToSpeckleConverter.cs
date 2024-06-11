@@ -8,7 +8,10 @@ public class HermiteSplitToSpeckleConverter : ITypedConverter<IRevitHermiteSplin
   private readonly ITypedConverter<IRevitNurbSpline, SOG.Curve> _splineConverter;
   private readonly IRevitNurbSplineUtils _revitNurbSplineUtils;
 
-  public HermiteSplitToSpeckleConverter(ITypedConverter<IRevitNurbSpline, SOG.Curve> splineConverter, IRevitNurbSplineUtils revitNurbSplineUtils)
+  public HermiteSplitToSpeckleConverter(
+    ITypedConverter<IRevitNurbSpline, SOG.Curve> splineConverter,
+    IRevitNurbSplineUtils revitNurbSplineUtils
+  )
   {
     _splineConverter = splineConverter;
     _revitNurbSplineUtils = revitNurbSplineUtils;

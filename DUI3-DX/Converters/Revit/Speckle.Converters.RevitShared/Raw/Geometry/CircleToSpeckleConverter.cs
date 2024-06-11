@@ -15,7 +15,9 @@ public class CircleToSpeckleConverter : ITypedConverter<IRevitArc, SOG.Circle>
   public CircleToSpeckleConverter(
     IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
-    IScalingServiceToSpeckle scalingService, IRevitPlaneUtils revitPlaneUtils)
+    IScalingServiceToSpeckle scalingService,
+    IRevitPlaneUtils revitPlaneUtils
+  )
   {
     _contextStack = contextStack;
     _planeConverter = planeConverter;

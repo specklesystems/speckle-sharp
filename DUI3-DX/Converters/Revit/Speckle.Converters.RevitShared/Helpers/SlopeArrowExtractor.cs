@@ -14,7 +14,9 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
 
   public SlopeArrowExtractor(
     ITypedConverter<IRevitXYZ, SOG.Point> pointConverter,
-    ParameterValueExtractor parameterValueExtractor, IRevitFilterFactory revitFilterFactory)
+    ParameterValueExtractor parameterValueExtractor,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _pointConverter = pointConverter;
     _parameterValueExtractor = parameterValueExtractor;
@@ -31,7 +33,6 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
 
     if (elementIds == null)
     {
-
       using var modelLineFilter = _revitFilterFactory.CreateElementCategoryFilter(RevitBuiltInCategory.OST_SketchLines);
       elementIds = element.GetDependentElements(modelLineFilter);
     }
@@ -39,7 +40,7 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
     foreach (var elementId in elementIds)
     {
       var line = element.Document.GetElement(elementId).ToModelLine();
-      if ( line is null)
+      if (line is null)
       {
         continue;
       }
@@ -70,7 +71,10 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
 
   public double GetSlopeArrowHeadOffset(IRevitModelLine slopeArrow, double tailOffset, out double slope)
   {
-    var specifyOffset = _parameterValueExtractor.GetValueAsInt(slopeArrow, RevitBuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+    var specifyOffset = _parameterValueExtractor.GetValueAsInt(
+      slopeArrow,
+      RevitBuiltInParameter.SPECIFY_SLOPE_OR_OFFSET
+    );
 
     var lineLength = _parameterValueExtractor.GetValueAsDouble(slopeArrow, RevitBuiltInParameter.CURVE_ELEM_LENGTH);
 

@@ -13,7 +13,10 @@ public sealed class ScalingServiceToSpeckle : IScalingServiceToSpeckle
   private readonly IRevitUnitUtils _revitUnitUtils;
 
   // POC: this seems like the reverse relationship
-  public ScalingServiceToSpeckle(IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack, IRevitUnitUtils revitUnitUtils)
+  public ScalingServiceToSpeckle(
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    IRevitUnitUtils revitUnitUtils
+  )
   {
     _revitUnitUtils = revitUnitUtils;
     // POC: this is accurate for the current context stack

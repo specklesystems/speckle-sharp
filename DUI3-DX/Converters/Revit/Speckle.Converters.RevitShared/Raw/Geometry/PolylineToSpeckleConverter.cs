@@ -9,7 +9,8 @@ public class PolylineToSpeckleConverter : ITypedConverter<IRevitPolyLine, SOG.Po
   private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
   private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
 
-  public PolylineToSpeckleConverter( IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+  public PolylineToSpeckleConverter(
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter
   )
   {

@@ -6,7 +6,6 @@ using Speckle.Revit.Interfaces;
 #pragma warning disable IDE0130
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 public class XyzConversionToPoint : ITypedConverter<IRevitXYZ, SOG.Point>
 {
   private readonly IScalingServiceToSpeckle _toSpeckleScalingService;

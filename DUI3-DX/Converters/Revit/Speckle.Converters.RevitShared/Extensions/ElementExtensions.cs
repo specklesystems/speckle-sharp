@@ -25,7 +25,7 @@ public static class ElementExtensions
         },
         true
       );
-      ids = host.GetDependentElements( filterFactory.CreateLogicalAndFilter(typeFilter, categoryFilter));
+      ids = host.GetDependentElements(filterFactory.CreateLogicalAndFilter(typeFilter, categoryFilter));
     }
 
     // dont include host elementId

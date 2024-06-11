@@ -17,7 +17,9 @@ internal sealed class RoofBaseToSpeckleTopLevelTopLevelConverter
   public RoofBaseToSpeckleTopLevelTopLevelConverter(
     IDisplayValueExtractor displayValueExtractor,
     IHostedElementConversionToSpeckle hostedElementConverter,
-    IParameterObjectAssigner parameterObjectAssigner, IRevitFilterFactory revitFilterFactory)
+    IParameterObjectAssigner parameterObjectAssigner,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _displayValueExtractor = displayValueExtractor;
     _hostedElementConverter = hostedElementConverter;
@@ -34,7 +36,9 @@ internal sealed class RoofBaseToSpeckleTopLevelTopLevelConverter
 
     _parameterObjectAssigner.AssignParametersToBase(target, revitRoof);
     revitRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
-    revitRoof.elements = _hostedElementConverter.ConvertHostedElements(target.GetHostedElementIds(_revitFilterFactory)).ToList();
+    revitRoof.elements = _hostedElementConverter
+      .ConvertHostedElements(target.GetHostedElementIds(_revitFilterFactory))
+      .ToList();
 
     return revitRoof;
   }

@@ -7,8 +7,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023;
 
-
-
 // POC: There is no validation on this converter to prevent conversion from "not a Revit Beam" to a Speckle Beam.
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
 // As-is, what we are saying is that it can take "any Family Instance" and turn it into a Speckle.RevitBeam, which is far from correct.

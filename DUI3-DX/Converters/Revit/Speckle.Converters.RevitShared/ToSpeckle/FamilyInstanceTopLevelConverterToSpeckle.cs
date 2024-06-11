@@ -5,11 +5,11 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 // POC: bin for now? This is also a parent child relationship and may need a pattern for this
 // so we don't end up with some god FamilyInstanceTopLevelConverterToSpeckle converter
 [NameAndRankValue(nameof(IRevitFamilyInstance), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public sealed class FamilyInstanceTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitFamilyInstance, Base>
+public sealed class FamilyInstanceTopLevelConverterToSpeckle
+  : BaseTopLevelConverterToSpeckle<IRevitFamilyInstance, Base>
 {
   private readonly ITypedConverter<IRevitElement, SOBR.RevitElement> _elementConverter;
   private readonly ITypedConverter<IRevitFamilyInstance, SOBR.RevitBeam> _beamConversion;

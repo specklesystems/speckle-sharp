@@ -5,13 +5,15 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023;
 
-
 public class ParameterConversionToSpeckle : ITypedConverter<IRevitParameter, SOBR.Parameter>
 {
   private readonly IParameterValueExtractor _valueExtractor;
   private readonly IRevitFormatOptionsUtils _revitFormatOptionsUtils;
 
-  public ParameterConversionToSpeckle(IParameterValueExtractor valueExtractor, IRevitFormatOptionsUtils revitFormatOptionsUtils)
+  public ParameterConversionToSpeckle(
+    IParameterValueExtractor valueExtractor,
+    IRevitFormatOptionsUtils revitFormatOptionsUtils
+  )
   {
     _valueExtractor = valueExtractor;
     _revitFormatOptionsUtils = revitFormatOptionsUtils;

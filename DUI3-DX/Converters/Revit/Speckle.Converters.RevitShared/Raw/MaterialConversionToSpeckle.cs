@@ -4,7 +4,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023;
 
-
 public class MaterialConversionToSpeckle : ITypedConverter<IRevitMaterial, RenderMaterial>
 {
   public RenderMaterial Convert(IRevitMaterial target) =>

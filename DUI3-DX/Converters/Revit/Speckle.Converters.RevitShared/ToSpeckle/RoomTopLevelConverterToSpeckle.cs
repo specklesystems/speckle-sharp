@@ -7,7 +7,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 [NameAndRankValue(nameof(IRevitRoom), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class RoomTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitRoom, SOBE.Room>
 {

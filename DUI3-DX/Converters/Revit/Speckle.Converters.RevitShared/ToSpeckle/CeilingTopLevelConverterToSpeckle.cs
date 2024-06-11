@@ -10,7 +10,8 @@ using Speckle.Revit.Interfaces;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(IRevitCeiling), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-internal sealed class CeilingTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitCeiling, SOBR.RevitCeiling>
+internal sealed class CeilingTopLevelConverterToSpeckle
+  : BaseTopLevelConverterToSpeckle<IRevitCeiling, SOBR.RevitCeiling>
 {
   private readonly ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
@@ -59,7 +60,10 @@ internal sealed class CeilingTopLevelConverterToSpeckle : BaseTopLevelConverterT
     // POC: our existing receive operation is checking the "slopeDirection" prop,
     // but it is never being set. We should be setting it
 
-    var level = _parameterValueExtractor.GetValueAsDocumentObject<IRevitLevel>(target, RevitBuiltInParameter.LEVEL_PARAM);
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<IRevitLevel>(
+      target,
+      RevitBuiltInParameter.LEVEL_PARAM
+    );
     speckleCeiling.level = _levelConverter.Convert(level);
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleCeiling);

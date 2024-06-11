@@ -10,6 +10,7 @@ using Speckle.Revit.Interfaces;
 
 #pragma warning disable IDE0130
 namespace Speckle.Converters.Revit2023;
+
 #pragma warning restore IDE0130
 
 public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
@@ -39,5 +40,3 @@ public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
     };
   }
 }
-
-

@@ -23,8 +23,9 @@ public class RevitConverterModule : ISpeckleModule
 
     // POC: the concrete type can come out if we remove all the reference to it
     builder.AddScoped<IRevitConversionContextStack, RevitConversionContextStack>();
-    builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>>(c =>
-      (RevitConversionContextStack)c.Resolve<IRevitConversionContextStack>());
+    builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>>(
+      c => (RevitConversionContextStack)c.Resolve<IRevitConversionContextStack>()
+    );
 
     builder.AddScoped<IReferencePointConverter, ReferencePointConverter>();
     builder.AddScoped<IRevitConversionSettings, RevitConversionSettings>();

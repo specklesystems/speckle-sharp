@@ -26,7 +26,9 @@ public class ExtrusionRoofToSpeckleTopLevelConverter
     IParameterValueExtractor parameterValueExtractor,
     IDisplayValueExtractor displayValueExtractor,
     IHostedElementConversionToSpeckle hostedElementConverter,
-    IParameterObjectAssigner parameterObjectAssigner, IRevitFilterFactory revitFilterFactory)
+    IParameterObjectAssigner parameterObjectAssigner,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _levelConverter = levelConverter;
     _modelCurveArrayConverter = modelCurveArrayConverter;

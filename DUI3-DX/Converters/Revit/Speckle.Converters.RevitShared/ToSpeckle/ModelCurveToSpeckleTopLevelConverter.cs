@@ -5,11 +5,11 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 // POC: ModelCurve looks a bit bogus and we may wish to revise what that is and how it inherits
 // see https://spockle.atlassian.net/browse/CNX-9381
 [NameAndRankValue(nameof(IRevitModelCurve), 0)]
-public class ModelCurveToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeckle<IRevitModelCurve, SOBR.Curve.ModelCurve>
+public class ModelCurveToSpeckleTopLevelConverter
+  : BaseTopLevelConverterToSpeckle<IRevitModelCurve, SOBR.Curve.ModelCurve>
 {
   private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
   private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _conversionContext;

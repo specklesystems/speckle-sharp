@@ -11,12 +11,18 @@ namespace Speckle.Converters.RevitShared.Helpers;
 [GenerateAutoInterface]
 public sealed class DisplayValueExtractor : IDisplayValueExtractor
 {
-  private readonly ITypedConverter<Dictionary<IRevitElementId, List<IRevitMesh>>, List<SOG.Mesh>> _meshByMaterialConverter;
+  private readonly ITypedConverter<
+    Dictionary<IRevitElementId, List<IRevitMesh>>,
+    List<SOG.Mesh>
+  > _meshByMaterialConverter;
   private readonly IRevitOptionsFactory _revitOptionsFactory;
   private readonly IRevitSolidUtils _revitSolidUtils;
 
   public DisplayValueExtractor(
-    ITypedConverter<Dictionary<IRevitElementId, List<IRevitMesh>>, List<SOG.Mesh>> meshByMaterialConverter, IRevitOptionsFactory revitOptionsFactory, IRevitSolidUtils revitSolidUtils)
+    ITypedConverter<Dictionary<IRevitElementId, List<IRevitMesh>>, List<SOG.Mesh>> meshByMaterialConverter,
+    IRevitOptionsFactory revitOptionsFactory,
+    IRevitSolidUtils revitSolidUtils
+  )
   {
     _meshByMaterialConverter = meshByMaterialConverter;
     _revitOptionsFactory = revitOptionsFactory;

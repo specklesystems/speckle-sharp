@@ -1,5 +1,4 @@
-﻿
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.Common;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
@@ -29,14 +28,20 @@ public class ReferencePointConverter : IReferencePointConverter
   private const string REFPOINT_SURVEY = "Survey";
 
   private readonly IRevitConversionSettings _revitSettings;
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId>  _contextStack;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
   private readonly IRevitTransformUtils _transformUtils;
   private readonly IRevitFilterFactory _revitFilterFactory;
   private readonly IRevitXYZUtils _revitXyzUtils;
 
   private readonly Dictionary<string, IRevitTransform> _docTransforms = new();
 
-  public ReferencePointConverter(IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack, IRevitConversionSettings revitSettings, IRevitFilterFactory revitFilterFactory, IRevitTransformUtils transformUtils, IRevitXYZUtils revitXyzUtils)
+  public ReferencePointConverter(
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    IRevitConversionSettings revitSettings,
+    IRevitFilterFactory revitFilterFactory,
+    IRevitTransformUtils transformUtils,
+    IRevitXYZUtils revitXyzUtils
+  )
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;
@@ -80,14 +85,15 @@ public class ReferencePointConverter : IReferencePointConverter
   {
     // first get the main doc base points and reference setting transform
     var referencePointTransform = _transformUtils.Identity;
-    
+
     // POC: bogus disposal below
-    var points = _revitFilterFactory.CreateFilteredElementCollector(_contextStack.Current.Document)
+    var points = _revitFilterFactory
+      .CreateFilteredElementCollector(_contextStack.Current.Document)
       .OfClass<IRevitBasePoint>()
       .ToList();
 
-    var projectPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared == false),"No projectPoint");
-    var surveyPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared),"No surveyPoint");
+    var projectPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared == false), "No projectPoint");
+    var surveyPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared), "No surveyPoint");
 
     // POC: it's not clear what support is needed for this
     switch (referencePointSetting)

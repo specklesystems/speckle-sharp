@@ -18,7 +18,9 @@ public class ArcToSpeckleConverter : ITypedConverter<IRevitArc, SOG.Arc>
     IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
     ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
-    IScalingServiceToSpeckle scalingService, IRevitPlaneUtils revitPlaneUtils)
+    IScalingServiceToSpeckle scalingService,
+    IRevitPlaneUtils revitPlaneUtils
+  )
   {
     _contextStack = contextStack;
     _xyzToPointConverter = xyzToPointConverter;

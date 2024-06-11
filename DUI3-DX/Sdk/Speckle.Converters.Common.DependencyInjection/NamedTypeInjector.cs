@@ -8,6 +8,7 @@ namespace Speckle.Converters.Common.DependencyInjection;
 public static class ConversionTypesInjector
 {
   private record NamedType(string Name, int Rank, Type Type);
+
   public static void InjectNamedTypes<T>(this SpeckleContainerBuilder containerBuilder)
     where T : notnull
   {

@@ -7,7 +7,6 @@ using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-
 [NameAndRankValue(nameof(IRevitFootPrintRoof), 0)]
 public class FootPrintRoofToSpeckleTopLevelConverter
   : BaseTopLevelConverterToSpeckle<IRevitFootPrintRoof, RevitFootprintRoof>
@@ -26,7 +25,9 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     IParameterValueExtractor parameterValueExtractor,
     IDisplayValueExtractor displayValueExtractor,
     IHostedElementConversionToSpeckle hostedElementConverter,
-    IParameterObjectAssigner parameterObjectAssigner, IRevitFilterFactory revitFilterFactory)
+    IParameterObjectAssigner parameterObjectAssigner,
+    IRevitFilterFactory revitFilterFactory
+  )
   {
     _levelConverter = levelConverter;
     _modelCurveArrArrayConverter = modelCurveArrArrayConverter;

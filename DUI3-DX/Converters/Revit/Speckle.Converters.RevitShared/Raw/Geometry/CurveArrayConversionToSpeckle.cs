@@ -30,8 +30,7 @@ public sealed class CurveArrayConversionToSpeckle : ITypedConverter<IRevitCurveA
     return new SOG.Polycurve()
     {
       units = _contextStack.Current.SpeckleUnits,
-      closed =
-        curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConstants.TOLERANCE,
+      closed = curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConstants.TOLERANCE,
       length = _scalingService.ScaleLength(curves.Sum(x => x.Length)),
       segments = curves.Select(x => _curveConverter.Convert(x)).ToList()
     };
