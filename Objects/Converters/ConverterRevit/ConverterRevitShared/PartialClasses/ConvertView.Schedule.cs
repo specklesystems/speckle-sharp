@@ -5,6 +5,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using RevitSharedResources.Models;
+using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -244,11 +245,12 @@ public partial class ConverterRevit
 
     var columnMetadata = new Base();
     columnMetadata["BuiltInParameterInteger"] = info.field.ParameterId.IntegerValue;
-    columnMetadata["FieldType"] = info.field.FieldType.ToString();
-
+    string fieldType = info.field.FieldType.ToString();
+    
     Parameter param;
     if (info.field.FieldType == ScheduleFieldType.ElementType)
     {
+      
       if (firstType != null)
       {
         param = firstType.get_Parameter(builtInParameter);
@@ -263,15 +265,20 @@ public partial class ConverterRevit
       {
         param = firstElement.get_Parameter(builtInParameter);
 
-        
-
         // if the parameter is shared, we need to check the type parameterer too
         Parameter typeParam = null;
         if (firstType != null)
         {
           typeParam = firstType.get_Parameter(builtInParameter);
+          
+          // If the parameter is readonly in the element but not in the type, is a type parameter
+          if (typeParam != null && !typeParam.IsReadOnly && param != null && param.IsReadOnly)
+          {
+            fieldType = ScheduleFieldType.ElementType.ToString();
+          }
         }
 
+        // Check IsReadOnly for both
         columnMetadata["IsReadOnly"] = (param?.IsReadOnly ?? false) && (typeParam?.IsReadOnly ?? false);
       }
     }
@@ -285,6 +292,8 @@ public partial class ConverterRevit
         info.field.FieldType.ToString()
       );
     }
+
+    columnMetadata["FieldType"] = fieldType;
     speckleTable.DefineColumn(columnMetadata);
   }
 
