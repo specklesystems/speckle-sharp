@@ -35,17 +35,26 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     Commands = new ReceiveBindingUICommands(parent);
   }
 
-  public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
-
   public async Task Receive(string modelCardId)
   {
     using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
+      Application.DocumentManager.DocumentActivated += (sender, args) =>
+      {
+        CancelReceive(modelCardId);
+        Commands.SetModelError(
+          modelCardId,
+          new OperationCanceledException("Another document was activated during this operation.")
+        );
+        return;
+      };
+
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
         // Handle as GLOBAL ERROR at BrowserBridge
+        // TODO: this will crash autocad
         throw new InvalidOperationException("No download model card was found.");
       }
 
@@ -83,7 +92,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   // POC: JEDD: We should not update the UI until a OperationCancelledException is caught, we don't want to show the UI as cancelled
   // until the actual operation is cancelled (thrown exception).
   // I think there's room for us to introduce a cancellation pattern for bindings to do this and avoid this _cancellationManager
-  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
+  public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   public void Dispose()
   {
