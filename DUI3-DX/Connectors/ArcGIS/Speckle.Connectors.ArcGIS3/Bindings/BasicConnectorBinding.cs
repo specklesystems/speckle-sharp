@@ -171,6 +171,12 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       }
     }
     MapView.Active.SelectLayers(layers);
-    // MapView.Active.SelectStandaloneTables(tables); // clears previous selection, not clear how to ADD selection instead
+
+    // this step clears previous selection, not clear how to ADD selection instead
+    // this is why, activating it only if no layers are selected
+    if (layers.Count == 0)
+    {
+      MapView.Active.SelectStandaloneTables(tables);
+    }
   }
 }

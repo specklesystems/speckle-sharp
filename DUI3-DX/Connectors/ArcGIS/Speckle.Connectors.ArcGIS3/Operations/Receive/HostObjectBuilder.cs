@@ -36,12 +36,8 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  private void AddDatasetsToMap(
-    Dictionary<TraversalContext, ObjectConversionTracker> conversionTracker,
-    TraversalContext key
-  )
+  private MapMember AddDatasetsToMap(ObjectConversionTracker trackerItem)
   {
-    ObjectConversionTracker trackerItem = conversionTracker[key];
     string? datasetId = trackerItem.DatasetId; // should not ne null here
     string nestedLayerName = trackerItem.NestedLayerName;
 
@@ -50,16 +46,13 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     try
     {
       var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
-      trackerItem.AddConvertedMapMember(layer);
-      trackerItem.AddLayerURI(layer.URI);
+      return layer;
     }
     catch (ArgumentException)
     {
       var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
-      trackerItem.AddConvertedMapMember(table);
-      trackerItem.AddLayerURI(table.URI);
+      return table;
     }
-    conversionTracker[key] = trackerItem;
   }
 
   public HostObjectBuilderResult Build(
@@ -120,41 +113,70 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     // 3. add layer and tables to the Table Of Content
     int bakeCount = 0;
+    Dictionary<string, MapMember> bakedMapMembers = new();
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
     foreach (var item in conversionTracker)
     {
       cancellationToken.ThrowIfCancellationRequested();
+      var trackerItem = conversionTracker[item.Key]; // updated tracker object
 
       // BAKE OBJECTS HERE
-      if (item.Value.Exception != null)
+      if (trackerItem.Exception != null)
       {
-        results.Add(new(Status.ERROR, item.Value.Base, null, null, item.Value.Exception));
+        results.Add(new(Status.ERROR, trackerItem.Base, null, null, trackerItem.Exception));
+      }
+      else if (trackerItem.DatasetId == null)
+      {
+        results.Add(
+          new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Unknown error: Dataset not created"))
+        );
+      }
+      else if (bakedMapMembers.TryGetValue(trackerItem.DatasetId, out MapMember? value))
+      {
+        // only add a report item
+        AddResultsFromTracker(trackerItem, results);
       }
       else
       {
-        AddDatasetsToMap(conversionTracker, item.Key);
-        var tracker = conversionTracker[item.Key]; // updated tracker object
-        bakedObjectIds.Add(tracker.MappedLayerURI == null ? "" : tracker.MappedLayerURI);
+        // add layer and layer URI to tracker
+        MapMember mapMember = AddDatasetsToMap(trackerItem);
+        trackerItem.AddConvertedMapMember(mapMember);
+        trackerItem.AddLayerURI(mapMember.URI);
+        conversionTracker[item.Key] = trackerItem;
 
-        // prioritize individual hostAppGeometry type, if available:
-        if (tracker.HostAppGeom != null)
-        {
-          results.Add(
-            new(Status.SUCCESS, tracker.Base, tracker.MappedLayerURI, tracker.HostAppGeom.GetType().ToString())
-          );
-        }
-        else
-        {
-          results.Add(
-            new(Status.SUCCESS, tracker.Base, tracker.MappedLayerURI, tracker.HostAppMapMember?.GetType().ToString())
-          );
-        }
+        // add layer URI to bakedIds
+        bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
+
+        // add report item
+        AddResultsFromTracker(trackerItem, results);
       }
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
+  }
+
+  private void AddResultsFromTracker(ObjectConversionTracker trackerItem, List<ReceiveConversionResult> results)
+  {
+    // prioritize individual hostAppGeometry type, if available:
+    if (trackerItem.HostAppGeom != null)
+    {
+      results.Add(
+        new(Status.SUCCESS, trackerItem.Base, trackerItem.MappedLayerURI, trackerItem.HostAppGeom.GetType().ToString())
+      );
+    }
+    else
+    {
+      results.Add(
+        new(
+          Status.SUCCESS,
+          trackerItem.Base,
+          trackerItem.MappedLayerURI,
+          trackerItem.HostAppMapMember?.GetType().ToString()
+        )
+      );
+    }
   }
 
   [Pure]

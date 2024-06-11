@@ -34,14 +34,15 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     {
       try
       {
-        ACG.Geometry? geom = item.Value.HostAppGeom;
-        string? datasetId = item.Value.DatasetId;
+        TraversalContext context = item.Key;
+        var trackerItem = item.Value;
+        ACG.Geometry? geom = trackerItem.HostAppGeom;
+        string? datasetId = trackerItem.DatasetId;
         if (geom != null && datasetId == null) // only non-native geomerties, not written into a dataset yet
         {
-          string nestedParentPath = item.Value.NestedLayerName;
+          string nestedParentPath = trackerItem.NestedLayerName;
           string speckle_type = nestedParentPath.Split('\\')[^1];
 
-          TraversalContext context = item.Key;
           string? parentId = context.Parent?.Current.id;
 
           // add dictionnary item if doesn't exist yet
@@ -55,8 +56,9 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           geometryGroups[uniqueKey].Add(geom);
 
           // record changes in conversion tracker
-          conversionTracker[item.Key].AddDatasetId(uniqueKey);
-          conversionTracker[item.Key].AddDatasetRow(geometryGroups[uniqueKey].Count - 1);
+          trackerItem.AddDatasetId(uniqueKey);
+          trackerItem.AddDatasetRow(geometryGroups[uniqueKey].Count - 1);
+          conversionTracker[item.Key] = trackerItem;
         }
         else
         {
@@ -66,7 +68,9 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       catch (Exception ex) when (!ex.IsFatal())
       {
         // POC: report, etc.
-        conversionTracker[item.Key].AddException(ex);
+        var trackerItem = item.Value;
+        trackerItem.AddException(ex);
+        conversionTracker[item.Key] = trackerItem;
         Debug.WriteLine($"conversion error happened. {ex.Message}");
       }
     }
@@ -88,7 +92,9 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
         {
           if (conversionItem.Value.DatasetId == uniqueKey)
           {
-            conversionTracker[conversionItem.Key].AddException(ex);
+            var trackerItem = conversionItem.Value;
+            trackerItem.AddException(ex);
+            conversionTracker[conversionItem.Key] = trackerItem;
           }
         }
       }
