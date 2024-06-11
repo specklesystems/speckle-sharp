@@ -1,5 +1,6 @@
 ﻿using Objects.BuiltElements.Revit.RevitRoof;
 using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 

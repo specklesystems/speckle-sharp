@@ -4,7 +4,6 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
@@ -12,6 +11,7 @@ using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.Revit2023.DependencyInjection;
 
 namespace Speckle.Connectors.Revit.Bindings;
 

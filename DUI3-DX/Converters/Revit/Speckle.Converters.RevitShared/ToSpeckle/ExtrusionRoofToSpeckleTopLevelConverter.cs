@@ -1,6 +1,7 @@
 ﻿using Objects.BuiltElements.Revit.RevitRoof;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 
@@ -47,7 +48,7 @@ public class ExtrusionRoofToSpeckleTopLevelConverter
       start = _parameterValueExtractor.GetValueAsDouble(target, RevitBuiltInParameter.EXTRUSION_START_PARAM),
       end = _parameterValueExtractor.GetValueAsDouble(target, RevitBuiltInParameter.EXTRUSION_END_PARAM)
     };
-    var plane = target.GetProfile().First().SketchPlane.GetPlane();
+    var plane = target.GetProfile()[0].SketchPlane.GetPlane();
     speckleExtrusionRoof.referenceLine = new SOG.Line(
       _pointConverter.Convert(plane.Origin.Add(plane.XVec.Normalize().Negate())),
       _pointConverter.Convert(plane.Origin)

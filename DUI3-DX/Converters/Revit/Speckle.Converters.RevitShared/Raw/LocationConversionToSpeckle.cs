@@ -1,10 +1,6 @@
 ﻿using Objects;
-using Objects.Other;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Extensions;
-using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Converters.RevitShared.Services;
 using Speckle.Core.Models;
 using Speckle.Revit.Interfaces;
 
