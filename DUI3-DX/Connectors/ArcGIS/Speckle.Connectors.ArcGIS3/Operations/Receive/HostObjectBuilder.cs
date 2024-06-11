@@ -43,6 +43,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     Map map = _contextStack.Current.Document.Map;
+
+    // Most of the Speckle-written datasets will be containing geometry and added as Layers
+    // although, some datasets might be just tables (e.g. native GIS Tables, in the future maybe Revit schedules etc.
+    // We can create a connection to the dataset in advance and determine its type, but this will be more
+    // expensive, than assuming by default that it's a layer with geometry (which in most cases it's expected to be)
     try
     {
       var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
