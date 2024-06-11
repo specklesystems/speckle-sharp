@@ -10,6 +10,8 @@ public class CancellationManager
   /// </summary>
   private readonly Dictionary<string, CancellationTokenSource> _operationsInProgress = new();
 
+  public int NumberOfOperations => _operationsInProgress.Count;
+
   /// <summary>
   /// Get token with registered id.
   /// </summary>
@@ -28,6 +30,16 @@ public class CancellationManager
   public bool IsExist(string id)
   {
     return _operationsInProgress.ContainsKey(id);
+  }
+
+  public void CancelAllOperations()
+  {
+    foreach (var operation in _operationsInProgress)
+    {
+      operation.Value.Cancel();
+      operation.Value.Dispose();
+    }
+    _operationsInProgress.Clear();
   }
 
   /// <summary>

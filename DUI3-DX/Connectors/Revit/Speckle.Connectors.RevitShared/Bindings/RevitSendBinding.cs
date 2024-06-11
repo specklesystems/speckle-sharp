@@ -48,6 +48,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     // TODO expiry events
     // TODO filters need refresh events
     revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    Store.DocumentChanged += (_, _) => OnDocumentChanged();
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -177,5 +178,19 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
     Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
+  }
+
+  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
+  private void OnDocumentChanged()
+  {
+    if (CancellationManager.NumberOfOperations > 0)
+    {
+      CancellationManager.CancelAllOperations();
+      Commands.SendGlobalNotification(
+        ToastNotificationType.INFO,
+        "Document Switch",
+        "Operations cancelled because of document swap!"
+      );
+    }
   }
 }

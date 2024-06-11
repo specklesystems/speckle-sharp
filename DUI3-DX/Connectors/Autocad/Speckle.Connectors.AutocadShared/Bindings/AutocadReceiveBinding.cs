@@ -33,6 +33,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     _unitOfWorkFactory = unitOfWorkFactory;
     Parent = parent;
     Commands = new ReceiveBindingUICommands(parent);
+    _store.DocumentChanged += (_, _) => OnDocumentChanged();
   }
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
@@ -80,10 +81,19 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
-  // POC: JEDD: We should not update the UI until a OperationCancelledException is caught, we don't want to show the UI as cancelled
-  // until the actual operation is cancelled (thrown exception).
-  // I think there's room for us to introduce a cancellation pattern for bindings to do this and avoid this _cancellationManager
-  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
+  private void OnDocumentChanged()
+  {
+    if (_cancellationManager.NumberOfOperations > 0)
+    {
+      _cancellationManager.CancelAllOperations();
+      // POC: Will be readdressed later with better UX with host apps which are friendly on async doc operations.
+      Commands.SendGlobalNotification(
+        ToastNotificationType.INFO,
+        "Document Switch",
+        "Operations cancelled because of document swap!"
+      );
+    }
+  }
 
   public void Dispose()
   {

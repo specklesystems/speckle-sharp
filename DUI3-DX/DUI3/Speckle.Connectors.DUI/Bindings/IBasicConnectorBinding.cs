@@ -32,11 +32,20 @@ public static class BasicConnectorBindingEvents
   public const string DOCUMENT_CHANGED = "documentChanged";
 }
 
+public enum ToastNotificationType
+{
+  SUCCESS,
+  WARNING,
+  DANGER,
+  INFO
+}
+
 public class BasicConnectorBindingCommands
 {
   private const string NOTIFY_DOCUMENT_CHANGED_EVENT_NAME = "documentChanged";
   private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
+  private const string SET_GLOBAL_NOTIFICATION = "setGlobalNotification";
 
   protected IBridge Bridge { get; }
 
@@ -46,6 +55,18 @@ public class BasicConnectorBindingCommands
   }
 
   public void NotifyDocumentChanged() => Bridge.Send(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME);
+
+  public void SendGlobalNotification(ToastNotificationType type, string title, string message) =>
+    Bridge.Send(
+      SET_GLOBAL_NOTIFICATION,
+      new
+      {
+        type,
+        title,
+        description = message,
+        autoClose = true
+      }
+    );
 
   public void SetModelProgress(string modelCardId, ModelCardProgress progress) =>
     Bridge.Send(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
