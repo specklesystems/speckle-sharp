@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Services;
@@ -156,39 +156,19 @@ public class ParameterValueExtractor : IParameterValueExtractor
   {
     return GetValueGeneric(parameter, IRevitStorageType.ElementId, (parameter) => parameter.AsElementId());
   }
-
-  public bool TryGetValueAsDocumentObject<T>(
+  
+  public IRevitLevel? GetValueAsRevitLevel(
     IRevitElement element,
-    RevitBuiltInParameter builtInParameter,
-    [NotNullWhen(true)] out T? value
+    RevitBuiltInParameter builtInParameter
   )
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      value = default;
-      return false;
+      throw new SpeckleConversionException();
     }
 
     IRevitElement paramElement = element.Document.GetElement(elementId);
-    if (paramElement is not T typedElement)
-    {
-      value = default;
-      return false;
-    }
-
-    value = typedElement;
-    return true;
-  }
-
-  public T GetValueAsDocumentObject<T>(IRevitElement element, RevitBuiltInParameter builtInParameter)
-    where T : class
-  {
-    if (!TryGetValueAsDocumentObject<T>(element, builtInParameter, out var value))
-    {
-      throw new SpeckleConversionException($"Failed to get {builtInParameter} as an element of type {typeof(T)}");
-    }
-
-    return value; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
+    return paramElement.ToLevel();
   }
 
   private TResult? GetValueGeneric<TResult>(

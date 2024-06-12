@@ -53,11 +53,11 @@ public class ExtrusionRoofToSpeckleTopLevelConverter
       _pointConverter.Convert(plane.Origin.Add(plane.XVec.Normalize().Negate())),
       _pointConverter.Convert(plane.Origin)
     );
-    var level = _parameterValueExtractor.GetValueAsDocumentObject<IRevitLevel>(
+    var level = _parameterValueExtractor.GetValueAsRevitLevel(
       target,
       RevitBuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM
     );
-    speckleExtrusionRoof.level = _levelConverter.Convert(level);
+    speckleExtrusionRoof.level = _levelConverter.Convert(level.NotNull());
     speckleExtrusionRoof.outline = _modelCurveArrayConverter.Convert(target.GetProfile());
 
     var elementType = (IRevitElementType)target.Document.GetElement(target.GetTypeId());

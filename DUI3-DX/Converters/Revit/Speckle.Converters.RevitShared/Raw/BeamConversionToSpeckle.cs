@@ -54,11 +54,11 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
         baseLine = baseCurve
       };
 
-    var level = _parameterValueExtractor.GetValueAsDocumentObject<IRevitLevel>(
+    var level = _parameterValueExtractor.GetValueAsRevitLevel(
       target,
       RevitBuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
-    speckleBeam.level = _levelConverter.Convert(level);
+    speckleBeam.level = _levelConverter.Convert(level.NotNull());
 
     speckleBeam.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
