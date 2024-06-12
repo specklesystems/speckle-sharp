@@ -180,7 +180,8 @@ public static class Utils
 
     if (level != null)
     {
-      PropertyInfo propLevel = speckleObject.GetType().GetProperty("archicadLevel");
+      PropertyInfo propLevel =
+        speckleObject.GetType().GetProperty("archicadLevel") ?? speckleObject.GetType().GetProperty("level");
       propLevel.SetValue(speckleObject, level);
     }
 
