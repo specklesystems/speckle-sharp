@@ -373,19 +373,24 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
             - run:
+                name: Create app bundles
+                command: |
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/<< parameters.slnname >>
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/<< parameters.slnname >>
+            - run:
                 name: Zip Connector files
                 command: |
-                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
-                  zip -r << parameters.slug >>-mac-arm64.zip "./"
-                  cd "../../osx-x64/publish"
-                  zip -r << parameters.slug >>-mac-x64.zip "./"
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/"
+                  zip -r << parameters.slug >>-mac-arm64.zip "./<< parameters.slnname >>.app"
+                  cd "../osx-x64/"
+                  zip -r << parameters.slug >>-mac-x64.zip "./<< parameters.slnname >>.app"
             # Copy installer files
             - run:
                 name: Copy files to installer
                 command: |
                   mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.slug >>-mac-arm64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac-x64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/<< parameters.slug >>-mac-arm64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/<< parameters.slug >>-mac-x64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
       - run:
           name: Exit if External PR
