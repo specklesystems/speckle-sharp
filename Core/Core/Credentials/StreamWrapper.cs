@@ -61,7 +61,6 @@ public class StreamWrapper
 
   /// <remarks>May be an ID instead for FE2 urls</remarks>
   public string? BranchName { get; set; }
-  public string? BranchId { get; set; }
   public string? ObjectId { get; set; }
 
   /// <summary>
@@ -126,7 +125,7 @@ public class StreamWrapper
   private void ParseFe2RegexMatch(Match match)
   {
     var projectId = match.Groups["projectId"];
-    var modelId = match.Groups["model"];
+    var model = match.Groups["model"];
     var additionalModels = match.Groups["additionalModels"];
 
     if (!projectId.Success)
@@ -134,61 +133,30 @@ public class StreamWrapper
       throw new SpeckleException("The provided url is not a valid Speckle url");
     }
 
-    if (!modelId.Success)
+    if (!model.Success)
     {
       throw new SpeckleException("The provided url is not pointing to any model in the project.");
     }
 
-    if (additionalModels.Success || modelId.Value == "all")
+    if (additionalModels.Success || model.Value == "all")
     {
       throw new NotSupportedException("Multi-model urls are not supported yet");
     }
 
-    if (modelId.Value.StartsWith("$"))
+    if (model.Value.StartsWith("$"))
     {
       throw new NotSupportedException("Federation model urls are not supported");
     }
 
-    var modelRes = ParseFe2ModelValue(modelId.Value);
+    var modelRes = ParseFe2ModelValue(model.Value);
 
     // INFO: The Branch endpoint is being updated to fallback to checking a branch ID if no name is found.
     // Assigning the BranchID as the BranchName is a workaround to support FE2 links in the old StreamWrapper.
     // A better solution must be redesigned taking into account all the new Frontend2 URL features.
     StreamId = projectId.Value;
-    BranchId = modelRes.branchId;
+    BranchName = modelRes.branchId;
     CommitId = modelRes.commitId;
     ObjectId = modelRes.objectId;
-
-    // update branch name for FE2
-    try
-    {
-      if (BranchId != null && BranchName == null)
-      {
-        Account account = GetAccount().Result;
-        Client client = new(account);
-        var streamObj = client.StreamGet(StreamId, 100).Result;
-        foreach (Branch branch in streamObj.branches.items)
-        {
-          if (branch.id == BranchId)
-          {
-            BranchName = branch.name;
-            break;
-          }
-        }
-        // default to the old behavior if match not found
-        if (BranchName == null)
-        {
-          BranchName = BranchId;
-        }
-
-        client.Dispose();
-      }
-    }
-    catch
-    {
-      // let it fail silently & default to the old behavior
-      BranchName = BranchId;
-    }
   }
 
   /// <summary>
