@@ -16,6 +16,14 @@ public class ProxyMap : IProxyMap
   {
     Add<DB.Element, IRevitElement>(x => new ElementProxy(x));
     Add<DB.FamilyInstance, IRevitFamilyInstance>(x => new FamilyInstanceProxy(x));
+    Add<DB.Curve, IRevitCurve>(x => new CurveProxy(x));
+    Add<DB.BoundarySegment, IRevitBoundarySegment>(x => new BoundarySegmentProxy(x));
+    Add<DB.Level, IRevitLevel>(x => new LevelProxy(x));
+    Add<DB.Location, IRevitLocation>(x => new LocationProxy(x));
+    Add<DB.Material, IRevitMaterial>(x => new MaterialProxy(x));
+    Add<DB.ModelCurveArray, IRevitModelCurveArray>(x => new ModelCurveArrayProxy(x));
+    Add<DB.ModelCurveArrArray, IRevitModelCurveArrArray>(x => new ModelCurveArrArrayProxy(x));
+    Add<DB.Parameter, IRevitParameter>(x => new ParameterProxy(x));
   }
 
   private static void Add<T, TProxy>(Func<T, TProxy> f)
