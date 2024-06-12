@@ -82,34 +82,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     RhinoDoc doc = _contextStack.Current.Document;
     var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
 
-    // Cleanup blocks/definitions/instances before layers
-    foreach (var definition in doc.InstanceDefinitions)
-    {
-      if (!definition.IsDeleted && definition.Name.Contains(baseLayerName))
-      {
-        doc.InstanceDefinitions.Delete(definition.Index, true, false);
-      }
-    }
-
-    // POC: We could move this out into a separate service for testing and re-use.
-    // Cleans up any previously received objects
-    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
-    {
-      Layer documentLayer = doc.Layers[rootLayerIndex];
-      Layer[]? childLayers = documentLayer.GetChildren();
-      if (childLayers != null)
-      {
-        using var layerNoDraw = new DisableRedrawScope(doc.Views);
-        foreach (var layer in childLayers)
-        {
-          var purgeSuccess = doc.Layers.Purge(layer.Index, true);
-          if (!purgeSuccess)
-          {
-            Console.WriteLine($"Failed to purge layer: {layer}");
-          }
-        }
-      }
-    }
+    PreReceiveDeepClean(baseLayerName, rootLayerIndex);
 
     var cache = new Dictionary<string, int>();
     rootLayerIndex = doc.Layers.Add(new Layer { Name = baseLayerName });
@@ -146,9 +119,11 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     }
 
     // Stage 1: Convert atomic objects
-    var applicationIdMap = new Dictionary<string, string>(); // used in converting blocks in stage 2
+    var applicationIdMap = new Dictionary<string, List<string>>(); // used in converting blocks in stage 2
+    var count = 0;
     foreach (var (path, obj) in atomicObjects)
     {
+      onOperationProgressed?.Invoke("Converting objects", (double)++count / atomicObjects.Count);
       try
       {
         var fullLayerName = string.Join(Layer.PathSeparator, path);
@@ -158,7 +133,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
         var result = _converter.Convert(obj);
 
-        var conversionIds = HandleConversionResult(result, obj, layerIndex);
+        var conversionIds = HandleConversionResult(result, obj, layerIndex).ToList();
         foreach (var r in conversionIds)
         {
           conversionResults.Add(new(Status.SUCCESS, obj, r, result.GetType().ToString()));
@@ -169,7 +144,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         {
           // TODO: groups inside blocks? is that a thing? can we account for that? HOW CAN WE ACCOUNT FOR THAT?
           // ie, what happens when we receive a block that contains one object that we need to explode in host app?
-          applicationIdMap[obj.applicationId] = conversionIds[0];
+          applicationIdMap[obj.applicationId] = conversionIds;
         }
       }
       catch (Exception ex) when (!ex.IsFatal())
@@ -185,8 +160,8 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
       .ToList();
     var definitionIdAndApplicationIdMap = new Dictionary<string, int>();
-    var count = 0;
 
+    count = 0;
     foreach (var (path, instanceOrDefinition) in sortedInstanceComponents)
     {
       onOperationProgressed?.Invoke("Converting blocks", (double)++count / sortedInstanceComponents.Count);
@@ -195,8 +170,9 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
         {
           var currentApplicationObjectsIds = definitionProxy.Objects
-            .Select(x => applicationIdMap.TryGetValue(x, out string value) ? value : null)
+            .Select(x => applicationIdMap.TryGetValue(x, out List<string> value) ? value : null)
             .Where(x => x is not null)
+            .SelectMany(id => id)
             .ToList();
 
           var definitionGeometryList = new List<GeometryBase>();
@@ -234,7 +210,8 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
           doc.Objects.Delete(currentApplicationObjectsIds.Select(stringId => new Guid(stringId)), false);
           bakedObjectIds.RemoveAll(id => currentApplicationObjectsIds.Contains(id));
           conversionResults.RemoveAll(
-            conversionResult => currentApplicationObjectsIds.Contains(conversionResult.ResultId) // note: as in rhino created objects are deleted, highlighting them won't work
+            conversionResult =>
+              conversionResult.ResultId != null && currentApplicationObjectsIds.Contains(conversionResult.ResultId) // note: as in rhino created objects are deleted, highlighting them won't work
           );
         }
 
@@ -248,7 +225,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
           var id = doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
           if (instanceProxy.applicationId != null)
           {
-            applicationIdMap[instanceProxy.applicationId] = id.ToString();
+            applicationIdMap[instanceProxy.applicationId] = new List<string>() { id.ToString() };
           }
 
           bakedObjectIds.Add(id.ToString());
@@ -263,6 +240,39 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     // Stage 3: Return
     return new(bakedObjectIds, conversionResults);
+  }
+
+  private void PreReceiveDeepClean(string baseLayerName, int rootLayerIndex)
+  {
+    var doc = _contextStack.Current.Document;
+
+    // Cleanup blocks/definitions/instances before layers
+    foreach (var definition in doc.InstanceDefinitions)
+    {
+      if (!definition.IsDeleted && definition.Name.Contains(baseLayerName))
+      {
+        doc.InstanceDefinitions.Delete(definition.Index, true, false);
+      }
+    }
+
+    // Cleans up any previously received objects
+    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
+    {
+      Layer documentLayer = doc.Layers[rootLayerIndex];
+      Layer[]? childLayers = documentLayer.GetChildren();
+      if (childLayers != null)
+      {
+        using var layerNoDraw = new DisableRedrawScope(doc.Views);
+        foreach (var layer in childLayers)
+        {
+          var purgeSuccess = doc.Layers.Purge(layer.Index, true);
+          if (!purgeSuccess)
+          {
+            Console.WriteLine($"Failed to purge layer: {layer}");
+          }
+        }
+      }
+    }
   }
 
   private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
