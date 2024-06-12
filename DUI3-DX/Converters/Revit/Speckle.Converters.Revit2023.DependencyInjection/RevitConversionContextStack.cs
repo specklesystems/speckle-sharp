@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
-using Speckle.Converters.RevitShared;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
@@ -17,8 +16,6 @@ public class RevitConversionContextStack
   : ConversionContextStack<IRevitDocument, IRevitForgeTypeId>,
     IConversionContextStack<IRevitDocument, IRevitForgeTypeId>
 {
-  public const double TOLERANCE = RevitConstants.TOLERANCE;
-
   public RevitConversionContextStack(RevitContext context, IHostToSpeckleUnitConverter<IRevitForgeTypeId> unitConverter)
     : base(
       // POC: we probably should not get here without a valid document

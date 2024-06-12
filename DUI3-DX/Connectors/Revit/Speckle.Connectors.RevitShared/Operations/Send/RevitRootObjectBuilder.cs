@@ -57,7 +57,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 
     foreach (var id in objects)
     {
-      var el = _contextStack.Current.Document.GetElement(id);
+      var el = doc.GetElement(id);
       if (el != null)
       {
         revitElements.Add(el);
