@@ -117,14 +117,15 @@ Target(
 Target(
   TEST,
   DependsOn(BUILD),
-  () =>
+  Consts.TestProjects,
+  t =>
   {
     IEnumerable<string> GetFiles(string d)
     {
       return Glob.Files(".", d);
     }
 
-    foreach (var file in GetFiles("**/*.Test.csproj"))
+    foreach (var file in GetFiles($"**/{t}.csproj"))
     {
       Run("dotnet", $"test {file} -c Release --no-restore --verbosity=normal");
     }
