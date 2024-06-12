@@ -1,9 +1,9 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Shouldly;
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
 
@@ -76,9 +76,9 @@ public class ModelCurveArrayToSpeckleConverterTests
     );
     var polycurve = sut.Convert(new List<IRevitModelCurve>() { curve1.Object, curve2.Object });
 
-    polycurve.units.ShouldBe(units);
-    polycurve.closed.ShouldBeFalse();
-    polycurve.length.ShouldBe(scaleLength);
-    polycurve.segments.Count.ShouldBe(2);
+    polycurve.units.Should().Be(units);
+    polycurve.closed.Should().BeFalse();
+    polycurve.length.Should().Be(scaleLength);
+    polycurve.segments.Count.Should().Be(2);
   }
 }
