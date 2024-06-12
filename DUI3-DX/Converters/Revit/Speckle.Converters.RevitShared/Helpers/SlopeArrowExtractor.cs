@@ -56,12 +56,12 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
 
   public SOG.Point GetSlopeArrowHead(IRevitModelLine slopeArrow)
   {
-    return _pointConverter.Convert((slopeArrow.Location.ToLocationCurve().NotNull()).Curve.GetEndPoint(1));
+    return _pointConverter.Convert((slopeArrow.GetLocationAsLocationCurve().NotNull()).Curve.GetEndPoint(1));
   }
 
   public SOG.Point GetSlopeArrowTail(IRevitModelLine slopeArrow)
   {
-    return _pointConverter.Convert((slopeArrow.Location.ToLocationCurve().NotNull()).Curve.GetEndPoint(0));
+    return _pointConverter.Convert((slopeArrow.GetLocationAsLocationCurve().NotNull()).Curve.GetEndPoint(0));
   }
 
   public double GetSlopeArrowTailOffset(IRevitModelLine slopeArrow)

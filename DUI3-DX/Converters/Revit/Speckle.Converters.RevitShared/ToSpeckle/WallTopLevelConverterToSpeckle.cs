@@ -64,7 +64,8 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
 
   private void AssignSpecificParameters(IRevitWall target, RevitWall speckleWall)
   {
-    if (target.Location is not IRevitLocationCurve locationCurve)
+    var locationCurve = target.GetLocationAsLocationCurve();
+    if (locationCurve is null)
     {
       throw new SpeckleConversionException(
         "Incorrect assumption was made that all Revit Wall location properties would be of type \"LocationCurve\""

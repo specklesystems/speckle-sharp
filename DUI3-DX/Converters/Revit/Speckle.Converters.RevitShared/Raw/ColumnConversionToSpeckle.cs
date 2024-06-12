@@ -68,7 +68,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     speckleColumn.handFlipped = target.HandFlipped;
     speckleColumn.isSlanted = target.IsSlantedColumn;
 
-    var locationPoint = target.Location.ToLocationPoint();
+    var locationPoint = target.GetLocationAsLocationPoint();
     if (locationPoint is not null)
     {
       speckleColumn.rotation = locationPoint.Rotation;

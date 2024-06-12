@@ -33,16 +33,32 @@ public class CurveConversionToSpeckle : ITypedConverter<IRevitCurve, ICurve>
 
   public ICurve Convert(IRevitCurve target)
   {
-    return target switch
+    var line = target.ToLine();
+    if (line is not null)
     {
-      IRevitLine line => _lineConverter.Convert(line),
-      // POC: are maybe arc.IsCyclic ?
-      IRevitArc arc => arc.IsClosed ? _circleConverter.Convert(arc) : _arcConverter.Convert(arc),
-      IRevitEllipse ellipse => _ellipseConverter.Convert(ellipse),
-      IRevitNurbSpline nurbs => _nurbsConverter.Convert(nurbs),
-      IRevitHermiteSpline hermite => _hermiteConverter.Convert(hermite),
+      return _lineConverter.Convert(line);
+    }
+    var arc = target.ToArc();
+    if (arc is not null)
+    {
+      return arc.IsClosed ? _circleConverter.Convert(arc) : _arcConverter.Convert(arc);
+    }
+    var ellipse = target.ToEllipse();
+    if (ellipse is not null)
+    {
+      return  _ellipseConverter.Convert(ellipse);
+    }
+    var nurbs = target.ToNurbSpline();
+    if (nurbs is not null)
+    {
+      return  _nurbsConverter.Convert(nurbs);
+    }
+    var hermite = target.ToHermiteSpline();
+    if (hermite is not null)
+    {
+      return  _hermiteConverter.Convert(hermite);
+    }
 
-      _ => throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}")
-    };
+    throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}");
   }
 }
