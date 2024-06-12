@@ -59,9 +59,9 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     Dictionary<int, Collection> layerCollectionCache = new();
 
     var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _blockManager.UnpackSelection(rhinoObjects);
+
     // POC: we should formalise this, sooner or later - or somehow fix it a bit more
-    rootObjectCollection["@instanceDefintions"] = instanceDefinitionProxies; // this won't work re traversal on receive
-    rootObjectCollection.elements.AddRange(instanceDefinitionProxies); // hmmmm this does. question stands on how to properly do this
+    rootObjectCollection["@instanceDefinitionProxies"] = instanceDefinitionProxies; // this won't work re traversal on receive
 
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);

@@ -7,6 +7,7 @@ using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Converters.Common;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
@@ -48,8 +49,17 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var objectsToConvert = _traverseFunction
       .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
       .Where(obj => obj.Current is not Collection);
-    //var bbb = (rootObject["instanceDefintions"] as List<object>).Cast<InstanceDefinitionProxy>().ToList();
-    var conversionResults = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed);
+
+    var instanceDefinitionProxies = (rootObject["instanceDefinitionProxies"] as List<object>)
+      ?.Cast<InstanceDefinitionProxy>()
+      .ToList();
+
+    var conversionResults = BakeObjects(
+      objectsToConvert,
+      instanceDefinitionProxies,
+      baseLayerName,
+      onOperationProgressed
+    );
 
     _contextStack.Current.Document.Views.Redraw();
 
@@ -64,6 +74,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 #pragma warning restore CA1502
 #pragma warning restore CA1506
     IEnumerable<TraversalContext> objectsGraph,
+    List<InstanceDefinitionProxy>? instanceDefinitionProxies,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed
   )
@@ -110,20 +121,26 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var bakedObjectIds = new List<string>();
 
     var instanceComponents = new List<(string[] layerPath, IInstanceComponent obj)>();
+
+    // POC: these are not captured by traversal, so we need to readd them here
+    if (instanceDefinitionProxies != null && instanceDefinitionProxies.Count > 0)
+    {
+      var transformed = instanceDefinitionProxies.Select(proxy => (Array.Empty<string>(), proxy as IInstanceComponent));
+      instanceComponents.AddRange(transformed);
+    }
+
     var atomicObjects = new List<(string[] layerPath, Base obj)>();
     IEnumerable<TraversalContext> traversalContexts = objectsGraph as TraversalContext[] ?? objectsGraph.ToArray();
 
     foreach (TraversalContext tc in traversalContexts)
     {
       var path = GetLayerPath(tc);
-      var xxxx = tc.Current;
       if (tc.Current is IInstanceComponent flocker)
       {
         instanceComponents.Add((path, flocker));
       }
       else
       {
-        // TODO: check this is correct re traversal, not fully sure where we landed
         atomicObjects.Add((path, tc.Current));
       }
     }
@@ -173,64 +190,74 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     foreach (var (path, instanceOrDefinition) in sortedInstanceComponents)
     {
       onOperationProgressed?.Invoke("Converting blocks", (double)++count / sortedInstanceComponents.Count);
-
-      if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
+      try
       {
-        var currentApplicationObjectsIds = definitionProxy.Objects
-          .Select(x => applicationIdMap.TryGetValue(x, out string value) ? value : null)
-          .Where(x => x is not null)
-          .ToList();
-
-        var definitionGeometryList = new List<GeometryBase>();
-        var attributes = new List<ObjectAttributes>();
-
-        foreach (var id in currentApplicationObjectsIds)
+        if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
         {
-          var docObject = doc.Objects.FindId(new Guid(id));
-          definitionGeometryList.Add(docObject.Geometry);
-          attributes.Add(docObject.Attributes);
+          var currentApplicationObjectsIds = definitionProxy.Objects
+            .Select(x => applicationIdMap.TryGetValue(x, out string value) ? value : null)
+            .Where(x => x is not null)
+            .ToList();
+
+          var definitionGeometryList = new List<GeometryBase>();
+          var attributes = new List<ObjectAttributes>();
+
+          foreach (var id in currentApplicationObjectsIds)
+          {
+            var docObject = doc.Objects.FindId(new Guid(id));
+            definitionGeometryList.Add(docObject.Geometry);
+            attributes.Add(docObject.Attributes);
+          }
+
+          // POC: Currently we're relying on the definition name for identification if it's coming from speckle and from which model; could we do something else?
+          var defName = $"{baseLayerName} ({definitionProxy.applicationId})";
+          var defIndex = doc.InstanceDefinitions.Add(
+            defName,
+            "No description", // POC: perhaps bring it along from source? We'd need to look at ACAD first
+            Point3d.Origin,
+            definitionGeometryList,
+            attributes
+          );
+
+          // POC: check on defIndex -1, means we haven't created anything - this is most likely an recoverable error at this stage
+          if (defIndex == -1)
+          {
+            throw new ConversionException("Failed to create an instance defintion object.");
+          }
+
+          if (definitionProxy.applicationId != null)
+          {
+            definitionIdAndApplicationIdMap[definitionProxy.applicationId] = defIndex;
+          }
+
+          // Rhino deletes original objects on block creation - we should do the same.
+          doc.Objects.Delete(currentApplicationObjectsIds.Select(stringId => new Guid(stringId)), false);
+          bakedObjectIds.RemoveAll(id => currentApplicationObjectsIds.Contains(id));
+          conversionResults.RemoveAll(
+            conversionResult => currentApplicationObjectsIds.Contains(conversionResult.ResultId) // note: as in rhino created objects are deleted, highlighting them won't work
+          );
         }
 
-        // POC: Currently we're relying on the definition name for identification if it's coming from speckle and from which model; could we do something else?
-        var defName = $"{baseLayerName} ({definitionProxy.applicationId})";
-        var defIndex = doc.InstanceDefinitions.Add(
-          defName,
-          "No description", // POC: perhaps bring it along from source? We'd need to look at ACAD first
-          Point3d.Origin,
-          definitionGeometryList,
-          attributes
-        );
-
-        // POC: check on defIndex -1, means we haven't created anything - this is most likely an recoverable error at this stage
-        if (defIndex == -1)
+        if (
+          instanceOrDefinition is InstanceProxy instanceProxy
+          && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out int index)
+        )
         {
-          // TODO: throw? there's no catch atm
-          // var x = "break";
-        }
+          var transform = MatrixToTransform(instanceProxy.Transform);
+          var layerIndex = GetAndCreateLayerFromPath(path, baseLayerName, cache);
+          var id = doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
+          if (instanceProxy.applicationId != null)
+          {
+            applicationIdMap[instanceProxy.applicationId] = id.ToString();
+          }
 
-        if (definitionProxy.applicationId != null)
-        {
-          definitionIdAndApplicationIdMap[definitionProxy.applicationId] = defIndex;
+          bakedObjectIds.Add(id.ToString());
+          conversionResults.Add(new(Status.SUCCESS, instanceProxy, id.ToString(), "Instance (Block)"));
         }
-
-        // Rhino deletes original objects on block creation - we should do the same.
-        doc.Objects.Delete(currentApplicationObjectsIds.Select(stringId => new Guid(stringId)), false);
-        bakedObjectIds.RemoveAll(id => currentApplicationObjectsIds.Contains(id));
       }
-      if (
-        instanceOrDefinition is InstanceProxy instanceProxy
-        && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out int index)
-      )
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        var transform = MatrixToTransform(instanceProxy.Transform);
-        var layerIndex = GetAndCreateLayerFromPath(path, baseLayerName, cache);
-        var id = doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
-        if (instanceProxy.applicationId != null)
-        {
-          applicationIdMap[instanceProxy.applicationId] = id.ToString();
-        }
-        bakedObjectIds.Add(id.ToString());
-        conversionResults.Add(new(Status.SUCCESS, instanceProxy, id.ToString(), "Instance (Block)"));
+        conversionResults.Add(new(Status.ERROR, instanceOrDefinition as Base ?? new Base(), null, null, ex));
       }
     }
 
