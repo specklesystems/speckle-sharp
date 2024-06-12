@@ -10,14 +10,13 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils.Operations;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
-public sealed class AutocadSendBinding : ISendBinding, ICancelable
+public sealed class AutocadSendBinding : ISendBinding
 {
   public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -181,24 +180,19 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
+  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
+  // That's why don't bother for now how to get rid of from dup logic in other bindings.
   private void OnDocumentChanged()
   {
     if (_cancellationManager.NumberOfOperations > 0)
     {
       _cancellationManager.CancelAllOperations();
       // POC: Will be readdressed later with better UX with host apps which are friendly on async doc operations.
-      Commands.SendGlobalNotification(
+      Commands.SetGlobalNotification(
         ToastNotificationType.INFO,
         "Document Switch",
         "Operations cancelled because of document swap!"
       );
     }
   }
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }

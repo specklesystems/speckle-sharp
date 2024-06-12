@@ -10,12 +10,12 @@ using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
-public class RhinoReceiveBinding : IReceiveBinding, ICancelable
+public class RhinoReceiveBinding : IReceiveBinding
 {
   public string Name { get; set; } = "receiveBinding";
   public IBridge Parent { get; set; }
-  public CancellationManager CancellationManager { get; set; }
 
+  private readonly CancellationManager _cancellationManager;
   private readonly DocumentModelStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   public ReceiveBindingUICommands Commands { get; }
@@ -30,11 +30,11 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
     Parent = parent;
     _store = store;
     _unitOfWorkFactory = unitOfWorkFactory;
-    CancellationManager = cancellationManager;
+    _cancellationManager = cancellationManager;
     Commands = new ReceiveBindingUICommands(parent);
   }
 
-  public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   public async Task Receive(string modelCardId)
   {
@@ -49,7 +49,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
       }
 
       // Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Receive host objects
       HostObjectBuilderResult conversionResults = await unitOfWork.Service
@@ -84,12 +84,5 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
-  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
+  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 }

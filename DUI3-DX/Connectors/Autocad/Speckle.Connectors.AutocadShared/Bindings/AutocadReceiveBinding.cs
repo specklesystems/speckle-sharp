@@ -6,11 +6,10 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
-public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
+public sealed class AutocadReceiveBinding : IReceiveBinding
 {
   public string Name => "receiveBinding";
   public IBridge Parent { get; }
@@ -81,24 +80,19 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
+  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
+  // That's why don't bother for now how to get rid of from dup logic in other bindings.
   private void OnDocumentChanged()
   {
     if (_cancellationManager.NumberOfOperations > 0)
     {
       _cancellationManager.CancelAllOperations();
       // POC: Will be readdressed later with better UX with host apps which are friendly on async doc operations.
-      Commands.SendGlobalNotification(
+      Commands.SetGlobalNotification(
         ToastNotificationType.INFO,
         "Document Switch",
         "Operations cancelled because of document swap!"
       );
     }
   }
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }
