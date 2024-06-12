@@ -5,7 +5,7 @@ using Speckle.Core.Models.Instances;
 namespace Speckle.Connectors.Rhino7.HostApp;
 
 /// <summary>
-/// A utility class that helps manage host application blocks in send/receive operations.
+/// A utility class that helps manage host application blocks in send/receive operations. This expects to be a transient dependendency.
 /// </summary>
 /// <typeparam name="T">Host application object type, e.g. RhinoObject</typeparam>
 public interface IBlockManager<T>
@@ -28,6 +28,11 @@ public record BlockManagerUnpackResult<T>(
 /// </summary>
 public class RhinoBlockManager : IBlockManager<RhinoObject>
 {
+  public RhinoBlockManager()
+  {
+    // TODO: test
+  }
+
   private Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
   private Dictionary<string, List<InstanceProxy>> InstanceProxiesByDefinitionId { get; set; } = new();
   private Dictionary<string, InstanceDefinitionProxy> DefinitionProxies { get; set; } = new();

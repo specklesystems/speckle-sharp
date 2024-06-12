@@ -61,7 +61,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _blockManager.UnpackSelection(rhinoObjects);
 
     // POC: we should formalise this, sooner or later - or somehow fix it a bit more
-    rootObjectCollection["@instanceDefinitionProxies"] = instanceDefinitionProxies; // this won't work re traversal on receive
+    rootObjectCollection["instanceDefinitionProxies"] = instanceDefinitionProxies; // this won't work re traversal on receive
 
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);
