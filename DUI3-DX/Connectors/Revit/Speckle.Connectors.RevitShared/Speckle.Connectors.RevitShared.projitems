@@ -21,6 +21,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitSendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\ProxyMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\DocumentModelStorageSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\IdStorageSchema.cs" />

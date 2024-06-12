@@ -1,27 +1,28 @@
-using Speckle.Converters.Common.Objects;
+﻿using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-public class VectorToSpeckleConverter : ITypedConverter<DB.XYZ, SOG.Vector>
+public class VectorToSpeckleConverter : ITypedConverter<IRevitXYZ, SOG.Vector>
 {
   private readonly IReferencePointConverter _referencePointConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public VectorToSpeckleConverter(
     IReferencePointConverter referencePointConverter,
-    ScalingServiceToSpeckle scalingService
+    IScalingServiceToSpeckle scalingService
   )
   {
     _referencePointConverter = referencePointConverter;
     _scalingService = scalingService;
   }
 
-  public SOG.Vector Convert(DB.XYZ target)
+  public SOG.Vector Convert(IRevitXYZ target)
   {
     // POC: originally had a concept of not transforming, but this was
     // optional arg defaulting to false - removing the argument appeared to break nothing
-    DB.XYZ extPt = _referencePointConverter.ConvertToExternalCoordindates(target, false);
+    var extPt = _referencePointConverter.ConvertToExternalCoordindates(target, false);
     var pointToSpeckle = new SOG.Vector(
       _scalingService.ScaleLength(extPt.X),
       _scalingService.ScaleLength(extPt.Y),

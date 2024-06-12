@@ -31,7 +31,6 @@
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile"  NoWarn="NU1903"/>
     <PackageReference Include="Revit.Async" Version="2.0.1" />
-    <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" />
   </ItemGroup>
 
   <Target AfterTargets="Clean" Name="CleanAddinFolder">

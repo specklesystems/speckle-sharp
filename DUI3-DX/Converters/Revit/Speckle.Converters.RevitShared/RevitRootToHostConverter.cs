@@ -2,6 +2,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared;
 
@@ -37,7 +38,7 @@ public class RevitRootToHostConverter : IRootToSpeckleConverter
 
     // POC : where should logic common to most objects go?
     // shouldn't target ALWAYS be DB.Element?
-    if (target is DB.Element element)
+    if (target is IRevitElement element)
     {
       // POC: is this the right place?
       result.applicationId = element.UniqueId;

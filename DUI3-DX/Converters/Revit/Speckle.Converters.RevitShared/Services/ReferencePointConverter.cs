@@ -1,12 +1,25 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Converters.Common;
+using Speckle.InterfaceGenerator;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared;
+namespace Speckle.Converters.Revit2023;
 
-// POC: this could perhaps becomes some RevitDocumentService but also...
-// This reference point feature needs review. We could do with knowing whether this feature is widely used.
-// there's also some bogus disposal happening
-// https://spockle.atlassian.net/browse/CNX-9357
+[GenerateAutoInterface]
+public class RevitConversionSettings : IRevitConversionSettings
+{
+  private Dictionary<string, string> Settings { get; } = new();
+
+  public bool TryGetSettingString(string key, out string value) => Settings.TryGetValue(key, out value);
+
+  public string this[string key]
+  {
+    get => Settings[key];
+    set => Settings[key] = value;
+  }
+}
+
+[GenerateAutoInterface]
 public class ReferencePointConverter : IReferencePointConverter
 {
   // POC: probably not the best place for this
@@ -14,21 +27,33 @@ public class ReferencePointConverter : IReferencePointConverter
   private const string REFPOINT_PROJECT_BASE = "Project Base";
   private const string REFPOINT_SURVEY = "Survey";
 
-  private readonly RevitConversionSettings _revitSettings;
-  private readonly IRevitConversionContextStack _contextStack;
+  private readonly IRevitConversionSettings _revitSettings;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly IRevitTransformUtils _transformUtils;
+  private readonly IRevitFilterFactory _revitFilterFactory;
+  private readonly IRevitXYZUtils _revitXyzUtils;
 
-  private readonly Dictionary<string, DB.Transform> _docTransforms = new();
+  private readonly Dictionary<string, IRevitTransform> _docTransforms = new();
 
-  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings)
+  public ReferencePointConverter(
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    IRevitConversionSettings revitSettings,
+    IRevitFilterFactory revitFilterFactory,
+    IRevitTransformUtils transformUtils,
+    IRevitXYZUtils revitXyzUtils
+  )
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;
+    _revitFilterFactory = revitFilterFactory;
+    _transformUtils = transformUtils;
+    _revitXyzUtils = revitXyzUtils;
   }
 
   // POC: the original allowed for the document to be passed in
   // if required, we would probably need to push the stack with a new document if the
   // doc can change during the lifeycycle of the conversions. This may need some looking into
-  public DB.XYZ ConvertToExternalCoordindates(DB.XYZ inbound, bool isPoint)
+  public IRevitXYZ ConvertToExternalCoordindates(IRevitXYZ inbound, bool isPoint)
   {
     var rpt = GetDocReferencePointTransform(_contextStack.Current.Document);
     return isPoint ? rpt.OfPoint(inbound) : rpt.OfVector(inbound);
@@ -36,13 +61,13 @@ public class ReferencePointConverter : IReferencePointConverter
 
   // POC: this might be better in some RevitDocumentService
   // we could probably return that instance instead of the Doc from the context, maybe...
-  public DB.Transform GetDocReferencePointTransform(DB.Document doc)
+  public IRevitTransform GetDocReferencePointTransform(IRevitDocument doc)
   {
     //linked files are always saved to disc and will have a path name
     //if the current doc is unsaved it will not, but then it'll be the only one :)
     var id = doc.PathName;
 
-    if (!_docTransforms.TryGetValue(id, out DB.Transform? transform))
+    if (!_docTransforms.TryGetValue(id, out IRevitTransform? transform))
     {
       // get from settings
       var referencePointSetting = _revitSettings.TryGetSettingString("reference-point", out string value)
@@ -56,25 +81,25 @@ public class ReferencePointConverter : IReferencePointConverter
   }
 
   [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
-  public DB.Transform GetReferencePointTransform(string referencePointSetting)
+  public IRevitTransform GetReferencePointTransform(string referencePointSetting)
   {
     // first get the main doc base points and reference setting transform
-    var referencePointTransform = DB.Transform.Identity;
+    var referencePointTransform = _transformUtils.Identity;
 
     // POC: bogus disposal below
-    var points = new DB.FilteredElementCollector(_contextStack.Current.Document)
-      .OfClass(typeof(DB.BasePoint))
-      .Cast<DB.BasePoint>()
+    var points = _revitFilterFactory
+      .CreateFilteredElementCollector(_contextStack.Current.Document)
+      .OfClass<IRevitBasePoint>()
       .ToList();
 
-    var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
-    var surveyPoint = points.FirstOrDefault(o => o.IsShared);
+    var projectPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared == false), "No projectPoint");
+    var surveyPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared), "No surveyPoint");
 
     // POC: it's not clear what support is needed for this
     switch (referencePointSetting)
     {
       case REFPOINT_PROJECT_BASE: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
-        referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
+        referencePointTransform = _transformUtils.CreateTranslation(projectPoint.Position);
         break;
 
       case REFPOINT_SURVEY:
@@ -82,12 +107,12 @@ public class ReferencePointConverter : IReferencePointConverter
         // retrieve the survey point rotation from the project point
 
         // POC: should a null angle resolve to 0?
-        var angle = projectPoint.get_Parameter(DB.BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
+        var angle = projectPoint.GetParameter(RevitBuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
 
         // POC: following disposed incorrectly or early or maybe a false negative?
-        referencePointTransform = DB.Transform
+        referencePointTransform = _transformUtils
           .CreateTranslation(surveyPoint.Position)
-          .Multiply(DB.Transform.CreateRotation(DB.XYZ.BasisZ, angle));
+          .Multiply(_transformUtils.CreateRotation(_revitXyzUtils.BasisZ, angle));
 
         break;
 

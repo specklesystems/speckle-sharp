@@ -5,12 +5,12 @@ using CefSharp;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using System.Diagnostics;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.IO;
+using Speckle.Converters.Revit2023.DependencyInjection;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

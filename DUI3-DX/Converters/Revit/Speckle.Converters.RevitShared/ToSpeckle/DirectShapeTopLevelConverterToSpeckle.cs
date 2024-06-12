@@ -1,22 +1,22 @@
 ﻿using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Converters.RevitShared.ToSpeckle;
 using Speckle.Core.Models;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.DirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.DirectShape, SOBR.DirectShape>
+[NameAndRankValue(nameof(IRevitDirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitDirectShape, SOBR.DirectShape>
 {
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
 
   public DirectShapeTopLevelConverterToSpeckle(
-    ParameterObjectAssigner parameterObjectAssigner,
-    IRevitConversionContextStack contextStack,
-    DisplayValueExtractor displayValueExtractor
+    IParameterObjectAssigner parameterObjectAssigner,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    IDisplayValueExtractor displayValueExtractor
   )
   {
     _parameterObjectAssigner = parameterObjectAssigner;
@@ -24,7 +24,7 @@ public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpec
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override SOBR.DirectShape Convert(DB.DirectShape target)
+  public override SOBR.DirectShape Convert(IRevitDirectShape target)
   {
     var category = target.Category.GetBuiltInCategory().GetSchemaBuilderCategoryFromBuiltIn();
 
