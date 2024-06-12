@@ -3,9 +3,9 @@ using System.DoubleNumerics;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
-using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -20,19 +20,19 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   private readonly IRootToHostConverter _converter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
-  private readonly IBlockManager<RhinoObject> _blockManager;
+  private readonly IInstanceObjectsManager<RhinoObject> _instanceObjectsManager;
 
   public RhinoHostObjectBuilder(
     IRootToHostConverter converter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     GraphTraversal traverseFunction,
-    IBlockManager<RhinoObject> blockManager
+    IInstanceObjectsManager<RhinoObject> instanceObjectsManager
   )
   {
     _converter = converter;
     _contextStack = contextStack;
     _traverseFunction = traverseFunction;
-    _blockManager = blockManager;
+    _instanceObjectsManager = instanceObjectsManager;
   }
 
   public HostObjectBuilderResult Build(

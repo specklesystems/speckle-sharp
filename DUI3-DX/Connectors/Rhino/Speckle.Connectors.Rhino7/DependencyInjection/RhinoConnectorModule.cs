@@ -20,6 +20,7 @@ using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -65,7 +66,7 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddScoped<ISendFilter, RhinoSelectionFilter>();
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
     builder.AddTransient<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
-    builder.AddTransient<IBlockManager<RhinoObject>, RhinoBlockManager>();
+    builder.AddTransient<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
 
     // register receive related deps
     // Note: Receive operation is injected by builder.AddConnectorUtils()

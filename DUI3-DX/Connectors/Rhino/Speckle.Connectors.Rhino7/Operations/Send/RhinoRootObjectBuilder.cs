@@ -5,10 +5,10 @@ using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
-using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
 
@@ -21,17 +21,17 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly IBlockManager<RhinoObject> _blockManager;
+  private readonly IInstanceObjectsManager<RhinoObject> _instanceObjectsManager;
 
   public RhinoRootObjectBuilder(
     IUnitOfWorkFactory unitOfWorkFactory,
     ISendConversionCache sendConversionCache,
-    IBlockManager<RhinoObject> blockManager
+    IInstanceObjectsManager<RhinoObject> instanceObjectsManager
   )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
-    _blockManager = blockManager;
+    _instanceObjectsManager = instanceObjectsManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -58,7 +58,9 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
     Dictionary<int, Collection> layerCollectionCache = new();
 
-    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _blockManager.UnpackSelection(rhinoObjects);
+    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(
+      rhinoObjects
+    );
 
     // POC: we should formalise this, sooner or later - or somehow fix it a bit more
     rootObjectCollection["instanceDefinitionProxies"] = instanceDefinitionProxies; // this won't work re traversal on receive
@@ -123,7 +125,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
   }
 
   /// <summary>
-  /// Returns the host collection based on the provided layer. If it's not found, it will be created and hosted within the the rootObjectCollection.
+  /// Returns the host collection based on the provided layer. If it's not found, it will be created and hosted within the rootObjectCollection.
   /// </summary>
   /// <param name="layerCollectionCache"></param>
   /// <param name="layer"></param>

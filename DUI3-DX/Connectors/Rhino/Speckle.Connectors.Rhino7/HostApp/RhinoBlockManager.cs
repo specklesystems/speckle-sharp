@@ -1,36 +1,18 @@
 using System.DoubleNumerics;
 using Rhino.DocObjects;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
 /// <summary>
-/// A utility class that helps manage host application blocks in send/receive operations. This expects to be a transient dependendency.
-/// </summary>
-/// <typeparam name="T">Host application object type, e.g. RhinoObject</typeparam>
-public interface IBlockManager<T>
-{
-  /// <summary>
-  /// Given a list of host application objects, it will unpack them into TODO: comment
-  /// </summary>
-  /// <param name="objects"></param>
-  BlockManagerUnpackResult<T> UnpackSelection(IEnumerable<T> objects);
-}
-
-public record BlockManagerUnpackResult<T>(
-  List<T> AtomicObjects,
-  Dictionary<string, InstanceProxy> InstanceProxies,
-  List<InstanceDefinitionProxy> InstanceDefinitionProxies
-);
-
-/// <summary>
 /// <inheritdoc/>
 /// </summary>
-public class RhinoBlockManager : IBlockManager<RhinoObject>
+public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject>
 {
-  public RhinoBlockManager()
+  public RhinoInstanceObjectsManager()
   {
-    // TODO: test
+    // TODO: remove
   }
 
   private Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
@@ -38,7 +20,7 @@ public class RhinoBlockManager : IBlockManager<RhinoObject>
   private Dictionary<string, InstanceDefinitionProxy> DefinitionProxies { get; set; } = new();
   private Dictionary<string, RhinoObject> FlatAtomicObjects { get; set; } = new();
 
-  public BlockManagerUnpackResult<RhinoObject> UnpackSelection(IEnumerable<RhinoObject> objects)
+  public UnpackResult<RhinoObject> UnpackSelection(IEnumerable<RhinoObject> objects)
   {
     foreach (var obj in objects)
     {
