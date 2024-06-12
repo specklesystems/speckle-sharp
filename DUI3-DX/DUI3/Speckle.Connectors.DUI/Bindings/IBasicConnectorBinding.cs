@@ -56,7 +56,14 @@ public class BasicConnectorBindingCommands
 
   public void NotifyDocumentChanged() => Bridge.Send(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME);
 
-  public void SendGlobalNotification(ToastNotificationType type, string title, string message) =>
+  /// <summary>
+  /// Use it whenever you want to send global toast notification to UI.
+  /// </summary>
+  /// <param name="type"> Level of notification, see <see cref="ToastNotificationType"/> for types</param>
+  /// <param name="title"> Title of the notification</param>
+  /// <param name="message"> Message in the toast notification.</param>
+  /// <param name="autoClose"> Closes toast notification in set timeout in UI. Default is true.</param>
+  public void SetGlobalNotification(ToastNotificationType type, string title, string message, bool autoClose = true) =>
     Bridge.Send(
       SET_GLOBAL_NOTIFICATION,
       new
@@ -64,7 +71,7 @@ public class BasicConnectorBindingCommands
         type,
         title,
         description = message,
-        autoClose = true
+        autoClose
       }
     );
 
