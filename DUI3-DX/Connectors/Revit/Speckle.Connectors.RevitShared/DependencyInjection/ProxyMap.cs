@@ -54,7 +54,8 @@ public class ProxyMap : IProxyMap
       return t;
     }
     return null;
-  } 
+  }
+
   public Type? GetMappedTypeFromProxyType(Type type)
   {
     if (s_proxyToInterfaceMap.TryGetValue(type, out var t))
