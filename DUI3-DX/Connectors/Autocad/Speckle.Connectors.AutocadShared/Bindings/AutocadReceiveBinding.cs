@@ -6,11 +6,10 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Operations;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
-public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
+public sealed class AutocadReceiveBinding : IReceiveBinding
 {
   public string Name => "receiveBinding";
   public IBridge Parent { get; }
@@ -79,16 +78,4 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   {
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
-
-  // POC: JEDD: We should not update the UI until a OperationCancelledException is caught, we don't want to show the UI as cancelled
-  // until the actual operation is cancelled (thrown exception).
-  // I think there's room for us to introduce a cancellation pattern for bindings to do this and avoid this _cancellationManager
-  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }

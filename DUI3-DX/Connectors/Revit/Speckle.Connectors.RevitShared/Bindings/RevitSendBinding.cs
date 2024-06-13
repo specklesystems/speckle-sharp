@@ -1,6 +1,5 @@
 using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
-using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils;
@@ -11,20 +10,21 @@ using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
-internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBinding
+internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
 {
   // POC:does it need injecting?
-  public CancellationManager CancellationManager { get; } = new();
 
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   private readonly RevitSettings _revitSettings;
   private readonly IRevitIdleManager _idleManager;
+  private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
 
@@ -32,6 +32,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     IRevitIdleManager idleManager,
     RevitContext revitContext,
     DocumentModelStore store,
+    CancellationManager cancellationManager,
     IBridge bridge,
     IUnitOfWorkFactory unitOfWorkFactory,
     RevitSettings revitSettings,
@@ -40,6 +41,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     : base("sendBinding", store, bridge, revitContext)
   {
     _idleManager = idleManager;
+    _cancellationManager = cancellationManager;
     _unitOfWorkFactory = unitOfWorkFactory;
     _revitSettings = revitSettings;
     _sendConversionCache = sendConversionCache;
@@ -48,6 +50,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
     // TODO expiry events
     // TODO filters need refresh events
     revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    Store.DocumentChanged += (_, _) => OnDocumentChanged();
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -57,7 +60,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
   public void CancelSend(string modelCardId)
   {
-    CancellationManager.CancelOperation(modelCardId);
+    _cancellationManager.CancelOperation(modelCardId);
   }
 
   public SendBindingUICommands Commands { get; }
@@ -75,7 +78,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
       // POC: probably the CTS SHOULD be injected as InstancePerLifetimeScope and then
       // it can be injected where needed instead of passing it around like a bomb :D
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       using IUnitOfWork<SendOperation<ElementId>> sendOperation = _unitOfWorkFactory.Resolve<
         SendOperation<ElementId>
@@ -177,5 +180,20 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ICancelable, ISendBin
 
     Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
+  }
+
+  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
+  // That's why don't bother for now how to get rid of from dup logic in other bindings.
+  private void OnDocumentChanged()
+  {
+    if (_cancellationManager.NumberOfOperations > 0)
+    {
+      _cancellationManager.CancelAllOperations();
+      Commands.SetGlobalNotification(
+        ToastNotificationType.INFO,
+        "Document Switch",
+        "Operations cancelled because of document swap!"
+      );
+    }
   }
 }
