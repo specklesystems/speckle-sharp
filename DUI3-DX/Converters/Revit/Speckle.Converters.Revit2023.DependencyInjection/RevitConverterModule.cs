@@ -29,6 +29,5 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddScoped<IParameterObjectAssigner, ParameterObjectAssigner>();
     builder.AddScoped<ISlopeArrowExtractor, SlopeArrowExtractor>();
     builder.AddScoped<SendSelection>();
-    //builder.AddScoped<ToSpeckleConvertedObjectsCache>();
   }
 }
