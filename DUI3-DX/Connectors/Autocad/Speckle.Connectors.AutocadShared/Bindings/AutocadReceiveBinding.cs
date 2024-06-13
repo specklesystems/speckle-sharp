@@ -32,7 +32,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
     _unitOfWorkFactory = unitOfWorkFactory;
     Parent = parent;
     Commands = new ReceiveBindingUICommands(parent);
-    _store.DocumentChanged += (_, _) => OnDocumentChanged();
   }
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
@@ -78,21 +77,5 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
-  }
-
-  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
-  // That's why don't bother for now how to get rid of from dup logic in other bindings.
-  private void OnDocumentChanged()
-  {
-    if (_cancellationManager.NumberOfOperations > 0)
-    {
-      _cancellationManager.CancelAllOperations();
-      // POC: Will be readdressed later with better UX with host apps which are friendly on async doc operations.
-      Commands.SetGlobalNotification(
-        ToastNotificationType.INFO,
-        "Document Switch",
-        "Operations cancelled because of document swap!"
-      );
-    }
   }
 }

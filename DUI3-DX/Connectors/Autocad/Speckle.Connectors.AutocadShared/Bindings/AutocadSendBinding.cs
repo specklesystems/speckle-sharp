@@ -62,8 +62,6 @@ public sealed class AutocadSendBinding : ISendBinding
       // catches the case when autocad just opens up with a blank new doc
       SubscribeToObjectChanges(Application.DocumentManager.CurrentDocument);
     }
-
-    _store.DocumentChanged += (_, _) => OnDocumentChanged();
   }
 
   private readonly List<string> _docSubsTracker = new();
@@ -179,20 +177,4 @@ public sealed class AutocadSendBinding : ISendBinding
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
-
-  // POC: Will be re-addressed later with better UX with host apps that are friendly on async doc operations.
-  // That's why don't bother for now how to get rid of from dup logic in other bindings.
-  private void OnDocumentChanged()
-  {
-    if (_cancellationManager.NumberOfOperations > 0)
-    {
-      _cancellationManager.CancelAllOperations();
-      // POC: Will be readdressed later with better UX with host apps which are friendly on async doc operations.
-      Commands.SetGlobalNotification(
-        ToastNotificationType.INFO,
-        "Document Switch",
-        "Operations cancelled because of document swap!"
-      );
-    }
-  }
 }
