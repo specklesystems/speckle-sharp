@@ -10,14 +10,13 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.Utils.Operations;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
-public sealed class AutocadSendBinding : ISendBinding, ICancelable
+public sealed class AutocadSendBinding : ISendBinding
 {
   public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -178,11 +177,4 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }

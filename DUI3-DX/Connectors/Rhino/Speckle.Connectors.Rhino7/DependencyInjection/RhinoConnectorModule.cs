@@ -68,8 +68,10 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddTransient<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
     builder.AddTransient<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
 
-    // register receive related deps
-    // Note: Receive operation is injected by builder.AddConnectorUtils()
-    builder.AddTransient<IHostObjectBuilder, RhinoHostObjectBuilder>();
+    // register send operation and dependencies
+    builder.AddScoped<SendOperation<RhinoObject>>();
+    builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
+
+    builder.AddScoped<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
   }
 }

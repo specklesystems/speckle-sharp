@@ -6,11 +6,10 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
-public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
+public sealed class ArcGISReceiveBinding : IReceiveBinding
 {
   public string Name { get; } = "receiveBinding";
   private readonly CancellationManager _cancellationManager;
@@ -84,11 +83,4 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
   }
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }

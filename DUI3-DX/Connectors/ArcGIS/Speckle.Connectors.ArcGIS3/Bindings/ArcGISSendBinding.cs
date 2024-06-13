@@ -3,7 +3,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Utils.Cancellation;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
@@ -21,7 +20,7 @@ using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
-public sealed class ArcGISSendBinding : ISendBinding, ICancelable
+public sealed class ArcGISSendBinding : ISendBinding
 {
   public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -364,11 +363,4 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   {
     Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }

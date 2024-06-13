@@ -36,40 +36,6 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
   }
 
-  private (string path, Geometry converted) ConvertNonNativeGeometries(Base obj, string[] path)
-  {
-    Geometry converted = (Geometry)_converter.Convert(obj);
-    List<string> objPath = path.ToList();
-    objPath.Add(obj.speckle_type.Split(".")[^1]);
-    return (string.Join("\\", objPath), converted);
-  }
-
-  private (string path, string converted) ConvertNativeLayers(Collection obj, string[] path)
-  {
-    string converted = (string)_converter.Convert(obj);
-    string objPath = $"{string.Join("\\", path)}\\{obj.name}";
-    return (objPath, converted);
-  }
-
-  private string AddDatasetsToMap((string nestedLayerName, string datasetId) databaseObj)
-  {
-    Uri uri =
-      new(
-        $"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{databaseObj.datasetId}"
-      );
-    Map map = _contextStack.Current.Document.Map;
-    try
-    {
-      return LayerFactory.Instance.CreateLayer(uri, map, layerName: databaseObj.nestedLayerName).URI;
-    }
-    catch (ArgumentException)
-    {
-      return StandaloneTableFactory.Instance
-        .CreateStandaloneTable(uri, map, tableName: databaseObj.nestedLayerName)
-        .URI;
-    }
-  }
-
   public HostObjectBuilderResult Build(
     Base rootObject,
     string projectName,
@@ -89,8 +55,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     int allCount = objectsToConvert.Count;
     int count = 0;
-    Dictionary<TraversalContext, (string path, Geometry converted)> convertedGeometries = new();
-    List<(string path, string converted)> convertedGISObjects = new();
+    Dictionary<TraversalContext, ObjectConversionTracker> conversionTracker = new();
 
     // 1. convert everything
     List<ReceiveConversionResult> results = new(objectsToConvert.Count);
@@ -105,21 +70,15 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         if (IsGISType(obj))
         {
-          var result = ConvertNativeLayers((Collection)obj, path);
-          convertedGISObjects.Add(result);
-          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
-          // TODO: is the type in here basically a GIS Layer?
-          results.Add(new(Status.SUCCESS, obj, result.path, "GIS Layer"));
+          string nestedLayerPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          string datasetId = (string)_converter.Convert(obj);
+          conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, datasetId);
         }
         else
         {
-          var result = ConvertNonNativeGeometries(obj, path);
-          convertedGeometries[ctx] = result;
-
-          // NOTE: Dim doesn't really know what is what - is the result.path the id of the obj?
-          results.Add(new(Status.SUCCESS, obj, result.path, result.converted.GetType().ToString())); //POC: what native id?, path may not be unique
-          // TODO: Do we need this here? I remember oguzhan saying something that selection/object highlighting is weird in arcgis (weird is subjective)
-          // bakedObjectIds.Add(result.path);
+          string nestedLayerPath = $"{string.Join("\\", path)}\\{obj.speckle_type.Split(".")[^1]}";
+          Geometry converted = (Geometry)_converter.Convert(obj);
+          conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, converted);
         }
       }
       catch (Exception ex) when (!ex.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
@@ -130,24 +89,99 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
 
     // 2. convert Database entries with non-GIS geometry datasets
-
     onOperationProgressed?.Invoke("Writing to Database", null);
-    convertedGISObjects.AddRange(_nonGisFeaturesUtils.WriteGeometriesToDatasets(convertedGeometries));
+    _nonGisFeaturesUtils.WriteGeometriesToDatasets(conversionTracker);
 
-    int bakeCount = 0;
-    onOperationProgressed?.Invoke("Adding to Map", bakeCount);
     // 3. add layer and tables to the Table Of Content
-    foreach (var databaseObj in convertedGISObjects)
+    int bakeCount = 0;
+    Dictionary<string, MapMember> bakedMapMembers = new();
+    onOperationProgressed?.Invoke("Adding to Map", bakeCount);
+    foreach (var item in conversionTracker)
     {
       cancellationToken.ThrowIfCancellationRequested();
+      var trackerItem = conversionTracker[item.Key]; // updated tracker object
 
       // BAKE OBJECTS HERE
-      bakedObjectIds.Add(AddDatasetsToMap(databaseObj));
-      onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / convertedGISObjects.Count);
+      if (trackerItem.Exception != null)
+      {
+        results.Add(new(Status.ERROR, trackerItem.Base, null, null, trackerItem.Exception));
+      }
+      else if (trackerItem.DatasetId == null)
+      {
+        results.Add(
+          new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Unknown error: Dataset not created"))
+        );
+      }
+      else if (bakedMapMembers.TryGetValue(trackerItem.DatasetId, out MapMember? value))
+      {
+        // only add a report item
+        AddResultsFromTracker(trackerItem, results);
+      }
+      else
+      {
+        // add layer and layer URI to tracker
+        MapMember mapMember = AddDatasetsToMap(trackerItem);
+        trackerItem.AddConvertedMapMember(mapMember);
+        trackerItem.AddLayerURI(mapMember.URI);
+        conversionTracker[item.Key] = trackerItem;
+
+        // add layer URI to bakedIds
+        bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
+
+        // add report item
+        AddResultsFromTracker(trackerItem, results);
+      }
+      onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
+  }
+
+  private void AddResultsFromTracker(ObjectConversionTracker trackerItem, List<ReceiveConversionResult> results)
+  {
+    // prioritize individual hostAppGeometry type, if available:
+    if (trackerItem.HostAppGeom != null)
+    {
+      results.Add(
+        new(Status.SUCCESS, trackerItem.Base, trackerItem.MappedLayerURI, trackerItem.HostAppGeom.GetType().ToString())
+      );
+    }
+    else
+    {
+      results.Add(
+        new(
+          Status.SUCCESS,
+          trackerItem.Base,
+          trackerItem.MappedLayerURI,
+          trackerItem.HostAppMapMember?.GetType().ToString()
+        )
+      );
+    }
+  }
+
+  private MapMember AddDatasetsToMap(ObjectConversionTracker trackerItem)
+  {
+    string? datasetId = trackerItem.DatasetId; // should not ne null here
+    string nestedLayerName = trackerItem.NestedLayerName;
+
+    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
+    Map map = _contextStack.Current.Document.Map;
+
+    // Most of the Speckle-written datasets will be containing geometry and added as Layers
+    // although, some datasets might be just tables (e.g. native GIS Tables, in the future maybe Revit schedules etc.
+    // We can create a connection to the dataset in advance and determine its type, but this will be more
+    // expensive, than assuming by default that it's a layer with geometry (which in most cases it's expected to be)
+    try
+    {
+      var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
+      return layer;
+    }
+    catch (ArgumentException)
+    {
+      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
+      return table;
+    }
   }
 
   [Pure]

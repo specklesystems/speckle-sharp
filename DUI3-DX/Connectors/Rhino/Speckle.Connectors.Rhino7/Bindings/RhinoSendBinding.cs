@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Autofac.DependencyInjection;
 using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Exceptions;
@@ -18,7 +17,7 @@ using Speckle.Connectors.Utils.Caching;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
-public sealed class RhinoSendBinding : ISendBinding, ICancelable
+public sealed class RhinoSendBinding : ISendBinding
 {
   public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -223,11 +222,4 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
-
-  public void Dispose()
-  {
-    IsDisposed = true;
-  }
-
-  public bool IsDisposed { get; private set; }
 }
