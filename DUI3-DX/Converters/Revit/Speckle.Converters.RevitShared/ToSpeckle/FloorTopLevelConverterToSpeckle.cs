@@ -43,10 +43,10 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IR
   {
     SOBR.RevitFloor speckleFloor = new();
 
-    var sketch = (IRevitSketch)target.Document.GetElement(target.SketchId);
+    var sketch = target.Document.GetElement(target.SketchId).ToSketch().NotNull();
     List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
-    IRevitElementType type = (IRevitElementType)target.Document.GetElement(target.GetTypeId());
+    IRevitElementType type = target.Document.GetElement(target.GetTypeId()).ToType().NotNull();
 
     speckleFloor.family = type.FamilyName;
     speckleFloor.type = type.Name;
@@ -86,7 +86,8 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IR
 
   private void TryAssignSlopeFromSlopeArrow(IRevitFloor target, SOBR.RevitFloor speckleFloor, double? slopeParam)
   {
-    if (_slopeArrowExtractor.GetSlopeArrow(target) is not IRevitModelLine slopeArrow)
+    var slopeArrow = _slopeArrowExtractor.GetSlopeArrow(target);
+    if (slopeArrow is null)
     {
       return;
     }

@@ -107,7 +107,8 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
   private List<Base> GetChildElements(IRevitWall target)
   {
     List<Base> wallChildren = new();
-    if (target.CurtainGrid is IRevitCurtainGrid grid)
+    var grid = target.CurtainGrid;
+    if (grid is not null)
     {
       wallChildren.AddRange(ConvertElements(grid.GetMullionIds()));
       wallChildren.AddRange(ConvertElements(grid.GetPanelIds()));
@@ -161,7 +162,7 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
 
   private void AssignVoids(IRevitWall target, SOBR.RevitWall speckleWall)
   {
-    IRevitCurveArrArray? profile = ((IRevitSketch)target.Document.GetElement(target.SketchId))?.Profile;
+    IRevitCurveArrArray? profile = target.Document.GetElement(target.SketchId).ToSketch()?.Profile;
     if (profile is null)
     {
       return;
