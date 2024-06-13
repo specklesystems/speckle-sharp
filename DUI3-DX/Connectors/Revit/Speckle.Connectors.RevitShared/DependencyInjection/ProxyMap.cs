@@ -27,6 +27,11 @@ public class ProxyMap : IProxyMap
     Add<DB.BasePoint, IRevitBasePoint>(x => new BasePointProxy(x));
     Add<DB.Wall, IRevitWall>(x => new WallProxy(x));
     Add<DB.Panel, IRevitPanel>(x => new PanelProxy(x));
+    Add<DB.Floor, IRevitFloor>(x => new FloorProxy(x));
+    Add<DB.Ceiling, IRevitCeiling>(x => new CeilingProxy(x));
+    Add<DB.FootPrintRoof, IRevitFootPrintRoof>(x => new FootPrintRoofProxy(x));
+    Add<DB.ModelLine, IRevitModelLine>(x => new ModelLineProxy(x));
+    Add<DB.RoofBase, IRevitRoofBase>(x => new RoofBaseProxy(x));
   }
 
   private static void Add<T, TProxy>(Func<T, TProxy> f)
