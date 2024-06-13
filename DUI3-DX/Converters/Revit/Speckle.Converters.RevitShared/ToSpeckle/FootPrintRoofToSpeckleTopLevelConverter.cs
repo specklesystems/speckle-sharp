@@ -41,16 +41,10 @@ public class FootPrintRoofToSpeckleTopLevelConverter
 
   public override RevitFootprintRoof Convert(IRevitFootPrintRoof target)
   {
-    var baseLevel = _parameterValueExtractor.GetValueAsRevitLevel(
-      target,
-      RevitBuiltInParameter.ROOF_BASE_LEVEL_PARAM
-    );
+    var baseLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_BASE_LEVEL_PARAM);
 
     // We don't currently validate the success of this TryGet, it is assumed some Roofs don't have a top-level.
-    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(
-      target,
-      RevitBuiltInParameter.ROOF_UPTO_LEVEL_PARAM
-    );
+    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_UPTO_LEVEL_PARAM);
 
     //POC: CNX-9403 can be null if the sides have different slopes.
     //We currently don't validate the success or failure of this TryGet as it's not necessary, but will be once we start the above ticket.

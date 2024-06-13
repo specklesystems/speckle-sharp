@@ -156,11 +156,8 @@ public class ParameterValueExtractor : IParameterValueExtractor
   {
     return GetValueGeneric(parameter, IRevitStorageType.ElementId, (parameter) => parameter.AsElementId());
   }
-  
-  public IRevitLevel? GetValueAsRevitLevel(
-    IRevitElement element,
-    RevitBuiltInParameter builtInParameter
-  )
+
+  public IRevitLevel? GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {

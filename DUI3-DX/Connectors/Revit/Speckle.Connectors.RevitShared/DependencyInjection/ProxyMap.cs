@@ -46,6 +46,7 @@ public class ProxyMap : IProxyMap
     }
     return null;
   }
+
   public Type? UnmapType(Type type)
   {
     if (s_reverseMaps.TryGetValue(type, out var t))
@@ -54,5 +55,6 @@ public class ProxyMap : IProxyMap
     }
     return null;
   }
+
   public object CreateProxy(Type type, object toWrap) => s_proxyFactory[type](toWrap);
 }

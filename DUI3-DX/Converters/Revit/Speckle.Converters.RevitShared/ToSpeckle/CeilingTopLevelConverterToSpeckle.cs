@@ -60,10 +60,7 @@ internal sealed class CeilingTopLevelConverterToSpeckle
     // POC: our existing receive operation is checking the "slopeDirection" prop,
     // but it is never being set. We should be setting it
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(
-      target,
-      RevitBuiltInParameter.LEVEL_PARAM
-    );
+    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
     speckleCeiling.level = _levelConverter.Convert(level.NotNull());
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleCeiling);

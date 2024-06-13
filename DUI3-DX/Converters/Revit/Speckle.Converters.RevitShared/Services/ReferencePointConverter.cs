@@ -41,7 +41,9 @@ public class ReferencePointConverter : IReferencePointConverter
     IRevitConversionSettings revitSettings,
     IRevitFilterFactory revitFilterFactory,
     IRevitTransformUtils transformUtils,
-    IRevitXYZUtils revitXyzUtils, IProxyMap proxyMap)
+    IRevitXYZUtils revitXyzUtils,
+    IProxyMap proxyMap
+  )
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;

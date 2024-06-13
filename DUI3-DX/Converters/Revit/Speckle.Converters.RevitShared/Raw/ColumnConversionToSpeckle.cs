@@ -42,16 +42,10 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     SOBR.RevitColumn speckleColumn =
       new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).Name };
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(
-      target,
-      RevitBuiltInParameter.FAMILY_BASE_LEVEL_PARAM
-    );
+    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
     speckleColumn.level = _levelConverter.Convert(level.NotNull());
 
-    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(
-      target,
-      RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM
-    );
+    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
     speckleColumn.topLevel = _levelConverter.Convert(topLevel.NotNull());
     speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(

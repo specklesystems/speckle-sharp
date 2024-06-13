@@ -46,17 +46,17 @@ public class CurveConversionToSpeckle : ITypedConverter<IRevitCurve, ICurve>
     var ellipse = target.ToEllipse();
     if (ellipse is not null)
     {
-      return  _ellipseConverter.Convert(ellipse);
+      return _ellipseConverter.Convert(ellipse);
     }
     var nurbs = target.ToNurbSpline();
     if (nurbs is not null)
     {
-      return  _nurbsConverter.Convert(nurbs);
+      return _nurbsConverter.Convert(nurbs);
     }
     var hermite = target.ToHermiteSpline();
     if (hermite is not null)
     {
-      return  _hermiteConverter.Convert(hermite);
+      return _hermiteConverter.Convert(hermite);
     }
 
     throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}");
