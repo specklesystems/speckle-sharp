@@ -20,21 +20,22 @@ public class RootToSpeckleConverter : IRootToSpeckleConverter
 
   public Base Convert(object target)
   {
-    Type type = target.GetType();
-    var wrapper = _proxyMap.WrapIfExists(type, target);
-    if (wrapper is not null)
+    Type revitType = target.GetType();
+    var wrapper = _proxyMap.WrapIfExists(revitType, target);
+    if (wrapper == null)
     {
-      (type, target) = wrapper.Value;
+      throw new NotSupportedException($"No wrapper found for Revit type: {revitType.Name}");
     }
+    var (wrappedType, wrappedObject) = wrapper.Value;
     try
     {
-      var objectConverter = _toSpeckle.ResolveInstance(type.Name); //poc: would be nice to have supertypes resolve
+      var objectConverter = _toSpeckle.ResolveInstance(wrappedType.Name); //poc: would be nice to have supertypes resolve
 
       if (objectConverter == null)
       {
-        throw new NotSupportedException($"No conversion found for {type.Name}");
+        throw new NotSupportedException($"No conversion found for {wrappedType.Name}");
       }
-      var convertedObject = objectConverter.Convert(target);
+      var convertedObject = objectConverter.Convert(wrappedObject);
 
       return convertedObject;
     }
