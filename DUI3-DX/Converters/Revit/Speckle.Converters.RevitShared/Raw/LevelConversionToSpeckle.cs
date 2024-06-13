@@ -2,8 +2,7 @@
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023;
-
+namespace Speckle.Converters.RevitShared;
 public class LevelConversionToSpeckle : ITypedConverter<IRevitLevel, SOBR.RevitLevel>
 {
   private readonly IScalingServiceToSpeckle _scalingService;

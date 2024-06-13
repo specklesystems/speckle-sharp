@@ -4,7 +4,7 @@ using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
 
 #pragma warning disable IDE0130
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class XyzConversionToPoint : ITypedConverter<IRevitXYZ, SOG.Point>
 {

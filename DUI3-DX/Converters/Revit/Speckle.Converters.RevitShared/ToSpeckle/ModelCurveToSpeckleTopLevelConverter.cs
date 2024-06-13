@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: ModelCurve looks a bit bogus and we may wish to revise what that is and how it inherits
 // see https://spockle.atlassian.net/browse/CNX-9381

@@ -3,7 +3,7 @@ using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023;
+namespace Speckle.Converters.RevitShared;
 
 public class ParameterConversionToSpeckle : ITypedConverter<IRevitParameter, SOBR.Parameter>
 {

@@ -1,7 +1,7 @@
 ﻿using Speckle.Converters.Common.Objects;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 /// <summary>
 /// Solid conversion is a one->many. For each material used in the solid, a mesh will be returned to reduce the amount of instances created.

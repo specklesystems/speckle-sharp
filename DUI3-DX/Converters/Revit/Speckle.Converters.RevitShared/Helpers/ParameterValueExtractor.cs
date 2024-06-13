@@ -139,12 +139,15 @@ public class ParameterValueExtractor : IParameterValueExtractor
     [NotNullWhen(true)] out IRevitElementId? elementId
   )
   {
-    if (
-      GetValueGeneric(element, builtInParameter, RevitStorageType.ElementId, (parameter) => parameter.AsElementId())
-      is IRevitElementId elementIdNotNull
-    )
+    var generic = GetValueGeneric(
+      element,
+      builtInParameter,
+      RevitStorageType.ElementId,
+      (parameter) => parameter.AsElementId()
+    );
+    if (generic is not null)
     {
-      elementId = elementIdNotNull;
+      elementId = generic;
       return true;
     }
 
@@ -154,7 +157,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
   public IRevitElementId? GetValueAsElementId(IRevitParameter parameter)
   {
-    return GetValueGeneric(parameter, RevitStorageType.ElementId, (parameter) => parameter.AsElementId());
+    return GetValueGeneric(parameter, RevitStorageType.ElementId, (p) => p.AsElementId());
   }
 
   public IRevitLevel? GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
@@ -183,7 +186,11 @@ public class ParameterValueExtractor : IParameterValueExtractor
       _uniqueIdToUsedParameterSetMap[element.UniqueId] = usedParameters;
     }
     usedParameters.Add(builtInParameter);
-    var parameter = element.GetParameter(builtInParameter).NotNull();
+    var parameter = element.GetParameter(builtInParameter);
+    if (parameter is null)
+    {
+      return default;
+    }
     return GetValueGeneric(parameter, expectedStorageType, getParamValue);
   }
 
@@ -229,7 +236,8 @@ public class ParameterValueExtractor : IParameterValueExtractor
         continue;
       }
 
-      if (param.GetBuiltInParameter() is RevitBuiltInParameter bip && (usedParameters?.Contains(bip) ?? false))
+      var bip = param.GetBuiltInParameter();
+      if (bip is not null && (usedParameters?.Contains(bip.Value) ?? false))
       {
         continue;
       }

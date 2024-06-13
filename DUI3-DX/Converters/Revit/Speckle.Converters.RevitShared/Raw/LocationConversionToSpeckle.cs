@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 using Speckle.Revit.Interfaces;
 
 #pragma warning disable IDE0130
-namespace Speckle.Converters.Revit2023;
+namespace Speckle.Converters.RevitShared;
 
 #pragma warning restore IDE0130
 

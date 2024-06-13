@@ -3,7 +3,7 @@ using Speckle.Core.Models;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: do we need to see the blocks investigation outcome? Does the current logic hold?
 // opportunity to rethink or confirm hosted element handling? Should this be a connector responsibiliy?

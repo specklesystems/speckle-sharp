@@ -5,7 +5,7 @@ using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(IRevitRoom), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class RoomTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitRoom, SOBE.Room>

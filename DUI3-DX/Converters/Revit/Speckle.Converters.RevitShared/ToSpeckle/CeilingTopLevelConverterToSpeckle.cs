@@ -3,7 +3,6 @@ using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.Revit2023.ToSpeckle;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 

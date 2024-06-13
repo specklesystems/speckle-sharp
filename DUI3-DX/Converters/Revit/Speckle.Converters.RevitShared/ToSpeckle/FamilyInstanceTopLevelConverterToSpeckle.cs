@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: bin for now? This is also a parent child relationship and may need a pattern for this
 // so we don't end up with some god FamilyInstanceTopLevelConverterToSpeckle converter

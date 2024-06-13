@@ -2,7 +2,7 @@
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: not currently used? clearly some missing pieces
 [NameAndRankValue(nameof(IRevitElement), 0)]

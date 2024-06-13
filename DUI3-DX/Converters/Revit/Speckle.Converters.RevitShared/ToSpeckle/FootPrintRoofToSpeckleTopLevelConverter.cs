@@ -6,7 +6,7 @@ using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(IRevitFootPrintRoof), 0)]
 public class FootPrintRoofToSpeckleTopLevelConverter

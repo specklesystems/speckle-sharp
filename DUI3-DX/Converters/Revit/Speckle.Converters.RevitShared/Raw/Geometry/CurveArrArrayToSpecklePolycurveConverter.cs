@@ -1,7 +1,7 @@
 ﻿using Speckle.Converters.Common.Objects;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public sealed class CurveArrArrayToSpecklePolycurveConverter : ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>>
 {

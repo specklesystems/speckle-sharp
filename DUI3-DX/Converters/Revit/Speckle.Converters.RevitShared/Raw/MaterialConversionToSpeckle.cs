@@ -2,7 +2,7 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023;
+namespace Speckle.Converters.RevitShared;
 
 public class MaterialConversionToSpeckle : ITypedConverter<IRevitMaterial, RenderMaterial>
 {

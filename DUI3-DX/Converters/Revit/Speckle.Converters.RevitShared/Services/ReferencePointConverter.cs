@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023;
+namespace Speckle.Converters.RevitShared;
 
 [GenerateAutoInterface]
 public class RevitConversionSettings : IRevitConversionSettings

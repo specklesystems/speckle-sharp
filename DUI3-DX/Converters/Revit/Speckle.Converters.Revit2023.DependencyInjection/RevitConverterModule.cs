@@ -1,9 +1,10 @@
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Revit2023.ToSpeckle;
+using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Converters.RevitShared.ToSpeckle;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.DependencyInjection;

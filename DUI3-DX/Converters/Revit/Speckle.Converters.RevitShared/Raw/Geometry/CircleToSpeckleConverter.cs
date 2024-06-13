@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Services;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.ToSpeckle;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class CircleToSpeckleConverter : ITypedConverter<IRevitArc, SOG.Circle>
 {
