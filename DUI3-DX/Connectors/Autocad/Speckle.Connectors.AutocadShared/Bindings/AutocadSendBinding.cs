@@ -119,16 +119,6 @@ public sealed class AutocadSendBinding : ISendBinding
   {
     try
     {
-      Application.DocumentManager.DocumentActivated += (sender, args) =>
-      {
-        CancelSend(modelCardId);
-        Commands.SetModelError(
-          modelCardId,
-          new OperationCanceledException("Another document was activated during this operation.")
-        );
-        return;
-      };
-
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
         // Handle as GLOBAL ERROR at BrowserBridge
@@ -140,6 +130,21 @@ public sealed class AutocadSendBinding : ISendBinding
 
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
+
+      // Document activation event handler to cancel operation if document is switched
+      Autodesk.AutoCAD.ApplicationServices.DocumentCollectionEventHandler? documentActivatedDuringOperation = null;
+      documentActivatedDuringOperation = (_, _) =>
+      {
+        Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
+        CancelSend(modelCardId);
+        Commands.SetGlobalNotification(
+          ToastNotificationType.WARNING,
+          "Publish cancelled",
+          "Publish operation in progress was cancelled due to document activation."
+        );
+      };
+
+      Application.DocumentManager.DocumentActivated += documentActivatedDuringOperation;
 
       // Get elements to convert
       List<AutocadRootObject> autocadObjects = Application.DocumentManager.CurrentDocument.GetObjects(
@@ -169,6 +174,7 @@ public sealed class AutocadSendBinding : ISendBinding
         .ConfigureAwait(false);
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
+      Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
     }
     // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)

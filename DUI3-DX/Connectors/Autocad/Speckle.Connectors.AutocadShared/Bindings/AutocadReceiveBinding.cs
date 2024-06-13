@@ -34,21 +34,13 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
     Commands = new ReceiveBindingUICommands(parent);
   }
 
+  public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
+
   public async Task Receive(string modelCardId)
   {
     using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
-      Application.DocumentManager.DocumentActivated += (sender, args) =>
-      {
-        CancelReceive(modelCardId);
-        Commands.SetModelError(
-          modelCardId,
-          new OperationCanceledException("Another document was activated during this operation.")
-        );
-        return;
-      };
-
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
@@ -59,6 +51,21 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
 
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
+
+      // Document activation event handler to cancel operation if document is switched
+      Autodesk.AutoCAD.ApplicationServices.DocumentCollectionEventHandler? documentActivatedDuringOperation = null;
+      documentActivatedDuringOperation = (_, _) =>
+      {
+        Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
+        CancelReceive(modelCardId);
+        Commands.SetGlobalNotification(
+          ToastNotificationType.WARNING,
+          "Load cancelled",
+          "Load operation in progress was cancelled due to document activation."
+        );
+      };
+
+      Application.DocumentManager.DocumentActivated += documentActivatedDuringOperation;
 
       // Receive host objects
       var operationResults = await unitOfWork.Service
