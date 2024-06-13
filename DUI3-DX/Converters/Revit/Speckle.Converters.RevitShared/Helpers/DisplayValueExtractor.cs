@@ -202,7 +202,6 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
         }
         else
         {
-
           var instance = geomObj.ToGeometryInstance();
           if (instance is not null)
           {
@@ -224,7 +223,6 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
           }
           else
           {
-
             var geometryElement = geomObj.ToGeometryElement();
             if (geometryElement is not null)
             {

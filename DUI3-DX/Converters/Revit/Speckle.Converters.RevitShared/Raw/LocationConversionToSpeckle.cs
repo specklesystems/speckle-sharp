@@ -31,9 +31,7 @@ public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
     var curve = target.ToLocationCurve();
     if (curve is not null)
     {
-      return
-        (_curveConverter.Convert(curve.Curve) as Base)
-        .NotNull(); // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
+      return (_curveConverter.Convert(curve.Curve) as Base).NotNull(); // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
     }
     var point = target.ToLocationPoint();
     if (point is not null)
