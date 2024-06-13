@@ -160,28 +160,32 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
     {
       // POC: switch could possibly become factory and IIndex<,> pattern and move conversions to
       // separate IComeConversionInterfaces
-      switch (geomObj)
+      var solid = geomObj.ToSolid();
+      if (solid is not null)
       {
-        case IRevitSolid solid:
-          // skip invalid solid
-          if (
-            solid.Faces.Count == 0
-            || Math.Abs(solid.SurfaceArea) == 0
-            || IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document)
-          )
-          {
-            continue;
-          }
+        // skip invalid solid
+        if (
+          solid.Faces.Count == 0
+          || Math.Abs(solid.SurfaceArea) == 0
+          || IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document)
+        )
+        {
+          continue;
+        }
 
-          if (inverseTransform != null)
-          {
-            topLevelSolidsCount++;
-            solid = _revitSolidUtils.CreateTransformed(solid, inverseTransform);
-          }
+        if (inverseTransform != null)
+        {
+          topLevelSolidsCount++;
+          solid = _revitSolidUtils.CreateTransformed(solid, inverseTransform);
+        }
 
-          solids.Add(solid);
-          break;
-        case IRevitMesh mesh:
+        solids.Add(solid);
+      }
+      else
+      {
+        var mesh = geomObj.ToMesh();
+        if (mesh is not null)
+        {
           if (IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
           {
             continue;
@@ -194,31 +198,44 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
           }
 
           meshes.Add(mesh);
-          break;
-        case IRevitGeometryInstance instance:
-          // element transforms should not be carried down into nested geometryInstances.
-          // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
-          if (inverseTransform != null)
+        }
+        else
+        {
+
+          var instance = geomObj.ToGeometryInstance();
+          if (instance is not null)
           {
-            topLevelGeomInstanceCount++;
-            SortGeometry(element, solids, meshes, instance.GetSymbolGeometry());
-            if (meshes.Count > 0 || solids.Count > 0)
+            // element transforms should not be carried down into nested geometryInstances.
+            // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
+            if (inverseTransform != null)
             {
-              hasSymbolGeometry = true;
+              topLevelGeomInstanceCount++;
+              SortGeometry(element, solids, meshes, instance.GetSymbolGeometry());
+              if (meshes.Count > 0 || solids.Count > 0)
+              {
+                hasSymbolGeometry = true;
+              }
+            }
+            else
+            {
+              SortGeometry(element, solids, meshes, instance.GetInstanceGeometry());
             }
           }
           else
           {
-            SortGeometry(element, solids, meshes, instance.GetInstanceGeometry());
+
+            var geometryElement = geomObj.ToGeometryElement();
+            if (geometryElement is not null)
+            {
+              if (inverseTransform != null)
+              {
+                topLevelGeomElementCount++;
+              }
+
+              SortGeometry(element, solids, meshes, geometryElement);
+            }
           }
-          break;
-        case IRevitGeometryElement geometryElement:
-          if (inverseTransform != null)
-          {
-            topLevelGeomElementCount++;
-          }
-          SortGeometry(element, solids, meshes, geometryElement);
-          break;
+        }
       }
     }
 

@@ -28,11 +28,18 @@ public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
 
   public Base Convert(IRevitLocation target)
   {
-    return target switch
+    var curve = target.ToLocationCurve();
+    if (curve is not null)
     {
-      IRevitLocationCurve curve => (_curveConverter.Convert(curve.Curve) as Base).NotNull(), // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
-      IRevitLocationPoint point => _xyzConverter.Convert(point.Point),
-      _ => throw new SpeckleConversionException($"Unexpected location type {target.GetType()}")
-    };
+      return
+        (_curveConverter.Convert(curve.Curve) as Base)
+        .NotNull(); // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
+    }
+    var point = target.ToLocationPoint();
+    if (point is not null)
+    {
+      _xyzConverter.Convert(point.Point);
+    }
+    throw new SpeckleConversionException($"Unexpected location type {target.GetType()}");
   }
 }
