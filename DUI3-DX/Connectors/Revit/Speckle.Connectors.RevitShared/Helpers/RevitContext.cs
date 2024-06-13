@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.UI;
 
-namespace Speckle.Converters.Revit2023.DependencyInjection;
+namespace Speckle.Connectors.RevitShared.Helpers;
 
 public class RevitContext
 {

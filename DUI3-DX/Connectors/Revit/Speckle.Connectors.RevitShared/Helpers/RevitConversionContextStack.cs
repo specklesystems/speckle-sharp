@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Revit2023.DependencyInjection;
+namespace Speckle.Connectors.RevitShared.Helpers;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
   "Naming",

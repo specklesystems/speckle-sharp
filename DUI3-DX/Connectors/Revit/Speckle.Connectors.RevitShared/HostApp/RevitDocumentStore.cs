@@ -6,8 +6,8 @@ using Autodesk.Revit.UI.Events;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils;
-using Speckle.Converters.Revit2023.DependencyInjection;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 

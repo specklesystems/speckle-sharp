@@ -9,9 +9,9 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Revit2023.DependencyInjection;
 
 namespace Speckle.Connectors.Revit.Bindings;
 

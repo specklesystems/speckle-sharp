@@ -1,6 +1,5 @@
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
-using System.IO;
 using System.Reflection;
 using Speckle.Autofac;
 using Speckle.Connectors.Utils;

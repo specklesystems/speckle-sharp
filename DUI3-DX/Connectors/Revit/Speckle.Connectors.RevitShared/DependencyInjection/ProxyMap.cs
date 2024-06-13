@@ -12,6 +12,7 @@ public class ProxyMap : IProxyMap
   private static readonly ConcurrentDictionary<Type, Type> s_reverseMaps = new();
   private static readonly ConcurrentDictionary<Type, Func<object, object>> s_proxyFactory = new();
 
+  [SuppressMessage("Maintainability", "CA1506:Avoid excessive class coupling")]
   static ProxyMap()
   {
     Add<DB.Element, IRevitElement>(x => new ElementProxy(x));

@@ -9,8 +9,7 @@ using Speckle.Core.Logging;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
-using System.IO;
-using Speckle.Converters.Revit2023.DependencyInjection;
+using Speckle.Connectors.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

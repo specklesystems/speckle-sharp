@@ -11,10 +11,12 @@ using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit2023.Converters;
+using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.Common;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
@@ -27,6 +29,10 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddAutofac();
     builder.AddConnectorUtils();
     builder.AddDUI();
+    builder.AddSingleton(new RevitContext());
+
+    // POC: the concrete type can come out if we remove all the reference to it
+    builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>, RevitConversionContextStack>();
     //builder.AddDUIView();
 
     builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
