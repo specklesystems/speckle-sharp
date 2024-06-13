@@ -44,7 +44,7 @@ public class AutocadConnectorModule : ISpeckleModule
 
     // Object Builders
     builder.AddScoped<IHostObjectBuilder, AutocadHostObjectBuilder>();
-    builder.AddSingleton<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
+    builder.AddScoped<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
 
     // Register bindings
 
