@@ -70,7 +70,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         if (IsGISType(obj))
         {
-          string nestedLayerPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          string nestedLayerPath = $"{string.Join("\\", path)}";
           string datasetId = (string)_converter.Convert(obj);
           conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, datasetId);
         }
@@ -92,10 +92,17 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     onOperationProgressed?.Invoke("Writing to Database", null);
     _nonGisFeaturesUtils.WriteGeometriesToDatasets(conversionTracker);
 
+    // Create main group layer
+    Dictionary<List<string>, GroupLayer> createdLayerGroups = new();
+    Map map = _contextStack.Current.Document.Map;
+    GroupLayer groupLayer = LayerFactory.Instance.CreateGroupLayer(map, 0, $"{projectName}: {modelName}");
+    createdLayerGroups[new List<string>()] = groupLayer;
+
     // 3. add layer and tables to the Table Of Content
     int bakeCount = 0;
     Dictionary<string, MapMember> bakedMapMembers = new();
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
+
     foreach (var item in conversionTracker)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -120,7 +127,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       else
       {
         // add layer and layer URI to tracker
-        MapMember mapMember = AddDatasetsToMap(trackerItem);
+        MapMember mapMember = AddDatasetsToMap(trackerItem, createdLayerGroups);
         trackerItem.AddConvertedMapMember(mapMember);
         trackerItem.AddLayerURI(mapMember.URI);
         conversionTracker[item.Key] = trackerItem;
@@ -160,12 +167,25 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
   }
 
-  private MapMember AddDatasetsToMap(ObjectConversionTracker trackerItem)
+  private MapMember AddDatasetsToMap(
+    ObjectConversionTracker trackerItem,
+    Dictionary<List<string>, GroupLayer> createdLayerGroups
+  )
   {
+    // get layer details
     string? datasetId = trackerItem.DatasetId; // should not ne null here
+    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     string nestedLayerName = trackerItem.NestedLayerName;
 
-    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
+    // add group for the current layer
+    string shortName = nestedLayerName.Split("\\")[^1];
+    List<string> nestedLayerPath = nestedLayerName
+      .Split("\\")
+      .Where(x => !string.IsNullOrEmpty(x))
+      .SkipLast(1)
+      .ToList();
+    GroupLayer groupLayer = CreateNestedGroupLayer(nestedLayerPath, createdLayerGroups);
+
     Map map = _contextStack.Current.Document.Map;
 
     // Most of the Speckle-written datasets will be containing geometry and added as Layers
@@ -174,14 +194,45 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // expensive, than assuming by default that it's a layer with geometry (which in most cases it's expected to be)
     try
     {
-      var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
+      var layer = LayerFactory.Instance.CreateLayer(uri, groupLayer, layerName: shortName);
       return layer;
     }
     catch (ArgumentException)
     {
-      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
+      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, groupLayer, tableName: shortName);
       return table;
     }
+  }
+
+  private GroupLayer CreateNestedGroupLayer(
+    List<string> nestedLayerPath,
+    Dictionary<List<string>, GroupLayer> createdLayerGroups
+  )
+  {
+    GroupLayer lastGroup = createdLayerGroups.FirstOrDefault().Value;
+    if (lastGroup == null) // if layer not found
+    {
+      throw new InvalidOperationException("Speckle Layer Group not found");
+    }
+
+    // iterate through each nested level
+    List<string> createdGroupPath = new();
+    foreach (string pathElement in nestedLayerPath)
+    {
+      createdGroupPath.Add(pathElement);
+      if (createdLayerGroups.TryGetValue(createdGroupPath, out var existingGroupLayer))
+      {
+        lastGroup = existingGroupLayer;
+      }
+      else
+      {
+        // create new GroupLayer under last found Group, named with last pathElement
+        lastGroup = LayerFactory.Instance.CreateGroupLayer(lastGroup, 0, pathElement);
+        lastGroup.SetExpanded(true);
+      }
+      createdLayerGroups[new List<string>(createdGroupPath)] = lastGroup;
+    }
+    return lastGroup;
   }
 
   [Pure]
