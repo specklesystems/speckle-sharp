@@ -39,7 +39,8 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
     var displayMeshes = new List<SOG.Mesh>();
 
     // test if the element is a group first
-    if (element is IRevitGroup g)
+    var g = element.ToGroup();
+    if (g is not null)
     {
       foreach (var id in g.GetMemberIds())
       {
