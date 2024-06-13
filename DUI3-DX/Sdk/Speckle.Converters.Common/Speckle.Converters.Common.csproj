@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.19" />
+    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.20" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
