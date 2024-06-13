@@ -25,6 +25,8 @@ public class ProxyMap : IProxyMap
     Add<DB.ModelCurveArrArray, IRevitModelCurveArrArray>(x => new ModelCurveArrArrayProxy(x));
     Add<DB.Parameter, IRevitParameter>(x => new ParameterProxy(x));
     Add<DB.BasePoint, IRevitBasePoint>(x => new BasePointProxy(x));
+    Add<DB.Wall, IRevitWall>(x => new WallProxy(x));
+    Add<DB.Panel, IRevitPanel>(x => new PanelProxy(x));
   }
 
   private static void Add<T, TProxy>(Func<T, TProxy> f)
