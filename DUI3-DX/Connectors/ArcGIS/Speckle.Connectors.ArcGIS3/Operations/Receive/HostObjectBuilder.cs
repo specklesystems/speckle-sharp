@@ -190,6 +190,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     try
     {
       var layer = LayerFactory.Instance.CreateLayer(uri, groupLayer, layerName: shortName);
+      layer.SetExpanded(true);
       return layer;
     }
     catch (ArgumentException)
