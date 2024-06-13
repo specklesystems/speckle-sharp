@@ -32,9 +32,6 @@ public class RevitConversionContextStack
       unitConverter
     ) { }
 
-  IConversionContext<IRevitDocument> IConversionContextStack<IRevitDocument, IRevitForgeTypeId>.Current =>
-    new ConversionContext<IRevitDocument>(base.Current.Document, base.Current.SpeckleUnits);
-
   ContextWrapper<IRevitDocument, IRevitForgeTypeId> IConversionContextStack<IRevitDocument, IRevitForgeTypeId>.Push(
     string speckleUnit
   ) => throw new NotImplementedException();

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Speckle.Converters.Common;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
@@ -10,6 +9,7 @@ namespace Speckle.Connectors.Revit2023.Converters;
 public class ProxyMap : IProxyMap
 {
   private static readonly ConcurrentDictionary<Type, Type> s_typeMaps = new();
+  private static readonly ConcurrentDictionary<Type, Type> s_reverseMaps = new();
   private static readonly ConcurrentDictionary<Type, Func<object, object>> s_proxyFactory = new();
 
   static ProxyMap()
@@ -24,6 +24,7 @@ public class ProxyMap : IProxyMap
     Add<DB.ModelCurveArray, IRevitModelCurveArray>(x => new ModelCurveArrayProxy(x));
     Add<DB.ModelCurveArrArray, IRevitModelCurveArrArray>(x => new ModelCurveArrArrayProxy(x));
     Add<DB.Parameter, IRevitParameter>(x => new ParameterProxy(x));
+    Add<DB.BasePoint, IRevitBasePoint>(x => new BasePointProxy(x));
   }
 
   private static void Add<T, TProxy>(Func<T, TProxy> f)
@@ -32,6 +33,7 @@ public class ProxyMap : IProxyMap
   {
     s_typeMaps.TryAdd(typeof(T), typeof(TProxy));
     s_proxyFactory.TryAdd(typeof(TProxy), w => f((T)w));
+    s_reverseMaps.TryAdd(typeof(TProxy), typeof(T));
   }
 
   public Type? GetMappedType(Type type)
@@ -42,6 +44,13 @@ public class ProxyMap : IProxyMap
     }
     return null;
   }
-
+  public Type? UnmapType(Type type)
+  {
+    if (s_reverseMaps.TryGetValue(type, out var t))
+    {
+      return t;
+    }
+    return null;
+  }
   public object CreateProxy(Type type, object toWrap) => s_proxyFactory[type](toWrap);
 }

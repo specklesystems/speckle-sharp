@@ -15,7 +15,7 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
