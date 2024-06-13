@@ -23,7 +23,7 @@ public class ParameterConversionToSpeckle : ITypedConverter<IRevitParameter, SOB
   {
     string internalName = target.GetInternalName();
     IRevitForgeTypeId? unitTypeId = null;
-    if (target.StorageType is IRevitStorageType.Double)
+    if (target.StorageType is RevitStorageType.Double)
     {
       // according to the api documentation, this method will throw if the storage type is not a VALUE type
       // however, I've found that it will still throw if StorageType == StorageType.Integer

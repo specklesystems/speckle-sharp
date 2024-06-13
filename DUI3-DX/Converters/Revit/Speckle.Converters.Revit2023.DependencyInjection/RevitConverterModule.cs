@@ -4,7 +4,6 @@ using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Revit2023.ToSpeckle;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Revit2023.DependencyInjection;
@@ -30,7 +29,5 @@ public class RevitConverterModule : ISpeckleModule
     builder.AddScoped<ISlopeArrowExtractor, SlopeArrowExtractor>();
     builder.AddScoped<SendSelection>();
     //builder.AddScoped<ToSpeckleConvertedObjectsCache>();
-
-    builder.ScanAssemblyOfType<RevitUnitUtils>();
   }
 }

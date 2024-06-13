@@ -17,6 +17,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
+using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
@@ -33,7 +34,7 @@ public class RevitConnectorModule : ISpeckleModule
 
     // POC: the concrete type can come out if we remove all the reference to it
     builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>, RevitConversionContextStack>();
-    //builder.AddDUIView();
+    builder.ScanAssemblyOfType<RevitUnitUtils>();
 
     builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
 

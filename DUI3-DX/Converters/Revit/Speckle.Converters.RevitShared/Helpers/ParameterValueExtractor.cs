@@ -31,11 +31,11 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
     return parameter.StorageType switch
     {
-      IRevitStorageType.Double => GetValueAsDouble(parameter),
-      IRevitStorageType.Integer => GetValueAsInt(parameter),
-      IRevitStorageType.String => GetValueAsString(parameter),
-      IRevitStorageType.ElementId => GetValueAsElementId(parameter)?.ToString(),
-      IRevitStorageType.None
+      RevitStorageType.Double => GetValueAsDouble(parameter),
+      RevitStorageType.Integer => GetValueAsInt(parameter),
+      RevitStorageType.String => GetValueAsString(parameter),
+      RevitStorageType.ElementId => GetValueAsElementId(parameter)?.ToString(),
+      RevitStorageType.None
       or _
         => throw new SpeckleConversionException($"Unsupported parameter storage type {parameter.StorageType}")
     };
@@ -60,7 +60,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
     var number = GetValueGeneric<double?>(
       element,
       builtInParameter,
-      IRevitStorageType.Double,
+      RevitStorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
     if (number.HasValue)
@@ -77,7 +77,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
   {
     return GetValueGeneric<double?>(
       parameter,
-      IRevitStorageType.Double,
+      RevitStorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
   }
@@ -87,7 +87,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return GetValueGeneric<int?>(
         element,
         builtInParameter,
-        IRevitStorageType.Integer,
+        RevitStorageType.Integer,
         (parameter) => parameter.AsInteger()
       )
       ?? throw new SpeckleConversionException(
@@ -97,7 +97,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
   private int? GetValueAsInt(IRevitParameter parameter)
   {
-    return GetValueGeneric<int?>(parameter, IRevitStorageType.Integer, (parameter) => parameter.AsInteger());
+    return GetValueGeneric<int?>(parameter, RevitStorageType.Integer, (parameter) => parameter.AsInteger());
   }
 
   public bool? GetValueAsBool(IRevitElement element, RevitBuiltInParameter builtInParameter)
@@ -105,7 +105,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
     var intVal = GetValueGeneric<int?>(
       element,
       builtInParameter,
-      IRevitStorageType.Integer,
+      RevitStorageType.Integer,
       (parameter) => parameter.AsInteger()
     );
 
@@ -114,12 +114,12 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
   public string? GetValueAsString(IRevitElement element, RevitBuiltInParameter builtInParameter)
   {
-    return GetValueGeneric(element, builtInParameter, IRevitStorageType.String, (parameter) => parameter.AsString());
+    return GetValueGeneric(element, builtInParameter, RevitStorageType.String, (parameter) => parameter.AsString());
   }
 
   private string? GetValueAsString(IRevitParameter parameter)
   {
-    return GetValueGeneric(parameter, IRevitStorageType.String, (parameter) => parameter.AsString());
+    return GetValueGeneric(parameter, RevitStorageType.String, (parameter) => parameter.AsString());
   }
 
   public IRevitElementId GetValueAsElementId(IRevitElement element, RevitBuiltInParameter builtInParameter)
@@ -140,7 +140,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
   )
   {
     if (
-      GetValueGeneric(element, builtInParameter, IRevitStorageType.ElementId, (parameter) => parameter.AsElementId())
+      GetValueGeneric(element, builtInParameter, RevitStorageType.ElementId, (parameter) => parameter.AsElementId())
       is IRevitElementId elementIdNotNull
     )
     {
@@ -154,7 +154,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
   public IRevitElementId? GetValueAsElementId(IRevitParameter parameter)
   {
-    return GetValueGeneric(parameter, IRevitStorageType.ElementId, (parameter) => parameter.AsElementId());
+    return GetValueGeneric(parameter, RevitStorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
   public IRevitLevel? GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
@@ -171,7 +171,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
   private TResult? GetValueGeneric<TResult>(
     IRevitElement element,
     RevitBuiltInParameter builtInParameter,
-    IRevitStorageType expectedStorageType,
+    RevitStorageType expectedStorageType,
     Func<IRevitParameter, TResult> getParamValue
   )
   {
@@ -189,7 +189,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
   private TResult? GetValueGeneric<TResult>(
     IRevitParameter parameter,
-    IRevitStorageType expectedStorageType,
+    RevitStorageType expectedStorageType,
     Func<IRevitParameter, TResult> getParamValue
   )
   {
