@@ -20,7 +20,7 @@ public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<
     SOBR.RevitElement speckleElement = new();
 
     var element = target.Document.GetElement(target.GetTypeId());
-    var symbol = element.ToFamilySymbol();
+    var symbol = element?.ToFamilySymbol();
     if (symbol is not null)
     {
       speckleElement.family = symbol.FamilyName;

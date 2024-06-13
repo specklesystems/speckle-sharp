@@ -30,7 +30,7 @@ public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
     List<int> faces = GetSpeckleMeshFaceData(target);
 
     var element = doc.GetElement(target.MaterialElementId);
-    var revitMaterial = element.ToMaterial();
+    var revitMaterial = element?.ToMaterial();
     RenderMaterial? speckleMaterial = null;
     if (revitMaterial is not null)
     {

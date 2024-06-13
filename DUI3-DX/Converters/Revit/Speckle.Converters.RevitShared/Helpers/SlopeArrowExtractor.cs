@@ -28,7 +28,7 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
     IList<IRevitElementId>? elementIds = null;
     if (element is IRevitFloor floor)
     {
-      elementIds = (floor.Document.GetElement(floor.SketchId).ToSketch().NotNull()).GetAllElements();
+      elementIds = (floor.Document.GetElement(floor.SketchId).NotNull().ToSketch().NotNull()).GetAllElements();
     }
 
     if (elementIds == null)
@@ -39,7 +39,7 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
 
     foreach (var elementId in elementIds)
     {
-      var line = element.Document.GetElement(elementId).ToModelLine();
+      var line = element.Document.GetElement(elementId)?.ToModelLine();
       if (line is null)
       {
         continue;

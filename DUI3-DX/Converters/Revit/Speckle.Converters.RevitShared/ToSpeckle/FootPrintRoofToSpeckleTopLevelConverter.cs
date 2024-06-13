@@ -66,7 +66,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 
-    var elementType = target.Document.GetElement(target.GetTypeId()).ToType().NotNull();
+    var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
     speckleFootprintRoof.type = elementType.Name;
     speckleFootprintRoof.family = elementType.FamilyName;
 

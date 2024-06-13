@@ -60,7 +60,7 @@ public class ExtrusionRoofToSpeckleTopLevelConverter
     speckleExtrusionRoof.level = _levelConverter.Convert(level.NotNull());
     speckleExtrusionRoof.outline = _modelCurveArrayConverter.Convert(target.GetProfile());
 
-    var elementType = (IRevitElementType)target.Document.GetElement(target.GetTypeId());
+    var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
     speckleExtrusionRoof.type = elementType.Name;
     speckleExtrusionRoof.family = elementType.FamilyName;
 

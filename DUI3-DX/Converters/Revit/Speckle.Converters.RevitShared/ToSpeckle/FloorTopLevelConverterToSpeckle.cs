@@ -43,10 +43,10 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IR
   {
     SOBR.RevitFloor speckleFloor = new();
 
-    var sketch = target.Document.GetElement(target.SketchId).ToSketch().NotNull();
+    var sketch = target.Document.GetElement(target.SketchId).NotNull().ToSketch().NotNull();
     List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
-    IRevitElementType type = target.Document.GetElement(target.GetTypeId()).ToType().NotNull();
+    IRevitElementType type = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
 
     speckleFloor.family = type.FamilyName;
     speckleFloor.type = type.Name;

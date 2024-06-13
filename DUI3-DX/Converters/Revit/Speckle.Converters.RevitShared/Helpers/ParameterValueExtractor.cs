@@ -164,8 +164,8 @@ public class ParameterValueExtractor : IParameterValueExtractor
       throw new SpeckleConversionException();
     }
 
-    IRevitElement paramElement = element.Document.GetElement(elementId);
-    return paramElement.ToLevel();
+    var paramElement = element.Document.GetElement(elementId);
+    return paramElement?.ToLevel();
   }
 
   private TResult? GetValueGeneric<TResult>(

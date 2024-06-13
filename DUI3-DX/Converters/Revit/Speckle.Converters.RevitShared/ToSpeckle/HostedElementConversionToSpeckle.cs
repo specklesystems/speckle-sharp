@@ -28,7 +28,7 @@ public class HostedElementConversionToSpeckle : IHostedElementConversionToSpeckl
   {
     foreach (var elemId in hostedElementIds)
     {
-      IRevitElement element = _contextStack.Current.Document.GetElement(elemId);
+      IRevitElement element = _contextStack.Current.Document.GetElement(elemId).NotNull();
 
       Base @base;
       try

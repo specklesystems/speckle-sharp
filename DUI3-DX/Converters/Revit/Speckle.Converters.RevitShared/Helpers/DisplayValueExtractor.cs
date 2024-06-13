@@ -43,7 +43,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
     {
       foreach (var id in g.GetMemberIds())
       {
-        var groupMeshes = GetDisplayValue(element.Document.GetElement(id), options);
+        var groupMeshes = GetDisplayValue(element.Document.GetElement(id).NotNull(), options);
         displayMeshes.AddRange(groupMeshes);
       }
       return displayMeshes;
@@ -287,7 +287,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   {
     if (!_graphicStyleCache.ContainsKey(id.ToString()))
     {
-      _graphicStyleCache.Add(id.ToString(), doc.GetElement(id).ToGraphicsStyle().NotNull());
+      _graphicStyleCache.Add(id.ToString(), doc.GetElement(id).NotNull().ToGraphicsStyle().NotNull());
     }
 
     var graphicStyle = _graphicStyleCache[id.ToString()];

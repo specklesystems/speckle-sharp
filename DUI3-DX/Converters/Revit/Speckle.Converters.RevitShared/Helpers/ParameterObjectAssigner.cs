@@ -38,7 +38,7 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
     // POC: Some elements can have an invalid element type ID, I don't think we want to continue here.
     if (elementId != _revitElementIdUtils.InvalidElementId && target is not SOBE.Level) //ignore type props of levels..!
     {
-      var elementType = target.Document.GetElement(elementId);
+      var elementType = target.Document.GetElement(elementId).NotNull();
       // I don't think we should be adding the type parameters to the object like this
       var typeParameters = _parameterValueExtractor.GetAllRemainingParams(elementType);
       AssignSpeckleParamToBaseObject(typeParameters, paramBase, true);

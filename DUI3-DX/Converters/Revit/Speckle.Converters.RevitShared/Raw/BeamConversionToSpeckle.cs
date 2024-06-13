@@ -44,13 +44,13 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
       );
     }
 
-    var symbol = target.Document.GetElement(target.GetTypeId()).ToFamilySymbol().NotNull();
+    var symbol = target.Document.GetElement(target.GetTypeId()).NotNull().ToFamilySymbol().NotNull();
 
     SOBR.RevitBeam speckleBeam =
       new()
       {
         family = symbol.FamilyName,
-        type = target.Document.GetElement(target.GetTypeId()).Name,
+        type = target.Document.GetElement(target.GetTypeId()).NotNull().Name,
         baseLine = baseCurve
       };
 

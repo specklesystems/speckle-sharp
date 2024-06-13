@@ -125,7 +125,7 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
   {
     foreach (IRevitElementId elementId in elementIds)
     {
-      yield return _converter.Convert(_contextStack.Current.Document.GetElement(elementId));
+      yield return _converter.Convert(_contextStack.Current.Document.GetElement(elementId).NotNull());
     }
   }
 
@@ -162,7 +162,7 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
 
   private void AssignVoids(IRevitWall target, SOBR.RevitWall speckleWall)
   {
-    IRevitCurveArrArray? profile = target.Document.GetElement(target.SketchId).ToSketch()?.Profile;
+    IRevitCurveArrArray? profile = target.Document.GetElement(target.SketchId)?.ToSketch()?.Profile;
     if (profile is null)
     {
       return;

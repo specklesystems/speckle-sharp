@@ -31,7 +31,7 @@ internal sealed class RoofBaseToSpeckleTopLevelTopLevelConverter
   public override RevitRoof Convert(IRevitRoofBase target)
   {
     RevitRoof revitRoof = new();
-    var elementType = target.Document.GetElement(target.GetTypeId()).ToType().NotNull();
+    var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
     revitRoof.type = elementType.Name;
     revitRoof.family = elementType.FamilyName;
 
