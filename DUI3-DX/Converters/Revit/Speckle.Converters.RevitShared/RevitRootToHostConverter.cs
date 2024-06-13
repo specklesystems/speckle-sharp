@@ -10,11 +10,11 @@ namespace Speckle.Converters.RevitShared;
 public class RevitRootToHostConverter : IRootToSpeckleConverter
 {
   private readonly IConverterResolver<IToSpeckleTopLevelConverter> _toSpeckle;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
 
   public RevitRootToHostConverter(
     IConverterResolver<IToSpeckleTopLevelConverter> toSpeckle,
-    ParameterValueExtractor parameterValueExtractor
+    IParameterValueExtractor parameterValueExtractor
   )
   {
     _toSpeckle = toSpeckle;

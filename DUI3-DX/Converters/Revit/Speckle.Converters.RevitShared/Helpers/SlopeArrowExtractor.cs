@@ -9,12 +9,12 @@ namespace Speckle.Converters.RevitShared.Helpers;
 public class SlopeArrowExtractor : ISlopeArrowExtractor
 {
   private readonly ITypedConverter<IRevitXYZ, SOG.Point> _pointConverter;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
   private readonly IRevitFilterFactory _revitFilterFactory;
 
   public SlopeArrowExtractor(
     ITypedConverter<IRevitXYZ, SOG.Point> pointConverter,
-    ParameterValueExtractor parameterValueExtractor,
+    IParameterValueExtractor parameterValueExtractor,
     IRevitFilterFactory revitFilterFactory
   )
   {

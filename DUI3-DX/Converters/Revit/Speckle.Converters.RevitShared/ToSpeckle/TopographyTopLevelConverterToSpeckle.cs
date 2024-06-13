@@ -11,12 +11,12 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public class TopographyTopLevelConverterToSpeckle
   : BaseTopLevelConverterToSpeckle<IRevitTopographySurface, SOBR.RevitTopography>
 {
-  private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
 
   public TopographyTopLevelConverterToSpeckle(
-    DisplayValueExtractor displayValueExtractor,
-    ParameterObjectAssigner parameterObjectAssigner
+    IDisplayValueExtractor displayValueExtractor,
+    IParameterObjectAssigner parameterObjectAssigner
   )
   {
     _displayValueExtractor = displayValueExtractor;

@@ -15,18 +15,18 @@ internal sealed class CeilingTopLevelConverterToSpeckle
 {
   private readonly ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
 
   //private readonly HostedElementConversionToSpeckle _hostedElementConverter;
 
   public CeilingTopLevelConverterToSpeckle(
     ITypedConverter<IRevitCurveArrArray, List<Polycurve>> curveArrArrayConverter,
     ITypedConverter<IRevitLevel, RevitLevel> levelConverter,
-    ParameterValueExtractor parameterValueExtractor,
-    ParameterObjectAssigner parameterObjectAssigner,
-    DisplayValueExtractor displayValueExtractor
+    IParameterValueExtractor parameterValueExtractor,
+    IParameterObjectAssigner parameterObjectAssigner,
+    IDisplayValueExtractor displayValueExtractor
   )
   {
     _curveArrArrayConverter = curveArrArrayConverter;
