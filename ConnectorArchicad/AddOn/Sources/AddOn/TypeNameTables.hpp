@@ -45,4 +45,12 @@ extern const GS::HashTable<API_VeneerTypeID, GS::UniString> venTypeNames;
 
 extern const GS::HashTable<short, GS::UniString> coreSymbolTypeNames;
 
+extern const GS::HashTable<API_OpeningFloorPlanDisplayModeTypeID, GS::UniString> openingFloorPlanDisplayModeNames;
+extern const GS::HashTable<API_OpeningFloorPlanConnectionModeTypeID, GS::UniString> openingFloorPlanConnectionModeNames;
+extern const GS::HashTable<API_OpeningFloorPlanOutlinesStyleTypeID, GS::UniString> openingOutlinesStyleNames;
+extern const GS::HashTable<API_OpeningBasePolygonTypeTypeID, GS::UniString> openingBasePolygonTypeNames;
+extern const GS::HashTable<API_AnchorID, GS::UniString> openingAnchorNames;
+
+extern const GS::HashTable<API_OpeningLimitTypeTypeID, GS::UniString> openingLimitTypeNames;
+extern const GS::HashTable<API_OpeningLinkedStatusTypeID, GS::UniString> openingLinkedStatusNames;
 #endif

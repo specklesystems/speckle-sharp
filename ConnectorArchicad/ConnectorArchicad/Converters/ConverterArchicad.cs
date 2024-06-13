@@ -68,6 +68,7 @@ public partial class ConverterArchicad : ISpeckleConverter
       Objects.BuiltElements.Roof _ => true,
       Objects.BuiltElements.Room _ => true,
       Objects.BuiltElements.Wall _ => true,
+      Objects.BuiltElements.Opening _ => true,
 
       // Archicad elements
       Objects.BuiltElements.Archicad.ArchicadDoor _ => true,

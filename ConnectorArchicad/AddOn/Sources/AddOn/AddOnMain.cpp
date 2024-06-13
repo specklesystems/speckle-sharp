@@ -18,6 +18,7 @@
 #include "Commands/GetElementBaseData.hpp"
 #include "Commands/GetGridElementData.hpp"
 #include "Commands/GetObjectData.hpp"
+#include "Commands/GetOpeningData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoofData.hpp"
 #include "Commands/GetShellData.hpp"
@@ -31,6 +32,7 @@
 #include "Commands/CreateColumn.hpp"
 #include "Commands/CreateGridElement.hpp"
 #include "Commands/CreateObject.hpp"
+#include "Commands/CreateOpening.hpp"
 #include "Commands/CreateRoof.hpp"
 #include "Commands/CreateSkylight.hpp"
 #include "Commands/CreateSlab.hpp"
@@ -200,6 +202,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetGridElementData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetOpeningData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetShellData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSkylightData> ()));
@@ -213,6 +216,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateGridElement> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateObject> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateOpening> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateRoof> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateShell> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateSkylight> ()));
