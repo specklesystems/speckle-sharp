@@ -181,7 +181,7 @@ internal sealed class RevitPlugin : IRevitPlugin
   {
     try
     {
-      var assembly = Assembly.LoadFrom(Path.Combine(path));
+      var assembly = Assembly.LoadFrom(System.IO.Path.Combine(path));
       var icon = assembly.GetManifestResourceStream(sourceName);
       PngBitmapDecoder decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
       ImageSource source = decoder.Frames[0];

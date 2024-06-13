@@ -32,7 +32,7 @@ internal sealed class RevitExternalApplication : IExternalApplication
       "2023",
       "Speckle New UI",
       "Revit",
-      new[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
+      new[] { System.IO.Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
       "Revit Connector",
       "2023" //POC: app version?
     );
