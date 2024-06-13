@@ -246,11 +246,10 @@ public partial class ConverterRevit
     var columnMetadata = new Base();
     columnMetadata["BuiltInParameterInteger"] = info.field.ParameterId.IntegerValue;
     string fieldType = info.field.FieldType.ToString();
-    
+
     Parameter param;
     if (info.field.FieldType == ScheduleFieldType.ElementType)
     {
-      
       if (firstType != null)
       {
         param = firstType.get_Parameter(builtInParameter);
@@ -270,7 +269,7 @@ public partial class ConverterRevit
         if (firstType != null)
         {
           typeParam = firstType.get_Parameter(builtInParameter);
-          
+
           // If the parameter is readonly in the element but not in the type, is a type parameter
           if (typeParam != null && !typeParam.IsReadOnly && param != null && param.IsReadOnly)
           {
