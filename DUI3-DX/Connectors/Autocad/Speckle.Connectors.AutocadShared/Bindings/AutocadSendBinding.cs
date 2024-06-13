@@ -174,7 +174,6 @@ public sealed class AutocadSendBinding : ISendBinding
         .ConfigureAwait(false);
 
       Commands.SetModelSendResult(modelCardId, sendResult.RootObjId, sendResult.ConversionResults);
-      Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
     }
     // Catch here specific exceptions if they related to model card.
     catch (OperationCanceledException)
