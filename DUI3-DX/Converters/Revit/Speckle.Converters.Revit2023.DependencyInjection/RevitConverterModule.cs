@@ -13,7 +13,7 @@ public class RevitConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon<RootToSpeckleConverter, RevitToSpeckleUnitConverter, IRevitForgeTypeId>();
+    builder.AddConverterCommon<IRootToSpeckleConverter, RevitToSpeckleUnitConverter, IRevitForgeTypeId>();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.AddScoped<IScalingServiceToSpeckle, ScalingServiceToSpeckle>();
