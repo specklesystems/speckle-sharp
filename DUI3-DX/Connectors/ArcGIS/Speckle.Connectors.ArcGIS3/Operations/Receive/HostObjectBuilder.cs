@@ -93,10 +93,10 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     _nonGisFeaturesUtils.WriteGeometriesToDatasets(conversionTracker);
 
     // Create main group layer
-    Dictionary<List<string>, GroupLayer> createdLayerGroups = new();
+    Dictionary<string, GroupLayer> createdLayerGroups = new();
     Map map = _contextStack.Current.Document.Map;
     GroupLayer groupLayer = LayerFactory.Instance.CreateGroupLayer(map, 0, $"{projectName}: {modelName}");
-    createdLayerGroups[new List<string>()] = groupLayer;
+    createdLayerGroups["Basic Speckle Group"] = groupLayer; // key doesn't really matter here
 
     // 3. add layer and tables to the Table Of Content
     int bakeCount = 0;
@@ -169,7 +169,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private MapMember AddDatasetsToMap(
     ObjectConversionTracker trackerItem,
-    Dictionary<List<string>, GroupLayer> createdLayerGroups
+    Dictionary<string, GroupLayer> createdLayerGroups
   )
   {
     // get layer details
@@ -179,14 +179,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
     // add group for the current layer
     string shortName = nestedLayerName.Split("\\")[^1];
-    List<string> nestedLayerPath = nestedLayerName
-      .Split("\\")
-      .Where(x => !string.IsNullOrEmpty(x))
-      .SkipLast(1)
-      .ToList();
-    GroupLayer groupLayer = CreateNestedGroupLayer(nestedLayerPath, createdLayerGroups);
+    string nestedLayerPath = string.Join("\\", nestedLayerName.Split("\\").SkipLast(1));
 
-    Map map = _contextStack.Current.Document.Map;
+    GroupLayer groupLayer = CreateNestedGroupLayer(nestedLayerPath, createdLayerGroups);
 
     // Most of the Speckle-written datasets will be containing geometry and added as Layers
     // although, some datasets might be just tables (e.g. native GIS Tables, in the future maybe Revit schedules etc.
@@ -204,10 +199,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
   }
 
-  private GroupLayer CreateNestedGroupLayer(
-    List<string> nestedLayerPath,
-    Dictionary<List<string>, GroupLayer> createdLayerGroups
-  )
+  private GroupLayer CreateNestedGroupLayer(string nestedLayerPath, Dictionary<string, GroupLayer> createdLayerGroups)
   {
     GroupLayer lastGroup = createdLayerGroups.FirstOrDefault().Value;
     if (lastGroup == null) // if layer not found
@@ -216,10 +208,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
 
     // iterate through each nested level
-    List<string> createdGroupPath = new();
-    foreach (string pathElement in nestedLayerPath)
+    string createdGroupPath = "";
+    var allPathElements = nestedLayerPath.Split("\\").Where(x => !string.IsNullOrEmpty(x));
+    foreach (string pathElement in allPathElements)
     {
-      createdGroupPath.Add(pathElement);
+      createdGroupPath += "\\" + pathElement;
       if (createdLayerGroups.TryGetValue(createdGroupPath, out var existingGroupLayer))
       {
         lastGroup = existingGroupLayer;
@@ -230,7 +223,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         lastGroup = LayerFactory.Instance.CreateGroupLayer(lastGroup, 0, pathElement);
         lastGroup.SetExpanded(true);
       }
-      createdLayerGroups[new List<string>(createdGroupPath)] = lastGroup;
+      createdLayerGroups[createdGroupPath] = lastGroup;
     }
     return lastGroup;
   }
@@ -241,7 +234,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
     string[] reverseOrderPath =
       collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
+
+    var originalPath = reverseOrderPath.Reverse().ToArray();
+    return originalPath.Where(x => !string.IsNullOrEmpty(x)).ToArray();
   }
 
   [Pure]
