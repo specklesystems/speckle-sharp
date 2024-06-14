@@ -60,7 +60,10 @@ internal sealed class CeilingTopLevelConverterToSpeckle
     // but it is never being set. We should be setting it
 
     var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
-    speckleCeiling.level = _levelConverter.Convert(level.NotNull());
+    if (level is not null)
+    {
+      speckleCeiling.level = _levelConverter.Convert(level);
+    }
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleCeiling);
     speckleCeiling.displayValue = _displayValueExtractor.GetDisplayValue(target);

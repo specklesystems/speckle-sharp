@@ -58,7 +58,10 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
       target,
       RevitBuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
-    speckleBeam.level = _levelConverter.Convert(level.NotNull());
+    if (level is not null)
+    {
+      speckleBeam.level = _levelConverter.Convert(level);
+    }
 
     speckleBeam.displayValue = _displayValueExtractor.GetDisplayValue(target);
 

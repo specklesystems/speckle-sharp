@@ -164,7 +164,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      throw new SpeckleConversionException();
+      return null;
     }
 
     var paramElement = element.Document.GetElement(elementId);

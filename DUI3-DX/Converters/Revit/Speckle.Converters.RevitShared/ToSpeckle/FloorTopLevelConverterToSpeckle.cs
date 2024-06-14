@@ -63,7 +63,11 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IR
     }
 
     var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
-    speckleFloor.level = _levelConverter.Convert(level.NotNull());
+    if (level is not null)
+    {
+      speckleFloor.level = _levelConverter.Convert(level);
+    }
+
     speckleFloor.structural =
       _parameterValueExtractor.GetValueAsBool(target, RevitBuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 
