@@ -53,7 +53,7 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
       throw new SpeckleException("Family Environment documents are not supported.");
     }
 
-    var revitElements = new List<Element>(); // = _contextStack.Current.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var revitElements = new List<Element>();
 
     foreach (var id in objects)
     {
