@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.Common;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
