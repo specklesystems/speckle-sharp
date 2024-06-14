@@ -1,3 +1,4 @@
+using System.DoubleNumerics;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.Utils.Instances;
@@ -35,26 +36,50 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
   private void UnpackInstance(BlockReference instance, int depth, Transaction transaction)
   {
-    var instanceId = instance.Id.ToString();
-    var defintionId = instance.BlockTableRecord;
+    var instanceIdString = instance.Id.ToString();
+    var definitionId = instance.BlockTableRecord;
 
-    // TODO: magical depth assignment for:
-    // - instances
-    // - defs
+    InstanceProxies[instanceIdString] = new InstanceProxy()
+    {
+      applicationId = instanceIdString,
+      DefinitionId = definitionId.ToString(),
+      MaxDepth = depth,
+      Transform = GetMatrix(instance.BlockTransform.ToArray())
+    };
 
+    // For each block instance that has the same definition, we need to keep track of the "maximum depth" at which is found.
+    // This will enable on receive to create them in the correct order (descending by max depth, interleaved definitions and instances).
+    // We need to interleave the creation of definitions and instances, as some definitions may depend on instances.
+    if (
+      !InstanceProxiesByDefinitionId.TryGetValue(
+        definitionId.ToString(),
+        out List<InstanceProxy> instanceProxiesWithSameDefinition
+      )
+    )
+    {
+      instanceProxiesWithSameDefinition = new List<InstanceProxy>();
+      InstanceProxiesByDefinitionId[definitionId.ToString()] = instanceProxiesWithSameDefinition;
+    }
 
+    // We ensure that all previous instance proxies that have the same definition are at this max depth. I kind of have a feeling this can be done more elegantly, but YOLO
+    foreach (var instanceProxy in instanceProxiesWithSameDefinition)
+    {
+      instanceProxy.MaxDepth = depth;
+    }
 
-    if (DefinitionProxies.TryGetValue(defintionId.ToString(), out InstanceDefinitionProxy value))
+    instanceProxiesWithSameDefinition.Add(InstanceProxies[instanceIdString]);
+
+    if (DefinitionProxies.TryGetValue(definitionId.ToString(), out InstanceDefinitionProxy value))
     {
       value.MaxDepth = depth;
       return; // exit fast - we've parsed this one so no need to go further
     }
 
-    var definition = (BlockTableRecord)transaction.GetObject(defintionId, OpenMode.ForRead);
+    var definition = (BlockTableRecord)transaction.GetObject(definitionId, OpenMode.ForRead);
     // definition.Origin
     var definitionProxy = new InstanceDefinitionProxy()
     {
-      applicationId = defintionId.ToString(),
+      applicationId = definitionId.ToString(),
       Objects = new(),
       MaxDepth = depth,
       ["name"] = definition.Name,
@@ -73,6 +98,29 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       FlatAtomicObjects[id.ToString()] = new(obj, id.ToString());
     }
 
-    DefinitionProxies[defintionId.ToString()] = definitionProxy;
+    DefinitionProxies[definitionId.ToString()] = definitionProxy;
+  }
+
+  // TODO: units? i think not here
+  private Matrix4x4 GetMatrix(double[] t)
+  {
+    return new Matrix4x4(
+      t[0],
+      t[1],
+      t[2],
+      t[3],
+      t[4],
+      t[5],
+      t[6],
+      t[7],
+      t[8],
+      t[9],
+      t[10],
+      t[11],
+      t[12],
+      t[13],
+      t[14],
+      t[15]
+    );
   }
 }

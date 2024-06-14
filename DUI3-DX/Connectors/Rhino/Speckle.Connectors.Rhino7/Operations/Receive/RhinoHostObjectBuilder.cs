@@ -347,6 +347,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   }
 
   // POC: Not too proud of this being here
+  // TODO: units! this is a "big" question as we're crossing into converter territory (to a certain extent)
   private Rhino.Geometry.Transform MatrixToTransform(Matrix4x4 matrix)
   {
     var t = Rhino.Geometry.Transform.Identity;

@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
@@ -16,17 +16,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly AutocadInstanceObjectManager _instanceObjectManager;
+  private readonly IInstanceObjectsManager<AutocadRootObject> _instanceObjectsManager;
 
   public AutocadRootObjectBuilder(
     IRootToSpeckleConverter converter,
     ISendConversionCache sendConversionCache,
-    AutocadInstanceObjectManager instanceObjectManager
+    IInstanceObjectsManager<AutocadRootObject> instanceObjectManager
   )
   {
     _converter = converter;
     _sendConversionCache = sendConversionCache;
-    _instanceObjectManager = instanceObjectManager;
+    _instanceObjectsManager = instanceObjectManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -50,14 +50,20 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
-    List<SendConversionResult> results = new(objects.Count);
+    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(objects);
+    // TODO: setup def proxies on root obj
+
+    List<SendConversionResult> results = new();
     var cacheHitCount = 0;
-    foreach (var (dbObject, applicationId) in objects)
+
+    foreach (var (dbObject, applicationId) in atomicObjects)
     {
       ct.ThrowIfCancellationRequested();
       try
       {
         Base converted;
+        // NOTE TO DIM: I left out here
+        // I need to: check for instance proxies first and bypass conv
         if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;

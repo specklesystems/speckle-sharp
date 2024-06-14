@@ -95,6 +95,7 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject>
     }
   }
 
+  // TODO: units! this is a "big" question as we're crossing into converter territory (to a certain extent)
   private Matrix4x4 XFormToMatrix(Rhino.Geometry.Transform t) =>
     new(t.M00, t.M01, t.M02, t.M03, t.M10, t.M11, t.M12, t.M13, t.M20, t.M21, t.M22, t.M23, t.M30, t.M31, t.M32, t.M33);
 }
