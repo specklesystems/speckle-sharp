@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Helpers;
@@ -11,7 +10,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // really if we have to edit a switch statement...
 // maybe also better as an extension method, but maybe is fine?
 // POC: there are a lot of public methods here. Maybe consider consolodating
-[GenerateAutoInterface]
+
 public class ParameterValueExtractor : IParameterValueExtractor
 {
   private readonly IScalingServiceToSpeckle _scalingService;
@@ -160,7 +159,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return GetValueGeneric(parameter, RevitStorageType.ElementId, (p) => p.AsElementId());
   }
 
-  public IRevitLevel? GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public IRevitLevel GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
@@ -168,7 +167,24 @@ public class ParameterValueExtractor : IParameterValueExtractor
     }
 
     var paramElement = element.Document.GetElement(elementId);
-    return paramElement?.ToLevel();
+    return (paramElement?.ToLevel()).NotNull();
+  }
+
+  public bool TryGetValueAsRevitLevel(
+    IRevitElement element,
+    RevitBuiltInParameter builtInParameter,
+    [NotNullWhen(true)] out IRevitLevel? revitLevel
+  )
+  {
+    if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
+    {
+      revitLevel = null;
+      return false;
+    }
+
+    var paramElement = element.Document.GetElement(elementId);
+    revitLevel = paramElement?.ToLevel();
+    return revitLevel is not null;
   }
 
   private TResult? GetValueGeneric<TResult>(
