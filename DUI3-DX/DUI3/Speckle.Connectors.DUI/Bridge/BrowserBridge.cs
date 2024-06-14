@@ -28,6 +28,7 @@ public class BrowserBridge : IBridge
   private readonly JsonSerializerSettings _serializerOptions;
   private readonly Dictionary<string, string?> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
 
   private Dictionary<string, MethodInfo> BindingMethodCache { get; set; } = new();
   private ActionBlock<RunMethodArgs>? _actionBlock;
@@ -77,7 +78,7 @@ public class BrowserBridge : IBridge
   {
     _serializerOptions = jsonSerializerSettings;
     _logger = loggerFactory.CreateLogger<BrowserBridge>();
-
+    _topLevelExceptionHandler = new(_logger); //TODO: Probably we could inject this with a Lazy somewhere
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
   }
@@ -108,17 +109,29 @@ public class BrowserBridge : IBridge
 
     // Whenever the ui will call run method inside .net, it will post a message to this action block.
     // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
-    // POC: I wonder if TL exception handler should be living here...
     _actionBlock = new ActionBlock<RunMethodArgs>(
-      args => ExecuteMethod(args.MethodName, args.RequestId, args.MethodArgs),
+      OnActionBlock,
       new ExecutionDataflowBlockOptions
       {
         MaxDegreeOfParallelism = 1000,
-        CancellationToken = new CancellationTokenSource(TimeSpan.FromHours(3)).Token // Not sure we need such a long time.
+        CancellationToken = new CancellationTokenSource(TimeSpan.FromHours(3)).Token // Not sure we need such a long time. //TODO: This token source is not disposed....
       }
     );
 
     _logger.LogInformation("Bridge bound to front end name {FrontEndName}", binding.Name);
+  }
+
+  private async Task OnActionBlock(RunMethodArgs args)
+  {
+    Result<object?> result = await _topLevelExceptionHandler
+      .CatchUnhandled(async () => await ExecuteMethod(args.MethodName, args.MethodArgs).ConfigureAwait(false))
+      .ConfigureAwait(false);
+
+    var resultJson = JsonConvert.SerializeObject(
+      result.IsSuccess ? result.Value : result.Exception,
+      _serializerOptions
+    );
+    NotifyUIMethodCallResultReady(args.RequestId, resultJson);
   }
 
   /// <summary>
@@ -140,14 +153,26 @@ public class BrowserBridge : IBridge
   /// <param name="args"></param>
   public void RunMethod(string methodName, string requestId, string args)
   {
-    _actionBlock?.Post(
-      new RunMethodArgs
+    _topLevelExceptionHandler.CatchUnhandled(Post);
+    return;
+
+    void Post()
+    {
+      bool wasAccepted = _actionBlock
+        .NotNull()
+        .Post(
+          new RunMethodArgs
+          {
+            MethodName = methodName,
+            RequestId = requestId,
+            MethodArgs = args
+          }
+        );
+      if (!wasAccepted)
       {
-        MethodName = methodName,
-        RequestId = requestId,
-        MethodArgs = args
+        throw new InvalidOperationException($"Action block declined to Post ({methodName} {requestId} {args})");
       }
-    );
+    }
   }
 
   /// <summary>
@@ -170,77 +195,62 @@ public class BrowserBridge : IBridge
   /// Used by the action block to invoke the actual method called by the UI.
   /// </summary>
   /// <param name="methodName"></param>
-  /// <param name="requestId"></param>
   /// <param name="args"></param>
   /// <exception cref="SpeckleException"></exception>
-  private void ExecuteMethod(string methodName, string requestId, string args)
+  /// <returns>The Json</returns>
+  private async Task<object?> ExecuteMethod(string methodName, string args)
   {
-    // Note: You might be tempted to make this method async Task<string> to prevent the task.Wait() below.
-    // Do not do that! Cef65 doesn't like waiting for async .NET methods.
     // Note: we have this pokemon catch 'em all here because throwing errors in .NET is
     // very risky, and we might crash the host application. Behaviour seems also to differ
     // between various browser controls (e.g.: cefsharp handles things nicely - basically
     // passing back the exception to the browser, but webview throws an access violation
     // error that kills Rhino.).
-    try
+
+    if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
     {
-      if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
-      {
-        throw new SpeckleException(
-          $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}."
-        );
-      }
-
-      var parameters = method.GetParameters();
-      var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
-      if (parameters.Length != jsonArgsArray?.Length)
-      {
-        throw new SpeckleException(
-          $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray?.Length}."
-        );
-      }
-
-      var typedArgs = new object[jsonArgsArray.Length];
-
-      for (int i = 0; i < typedArgs.Length; i++)
-      {
-        var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
-        if (ccc is null)
-        {
-          continue;
-        }
-
-        typedArgs[i] = ccc;
-      }
-
-      var resultTyped = method.Invoke(Binding, typedArgs);
-
-      string resultJson;
-
-      // Was the method called async?
-      if (resultTyped is not Task resultTypedTask)
-      {
-        // Regular method: no need to await things
-        resultJson = JsonConvert.SerializeObject(resultTyped, _serializerOptions);
-      }
-      else // It's an async call
-      {
-        // See note at start of function. Do not asyncify!
-        resultTypedTask.GetAwaiter().GetResult();
-
-        // If has a "Result" property return the value otherwise null (Task<void> etc)
-        PropertyInfo resultProperty = resultTypedTask.GetType().GetProperty("Result");
-        object? taskResult = resultProperty?.GetValue(resultTypedTask);
-        resultJson = JsonConvert.SerializeObject(taskResult, _serializerOptions);
-      }
-
-      NotifyUIMethodCallResultReady(requestId, resultJson);
+      throw new SpeckleException(
+        $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}."
+      );
     }
-    // TOP-LEVEL: Where we report unhandled exceptions as global toast notification in UI!
-    catch (Exception e) when (!e.IsFatal())
+
+    var parameters = method.GetParameters();
+    var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
+    if (parameters.Length != jsonArgsArray?.Length)
     {
-      ReportUnhandledError(requestId, e);
+      throw new SpeckleException(
+        $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray?.Length}."
+      );
     }
+
+    var typedArgs = new object[jsonArgsArray.Length];
+
+    for (int i = 0; i < typedArgs.Length; i++)
+    {
+      var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
+      if (ccc is null)
+      {
+        continue;
+      }
+
+      typedArgs[i] = ccc;
+    }
+
+    var resultTyped = method.Invoke(Binding, typedArgs);
+    // Was the method called async?
+    if (resultTyped is not Task resultTypedTask)
+    {
+      // Regular method: no need to await things
+      return resultTyped;
+    }
+
+    // It's an async call
+    // See note at start of function. Do not asyncify!
+    await resultTypedTask.ConfigureAwait(false);
+
+    // If has a "Result" property return the value otherwise null (Task<void> etc)
+    PropertyInfo? resultProperty = resultTypedTask.GetType().GetProperty(nameof(Task<object>.Result));
+    object? taskResult = resultProperty?.GetValue(resultTypedTask);
+    return taskResult;
   }
 
   /// <summary>
@@ -306,6 +316,11 @@ public class BrowserBridge : IBridge
 
   public void Send(string eventName)
   {
+    if (_binding is null)
+    {
+      throw new InvalidOperationException("Bridge was not Initialized");
+    }
+
     var script = $"{FrontendBoundName}.emit('{eventName}')";
 
     _scriptMethod.NotNull().Invoke(script);
@@ -314,6 +329,11 @@ public class BrowserBridge : IBridge
   public void Send<T>(string eventName, T data)
     where T : class
   {
+    if (_binding is null)
+    {
+      throw new InvalidOperationException("Bridge was not associated with a binding");
+    }
+
     string payload = JsonConvert.SerializeObject(data, _serializerOptions);
     string requestId = $"{Guid.NewGuid()}_{eventName}";
     _resultsStore[requestId] = payload;
