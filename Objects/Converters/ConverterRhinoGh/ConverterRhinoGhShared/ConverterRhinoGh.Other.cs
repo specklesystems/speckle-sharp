@@ -218,7 +218,7 @@ public partial class ConverterRhinoGh
     }
 #else
     RH.Material matToUse = material;
-    if (!material.IsPhysicallyBased)
+    if (!material.IsPhysicallyBased && !Doc.IsHeadless)
     {
       matToUse = new RH.Material();
       matToUse.CopyFrom(material);
