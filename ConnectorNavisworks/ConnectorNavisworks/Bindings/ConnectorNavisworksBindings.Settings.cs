@@ -91,7 +91,7 @@ public partial class ConnectorBindingsNavisworks
       {
         Slug = "coalesce-data",
         Name = "Coalesce Data from First Object to Geometry",
-        IsChecked = false,
+        IsChecked = true,
         Description =
           "All properties from the Geometry up the tree to the next First Object will be coalesced into the Geometry Node."
       }

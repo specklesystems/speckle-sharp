@@ -66,7 +66,6 @@ public sealed class ProgressInvoker : Invoker
   /// Provides an instance of the Progress class which starts reporting of progress
   /// of an operation, typically displaying a progress bar or dialog to the end user.
   /// </summary>
-  /// <param name="title">The title of the progress operation. Defaults to an empty string.</param>
   public ProgressInvoker(Progress applicationProgress)
   {
     _progressBar = applicationProgress;

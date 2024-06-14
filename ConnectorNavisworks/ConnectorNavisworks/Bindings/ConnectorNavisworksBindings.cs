@@ -23,7 +23,7 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
   // Much of the interaction in Navisworks is through the ActiveDocument API
-  private static Document s_doc;
+  private static Document s_activeDoc;
   internal static Control Control;
   private static object s_cachedCommit;
 
@@ -39,8 +39,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
-    s_doc = navisworksActiveDocument;
-    s_doc.SelectionSets.ToSavedItemCollection();
+    s_activeDoc = navisworksActiveDocument;
+    s_activeDoc.SelectionSets.ToSavedItemCollection();
 
     // Sets the Main Thread Control to Invoke commands on.
     Control = new Control();
@@ -84,7 +84,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   {
     // TODO!
     // An unsaved document has no path or filename
-    var fileName = s_doc.CurrentFileName;
+    var fileName = s_activeDoc.CurrentFileName;
     var hash = Core.Models.Utilities.HashString(fileName, Core.Models.Utilities.HashingFunctions.MD5);
     return hash;
   }
@@ -96,7 +96,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public async Task RetryLastConversionSend()
   {
-    if (s_doc == null)
+    if (s_activeDoc == null)
     {
       return;
     }

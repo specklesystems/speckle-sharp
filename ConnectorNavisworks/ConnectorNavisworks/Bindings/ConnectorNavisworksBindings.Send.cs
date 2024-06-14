@@ -37,9 +37,9 @@ public partial class ConnectorBindingsNavisworks
   private static Collection CommitObject =>
     new()
     {
-      ["units"] = GetUnits(s_doc),
+      ["units"] = GetUnits(s_activeDoc),
       collectionType = "Navisworks Model",
-      name = s_doc.Title,
+      name = s_activeDoc.Title,
       applicationId = "Root"
     };
 
@@ -182,7 +182,7 @@ public partial class ConnectorBindingsNavisworks
       throw new ArgumentException("No ProgressViewModel provided.");
     }
 
-    if (s_doc.ActiveSheet == null)
+    if (s_activeDoc.ActiveSheet == null)
     {
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
     }
@@ -248,8 +248,9 @@ public partial class ConnectorBindingsNavisworks
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       ModelItem modelItem = modelItemsToConvert[index];
-      var element = new Element();
-      element.GetElement(modelItem);
+
+      var element = new Element(modelItem);
+
       conversions.Add(element, new Tuple<Constants.ConversionState, Base>(Constants.ConversionState.ToConvert, null));
 
       if (index % objectInterval == 0 || index == modelItemsToConvert.Count - 1)
@@ -275,7 +276,7 @@ public partial class ConnectorBindingsNavisworks
     CurrentSettings = state.Settings;
     var settings = state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
 
-    _navisworksConverter.SetContextDocument(s_doc);
+    _navisworksConverter.SetContextDocument(s_activeDoc);
     _navisworksConverter.SetConverterSettings(settings);
     _navisworksConverter.Report.ReportObjects.Clear();
   }
@@ -284,7 +285,6 @@ public partial class ConnectorBindingsNavisworks
   /// Prepares model items to be converted for a given stream state.
   /// </summary>
   /// <param name="state">The stream state.</param>
-  /// <param name="totalObjects">Out parameter to return the total number of objects to convert.</param>
   /// <returns>A list of ModelItem objects that are ready to be converted.</returns>
   private List<ModelItem> PrepareModelItemsToConvert(StreamState state)
   {
@@ -310,7 +310,7 @@ public partial class ConnectorBindingsNavisworks
     Collection commitObject
   )
   {
-    _progressBar.BeginSubOperation(0.35, "Spinning the alchemy wheel, transmuting data...");
+    _progressBar.BeginSubOperation(0.35, $"Spinning the alchemy wheel, transmuting {conversions.Count} objects...");
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
     _conversionInvoker = new ConversionInvoker(_navisworksConverter);
     var converted = ConvertObjects(conversions);
@@ -347,7 +347,6 @@ public partial class ConnectorBindingsNavisworks
   /// Handles updates to the progress of the operation.
   /// </summary>
   /// <param name="progressDict">A dictionary containing progress details.</param>
-  /// <param name="convertedCount">The total number of converted items.</param>
   private void HandleProgress(ConcurrentDictionary<string, int> progressDict)
   {
     // If the "RemoteTransport" key exists in the dictionary and has a positive value
@@ -375,7 +374,6 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="state">The current state of the stream.</param>
   /// <param name="commitObject">The collection of objects to send.</param>
-  /// <param name="convertedCount">The total number of converted items.</param>
   /// <returns>The ID of the sent object.</returns>
   private async Task<string> SendConvertedObjectsToSpeckle(StreamState state, Base commitObject)
   {
@@ -413,7 +411,6 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="state">The StreamState object, contains stream details and client.</param>
   /// <param name="objectId">The id of the object to commit.</param>
-  /// <param name="convertedCount">The count of converted elements.</param>
   /// <returns>The id of the created commit.</returns>
   private async Task<string> CreateCommit(StreamState state, string objectId)
   {
@@ -517,8 +514,8 @@ public partial class ConnectorBindingsNavisworks
     // Only send current view if we aren't sending other views.
     else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
     {
-      var currentView = _conversionInvoker.Convert(s_doc.CurrentViewpoint.ToViewpoint());
-      var homeView = _conversionInvoker.Convert(s_doc.HomeView);
+      var currentView = _conversionInvoker.Convert(s_activeDoc.CurrentViewpoint.ToViewpoint());
+      var homeView = _conversionInvoker.Convert(s_activeDoc.HomeView);
 
       if (currentView != null)
       {
@@ -542,7 +539,7 @@ public partial class ConnectorBindingsNavisworks
   /// <summary>
   /// Converts a set of Navisworks elements into Speckle objects and logs their conversion status.
   /// </summary>
-  /// <param name="conversions">A dictionary mapping elements to their conversion states and corresponding Base objects.</param>
+  /// <param name="allConversions">A dictionary mapping elements to their conversion states and corresponding Base objects.</param>
   /// <returns>The number of successfully converted elements.</returns>
   private Dictionary<Element, Tuple<Constants.ConversionState, Base>> ConvertObjects(
     IDictionary<Element, Tuple<Constants.ConversionState, Base>> allConversions
@@ -571,7 +568,7 @@ public partial class ConnectorBindingsNavisworks
       // Get the descriptor of the element
       var descriptor = element.Descriptor();
 
-      if (_navisworksConverter.Report.ReportObjects.TryGetValue(element.PseudoId, out var applicationObject))
+      if (_navisworksConverter.Report.ReportObjects.TryGetValue(element.IndexPath, out var applicationObject))
       {
         _progressViewModel.Report.Log(applicationObject);
         conversions[element] = new Tuple<Constants.ConversionState, Base>(
@@ -581,7 +578,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      var reportObject = new ApplicationObject(element.PseudoId, descriptor) { applicationId = element.PseudoId };
+      var reportObject = new ApplicationObject(element.IndexPath, descriptor) { applicationId = element.IndexPath };
 
       if (!_navisworksConverter.CanConvertToSpeckle(element.ModelItem))
       {
@@ -613,7 +610,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      converted.applicationId = element.PseudoId;
+      converted.applicationId = element.IndexPath;
       conversions[element] = new Tuple<Constants.ConversionState, Base>(Constants.ConversionState.Converted, converted);
       convertedCount++;
       _conversionProgressDict["Conversion"] = convertedCount;

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
-using Autodesk.Navisworks.Api.Interop.ComApi;
+using Autodesk.Navisworks.Api.DocumentParts;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Models;
@@ -15,147 +14,45 @@ public class Element
 {
   private ModelItem _modelItem;
 
-  /// <summary>
-  /// Initializes a new instance of the Element class with a specified pseudoId and optionally a ModelItem.
-  /// </summary>
-  /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
-  /// <param name="modelItem">Optional ModelItem used to create the Element instance. Default is null.</param>
-  private Element(string pseudoId, ModelItem modelItem = null)
+  private string _indexPath;
+
+  public string IndexPath
   {
-    PseudoId = pseudoId;
+    get
+    {
+      if (_indexPath == null && _modelItem != null)
+      {
+        _indexPath = ResolveModelItemToIndexPath(_modelItem);
+      }
+
+      return _indexPath;
+    }
+  }
+
+  public ModelItem ModelItem
+  {
+    get
+    {
+      if (_modelItem == null && _indexPath != null)
+      {
+        _modelItem = ResolveIndexPath(_indexPath);
+      }
+
+      return _modelItem;
+    }
+  }
+
+  public Element(string indexPath)
+  {
+    _indexPath = indexPath;
+  }
+
+  public Element(ModelItem modelItem)
+  {
     _modelItem = modelItem;
   }
 
-  private Element(string pseudoId)
-  {
-    PseudoId = pseudoId;
-  }
-
-  public Element() { }
-
-  public ModelItem ModelItem => Resolve();
-
-  public string PseudoId { get; private set; }
-
-  private static readonly int[] s_lowerBounds = new[] { 1 };
-  private static readonly string[] s_separator = new[] { "." };
-
-  /// <summary>
-  /// Creates a new Element instance using a given pseudoId.
-  /// </summary>
-  /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
-  /// <returns>A new Element instance with its pseudoId set.</returns>
-  public static Element GetElement(string pseudoId) => new(pseudoId);
-
-  /// <summary>
-  /// Creates a new Element instance using a given ModelItem.
-  /// </summary>
-  /// <param name="modelItem">The ModelItem used to create the Element instance.</param>
-  /// <returns>A new Element instance with its PseudoId and _modelItem field set.</returns>
-  public Element GetElement(ModelItem modelItem) => new(GetPseudoId(modelItem), modelItem);
-
-  /// <summary>
-  /// Gets the PseudoId for the given ModelItem.
-  /// </summary>
-  /// <param name="modelItem">The ModelItem for which to get the PseudoId.</param>
-  /// <returns>The PseudoId of the given ModelItem. If the PseudoId is not set, it is calculated and returned.</returns>
-  private string GetPseudoId(ModelItem modelItem)
-  {
-    if (PseudoId != null)
-    {
-      return PseudoId;
-    }
-
-    var arrayData = ((Array)ComApiBridge.ToInwOaPath(modelItem).ArrayData).ToArray<int>();
-    PseudoId =
-      arrayData.Length == 0
-        ? Constants.ROOT_NODE_PSEUDO_ID
-        : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
-    return PseudoId;
-  }
-
-  /// <summary>
-  /// Resolves a ModelItem from a PseudoId.
-  /// </summary>
-  /// <returns>A ModelItem that corresponds to the PseudoId, or null if the PseudoId could not be resolved.</returns>
-  private ModelItem Resolve()
-  {
-    if (_modelItem != null)
-    {
-      return _modelItem;
-    }
-
-    if (PseudoId == Constants.ROOT_NODE_PSEUDO_ID)
-    {
-      return Application.ActiveDocument.Models.RootItems.First;
-    }
-
-    if (PseudoId != null)
-    {
-      int[] pathArray;
-
-      try
-      {
-        pathArray = ParsePseudoIdToPathArray(PseudoId);
-      }
-      catch (ArgumentException)
-      {
-        return null;
-      }
-
-      var oneBasedArray = ConvertTo1BasedArray(pathArray);
-      var protoPath = CreateProtoPath(oneBasedArray);
-
-      _modelItem = ComApiBridge.ToModelItem(protoPath);
-    }
-
-    return _modelItem;
-  }
-
-  /// <summary>
-  /// Parses a PseudoId into a path array.
-  /// </summary>
-  /// <param name="pseudoId">The PseudoId to parse.</param>
-  /// <returns>An array of integers representing the path.</returns>
-  /// <exception cref="ArgumentException">Thrown when the PseudoId is malformed.</exception>
-  private int[] ParsePseudoIdToPathArray(string pseudoId) =>
-    pseudoId
-      .Split('-')
-      .Select(x =>
-      {
-        if (int.TryParse(x, out var value))
-        {
-          return value;
-        }
-
-        throw new ArgumentException("malformed path pseudoId");
-      })
-      .ToArray();
-
-  /// <summary>
-  /// Converts a zero-based integer array into a one-based array.
-  /// </summary>
-  /// <param name="pathArray">The zero-based integer array to convert.</param>
-  /// <returns>A one-based array with the same elements as the input array.</returns>
-  private Array ConvertTo1BasedArray(int[] pathArray)
-  {
-    var oneBasedArray = Array.CreateInstance(typeof(int), new[] { pathArray.Length }, s_lowerBounds);
-    Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
-    return oneBasedArray;
-  }
-
-  /// <summary>
-  /// Creates a protoPath from a one-based array.
-  /// </summary>
-  /// <param name="oneBasedArray">The one-based array to use for creating the protoPath.</param>
-  /// <returns>A protoPath that corresponds to the input array.</returns>
-  private InwOaPath CreateProtoPath(Array oneBasedArray)
-  {
-    var oState = ComApiBridge.State;
-    var protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
-    protoPath.ArrayData = oneBasedArray;
-    return protoPath;
-  }
+  private static readonly string[] s_separator = { "." };
 
   /// <summary>
   /// Generates a descriptor for the given model item.
@@ -185,14 +82,13 @@ public class Element
   /// </summary>
   /// <param name="converted"></param>
   /// <param name="streamState"></param>
-  /// <param name="convertedDictionary">The input dictionary to be converted into a hierarchical structure.</param>
   /// <returns>An IEnumerable of root nodes representing the hierarchical structure.</returns>
   public static IEnumerable<Base> BuildNestedObjectHierarchy(
     Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted,
     StreamState streamState
   )
   {
-    var convertedDictionary = converted.ToDictionary(x => x.Key.PseudoId, x => (x.Value.Item2, x.Key));
+    var convertedDictionary = converted.ToDictionary(x => x.Key.IndexPath, x => (x.Value.Item2, x.Key));
 
     // This dictionary is for looking up parents quickly
     Dictionary<string, Base> lookupDictionary = new();
@@ -204,7 +100,7 @@ public class Element
     foreach (var pair in convertedDictionary)
     {
       var element = pair.Value.Key;
-      var pseudoId = element.PseudoId;
+      var indexPath = element.IndexPath;
       var baseNode = pair.Value.Item1;
       var modelItem = element.ModelItem;
       var type = baseNode?.GetType().Name;
@@ -223,14 +119,14 @@ public class Element
         AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
       }
 
-      string[] parts = pseudoId.Split('-');
+      string[] parts = indexPath.Split('-');
       string parentKey = string.Join("-", parts.Take(parts.Length - 1));
 
-      lookupDictionary.Add(pseudoId, baseNode);
+      lookupDictionary.Add(indexPath, baseNode);
 
       if (!lookupDictionary.ContainsKey(parentKey))
       {
-        potentialRootNodes.Add(pseudoId, baseNode);
+        potentialRootNodes.Add(indexPath, baseNode);
       }
     }
 
@@ -408,5 +304,22 @@ public class Element
     {
       collection.elements = null;
     }
+  }
+
+  public static ModelItem ResolveIndexPath(string indexPath)
+  {
+    var indexPathParts = indexPath.Split('-');
+
+    // assign the first part of indexPathParts to modelIndex and parse it to int, the second part to pathId string
+    ModelItemPathId modelItemPathId = new() { ModelIndex = int.Parse(indexPathParts[0]), PathId = indexPathParts[1] };
+
+    var modelItem = Application.ActiveDocument.Models.ResolvePathId(modelItemPathId);
+    return modelItem;
+  }
+
+  public static string ResolveModelItemToIndexPath(ModelItem modelItem)
+  {
+    var modelItemPathId = Application.ActiveDocument.Models.CreatePathId(modelItem);
+    return $"{modelItemPathId.ModelIndex}-{modelItemPathId.PathId}";
   }
 }

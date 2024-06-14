@@ -85,9 +85,8 @@ public class SelectionHandler
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
       ProgressBar.Update(i * progressIncrement);
 
-      var pseudoId = selection[i];
-      var element = Element.GetElement(pseudoId);
-      _uniqueModelItems.Add(element.ModelItem);
+      var indexPath = selection[i];
+      _uniqueModelItems.Add(Element.ResolveIndexPath(indexPath));
     }
 
     // End the progress sub-operation
@@ -204,7 +203,6 @@ public class SelectionHandler
   /// <summary>
   /// Resolves the SavedViewpoint based on the provided viewpoint match and saved view reference.
   /// </summary>
-  /// <param name="viewpointMatch">The dynamic object representing the viewpoint match.</param>
   /// <param name="savedViewReference">The saved view reference to resolve.</param>
   /// <returns>The resolved SavedViewpoint.</returns>
   private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
@@ -365,7 +363,7 @@ public class SelectionHandler
     _descendantProgress = 0;
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
-    ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
+    ProgressBar.BeginSubOperation(0.1, $"Validating {allDescendants} descendants...");
 
     foreach (var node in startNodes)
     {
@@ -382,9 +380,11 @@ public class SelectionHandler
   /// <param name="totalDescendants">The total number of descendants.</param>
   private void TraverseDescendants(ModelItem startNode, int totalDescendants)
   {
-    var descendantInterval = Math.Max(totalDescendants / 100.0, 1);
+    var descendantInterval = Math.Max(totalDescendants / 100.0, 1); // Update progress every 1%
     var validDescendants = new HashSet<ModelItem>();
-    int lastPercentile = 0;
+
+    int updateCounter = 0; // Counter to track when to update the UI
+    int lastUpdate = 0; // Track the last update to avoid frequent updates
 
     Stack<ModelItem> stack = new();
     stack.Push(startNode);
@@ -407,38 +407,82 @@ public class SelectionHandler
 
       _visited.Add(currentNode);
 
-      if (currentNode.IsHidden)
+      bool isVisible = IsVisibleCached(currentNode);
+      if (!isVisible)
       {
+        // If node is hidden, skip processing it and all its descendants
         var descendantsCount = currentNode.Descendants.Count();
         _descendantProgress += descendantsCount + 1;
+        continue;
       }
-      else
-      {
-        validDescendants.Add(currentNode);
-        _descendantProgress++;
-      }
+
+      validDescendants.Add(currentNode); // currentNode is visible, process it
+      _descendantProgress++;
 
       if (currentNode.Children.Any())
       {
-        foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
+        // Add visible children to the stack
+        int childrenCount = 0;
+        foreach (var child in currentNode.Children)
         {
-          stack.Push(child);
+          if (!_visited.Contains(child) && IsVisibleCached(child))
+          {
+            stack.Push(child);
+            childrenCount++;
+          }
+          else if (!IsVisibleCached(child))
+          {
+            // If child is hidden, skip processing it and all its descendants
+            var descendantsCount = child.Descendants.Count();
+            _descendantProgress += descendantsCount + 1;
+          }
         }
       }
 
       _uniqueModelItems.AddRange(validDescendants);
+      validDescendants.Clear();
 
-      int currentPercentile = (int)(_descendantProgress / descendantInterval);
-      if (currentPercentile <= lastPercentile)
+      updateCounter++;
+
+      if (!(updateCounter >= descendantInterval) || (lastUpdate >= _descendantProgress))
       {
         continue;
       }
 
       double progress = _descendantProgress / (double)totalDescendants;
       ProgressBar.Update(progress);
-      lastPercentile = currentPercentile;
+      lastUpdate = _descendantProgress;
+      updateCounter = 0;
     }
   }
+
+  // Cache to store visibility status of ModelItems
+  private readonly Dictionary<ModelItem, bool> _visibilityCache = new();
+
+  /// <summary>
+  /// Checks if a ModelItem is visible, with caching to avoid redundant calculations.
+  /// </summary>
+  /// <param name="item">The ModelItem to check visibility for.</param>
+  /// <returns>True if the item is visible, false otherwise.</returns>
+  private bool IsVisibleCached(ModelItem item)
+  {
+    // Check if the result is already in the cache
+    if (_visibilityCache.TryGetValue(item, out bool isVisible))
+    {
+      return isVisible;
+    }
+    // Calculate visibility if not in cache
+    isVisible = CalculateVisibility(item);
+    _visibilityCache[item] = isVisible;
+    return isVisible;
+  }
+
+  /// <summary>
+  /// Placeholder for if the default visibility determination logic need augmenting.
+  /// </summary>
+  /// <param name="item">The ModelItem to check.</param>
+  /// <returns>True if visible, false otherwise.</returns>
+  private static bool CalculateVisibility(ModelItem item) => !item.IsHidden;
 
   /// <summary>
   /// Executes a given function while updating a progress bar.
