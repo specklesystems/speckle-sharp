@@ -11,7 +11,7 @@ public class ArcGISConverterModule : ISpeckleModule
   public void Load(SpeckleContainerBuilder builder)
   {
     //don't need a host specific RootToSpeckleConverter
-    builder.AddConverterCommon<IRootToSpeckleConverter, ArcGISToSpeckleUnitConverter, Unit>();
+    builder.AddConverterCommon<RootToSpeckleConverter, ArcGISToSpeckleUnitConverter, Unit>();
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.AddScoped<IFeatureClassUtils, FeatureClassUtils>();
     builder.AddScoped<IArcGISFieldUtils, ArcGISFieldUtils>();
