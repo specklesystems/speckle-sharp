@@ -224,7 +224,7 @@ public partial class ConverterRhinoGh
       matToUse.CopyFrom(material);
       matToUse.ToPhysicallyBased();
     }
-    using (var rm = RenderMaterial.FromMaterial(matToUse, Doc))
+    using (var rm = RenderMaterial.FromMaterial(matToUse, null))
     {
       RH.PhysicallyBasedMaterial pbrMaterial = rm.ConvertToPhysicallyBased(RenderTexture.TextureGeneration.Allow);
       renderMaterial.diffuse = pbrMaterial.BaseColor.AsSystemColor().ToArgb();
