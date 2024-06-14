@@ -167,23 +167,6 @@ public class AllRevitCategories : IAllRevitCategories
     {
       return SHC.Undefined;
     }
-    
-    // foreach (var info in revitCategoryInfoCache.GetAllObjects())
-    // {
-    //   if (categoryName.IndexOf(info.CategoryName, StringComparison.OrdinalIgnoreCase) >= 0)
-    //   {
-    //     return info;
-    //   }
-    //   foreach (var alias in info.CategoryAliases)
-    //   {
-    //     if (categoryName.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
-    //     {
-    //       return info;
-    //     }
-    //   }
-    // }
-    //
-    // return SHC.Undefined;
   }
   #endregion
 
