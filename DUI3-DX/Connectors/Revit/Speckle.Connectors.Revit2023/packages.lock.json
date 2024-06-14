@@ -323,18 +323,18 @@
       },
       "Speckle.Revit2023.Api": {
         "type": "Transitive",
-        "resolved": "0.1.1-preview.0.22",
-        "contentHash": "rTzQLzoOSNjN63XtDr3AV/dHdOcRnlRIlsKUKcyQF0xeEjUJxscoBpLBiw0XM6SbLbdgdzLb6+TcGFZmglHbyw==",
+        "resolved": "0.1.1-preview.0.23",
+        "contentHash": "uAhBZuhqbXpx0vie8hazC+a4a4B3t0qBIfxOlPmEosYGDZD7SSYGxolNdEHnQ1QjRXtqEPPBUVJQo0G/17jUcQ==",
         "dependencies": {
           "Mapster": "7.3.0",
           "Speckle.Revit.API": "2023.0.0",
-          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.22"
+          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.23"
         }
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Transitive",
-        "resolved": "0.1.1-preview.0.22",
-        "contentHash": "Z6bfEIKFYJtXPjHQYlGBjiQLekVOU7L//H9gaQIw3ba9jqJeYHx5AV0z6S83g04eGBKkNJC6EwBr+fspsK0f+w=="
+        "resolved": "0.1.1-preview.0.23",
+        "contentHash": "H66I9JRUGt1l1YS8aOdniRPDOixRPqua9puGrhGnTEKJ26kVlgkM3FpKfdAMFea4hf03hdqhnFVmNEwgA6mPHA=="
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
@@ -523,7 +523,7 @@
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.22, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.23, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
@@ -537,7 +537,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.22, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.23, )"
         }
       },
       "speckle.converters.revit2023.dependencyinjection": {
@@ -546,7 +546,7 @@
           "Speckle.Converters.Common": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )",
           "Speckle.Converters.Revit2023": "[2.0.999-local, )",
-          "Speckle.Revit2023.Api": "[0.1.1-preview.0.22, )"
+          "Speckle.Revit2023.Api": "[0.1.1-preview.0.23, )"
         }
       },
       "Speckle.Core": {
