@@ -140,6 +140,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       }
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
+    bakedObjectIds.AddRange(createdLayerGroups.Values.Select(x => x.URI));
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
