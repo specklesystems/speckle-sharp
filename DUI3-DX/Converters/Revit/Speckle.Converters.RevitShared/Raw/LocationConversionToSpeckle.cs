@@ -36,7 +36,7 @@ public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
     var point = target.ToLocationPoint();
     if (point is not null)
     {
-      _xyzConverter.Convert(point.Point);
+      return _xyzConverter.Convert(point.Point);
     }
     throw new SpeckleConversionException($"Unexpected location type {target.GetType()}");
   }
