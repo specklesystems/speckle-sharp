@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <Product>ConnectorArchicad</Product>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <UseAppHost>true</UseAppHost>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

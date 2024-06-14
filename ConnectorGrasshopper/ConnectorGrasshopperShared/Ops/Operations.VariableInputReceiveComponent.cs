@@ -547,6 +547,23 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       try
       {
         account = wrapper?.GetAccount().Result;
+
+        // hack for FE2
+        // should we also fetch this for FE1-accounts that are trying to access FE2 stream? Probably not
+        if (account.serverInfo.frontend2 is true)
+        {
+          Client client = new(account);
+          var streamObj = client.StreamGet(StreamWrapper.StreamId, 100).Result;
+          foreach (Branch branch in streamObj.branches.items)
+          {
+            if (branch.id == StreamWrapper.BranchName)
+            {
+              StreamWrapper.BranchName = branch.name;
+              break;
+            }
+          }
+          client.Dispose();
+        }
       }
       catch (SpeckleException e)
       {

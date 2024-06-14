@@ -4,13 +4,13 @@
 
 ## Introduction
 
-This is the ⚠ALPHA⚠ version of the Speckle 2.0 AutoCAD Civil3D Connector. Currently, it only supports the very most basic conversions - please leave any comments, suggestions, and feature requests in our [Making Speckle](https://discourse.speckle.works/t/new-speckle-2-0-autocad-civil3d-suggestions/1155) forum discussion thread!
+This is the ⚠Beta⚠ version of the Speckle 2.0 AutoCAD Civil3D Connector. Currently, it supports the basic objects for both Autocad and Civil3D (refer to our docs for a full list) - please leave any comments, suggestions, and feature requests in our [Making Speckle](https://discourse.speckle.works/t/new-speckle-2-0-autocad-civil3d-suggestions/1155) forum discussion thread!
 
 ## Documentation
 
 Comprehensive developer and user documentation can be found in our:
 
-#### 📚 [Speckle Docs website](https://speckle.guide/dev/)
+#### 📚 [Speckle Docs website](https://speckle.guide/user/autocadcivil.html)
 
 ## Developing & Debugging
 
@@ -21,8 +21,8 @@ Comprehensive developer and user documentation can be found in our:
 
 #### Supported versions
 
-- AutoCAD: 2021, 2022
-- Civil3D: 2021, 2022
+- AutoCAD: 2021, 2022, 2023, 2024, 2025
+- Civil3D: 2021, 2022, 2023, 2024, 2025
 
 ### Getting Started
 

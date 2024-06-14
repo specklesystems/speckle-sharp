@@ -1,0 +1,18 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 159 159" width="159" height="159">
+	<title>AddOnIcon_18x18-svg</title>
+	<style>
+		.s0 { fill: #1c4ed8 } 
+	</style>
+	<g id="Layer">
+		<path id="Side" class="s0" d="m15 20h5v109h-5z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m32 35h5v109h-5z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m137 26h5v113h-5z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m33 142.9l107.9-8.9 0.1 5.2-107.9 8.8z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m33 34.9l107.9-8.9 0.1 5.2-107.9 8.8z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m17 19.9l107.9-8.9 0.1 5.2-107.9 8.8z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m14.7 128.7l3.5-3.5 19.1 19.2-3.5 3.5z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m14.7 128.7l3.5-3.5 19.1 19.2-3.5 3.5z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m16 23.4l3.3-3.4 18 18.5-3.3 3.4z" style="fill:#1c4ed8;"/>
+		<path id="Side" class="s0" d="m121 14l3.3-3 17.7 16-3.3 3z" style="fill:#1c4ed8;"/>
+	</g>
+</svg>
