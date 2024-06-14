@@ -294,24 +294,24 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   /// <summary>
   /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
   /// </summary>
-  private readonly Dictionary<string, IRevitGraphicsStyle> _graphicStyleCache = new();
+  private readonly Dictionary<int, IRevitGraphicsStyle> _graphicStyleCache = new();
 
   /// <summary>
   /// Exclude light source cones and potentially other geometries by their graphic style
   /// </summary>
   private bool IsSkippableGraphicStyle(IRevitElementId id, IRevitDocument doc)
   {
-    if (!_graphicStyleCache.ContainsKey(id.ToString()))
+    var graphicStyle = doc.GetElement(id)?.ToGraphicsStyle();
+    if (graphicStyle is null)
     {
-      _graphicStyleCache.Add(id.ToString(), doc.GetElement(id).NotNull().ToGraphicsStyle().NotNull());
+      return false;
+    }
+    if (!_graphicStyleCache.ContainsKey(id.IntegerValue))
+    {
+      _graphicStyleCache.Add(id.IntegerValue, graphicStyle);
     }
 
-    var graphicStyle = _graphicStyleCache[id.ToString()];
-
-    if (
-      graphicStyle != null
-      && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)RevitBuiltInCategory.OST_LightingFixtureSource
-    )
+    if (graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)RevitBuiltInCategory.OST_LightingFixtureSource)
     {
       return true;
     }
