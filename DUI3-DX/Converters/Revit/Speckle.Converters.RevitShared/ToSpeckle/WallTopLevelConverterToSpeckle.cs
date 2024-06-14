@@ -1,4 +1,4 @@
-﻿using Speckle.Converters.Common.Objects;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 using Objects;
 using Speckle.Converters.RevitShared.Helpers;
@@ -74,16 +74,10 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     speckleWall.baseLine = _curveConverter.Convert(locationCurve.Curve);
 
     var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.WALL_BASE_CONSTRAINT);
-    if (level is not null)
-    {
-      speckleWall.level = _levelConverter.Convert(level);
-    }
+    speckleWall.level = _levelConverter.Convert(level);
 
     var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.WALL_BASE_CONSTRAINT);
-    if (topLevel is not null)
-    {
-      speckleWall.topLevel = _levelConverter.Convert(topLevel);
-    }
+    speckleWall.topLevel = _levelConverter.Convert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
     _ = _parameterValueExtractor.TryGetValueAsDouble(

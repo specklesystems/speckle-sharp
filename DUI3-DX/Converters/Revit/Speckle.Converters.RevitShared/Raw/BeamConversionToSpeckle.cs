@@ -1,4 +1,4 @@
-﻿using Objects;
+using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
@@ -58,10 +58,7 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
       target,
       RevitBuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
-    if (level is not null)
-    {
-      speckleBeam.level = _levelConverter.Convert(level);
-    }
+    speckleBeam.level = _levelConverter.Convert(level);
 
     speckleBeam.displayValue = _displayValueExtractor.GetDisplayValue(target);
 

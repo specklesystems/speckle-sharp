@@ -160,15 +160,28 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return GetValueGeneric(parameter, RevitStorageType.ElementId, (p) => p.AsElementId());
   }
 
-  public IRevitLevel? GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public IRevitLevel GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      return null;
+      throw new SpeckleConversionException();
     }
 
     var paramElement = element.Document.GetElement(elementId);
-    return paramElement?.ToLevel();
+    return (paramElement?.ToLevel()).NotNull();
+  }
+  
+  public bool TryGetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter, [NotNullWhen(true)] out IRevitLevel? revitLevel)
+  {
+    if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
+    {
+      revitLevel = null;
+      return false;
+    }
+
+    var paramElement = element.Document.GetElement(elementId);
+    revitLevel = paramElement?.ToLevel();
+    return revitLevel is not null;
   }
 
   private TResult? GetValueGeneric<TResult>(

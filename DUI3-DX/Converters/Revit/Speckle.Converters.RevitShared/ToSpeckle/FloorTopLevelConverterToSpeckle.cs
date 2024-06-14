@@ -1,4 +1,4 @@
-﻿using Objects;
+using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
@@ -63,11 +63,7 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IR
     }
 
     var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
-    if (level is not null)
-    {
-      speckleFloor.level = _levelConverter.Convert(level);
-    }
-
+    speckleFloor.level = _levelConverter.Convert(level.NotNull());
     speckleFloor.structural =
       _parameterValueExtractor.GetValueAsBool(target, RevitBuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 

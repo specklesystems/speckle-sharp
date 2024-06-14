@@ -1,4 +1,4 @@
-﻿using Objects.BuiltElements.Revit.RevitRoof;
+using Objects.BuiltElements.Revit.RevitRoof;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Extensions;
@@ -57,11 +57,7 @@ public class ExtrusionRoofToSpeckleTopLevelConverter
       target,
       RevitBuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM
     );
-    if (level is not null)
-    {
-      speckleExtrusionRoof.level = _levelConverter.Convert(level);
-    }
-
+    speckleExtrusionRoof.level = _levelConverter.Convert(level);
     speckleExtrusionRoof.outline = _modelCurveArrayConverter.Convert(target.GetProfile());
 
     var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
