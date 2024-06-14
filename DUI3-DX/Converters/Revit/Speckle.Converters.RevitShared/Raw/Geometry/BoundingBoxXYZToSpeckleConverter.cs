@@ -1,27 +1,31 @@
-using Objects.Primitive;
+﻿using Objects.Primitive;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<DB.BoundingBoxXYZ, SOG.Box>
+public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<IRevitBoundingBoxXYZ, SOG.Box>
 {
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<IRevitPlane, SOG.Plane> _planeConverter;
+  private readonly IRevitPlaneUtils _revitPlaneUtils;
 
   public BoundingBoxXYZToSpeckleConverter(
-    IRevitConversionContextStack contextStack,
-    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
-    ITypedConverter<DB.Plane, SOG.Plane> planeConverter
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
+    IRevitPlaneUtils revitPlaneUtils
   )
   {
     _contextStack = contextStack;
     _xyzToPointConverter = xyzToPointConverter;
     _planeConverter = planeConverter;
+    _revitPlaneUtils = revitPlaneUtils;
   }
 
-  public SOG.Box Convert(DB.BoundingBoxXYZ target)
+  public SOG.Box Convert(IRevitBoundingBoxXYZ target)
   {
     // convert min and max pts to speckle first
     var min = _xyzToPointConverter.Convert(target.Min);
@@ -29,7 +33,7 @@ public class BoundingBoxXYZToSpeckleConverter : ITypedConverter<DB.BoundingBoxXY
 
     // get the base plane of the bounding box from the transform
     var transform = target.Transform;
-    var plane = DB.Plane.CreateByOriginAndBasis(
+    var plane = _revitPlaneUtils.CreateByOriginAndBasis(
       transform.Origin,
       transform.BasisX.Normalize(),
       transform.BasisY.Normalize()

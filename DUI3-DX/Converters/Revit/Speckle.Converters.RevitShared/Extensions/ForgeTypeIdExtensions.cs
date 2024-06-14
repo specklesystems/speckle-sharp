@@ -1,25 +1,25 @@
-using Autodesk.Revit.DB;
+﻿using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Extensions;
 
 public static class ForgeTypeIdExtensions
 {
-  public static string? GetSymbol(this ForgeTypeId forgeTypeId)
+  public static string? GetSymbol(this IRevitForgeTypeId forgeTypeId, IRevitFormatOptionsUtils formatOptionsUtils)
   {
-    if (!FormatOptions.CanHaveSymbol(forgeTypeId))
+    if (!formatOptionsUtils.CanHaveSymbol(forgeTypeId))
     {
       return null;
     }
-    var validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
+    var validSymbols = formatOptionsUtils.GetValidSymbols(forgeTypeId);
     var typeId = validSymbols.Where(x => !x.Empty());
-    foreach (DB.ForgeTypeId symbolId in typeId)
+    foreach (var symbolId in typeId)
     {
-      return LabelUtils.GetLabelForSymbol(symbolId);
+      return formatOptionsUtils.GetLabelForSymbol(symbolId);
     }
     return null;
   }
 
-  public static string ToUniqueString(this ForgeTypeId forgeTypeId)
+  public static string ToUniqueString(this IRevitForgeTypeId forgeTypeId)
   {
     return forgeTypeId.TypeId;
   }

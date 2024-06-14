@@ -1,30 +1,40 @@
-using Objects.Primitive;
+﻿using Objects.Primitive;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class EllipseToSpeckleConverter : ITypedConverter<DB.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : ITypedConverter<IRevitEllipse, SOG.Ellipse>
 {
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ITypedConverter<IRevitPlane, SOG.Plane> _planeConverter;
+  private readonly IScalingServiceToSpeckle _scalingService;
+  private readonly IRevitPlaneUtils _revitPlaneUtils;
 
   public EllipseToSpeckleConverter(
-    IRevitConversionContextStack contextStack,
-    ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
-    ScalingServiceToSpeckle scalingService
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
+    IScalingServiceToSpeckle scalingService,
+    IRevitPlaneUtils revitPlaneUtils
   )
   {
     _contextStack = contextStack;
     _planeConverter = planeConverter;
     _scalingService = scalingService;
+    _revitPlaneUtils = revitPlaneUtils;
   }
 
-  public SOG.Ellipse Convert(DB.Ellipse target)
+  public SOG.Ellipse Convert(IRevitEllipse target)
   {
-    using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection))
+    using (
+      IRevitPlane basePlane = _revitPlaneUtils.CreateByOriginAndBasis(
+        target.Center,
+        target.XDirection,
+        target.YDirection
+      )
+    )
     {
       var trim = target.IsBound ? new Interval(target.GetEndParameter(0), target.GetEndParameter(1)) : null;
 

@@ -1,32 +1,33 @@
-using Objects;
+﻿using Objects;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Converters.RevitShared.ToSpeckle;
 using Speckle.Core.Models;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.Common;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: reminder - writing classes and creating interfaces is a bit like organising your space
 // if you have a structure for organising things, your interfaces, then finding your stuff, your classes & methods, becomes easy
 // having a lack of interfaces or large interfaces is a bit like lacking structure, when all of your stuff, your classes & methods
 // clould be anywhere or all in once place - rooting through box 274 for something you need, when said box has a miriad different
 // and unrelated items, is no fun. Plus when you need that item, you end up bringing out the whole box/
-[NameAndRankValue(nameof(DB.Floor), 0)]
-public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Floor, SOBR.RevitFloor>
+[NameAndRankValue(nameof(IRevitFloor), 0)]
+public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitFloor, SOBR.RevitFloor>
 {
-  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
-  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
-  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
   private readonly ISlopeArrowExtractor _slopeArrowExtractor;
 
   public FloorTopLevelConverterToSpeckle(
-    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
-    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
-    ParameterValueExtractor parameterValueExtractor,
-    ParameterObjectAssigner parameterObjectAssigner,
-    DisplayValueExtractor displayValueExtractor,
+    ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    ITypedConverter<IRevitLevel, SOBR.RevitLevel> levelConverter,
+    IParameterValueExtractor parameterValueExtractor,
+    IParameterObjectAssigner parameterObjectAssigner,
+    IDisplayValueExtractor displayValueExtractor,
     ISlopeArrowExtractor slopeArrowExtractor
   )
   {
@@ -38,14 +39,14 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB
     _slopeArrowExtractor = slopeArrowExtractor;
   }
 
-  public override SOBR.RevitFloor Convert(DB.Floor target)
+  public override SOBR.RevitFloor Convert(IRevitFloor target)
   {
     SOBR.RevitFloor speckleFloor = new();
 
-    var sketch = (DB.Sketch)target.Document.GetElement(target.SketchId);
+    var sketch = target.Document.GetElement(target.SketchId).NotNull().ToSketch().NotNull();
     List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
-    DB.ElementType type = (DB.ElementType)target.Document.GetElement(target.GetTypeId());
+    IRevitElementType type = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
 
     speckleFloor.family = type.FamilyName;
     speckleFloor.type = type.Name;
@@ -61,13 +62,13 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB
       speckleFloor.voids = profiles.Skip(1).ToList<ICurve>();
     }
 
-    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
-    speckleFloor.level = _levelConverter.Convert(level);
+    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
+    speckleFloor.level = _levelConverter.Convert(level.NotNull());
     speckleFloor.structural =
-      _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
+      _parameterValueExtractor.GetValueAsBool(target, RevitBuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 
     double? slopeParam = null;
-    if (_parameterValueExtractor.TryGetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE, out var slope))
+    if (_parameterValueExtractor.TryGetValueAsDouble(target, RevitBuiltInParameter.ROOF_SLOPE, out var slope))
     {
       // Divide by 100 to convert from percentage to unitless ratio (rise over run)
       slopeParam = slope / 100d;
@@ -83,9 +84,10 @@ public class FloorTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB
     return speckleFloor;
   }
 
-  private void TryAssignSlopeFromSlopeArrow(DB.Floor target, SOBR.RevitFloor speckleFloor, double? slopeParam)
+  private void TryAssignSlopeFromSlopeArrow(IRevitFloor target, SOBR.RevitFloor speckleFloor, double? slopeParam)
   {
-    if (_slopeArrowExtractor.GetSlopeArrow(target) is not DB.ModelLine slopeArrow)
+    var slopeArrow = _slopeArrowExtractor.GetSlopeArrow(target);
+    if (slopeArrow is null)
     {
       return;
     }

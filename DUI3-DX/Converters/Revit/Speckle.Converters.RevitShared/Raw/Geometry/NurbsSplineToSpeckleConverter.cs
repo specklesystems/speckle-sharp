@@ -1,22 +1,23 @@
-using Objects.Primitive;
+﻿using Objects.Primitive;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.Curve>
+public class NurbsSplineToSpeckleConverter : ITypedConverter<IRevitNurbSpline, SOG.Curve>
 {
   private readonly IRevitVersionConversionHelper _conversionHelper;
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
+  private readonly IScalingServiceToSpeckle _scalingService;
 
   public NurbsSplineToSpeckleConverter(
     IRevitVersionConversionHelper conversionHelper,
-    IRevitConversionContextStack contextStack,
-    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
-    ScalingServiceToSpeckle scalingService
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
+    IScalingServiceToSpeckle scalingService
   )
   {
     _conversionHelper = conversionHelper;
@@ -25,7 +26,7 @@ public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.
     _scalingService = scalingService;
   }
 
-  public SOG.Curve Convert(DB.NurbSpline target)
+  public SOG.Curve Convert(IRevitNurbSpline target)
   {
     var units = _contextStack.Current.SpeckleUnits;
 
@@ -40,12 +41,12 @@ public class NurbsSplineToSpeckleConverter : ITypedConverter<DB.NurbSpline, SOG.
 
     return new SOG.Curve()
     {
-      weights = target.Weights.Cast<double>().ToList(),
+      weights = target.Weights.ToList(),
       points = points,
-      knots = target.Knots.Cast<double>().ToList(),
+      knots = target.Knots.ToList(),
       degree = target.Degree,
       //speckleCurve.periodic = revitCurve.Period; // POC: already commented out, remove?
-      rational = target.isRational,
+      rational = target.IsRational,
       closed = _conversionHelper.IsCurveClosed(target),
       units = units,
       domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1)),

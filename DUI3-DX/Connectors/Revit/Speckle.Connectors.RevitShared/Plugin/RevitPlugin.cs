@@ -5,12 +5,11 @@ using CefSharp;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using System.Diagnostics;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
-using System.IO;
+using Speckle.Connectors.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -182,7 +181,7 @@ internal sealed class RevitPlugin : IRevitPlugin
   {
     try
     {
-      var assembly = Assembly.LoadFrom(Path.Combine(path));
+      var assembly = Assembly.LoadFrom(System.IO.Path.Combine(path));
       var icon = assembly.GetManifestResourceStream(sourceName);
       PngBitmapDecoder decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
       ImageSource source = decoder.Frames[0];
