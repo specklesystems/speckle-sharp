@@ -15,7 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutocadConnectorModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Filters\AutocadSelectionFilter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadBlockManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadInstanceObjectManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentModelStore.cs" />

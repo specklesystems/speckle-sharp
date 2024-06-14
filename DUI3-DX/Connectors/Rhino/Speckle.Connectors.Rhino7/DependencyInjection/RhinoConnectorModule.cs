@@ -60,18 +60,18 @@ public class RhinoConnectorModule : ISpeckleModule
     // binding dependencies
     builder.AddTransient<CancellationManager>();
 
-    // register send and receive operation and dependencies
-    builder.AddScoped<SendOperation<RhinoObject>>();
-    builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
+    // register send filters
     builder.AddScoped<ISendFilter, RhinoSelectionFilter>();
+    builder.AddScoped<IHostObjectBuilder, RhinoHostObjectBuilder>();
+
+    // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
-    builder.AddTransient<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
-    builder.AddTransient<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
 
     // register send operation and dependencies
     builder.AddScoped<SendOperation<RhinoObject>>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     builder.AddScoped<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
+    builder.AddScoped<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
   }
 }

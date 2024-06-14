@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
@@ -15,11 +16,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly AutocadInstanceObjectManager _instanceObjectManager;
 
-  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter, ISendConversionCache sendConversionCache)
+  public AutocadRootObjectBuilder(
+    IRootToSpeckleConverter converter,
+    ISendConversionCache sendConversionCache,
+    AutocadInstanceObjectManager instanceObjectManager
+  )
   {
     _converter = converter;
     _sendConversionCache = sendConversionCache;
+    _instanceObjectManager = instanceObjectManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -48,7 +55,6 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     foreach (var (dbObject, applicationId) in objects)
     {
       ct.ThrowIfCancellationRequested();
-
       try
       {
         Base converted;

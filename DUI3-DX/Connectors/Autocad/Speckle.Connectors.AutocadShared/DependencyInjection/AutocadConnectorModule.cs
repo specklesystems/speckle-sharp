@@ -15,6 +15,7 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -62,5 +63,6 @@ public class AutocadConnectorModule : ISpeckleModule
 
     // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
+    builder.AddScoped<IInstanceObjectsManager<AutocadRootObject>, AutocadInstanceObjectManager>();
   }
 }
