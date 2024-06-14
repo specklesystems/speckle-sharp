@@ -10,7 +10,6 @@ using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Connectors.Revit2023.Converters;
 using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
@@ -73,6 +72,5 @@ public class RevitConnectorModule : ISpeckleModule
 
     // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
-    builder.AddSingleton<IProxyMap, ProxyMap>();
   }
 }

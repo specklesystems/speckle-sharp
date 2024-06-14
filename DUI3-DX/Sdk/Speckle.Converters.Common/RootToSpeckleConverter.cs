@@ -10,18 +10,18 @@ namespace Speckle.Converters.Common;
 public class RootToSpeckleConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
-  private readonly IProxyMap _proxyMap;
+  private readonly IProxyMapper _proxyMapper;
 
-  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle, IProxyMap proxyMap)
+  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle, IProxyMapper proxyMapper)
   {
     _toSpeckle = toSpeckle;
-    _proxyMap = proxyMap;
+    _proxyMapper = proxyMapper;
   }
 
   public Base Convert(object target)
   {
     Type revitType = target.GetType();
-    var wrapper = _proxyMap.WrapIfExists(revitType, target);
+    var wrapper = _proxyMapper.WrapIfExists(revitType, target);
     if (wrapper == null)
     {
       throw new NotSupportedException($"No wrapper found for Revit type: {revitType.Name}");

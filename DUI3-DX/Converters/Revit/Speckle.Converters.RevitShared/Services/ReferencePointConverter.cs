@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.Common;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
@@ -32,7 +32,6 @@ public class ReferencePointConverter : IReferencePointConverter
   private readonly IRevitTransformUtils _transformUtils;
   private readonly IRevitFilterFactory _revitFilterFactory;
   private readonly IRevitXYZUtils _revitXyzUtils;
-  private readonly IProxyMap _proxyMap;
 
   private readonly Dictionary<string, IRevitTransform> _docTransforms = new();
 
@@ -41,8 +40,7 @@ public class ReferencePointConverter : IReferencePointConverter
     IRevitConversionSettings revitSettings,
     IRevitFilterFactory revitFilterFactory,
     IRevitTransformUtils transformUtils,
-    IRevitXYZUtils revitXyzUtils,
-    IProxyMap proxyMap
+    IRevitXYZUtils revitXyzUtils
   )
   {
     _contextStack = contextStack;
@@ -50,7 +48,6 @@ public class ReferencePointConverter : IReferencePointConverter
     _revitFilterFactory = revitFilterFactory;
     _transformUtils = transformUtils;
     _revitXyzUtils = revitXyzUtils;
-    _proxyMap = proxyMap;
   }
 
   // POC: the original allowed for the document to be passed in
@@ -92,7 +89,7 @@ public class ReferencePointConverter : IReferencePointConverter
     // POC: bogus disposal below
     var points = _revitFilterFactory
       .CreateFilteredElementCollector(_contextStack.Current.Document)
-      .OfClass<IRevitBasePoint>(_proxyMap)
+      .OfClass<IRevitBasePoint>()
       .ToList();
 
     var projectPoint = NotNullExtensions.NotNull(points.FirstOrDefault(o => o.IsShared == false), "No projectPoint");
