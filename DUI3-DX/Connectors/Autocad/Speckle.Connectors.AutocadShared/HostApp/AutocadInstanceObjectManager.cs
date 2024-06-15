@@ -1,5 +1,6 @@
 using System.DoubleNumerics;
 using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Connectors.Autocad.HostApp.Extensions;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.Utils.Instances;
 using Speckle.Core.Models.Instances;
@@ -36,7 +37,7 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
   private void UnpackInstance(BlockReference instance, int depth, Transaction transaction)
   {
-    var instanceIdString = instance.Id.ToString();
+    var instanceIdString = instance.Handle.Value.ToString();
     var definitionId = instance.BlockTableRecord;
 
     InstanceProxies[instanceIdString] = new InstanceProxy()
@@ -44,7 +45,8 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       applicationId = instanceIdString,
       DefinitionId = definitionId.ToString(),
       MaxDepth = depth,
-      Transform = GetMatrix(instance.BlockTransform.ToArray())
+      Transform = GetMatrix(instance.BlockTransform.ToArray()),
+      Units = Application.DocumentManager.CurrentDocument.Database.Insunits.ToSpeckleString()
     };
 
     // For each block instance that has the same definition, we need to keep track of the "maximum depth" at which is found.
@@ -91,11 +93,14 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
     foreach (ObjectId id in definition)
     {
       var obj = transaction.GetObject(id, OpenMode.ForRead);
+      var handleIdString = obj.Handle.Value.ToString();
+      definitionProxy.Objects.Add(handleIdString);
+
       if (obj is BlockReference blockReference && !blockReference.IsDynamicBlock)
       {
         UnpackInstance(blockReference, depth + 1, transaction);
       }
-      FlatAtomicObjects[id.ToString()] = new(obj, id.ToString());
+      FlatAtomicObjects[handleIdString] = new(obj, handleIdString);
     }
 
     DefinitionProxies[definitionId.ToString()] = definitionProxy;

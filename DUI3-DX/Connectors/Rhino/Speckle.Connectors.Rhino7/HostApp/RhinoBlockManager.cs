@@ -1,6 +1,9 @@
 using System.DoubleNumerics;
+using Rhino;
 using Rhino.DocObjects;
+using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Utils.Instances;
+using Speckle.Converters.Common;
 using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
@@ -10,9 +13,11 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// </summary>
 public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject>
 {
-  public RhinoInstanceObjectsManager()
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+
+  public RhinoInstanceObjectsManager(IConversionContextStack<RhinoDoc, UnitSystem> contextStack)
   {
-    // TODO: remove
+    _contextStack = contextStack;
   }
 
   private Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
@@ -37,12 +42,14 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject>
   {
     var instanceId = instance.Id.ToString();
     var instanceDefinitionId = instance.InstanceDefinition.Id.ToString();
+
     InstanceProxies[instanceId] = new InstanceProxy()
     {
       applicationId = instanceId,
       DefinitionId = instance.InstanceDefinition.Id.ToString(),
       Transform = XFormToMatrix(instance.InstanceXform),
-      MaxDepth = depth
+      MaxDepth = depth,
+      Units = _contextStack.Current.Document.ModelUnitSystem.ToSpeckleString()
     };
 
     // For each block instance that has the same definition, we need to keep track of the "maximum depth" at which is found.

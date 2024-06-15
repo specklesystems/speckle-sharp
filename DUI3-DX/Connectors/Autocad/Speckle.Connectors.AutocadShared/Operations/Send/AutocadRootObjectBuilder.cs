@@ -8,6 +8,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Autocad.Operations.Send;
 
@@ -51,7 +52,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     int count = 0;
 
     var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(objects);
-    // TODO: setup def proxies on root obj
+    modelWithLayers["instanceDefinitionProxies"] = instanceDefinitionProxies;
 
     List<SendConversionResult> results = new();
     var cacheHitCount = 0;
@@ -62,9 +63,11 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
       try
       {
         Base converted;
-        // NOTE TO DIM: I left out here
-        // I need to: check for instance proxies first and bypass conv
-        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
+        if (dbObject is BlockReference && instanceProxies.TryGetValue(applicationId, out InstanceProxy instanceProxy))
+        {
+          converted = instanceProxy;
+        }
+        else if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;
@@ -96,7 +99,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
         // POC: add logging
       }
 
-      onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
+      onOperationProgressed?.Invoke("Converting", (double)++count / atomicObjects.Count);
     }
 
     // POC: Log would be nice, or can be removed.

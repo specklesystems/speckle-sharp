@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadIdleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadLayerManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\AcadUnitsExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DatabaseExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DocumentExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />

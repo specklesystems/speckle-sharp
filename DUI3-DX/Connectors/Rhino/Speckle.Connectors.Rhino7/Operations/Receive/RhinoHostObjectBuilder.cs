@@ -3,6 +3,7 @@ using System.DoubleNumerics;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Instances;
@@ -220,7 +221,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
           && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out int index)
         )
         {
-          var transform = MatrixToTransform(instanceProxy.Transform);
+          var transform = MatrixToTransform(instanceProxy.Transform, instanceProxy.Units);
           var layerIndex = GetAndCreateLayerFromPath(path, baseLayerName, cache);
           var id = doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
           if (instanceProxy.applicationId != null)
@@ -346,25 +347,29 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     return reverseOrderPath.Reverse().ToArray();
   }
 
-  // POC: Not too proud of this being here
-  // TODO: units! this is a "big" question as we're crossing into converter territory (to a certain extent)
-  private Rhino.Geometry.Transform MatrixToTransform(Matrix4x4 matrix)
+  // POC: Not too proud of this being here, will be moving soon to the instance manager
+  private Transform MatrixToTransform(Matrix4x4 matrix, string units)
   {
-    var t = Rhino.Geometry.Transform.Identity;
+    var conversionFactor = Units.GetConversionFactor(
+      units,
+      _contextStack.Current.Document.ModelUnitSystem.ToSpeckleString()
+    );
+
+    var t = Transform.Identity;
     t.M00 = matrix.M11;
     t.M01 = matrix.M12;
     t.M02 = matrix.M13;
-    t.M03 = matrix.M14;
+    t.M03 = matrix.M14 * conversionFactor;
 
     t.M10 = matrix.M21;
     t.M11 = matrix.M22;
     t.M12 = matrix.M23;
-    t.M13 = matrix.M24;
+    t.M13 = matrix.M24 * conversionFactor;
 
     t.M20 = matrix.M31;
     t.M21 = matrix.M32;
     t.M22 = matrix.M33;
-    t.M23 = matrix.M34;
+    t.M23 = matrix.M34 * conversionFactor;
 
     t.M30 = matrix.M41;
     t.M31 = matrix.M42;
