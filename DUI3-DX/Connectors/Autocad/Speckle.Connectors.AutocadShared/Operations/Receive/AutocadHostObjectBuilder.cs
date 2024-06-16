@@ -22,13 +22,13 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
   private readonly IRootToHostConverter _converter;
   private readonly GraphTraversal _traversalFunction;
   private readonly HashSet<string> _uniqueLayerNames = new();
-  private readonly IInstanceObjectsManager<AutocadRootObject> _instanceObjectsManager;
+  private readonly IInstanceObjectsManager<AutocadRootObject, List<Entity>> _instanceObjectsManager;
 
   public AutocadHostObjectBuilder(
     IRootToHostConverter converter,
     GraphTraversal traversalFunction,
     AutocadLayerManager autocadLayerManager,
-    IInstanceObjectsManager<AutocadRootObject> instanceObjectsManager
+    IInstanceObjectsManager<AutocadRootObject, List<Entity>> instanceObjectsManager
   )
   {
     _converter = converter;
@@ -53,6 +53,8 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     //TODO: make the layerManager handle \/ ?
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
+
+    PreReceiveDeepClean(baseLayerPrefix);
 
     List<ReceiveConversionResult> results = new();
     List<string> bakedObjectIds = new();
@@ -87,7 +89,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     }
 
     // Stage 1: Convert atomic objects
-    Dictionary<string, List<string>> applicationIdMap = new();
+    Dictionary<string, List<Entity>> applicationIdMap = new();
     foreach (var (layerName, atomicObject) in atomicObjects)
     {
       try
@@ -96,9 +98,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
         if (atomicObject.applicationId != null)
         {
-          applicationIdMap[atomicObject.applicationId] = convertedObjects
-            .Select(ent => ent.ObjectId.ToString())
-            .ToList();
+          applicationIdMap[atomicObject.applicationId] = convertedObjects;
         }
 
         results.AddRange(
@@ -129,7 +129,54 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
       onOperationProgressed
     );
 
+    results.AddRange(instanceConversionResults);
     return new(bakedObjectIds, results);
+  }
+
+  private void PreReceiveDeepClean(string baseLayerPrefix)
+  {
+    using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
+
+    // Step 1: purge instances and instance definitions
+    var instanceDefinitionsToDelete = new Dictionary<string, BlockTableRecord>();
+    var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForWrite);
+    foreach (var objectId in modelSpaceRecord)
+    {
+      var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;
+      if (obj == null)
+      {
+        continue;
+      }
+
+      var definition = transaction.GetObject(obj.BlockTableRecord, OpenMode.ForRead) as BlockTableRecord;
+      // POC: this is tightly coupled with a naming convention for definitions in the Instance object manager
+      if (definition != null && definition.Name.Contains(baseLayerPrefix))
+      {
+        obj.UpgradeOpen();
+        obj.Erase();
+        instanceDefinitionsToDelete[obj.BlockTableRecord.ToString()] = definition;
+      }
+    }
+
+    foreach (var def in instanceDefinitionsToDelete.Values)
+    {
+      def.UpgradeOpen();
+      def.Erase();
+    }
+
+    // Step 2: layers and normal objects
+    var layerTable = (LayerTable)
+      transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.LayerTableId, OpenMode.ForRead);
+
+    foreach (var layerId in layerTable)
+    {
+      var layer = (LayerTableRecord)transaction.GetObject(layerId, OpenMode.ForRead);
+      if (layer.Name.Contains(baseLayerPrefix))
+      {
+        _autocadLayerManager.CreateLayerOrPurge(layer.Name);
+      }
+    }
+    transaction.Commit();
   }
 
   private IEnumerable<Entity> ConvertObject(Base obj, string layerName)

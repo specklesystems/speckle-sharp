@@ -72,7 +72,7 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     builder.AddScoped<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
-    builder.AddScoped<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
+    builder.AddScoped<IInstanceObjectsManager<RhinoObject, List<string>>, RhinoInstanceObjectsManager>();
     builder.AddScoped<RhinoLayerManager>();
   }
 }

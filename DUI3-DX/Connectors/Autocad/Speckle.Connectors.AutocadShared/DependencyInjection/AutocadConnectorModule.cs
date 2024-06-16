@@ -1,3 +1,4 @@
+using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;
@@ -63,6 +64,6 @@ public class AutocadConnectorModule : ISpeckleModule
 
     // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
-    builder.AddScoped<IInstanceObjectsManager<AutocadRootObject>, AutocadInstanceObjectManager>();
+    builder.AddScoped<IInstanceObjectsManager<AutocadRootObject, List<Entity>>, AutocadInstanceObjectManager>();
   }
 }

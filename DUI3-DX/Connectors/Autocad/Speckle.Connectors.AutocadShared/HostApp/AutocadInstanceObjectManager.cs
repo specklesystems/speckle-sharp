@@ -1,13 +1,22 @@
 using System.DoubleNumerics;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
 using Speckle.Connectors.Autocad.HostApp.Extensions;
 using Speckle.Connectors.Autocad.Operations.Send;
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Instances;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 
-public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootObject>
+/// <summary>
+/// <inheritdoc/>
+///  Expects to be a scoped dependency per send or receive operation.
+/// </summary>
+public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootObject, List<Entity>>
 {
   private Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
   private Dictionary<string, List<InstanceProxy>> InstanceProxiesByDefinitionId { get; set; } = new();
@@ -16,15 +25,10 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
   public UnpackResult<AutocadRootObject> UnpackSelection(IEnumerable<AutocadRootObject> objects)
   {
-    // POC: Dim enjoys controlling transactions clearly, it's not immediate how we're dealing with stuff in TransactionContext
-    // where does it start, can we batch more stuff in it?, performance implications? document locking?
     using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
 
     foreach (var obj in objects)
     {
-      // TODO: maybe get the dynamic blocks out as "exploded", or handle them separately anyway - for now excluding
-      // let's solve the simple case for now
-      // TODO: idea: dynamic blocks could fallback to a rhino "group" - could we fake it with a displayValue[] hack
       if (obj.Root is BlockReference blockReference && !blockReference.IsDynamicBlock)
       {
         UnpackInstance(blockReference, 0, transaction);
@@ -108,7 +112,7 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
   public BakeResult BakeInstances(
     List<(string[] layerPath, IInstanceComponent obj)> instanceComponents,
-    Dictionary<string, List<string>> applicationIdMap,
+    Dictionary<string, List<Entity>> applicationIdMap,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed
   )
@@ -118,24 +122,73 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
       .ToList();
 
+    var definitionIdAndApplicationIdMap = new Dictionary<string, ObjectId>();
+
+    using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
+    var conversionResults = new List<ReceiveConversionResult>();
+    var createdObjectIds = new List<string>();
+    var consumedObjectIds = new List<string>();
+    var count = 0;
+
     foreach (var (path, instanceOrDefinition) in sortedInstanceComponents)
     {
-      if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
+      try
       {
-        // TODO
-        var currentApplicationObjectIds = definitionProxy.Objects
-          .Select(id => applicationIdMap.TryGetValue(id, out List<string> value) ? value : null)
-          .Where(x => x is not null)
-          .SelectMany(id => id)
-          .ToList();
+        onOperationProgressed?.Invoke("Converting blocks", (double)++count / sortedInstanceComponents.Count);
+        if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy && definitionProxy.applicationId != null)
+        {
+          // TODO: create definition (block table record)
+          var constituentEntities = definitionProxy.Objects
+            .Select(id => applicationIdMap.TryGetValue(id, out List<Entity> value) ? value : null)
+            .Where(x => x is not null)
+            .SelectMany(ent => ent)
+            .ToList();
+
+          var record = new BlockTableRecord();
+          var objectIds = new ObjectIdCollection();
+          record.Name = baseLayerName + definitionProxy.applicationId;
+          foreach (var entity in constituentEntities)
+          {
+            // record.AppendEntity(entity);
+            objectIds.Add(entity.ObjectId);
+          }
+
+          using var blockTable = (BlockTable)
+            transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.BlockTableId, OpenMode.ForWrite);
+          var id = blockTable.Add(record);
+
+          record.AssumeOwnershipOf(objectIds);
+
+          definitionIdAndApplicationIdMap[definitionProxy.applicationId] = id;
+          transaction.AddNewlyCreatedDBObject(record, true);
+        }
+        else if (
+          instanceOrDefinition is InstanceProxy instanceProxy
+          && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out ObjectId definitionId)
+        )
+        {
+          var matrix3d = GetMatrix3d(instanceProxy.Transform, instanceProxy.Units);
+          var insertionPoint = Point3d.Origin.TransformBy(matrix3d);
+
+          var modelSpaceBlockTableRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(
+            OpenMode.ForWrite
+          );
+
+          var blockRef = new BlockReference(insertionPoint, definitionId) { BlockTransform = matrix3d };
+          modelSpaceBlockTableRecord.AppendEntity(blockRef);
+          transaction.AddNewlyCreatedDBObject(blockRef, true);
+          conversionResults.Add(
+            new(Status.SUCCESS, instanceProxy, blockRef.Handle.Value.ToString(), "Instance (Block)")
+          );
+        }
       }
-      else if (instanceOrDefinition is InstanceProxy instanceProxy)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // TODO
+        conversionResults.Add(new(Status.ERROR, instanceOrDefinition as Base ?? new Base(), null, null, ex));
       }
     }
-
-    throw new NotImplementedException(); // TODO: remove
+    transaction.Commit();
+    return new(new List<string>(), new List<string>(), conversionResults);
   }
 
   private Matrix4x4 GetMatrix(double[] t)
@@ -158,5 +211,72 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       t[14],
       t[15]
     );
+  }
+
+  private Matrix3d GetMatrix3d(Matrix4x4 matrix, string units)
+  {
+    var sf = Units.GetConversionFactor(
+      units,
+      Application.DocumentManager.CurrentDocument.Database.Insunits.ToSpeckleString()
+    );
+
+    var scaledTransform = new[]
+    {
+      matrix.M11,
+      matrix.M12,
+      matrix.M13,
+      matrix.M14 * sf,
+      matrix.M21,
+      matrix.M22,
+      matrix.M23,
+      matrix.M24 * sf,
+      matrix.M31,
+      matrix.M32,
+      matrix.M33,
+      matrix.M34 * sf,
+      matrix.M41,
+      matrix.M42,
+      matrix.M43,
+      matrix.M44
+    };
+
+    var m3d = new Matrix3d(scaledTransform);
+    if (!m3d.IsScaledOrtho())
+    {
+      m3d = new Matrix3d(MakePerpendicular(m3d));
+    }
+
+    return m3d;
+  }
+
+  // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
+  private static double[] MakePerpendicular(Matrix3d matrix)
+  {
+    // Get the basis vectors of the matrix
+    Vector3d right = new(matrix[0, 0], matrix[1, 0], matrix[2, 0]);
+    Vector3d up = new(matrix[0, 1], matrix[1, 1], matrix[2, 1]);
+
+    Vector3d newForward = right.CrossProduct(up).GetNormal();
+    Vector3d newUp = newForward.CrossProduct(right).GetNormal();
+
+    return new[]
+    {
+      right.X,
+      newUp.X,
+      newForward.X,
+      matrix[0, 3],
+      right.Y,
+      newUp.Y,
+      newForward.Y,
+      matrix[1, 3],
+      right.Z,
+      newUp.Z,
+      newForward.Z,
+      matrix[2, 3],
+      0.0,
+      0.0,
+      0.0,
+      matrix[3, 3],
+    };
   }
 }

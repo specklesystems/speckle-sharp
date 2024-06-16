@@ -21,7 +21,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   private readonly IRootToHostConverter _converter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
-  private readonly IInstanceObjectsManager<RhinoObject> _instanceObjectsManager;
+  private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
   private readonly RhinoLayerManager _layerManager;
 
   public RhinoHostObjectBuilder(
@@ -29,7 +29,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     GraphTraversal traverseFunction,
     RhinoLayerManager layerManager,
-    IInstanceObjectsManager<RhinoObject> instanceObjectsManager
+    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
   )
   {
     _converter = converter;

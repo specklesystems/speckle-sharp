@@ -17,7 +17,7 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// <inheritdoc/>
 ///  Expects to be a scoped dependency per send or receive operation.
 /// </summary>
-public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject>
+public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, List<string>>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly Dictionary<string, InstanceProxy> _instanceProxies = new();

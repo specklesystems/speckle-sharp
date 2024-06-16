@@ -22,7 +22,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly IInstanceObjectsManager<RhinoObject> _instanceObjectsManager;
+  private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly RhinoLayerManager _layerManager;
 
@@ -31,7 +31,7 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     ISendConversionCache sendConversionCache,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     RhinoLayerManager layerManager,
-    IInstanceObjectsManager<RhinoObject> instanceObjectsManager
+    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
   )
   {
     _unitOfWorkFactory = unitOfWorkFactory;

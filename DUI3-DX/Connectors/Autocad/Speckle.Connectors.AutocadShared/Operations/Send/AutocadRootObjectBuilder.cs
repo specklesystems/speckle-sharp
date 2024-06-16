@@ -17,12 +17,12 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly IInstanceObjectsManager<AutocadRootObject> _instanceObjectsManager;
+  private readonly IInstanceObjectsManager<AutocadRootObject, List<Entity>> _instanceObjectsManager;
 
   public AutocadRootObjectBuilder(
     IRootToSpeckleConverter converter,
     ISendConversionCache sendConversionCache,
-    IInstanceObjectsManager<AutocadRootObject> instanceObjectManager
+    IInstanceObjectsManager<AutocadRootObject, List<Entity>> instanceObjectManager
   )
   {
     _converter = converter;
