@@ -73,5 +73,6 @@ public class RhinoConnectorModule : ISpeckleModule
 
     builder.AddScoped<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
     builder.AddScoped<IInstanceObjectsManager<RhinoObject>, RhinoInstanceObjectsManager>();
+    builder.AddScoped<RhinoLayerManager>();
   }
 }

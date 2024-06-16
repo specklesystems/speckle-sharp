@@ -23,7 +23,7 @@ public class AutocadLayerManager
   /// <param name="baseLayerPrefix"> Prefix to add layer name.</param>
   /// <param name="path"> list of entries to concat with hyphen.</param>
   /// <returns>Full layer name with provided prefix and path.</returns>
-  public string LayerFullName(string baseLayerPrefix, string path)
+  public string GetFullLayerName(string baseLayerPrefix, string path)
   {
     var layerFullName = baseLayerPrefix + string.Join("-", path);
     return _autocadContext.RemoveInvalidChars(layerFullName);

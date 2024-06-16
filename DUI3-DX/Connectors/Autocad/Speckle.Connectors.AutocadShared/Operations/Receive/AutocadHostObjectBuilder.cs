@@ -114,6 +114,6 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
     string[] path = collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
 
-    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
+    return _autocadLayerManager.GetFullLayerName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
   }
 }

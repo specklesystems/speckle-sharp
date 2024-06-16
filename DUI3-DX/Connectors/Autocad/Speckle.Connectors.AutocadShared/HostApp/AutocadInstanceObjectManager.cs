@@ -106,7 +106,14 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
     DefinitionProxies[definitionId.ToString()] = definitionProxy;
   }
 
-  // TODO: units? i think not here
+  // TODO: implement
+  public BakeResult BakeInstances(
+    List<(string[] layerPath, IInstanceComponent obj)> instanceComponents,
+    Dictionary<string, List<string>> applicationIdMap,
+    string baseLayerName,
+    Action<string, double?>? onOperationProgressed
+  ) => throw new NotImplementedException();
+
   private Matrix4x4 GetMatrix(double[] t)
   {
     return new Matrix4x4(

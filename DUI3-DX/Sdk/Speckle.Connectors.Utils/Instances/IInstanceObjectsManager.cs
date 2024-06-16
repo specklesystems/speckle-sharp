@@ -1,3 +1,4 @@
+using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Utils.Instances;
@@ -13,10 +14,23 @@ public interface IInstanceObjectsManager<T>
   /// </summary>
   /// <param name="objects"></param>
   UnpackResult<T> UnpackSelection(IEnumerable<T> objects);
+
+  BakeResult BakeInstances(
+    List<(string[] layerPath, IInstanceComponent obj)> instanceComponents,
+    Dictionary<string, List<string>> applicationIdMap,
+    string baseLayerName,
+    Action<string, double?>? onOperationProgressed
+  );
 }
 
 public record UnpackResult<T>(
   List<T> AtomicObjects,
   Dictionary<string, InstanceProxy> InstanceProxies,
   List<InstanceDefinitionProxy> InstanceDefinitionProxies
+);
+
+public record BakeResult(
+  List<string> CreatedInstanceIds,
+  List<string> ConsumedObjectIds,
+  List<ReceiveConversionResult> InstanceConversionResults
 );
