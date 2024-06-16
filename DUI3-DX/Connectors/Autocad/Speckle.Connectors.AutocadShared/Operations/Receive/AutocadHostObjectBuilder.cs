@@ -55,9 +55,10 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     PreReceiveDeepClean(baseLayerPrefix);
-
     List<ReceiveConversionResult> results = new();
     List<string> bakedObjectIds = new();
+
+    // return new(bakedObjectIds, results);
 
     var objectGraph = _traversalFunction.Traverse(rootObject).Where(obj => obj.Current is not Collection);
 
@@ -143,22 +144,42 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     // Step 1: purge instances and instance definitions
     var instanceDefinitionsToDelete = new Dictionary<string, BlockTableRecord>();
-    var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForRead);
-    foreach (var objectId in modelSpaceRecord)
-    {
-      var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;
-      if (obj == null)
-      {
-        continue;
-      }
+    using var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForRead);
+    using var blockTable = (BlockTable)
+      transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.BlockTableId, OpenMode.ForWrite);
 
-      var definition = transaction.GetObject(obj.BlockTableRecord, OpenMode.ForRead) as BlockTableRecord;
-      // POC: this is tightly coupled with a naming convention for definitions in the Instance object manager
-      if (definition != null && definition.Name.Contains(baseLayerPrefix))
+    // Recurses through a given block table record and purges inner instances as required.
+    void TraverseAndClean(BlockTableRecord btr)
+    {
+      foreach (var objectId in btr)
       {
-        obj.UpgradeOpen();
-        obj.Erase();
-        instanceDefinitionsToDelete[obj.BlockTableRecord.ToString()] = definition;
+        var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;
+        if (obj == null)
+        {
+          continue;
+        }
+        var definition = (BlockTableRecord)transaction.GetObject(obj.BlockTableRecord, OpenMode.ForRead);
+        // POC: this is tightly coupled with a naming convention for definitions in the Instance object manager
+        if (definition.Name.Contains(baseLayerPrefix))
+        {
+          obj.UpgradeOpen();
+          obj.Erase();
+          TraverseAndClean(definition);
+          instanceDefinitionsToDelete[obj.BlockTableRecord.ToString()] = definition;
+        }
+      }
+    }
+
+    TraverseAndClean(modelSpaceRecord);
+
+    // cleanup potentially orphaned definitions
+    foreach (var btrId in blockTable)
+    {
+      var btr = (BlockTableRecord)transaction.GetObject(btrId, OpenMode.ForRead);
+      if (btr.Name.Contains(baseLayerPrefix))
+      {
+        TraverseAndClean(btr);
+        instanceDefinitionsToDelete[btr.Name] = btr;
       }
     }
 

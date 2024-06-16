@@ -156,7 +156,6 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
           using var blockTable = (BlockTable)
             transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.BlockTableId, OpenMode.ForWrite);
           var id = blockTable.Add(record);
-
           record.AssumeOwnershipOf(objectIds);
 
           definitionIdAndApplicationIdMap[definitionProxy.applicationId] = id;
