@@ -129,7 +129,11 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
       onOperationProgressed
     );
 
+    bakedObjectIds.RemoveAll(id => consumedObjectIds.Contains(id));
+    bakedObjectIds.AddRange(createdInstanceIds);
+    results.RemoveAll(result => result.ResultId != null && consumedObjectIds.Contains(result.ResultId));
     results.AddRange(instanceConversionResults);
+
     return new(bakedObjectIds, results);
   }
 

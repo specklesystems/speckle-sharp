@@ -161,6 +161,9 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
           definitionIdAndApplicationIdMap[definitionProxy.applicationId] = id;
           transaction.AddNewlyCreatedDBObject(record, true);
+          var consumedEntitiesHandleValues = constituentEntities.Select(ent => ent.Handle.Value.ToString()).ToArray();
+          consumedObjectIds.AddRange(consumedEntitiesHandleValues);
+          createdObjectIds.RemoveAll(newId => consumedEntitiesHandleValues.Contains(newId));
         }
         else if (
           instanceOrDefinition is InstanceProxy instanceProxy
@@ -186,6 +189,7 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
           conversionResults.Add(
             new(Status.SUCCESS, instanceProxy, blockRef.Handle.Value.ToString(), "Instance (Block)")
           );
+          createdObjectIds.Add(blockRef.Handle.Value.ToString());
         }
       }
       catch (Exception ex) when (!ex.IsFatal())
@@ -194,7 +198,7 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       }
     }
     transaction.Commit();
-    return new(new List<string>(), new List<string>(), conversionResults);
+    return new(createdObjectIds, consumedObjectIds, conversionResults);
   }
 
   private Matrix4x4 GetMatrix(double[] t)
