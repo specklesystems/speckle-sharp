@@ -139,7 +139,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     // Step 1: purge instances and instance definitions
     var instanceDefinitionsToDelete = new Dictionary<string, BlockTableRecord>();
-    var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForWrite);
+    var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForRead);
     foreach (var objectId in modelSpaceRecord)
     {
       var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;

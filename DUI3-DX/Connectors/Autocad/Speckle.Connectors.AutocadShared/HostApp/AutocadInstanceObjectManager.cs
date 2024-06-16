@@ -176,6 +176,12 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
 
           var blockRef = new BlockReference(insertionPoint, definitionId) { BlockTransform = matrix3d };
           modelSpaceBlockTableRecord.AppendEntity(blockRef);
+
+          if (instanceProxy.applicationId != null)
+          {
+            applicationIdMap[instanceProxy.applicationId] = new List<Entity>() { blockRef };
+          }
+
           transaction.AddNewlyCreatedDBObject(blockRef, true);
           conversionResults.Add(
             new(Status.SUCCESS, instanceProxy, blockRef.Handle.Value.ToString(), "Instance (Block)")
