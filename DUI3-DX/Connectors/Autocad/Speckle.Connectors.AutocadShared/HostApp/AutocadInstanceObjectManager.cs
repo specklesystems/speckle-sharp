@@ -106,13 +106,37 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
     DefinitionProxies[definitionId.ToString()] = definitionProxy;
   }
 
-  // TODO: implement
   public BakeResult BakeInstances(
     List<(string[] layerPath, IInstanceComponent obj)> instanceComponents,
     Dictionary<string, List<string>> applicationIdMap,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed
-  ) => throw new NotImplementedException();
+  )
+  {
+    var sortedInstanceComponents = instanceComponents
+      .OrderByDescending(x => x.obj.MaxDepth) // Sort by max depth, so we start baking from the deepest element first
+      .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
+      .ToList();
+
+    foreach (var (path, instanceOrDefinition) in sortedInstanceComponents)
+    {
+      if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
+      {
+        // TODO
+        var currentApplicationObjectIds = definitionProxy.Objects
+          .Select(id => applicationIdMap.TryGetValue(id, out List<string> value) ? value : null)
+          .Where(x => x is not null)
+          .SelectMany(id => id)
+          .ToList();
+      }
+      else if (instanceOrDefinition is InstanceProxy instanceProxy)
+      {
+        // TODO
+      }
+    }
+
+    throw new NotImplementedException(); // TODO: remove
+  }
 
   private Matrix4x4 GetMatrix(double[] t)
   {

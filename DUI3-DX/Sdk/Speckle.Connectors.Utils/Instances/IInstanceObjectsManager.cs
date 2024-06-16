@@ -5,6 +5,7 @@ namespace Speckle.Connectors.Utils.Instances;
 
 /// <summary>
 /// A utility class that helps manage host application blocks in send/receive operations. This expects to be a transient dependendency.
+/// POC: could be split into two - instance unpacker and instance baker.
 /// </summary>
 /// <typeparam name="T">Host application object type, e.g. RhinoObject</typeparam>
 public interface IInstanceObjectsManager<T>

@@ -1,14 +1,11 @@
-using System.DoubleNumerics;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
-using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Instances;
 using Speckle.Converters.Common;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
@@ -16,6 +13,9 @@ using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
+/// <summary>
+/// <para>Expects to be a scoped dependency per receive operation.</para>
+/// </summary>
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
@@ -98,14 +98,14 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     }
 
     var atomicObjects = new List<(string[] layerPath, Base obj)>();
-    IEnumerable<TraversalContext> traversalContexts = objectsGraph as TraversalContext[] ?? objectsGraph.ToArray();
 
-    foreach (TraversalContext tc in traversalContexts)
+    // Split up the instances from the non-instances
+    foreach (TraversalContext tc in objectsGraph)
     {
       var path = _layerManager.GetLayerPath(tc);
-      if (tc.Current is IInstanceComponent flocker)
+      if (tc.Current is IInstanceComponent instanceComponent)
       {
-        instanceComponents.Add((path, flocker));
+        instanceComponents.Add((path, instanceComponent));
       }
       else
       {
@@ -114,6 +114,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     }
 
     // Stage 1: Convert atomic objects
+    // Note: this can become encapsulated later in an "atomic object baker" of sorts, if needed.
     var applicationIdMap = new Dictionary<string, List<string>>(); // used in converting blocks in stage 2. keeps track of original app id => resulting new app ids post baking
     var count = 0;
     foreach (var (path, obj) in atomicObjects)
@@ -132,8 +133,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
         if (obj.applicationId != null)
         {
-          // TODO: groups inside blocks? is that a thing? can we account for that? HOW CAN WE ACCOUNT FOR THAT?
-          // ie, what happens when we receive a block that contains one object that we need to explode in host app?
           applicationIdMap[obj.applicationId] = conversionIds;
         }
       }
@@ -227,36 +226,5 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
     var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
     return group;
-  }
-
-  // POC: Not too proud of this being here, will be moving soon to the instance manager
-  private Transform MatrixToTransform(Matrix4x4 matrix, string units)
-  {
-    var conversionFactor = Units.GetConversionFactor(
-      units,
-      _contextStack.Current.Document.ModelUnitSystem.ToSpeckleString()
-    );
-
-    var t = Transform.Identity;
-    t.M00 = matrix.M11;
-    t.M01 = matrix.M12;
-    t.M02 = matrix.M13;
-    t.M03 = matrix.M14 * conversionFactor;
-
-    t.M10 = matrix.M21;
-    t.M11 = matrix.M22;
-    t.M12 = matrix.M23;
-    t.M13 = matrix.M24 * conversionFactor;
-
-    t.M20 = matrix.M31;
-    t.M21 = matrix.M32;
-    t.M22 = matrix.M33;
-    t.M23 = matrix.M34 * conversionFactor;
-
-    t.M30 = matrix.M41;
-    t.M31 = matrix.M42;
-    t.M32 = matrix.M43;
-    t.M33 = matrix.M44;
-    return t;
   }
 }
