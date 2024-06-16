@@ -135,7 +135,7 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
       try
       {
         onOperationProgressed?.Invoke("Converting blocks", (double)++count / sortedInstanceComponents.Count);
-        if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy && definitionProxy.applicationId != null)
+        if (instanceOrDefinition is InstanceDefinitionProxy { applicationId: not null } definitionProxy)
         {
           // TODO: create definition (block table record)
           var constituentEntities = definitionProxy.Objects
