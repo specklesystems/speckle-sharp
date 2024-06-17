@@ -47,9 +47,7 @@ public class ModelPropertySupportedTypes
       typeof(Guid),
       typeof(Color),
       typeof(List<>),
-      typeof(Array),
       typeof(Nullable<>),
-      typeof(Enum),
       typeof(IList<>),
       typeof(IReadOnlyList<>),
       typeof(Dictionary<,>),
@@ -60,7 +58,6 @@ public class ModelPropertySupportedTypes
       typeof(Matrix4x4),
     };
 
-  //[TestCase(typeof(Wall))]
   [Test]
   [TestCaseSource(typeof(GenericTests), nameof(GenericTests.AvailableTypesInKit))]
   public void TestObjects(Type t)
