@@ -1,34 +1,43 @@
-using Objects;
-using Speckle.Converters.Common.Objects;
+﻿using Objects;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+#pragma warning disable IDE0130
+namespace Speckle.Converters.RevitShared;
 
-public class LocationConversionToSpeckle : ITypedConverter<DB.Location, Base>
+#pragma warning restore IDE0130
+
+public class LocationConversionToSpeckle : ITypedConverter<IRevitLocation, Base>
 {
-  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
-  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzConverter;
+  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
+  private readonly ITypedConverter<IRevitXYZ, Objects.Geometry.Point> _xyzConverter;
 
   // POC: review IRawConversion<TIn> which always returns a Base, this is ToSpeckle, so... this breaks
   // the meaning of IRawConversion, it could be IToSpeckleRawConversion
   // also a factory type
   public LocationConversionToSpeckle(
-    ITypedConverter<DB.Curve, ICurve> curveConverter,
-    ITypedConverter<DB.XYZ, SOG.Point> xyzConverter
+    ITypedConverter<IRevitCurve, ICurve> curveConverter,
+    ITypedConverter<IRevitXYZ, Objects.Geometry.Point> xyzConverter
   )
   {
     _curveConverter = curveConverter;
     _xyzConverter = xyzConverter;
   }
 
-  public Base Convert(DB.Location target)
+  public Base Convert(IRevitLocation target)
   {
-    return target switch
+    var curve = target.ToLocationCurve();
+    if (curve is not null)
     {
-      DB.LocationCurve curve => (_curveConverter.Convert(curve.Curve) as Base)!, // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
-      DB.LocationPoint point => _xyzConverter.Convert(point.Point),
-      _ => throw new SpeckleConversionException($"Unexpected location type {target.GetType()}")
-    };
+      return (_curveConverter.Convert(curve.Curve) as Base).NotNull(); // POC: ICurve and Base are not related but we know they must be, had to soft cast and then !.
+    }
+    var point = target.ToLocationPoint();
+    if (point is not null)
+    {
+      return _xyzConverter.Convert(point.Point);
+    }
+    throw new SpeckleConversionException($"Unexpected location type {target.GetType()}");
   }
 }

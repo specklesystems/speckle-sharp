@@ -1,31 +1,30 @@
-using Autodesk.Revit.DB;
-using Objects;
-using Objects.BuiltElements.Revit;
+﻿using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
+using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.RevitShared;
 
 // POC: There is no validation on this converter to prevent conversion from "not a Revit Beam" to a Speckle Beam.
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
-public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, RevitColumn>
+public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOBR.RevitColumn>
 {
-  private readonly ITypedConverter<Location, Base> _locationConverter;
-  private readonly ITypedConverter<Level, RevitLevel> _levelConverter;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly IRevitConversionContextStack _contextStack;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly ITypedConverter<IRevitLocation, Base> _locationConverter;
+  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
 
   public ColumnConversionToSpeckle(
-    ITypedConverter<Location, Base> locationConverter,
-    ITypedConverter<Level, RevitLevel> levelConverter,
-    ParameterValueExtractor parameterValueExtractor,
-    DisplayValueExtractor displayValueExtractor,
-    IRevitConversionContextStack contextStack,
-    ParameterObjectAssigner parameterObjectAssigner
+    ITypedConverter<IRevitLocation, Base> locationConverter,
+    ITypedConverter<IRevitLevel, SOBR.RevitLevel> levelConverter,
+    IParameterValueExtractor parameterValueExtractor,
+    IDisplayValueExtractor displayValueExtractor,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
+    IParameterObjectAssigner parameterObjectAssigner
   )
   {
     _locationConverter = locationConverter;
@@ -36,40 +35,43 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public RevitColumn Convert(DB.FamilyInstance target)
+  public SOBR.RevitColumn Convert(IRevitFamilyInstance target)
   {
-    FamilySymbol symbol = (FamilySymbol)target.Document.GetElement(target.GetTypeId());
+    var symbol = target.Document.GetElement(target.GetTypeId()).NotNull().ToFamilySymbol().NotNull();
 
-    RevitColumn speckleColumn =
-      new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).Name };
+    SOBR.RevitColumn speckleColumn =
+      new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).NotNull().Name };
 
-    Level level = _parameterValueExtractor.GetValueAsDocumentObject<Level>(
-      target,
-      BuiltInParameter.FAMILY_BASE_LEVEL_PARAM
-    );
-    speckleColumn.level = _levelConverter.Convert(level);
+    if (
+      _parameterValueExtractor.TryGetValueAsRevitLevel(
+        target,
+        RevitBuiltInParameter.FAMILY_BASE_LEVEL_PARAM,
+        out var level
+      )
+    )
+    {
+      speckleColumn.level = _levelConverter.Convert(level);
+    }
 
-    Level topLevel = _parameterValueExtractor.GetValueAsDocumentObject<Level>(
-      target,
-      BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
-    );
+    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
     speckleColumn.topLevel = _levelConverter.Convert(topLevel);
     speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(
       target,
-      DB.BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
+      RevitBuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
     );
 
     speckleColumn.topOffset = _parameterValueExtractor.GetValueAsDouble(
       target,
-      DB.BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM
+      RevitBuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM
     );
 
     speckleColumn.facingFlipped = target.FacingFlipped;
     speckleColumn.handFlipped = target.HandFlipped;
     speckleColumn.isSlanted = target.IsSlantedColumn;
 
-    if (target.Location is LocationPoint locationPoint)
+    var locationPoint = target.GetLocationAsLocationPoint();
+    if (locationPoint is not null)
     {
       speckleColumn.rotation = locationPoint.Rotation;
     }
@@ -85,7 +87,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
     return speckleColumn;
   }
 
-  private ICurve? GetBaseCurve(DB.FamilyInstance target, double topLevelElevation, double topLevelOffset)
+  private ICurve? GetBaseCurve(IRevitFamilyInstance target, double topLevelElevation, double topLevelOffset)
   {
     Base baseGeometry = _locationConverter.Convert(target.Location);
     ICurve? baseCurve = baseGeometry as ICurve;

@@ -1,25 +1,27 @@
-using Speckle.Converters.Common;
-using Objects.BuiltElements.Revit;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: not currently used? clearly some missing pieces
-[NameAndRankValue(nameof(DB.Element), 0)]
-public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Element, RevitElement>
+[NameAndRankValue(nameof(IRevitElement), 0)]
+public class ElementTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitElement, SOBR.RevitElement>
 {
-  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
 
-  public ElementTopLevelConverterToSpeckle(DisplayValueExtractor displayValueExtractor)
+  public ElementTopLevelConverterToSpeckle(IDisplayValueExtractor displayValueExtractor)
   {
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override RevitElement Convert(DB.Element target)
+  public override SOBR.RevitElement Convert(IRevitElement target)
   {
-    RevitElement speckleElement = new();
+    SOBR.RevitElement speckleElement = new();
 
-    if (target.Document.GetElement(target.GetTypeId()) is DB.FamilySymbol symbol)
+    var element = target.Document.GetElement(target.GetTypeId());
+    var symbol = element?.ToFamilySymbol();
+    if (symbol is not null)
     {
       speckleElement.family = symbol.FamilyName;
       speckleElement.type = symbol.Name;
