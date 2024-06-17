@@ -176,12 +176,12 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
             OpenMode.ForWrite
           );
 
-          var blockRef = new BlockReference(insertionPoint, definitionId) { BlockTransform = matrix3d };
+          var blockRef = new BlockReference(insertionPoint, definitionId) { BlockTransform = matrix3d }; // TODO: Bake on correct layer
           modelSpaceBlockTableRecord.AppendEntity(blockRef);
 
           if (instanceProxy.applicationId != null)
           {
-            applicationIdMap[instanceProxy.applicationId] = new List<Entity>() { blockRef };
+            applicationIdMap[instanceProxy.applicationId] = new List<Entity> { blockRef };
           }
 
           transaction.AddNewlyCreatedDBObject(blockRef, true);
@@ -198,6 +198,60 @@ public class AutocadInstanceObjectManager : IInstanceObjectsManager<AutocadRootO
     }
     transaction.Commit();
     return new(createdObjectIds, consumedObjectIds, conversionResults);
+  }
+
+  public void PurgeInstances(string namePrefix)
+  {
+    using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
+
+    // Step 1: purge instances and instance definitions
+    var instanceDefinitionsToDelete = new Dictionary<string, BlockTableRecord>();
+    using var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForRead);
+    using var blockTable = (BlockTable)
+      transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.BlockTableId, OpenMode.ForWrite);
+
+    // Recurses through a given block table record and purges inner instances as required.
+    void TraverseAndClean(BlockTableRecord btr)
+    {
+      foreach (var objectId in btr)
+      {
+        var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;
+        if (obj == null)
+        {
+          continue;
+        }
+        var definition = (BlockTableRecord)transaction.GetObject(obj.BlockTableRecord, OpenMode.ForRead);
+        // POC: this is tightly coupled with a naming convention for definitions in the Instance object manager
+        if (definition.Name.Contains(namePrefix))
+        {
+          obj.UpgradeOpen();
+          obj.Erase();
+          TraverseAndClean(definition);
+          instanceDefinitionsToDelete[obj.BlockTableRecord.ToString()] = definition;
+        }
+      }
+    }
+
+    TraverseAndClean(modelSpaceRecord);
+
+    // cleanup potentially orphaned definitions (if user deletes an instance reference, we don't reach composing definitions anymore - as such, we need to go through each btr too)
+    foreach (var btrId in blockTable)
+    {
+      var btr = (BlockTableRecord)transaction.GetObject(btrId, OpenMode.ForRead);
+      if (btr.Name.Contains(namePrefix))
+      {
+        TraverseAndClean(btr);
+        instanceDefinitionsToDelete[btr.Name] = btr;
+      }
+    }
+
+    foreach (var def in instanceDefinitionsToDelete.Values)
+    {
+      def.UpgradeOpen();
+      def.Erase();
+    }
+
+    transaction.Commit();
   }
 
   private Matrix4x4 GetMatrix(double[] t)

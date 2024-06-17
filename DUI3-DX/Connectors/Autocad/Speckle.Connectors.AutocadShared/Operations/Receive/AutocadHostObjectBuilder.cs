@@ -140,56 +140,9 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
   private void PreReceiveDeepClean(string baseLayerPrefix)
   {
+    _instanceObjectsManager.PurgeInstances(baseLayerPrefix);
+
     using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
-
-    // Step 1: purge instances and instance definitions
-    var instanceDefinitionsToDelete = new Dictionary<string, BlockTableRecord>();
-    using var modelSpaceRecord = Application.DocumentManager.CurrentDocument.Database.GetModelSpace(OpenMode.ForRead);
-    using var blockTable = (BlockTable)
-      transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.BlockTableId, OpenMode.ForWrite);
-
-    // Recurses through a given block table record and purges inner instances as required.
-    void TraverseAndClean(BlockTableRecord btr)
-    {
-      foreach (var objectId in btr)
-      {
-        var obj = transaction.GetObject(objectId, OpenMode.ForRead) as BlockReference;
-        if (obj == null)
-        {
-          continue;
-        }
-        var definition = (BlockTableRecord)transaction.GetObject(obj.BlockTableRecord, OpenMode.ForRead);
-        // POC: this is tightly coupled with a naming convention for definitions in the Instance object manager
-        if (definition.Name.Contains(baseLayerPrefix))
-        {
-          obj.UpgradeOpen();
-          obj.Erase();
-          TraverseAndClean(definition);
-          instanceDefinitionsToDelete[obj.BlockTableRecord.ToString()] = definition;
-        }
-      }
-    }
-
-    TraverseAndClean(modelSpaceRecord);
-
-    // cleanup potentially orphaned definitions
-    foreach (var btrId in blockTable)
-    {
-      var btr = (BlockTableRecord)transaction.GetObject(btrId, OpenMode.ForRead);
-      if (btr.Name.Contains(baseLayerPrefix))
-      {
-        TraverseAndClean(btr);
-        instanceDefinitionsToDelete[btr.Name] = btr;
-      }
-    }
-
-    foreach (var def in instanceDefinitionsToDelete.Values)
-    {
-      def.UpgradeOpen();
-      def.Erase();
-    }
-
-    // Step 2: layers and normal objects
     var layerTable = (LayerTable)
       transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.LayerTableId, OpenMode.ForRead);
 

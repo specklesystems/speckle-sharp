@@ -212,6 +212,17 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
     return new(createdObjectIds, consumedObjectIds, conversionResults);
   }
 
+  public void PurgeInstances(string namePrefix)
+  {
+    foreach (var definition in _contextStack.Current.Document.InstanceDefinitions)
+    {
+      if (!definition.IsDeleted && definition.Name.Contains(namePrefix))
+      {
+        _contextStack.Current.Document.InstanceDefinitions.Delete(definition.Index, true, false);
+      }
+    }
+  }
+
   private Matrix4x4 XFormToMatrix(Transform t) =>
     new(t.M00, t.M01, t.M02, t.M03, t.M10, t.M11, t.M12, t.M13, t.M20, t.M21, t.M22, t.M23, t.M30, t.M31, t.M32, t.M33);
 

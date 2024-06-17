@@ -161,17 +161,9 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
   private void PreReceiveDeepClean(string baseLayerName, int rootLayerIndex)
   {
+    _instanceObjectsManager.PurgeInstances(baseLayerName);
+
     var doc = _contextStack.Current.Document;
-
-    // Cleanup blocks/definitions/instances before layers
-    foreach (var definition in doc.InstanceDefinitions)
-    {
-      if (!definition.IsDeleted && definition.Name.Contains(baseLayerName))
-      {
-        doc.InstanceDefinitions.Delete(definition.Index, true, false);
-      }
-    }
-
     // Cleans up any previously received objects
     if (rootLayerIndex != RhinoMath.UnsetIntIndex)
     {
