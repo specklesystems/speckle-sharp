@@ -158,7 +158,7 @@ internal static class ValueConverter
       #endregion
     }
 
-    // Handle List<?>
+    // Handle List<>, IList<>, and IReadOnlyList<>
     if (type.IsGenericType && IsGenericList(type))
     {
       if (value is not List<object> valueList)
