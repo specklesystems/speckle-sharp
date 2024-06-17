@@ -6,7 +6,6 @@ using System.Linq;
 using NUnit.Framework;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
-using Speckle.Core.Tests.Unit.Serialisation;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Tests.Unit;
@@ -19,7 +18,7 @@ namespace Objects.Tests.Unit;
 public class ModelPropertySupportedTypes
 {
   /// <summary>
-  /// Lists of types that we support in Base objects
+  /// Set of types that we support in Base objects
   /// If it's not in the list, or is commented out, it's not supported by our serializer!
   /// </summary>
   /// <remarks>
@@ -29,7 +28,7 @@ public class ModelPropertySupportedTypes
   /// (or is an interface where all concrete types are supported)
   /// You should also consider adding a test in SerializerNonBreakingChanges
   /// </remarks>
-  private HashSet<Type> allowedTypes =
+  private readonly HashSet<Type> _allowedTypes =
     new()
     {
       typeof(Boolean),
@@ -79,7 +78,7 @@ public class ModelPropertySupportedTypes
 
       Type propType = prop.PropertyType;
       Type typeDef = propType.IsGenericType ? propType.GetGenericTypeDefinition() : propType;
-      Assert.That(allowedTypes, Does.Contain(typeDef), $"{typeDef} was not in allowedTypes");
+      Assert.That(_allowedTypes, Does.Contain(typeDef), $"{typeDef} was not in allowedTypes");
     }
   }
 }
