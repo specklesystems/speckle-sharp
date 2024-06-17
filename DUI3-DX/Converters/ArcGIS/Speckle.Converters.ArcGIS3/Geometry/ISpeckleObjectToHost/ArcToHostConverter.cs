@@ -40,6 +40,10 @@ public class ArcToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.
       _contextStack.Current.Document.Map.SpatialReference
     );
 
-    return new ACG.PolylineBuilderEx(segment, ACG.AttributeFlags.HasZ).ToGeometry();
+    return new ACG.PolylineBuilderEx(
+      segment,
+      ACG.AttributeFlags.HasZ,
+      _contextStack.Current.Document.Map.SpatialReference
+    ).ToGeometry();
   }
 }

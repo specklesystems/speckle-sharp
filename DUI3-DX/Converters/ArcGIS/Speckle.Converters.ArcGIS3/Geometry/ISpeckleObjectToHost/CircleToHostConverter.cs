@@ -46,8 +46,10 @@ public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<S
       _contextStack.Current.Document.Map.SpatialReference
     );
 
-    var circlePolyline = new ACG.PolylineBuilderEx(circleSegment, ACG.AttributeFlags.HasZ).ToGeometry();
-
-    return circlePolyline;
+    return new ACG.PolylineBuilderEx(
+      circleSegment,
+      ACG.AttributeFlags.HasZ,
+      _contextStack.Current.Document.Map.SpatialReference
+    ).ToGeometry();
   }
 }
