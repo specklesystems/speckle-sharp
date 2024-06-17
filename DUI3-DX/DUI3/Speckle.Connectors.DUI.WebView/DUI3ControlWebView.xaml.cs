@@ -16,6 +16,7 @@ public sealed partial class DUI3ControlWebView : UserControl
     _bindings = bindings;
     _topLevelExceptionHandler = topLevelExceptionHandler;
     InitializeComponent();
+
     Browser.CoreWebView2InitializationCompleted += (sender, args) =>
       _topLevelExceptionHandler.CatchUnhandled(() => OnInitialized(sender, args));
   }

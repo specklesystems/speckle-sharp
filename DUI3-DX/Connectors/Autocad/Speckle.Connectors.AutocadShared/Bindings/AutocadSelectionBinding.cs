@@ -8,27 +8,29 @@ namespace Speckle.Connectors.Autocad.Bindings;
 public class AutocadSelectionBinding : ISelectionBinding
 {
   private const string SELECTION_EVENT = "setSelection";
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly HashSet<Document> _visitedDocuments = new();
 
-  private readonly List<Document> _visitedDocuments = new();
-
-  public string Name { get; set; } = "selectionBinding";
+  public string Name { get; } = "selectionBinding";
 
   public IBridge Parent { get; }
 
-  public AutocadSelectionBinding(IBridge parent)
+  public AutocadSelectionBinding(IBridge parent, TopLevelExceptionHandler topLevelExceptionHandler)
   {
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
 
     // POC: Use here Context for doc. In converters it's OK but we are still lacking to use context into bindings.
     // It is with the case of if binding created with already a document
     // This is valid when user opens acad file directly double clicking
     TryRegisterDocumentForSelection(Application.DocumentManager.MdiActiveDocument);
-    Application.DocumentManager.DocumentActivated += (sender, e) => OnDocumentChanged(e.Document);
+    Application.DocumentManager.DocumentActivated += (_, e) =>
+      _topLevelExceptionHandler.CatchUnhandled(() => OnDocumentChanged(e.Document));
   }
 
-  private void OnDocumentChanged(Document document) => TryRegisterDocumentForSelection(document);
+  private void OnDocumentChanged(Document? document) => TryRegisterDocumentForSelection(document);
 
-  private void TryRegisterDocumentForSelection(Document document)
+  private void TryRegisterDocumentForSelection(Document? document)
   {
     if (document == null)
     {
@@ -38,9 +40,7 @@ public class AutocadSelectionBinding : ISelectionBinding
     if (!_visitedDocuments.Contains(document))
     {
       document.ImpliedSelectionChanged += (_, _) =>
-      {
-        Parent.RunOnMainThread(OnSelectionChanged);
-      };
+        _topLevelExceptionHandler.CatchUnhandled(() => Parent.RunOnMainThread(OnSelectionChanged));
 
       _visitedDocuments.Add(document);
     }
@@ -49,13 +49,13 @@ public class AutocadSelectionBinding : ISelectionBinding
   private void OnSelectionChanged()
   {
     SelectionInfo selInfo = GetSelection();
-    Parent?.Send(SELECTION_EVENT, selInfo);
+    Parent.Send(SELECTION_EVENT, selInfo);
   }
 
   public SelectionInfo GetSelection()
   {
     // POC: Will be addressed to move it into AutocadContext! https://spockle.atlassian.net/browse/CNX-9319
-    Document doc = Application.DocumentManager.MdiActiveDocument;
+    Document? doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
     List<string> objectTypes = new();
     if (doc != null)

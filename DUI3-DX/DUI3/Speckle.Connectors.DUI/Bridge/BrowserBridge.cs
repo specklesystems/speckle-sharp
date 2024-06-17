@@ -37,7 +37,7 @@ public class BrowserBridge : IBridge
   private IBinding? _binding;
   private Type? _bindingType;
 
-  private readonly ILogger<BrowserBridge> _logger;
+  private readonly ILogger _logger;
 
   /// <summary>
   /// Action that opens up the developer tools of the respective browser we're using. While webview2 allows for "right click, inspect", cefsharp does not - hence the need for this.
@@ -78,7 +78,7 @@ public class BrowserBridge : IBridge
   {
     _serializerOptions = jsonSerializerSettings;
     _logger = loggerFactory.CreateLogger<BrowserBridge>();
-    _topLevelExceptionHandler = new(_logger); //TODO: Probably we could inject this with a Lazy somewhere
+    _topLevelExceptionHandler = new(loggerFactory, this); //TODO: Probably we could inject this with a Lazy somewhere
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
   }
