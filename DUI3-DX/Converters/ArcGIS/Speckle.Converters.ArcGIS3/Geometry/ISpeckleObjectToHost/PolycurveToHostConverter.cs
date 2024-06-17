@@ -9,38 +9,51 @@ public class PolycurveToHostConverter : IToHostTopLevelConverter, ITypedConverte
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
   private readonly IRootToHostConverter _converter;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
   public PolycurveToHostConverter(
     ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
-    IRootToHostConverter converter
+    IRootToHostConverter converter,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
   )
   {
     _pointConverter = pointConverter;
     _converter = converter;
+    _contextStack = contextStack;
   }
 
   public object Convert(Base target) => Convert((SOG.Polycurve)target);
 
   public ACG.Polyline Convert(SOG.Polycurve target)
   {
-    List<ACG.MapPoint> points = new();
+    List<ACG.MapPoint> pointsToCheckOrientation = new();
+    List<ACG.Polyline> segments = new();
+
     foreach (var segment in target.segments)
     {
-      if (segment is SOG.Arc)
-      {
-        throw new NotImplementedException("Polycurves with arc segments are not supported");
-      }
       ACG.Polyline converted = (ACG.Polyline)_converter.Convert((Base)segment);
-      List<ACG.MapPoint> newPts = converted.Points.ToList();
+      List<ACG.MapPoint> segmentPts = converted.Points.ToList();
 
       // reverse new segment if needed
-      if (points.Count > 0 && newPts.Count > 0 && points[^1] != newPts[0] && points[^1] == newPts[^1])
+      if (
+        pointsToCheckOrientation.Count > 0
+        && segmentPts.Count > 0
+        && pointsToCheckOrientation[^1] != segmentPts[0]
+        && pointsToCheckOrientation[^1] == segmentPts[^1]
+      )
       {
-        newPts.Reverse();
+        segmentPts.Reverse();
+        ACG.Geometry reversedLine = ACG.GeometryEngine.Instance.ReverseOrientation(converted);
+        converted = (ACG.Polyline)reversedLine;
       }
-      points.AddRange(newPts);
+      pointsToCheckOrientation.AddRange(segmentPts);
+      segments.Add(converted);
     }
 
-    return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
+    return new ACG.PolylineBuilderEx(
+      segments,
+      ACG.AttributeFlags.HasZ,
+      _contextStack.Current.Document.Map.SpatialReference
+    ).ToGeometry();
   }
 }

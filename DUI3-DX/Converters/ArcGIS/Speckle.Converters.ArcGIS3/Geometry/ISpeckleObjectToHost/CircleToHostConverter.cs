@@ -36,7 +36,8 @@ public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<S
     ACG.EllipticArcSegment circleSegment = ACG.EllipticArcBuilderEx.CreateCircle(
       new ACG.Coordinate2D(centerPt.X, centerPt.Y),
       (double)target.radius * scaleFactor,
-      ACG.ArcOrientation.ArcClockwise
+      ACG.ArcOrientation.ArcClockwise,
+      _contextStack.Current.Document.Map.SpatialReference
     );
 
     var circlePolyline = new ACG.PolylineBuilderEx(circleSegment, ACG.AttributeFlags.HasZ).ToGeometry();

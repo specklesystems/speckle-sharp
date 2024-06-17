@@ -5,26 +5,34 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CurveToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Arc, ACG.Polyline>
+public class ArcToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Arc, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
-  public CurveToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
+  public ArcToHostConverter(
+    ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
+  )
   {
     _pointConverter = pointConverter;
+    _contextStack = contextStack;
   }
 
   public object Convert(Base target) => Convert((SOG.Arc)target);
 
   public ACG.Polyline Convert(SOG.Arc target)
   {
-    // MapPoint fromPt = MapPointBuilderEx.CreateMapPoint(target.startPoint, 1);
     ACG.MapPoint fromPt = _pointConverter.Convert(target.startPoint);
     ACG.MapPoint toPt = _pointConverter.Convert(target.endPoint);
     ACG.MapPoint midPt = _pointConverter.Convert(target.midPoint);
-    ACG.Coordinate2D interiorPt = new(midPt);
 
-    ACG.EllipticArcSegment segment = ACG.EllipticArcBuilderEx.CreateCircularArc(fromPt, toPt, interiorPt);
+    ACG.EllipticArcSegment segment = ACG.EllipticArcBuilderEx.CreateCircularArc(
+      fromPt,
+      toPt,
+      new ACG.Coordinate2D(midPt),
+      _contextStack.Current.Document.Map.SpatialReference
+    );
 
     return new ACG.PolylineBuilderEx(segment, ACG.AttributeFlags.HasZ).ToGeometry();
   }

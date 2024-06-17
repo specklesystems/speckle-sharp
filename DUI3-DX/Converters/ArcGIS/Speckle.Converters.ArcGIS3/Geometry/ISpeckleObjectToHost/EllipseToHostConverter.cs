@@ -1,53 +1,60 @@
-﻿using Speckle.Converters.Common;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
-//TODO: Ellipses don't convert correctly, see Autocad test stream
-// [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class EllipseToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Ellipse, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
-  public EllipseToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
+  public EllipseToHostConverter(
+    ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
+  )
   {
     _pointConverter = pointConverter;
+    _contextStack = contextStack;
   }
 
   public object Convert(Base target) => Convert((SOG.Ellipse)target);
 
   public ACG.Polyline Convert(SOG.Ellipse target)
   {
-    // Determine the number of vertices to create along the Ellipse
-    int numVertices = Math.Max((int)target.length, 100); // Determine based on desired segment length or other criteria
-    List<SOG.Point> pointsOriginal = new();
-
+    // dummy check
     if (target.firstRadius == null || target.secondRadius == null)
     {
-      throw new SpeckleConversionException("Conversion failed: Ellipse doesn't have 1st and 2nd radius");
+      throw new ArgumentException("Invalid Ellipse provided");
     }
 
-    // Calculate the vertices along the arc
-    for (int i = 0; i <= numVertices; i++)
+    ACG.MapPoint centerPt = _pointConverter.Convert(target.plane.origin);
+    double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
+
+    // set default values
+    double angle = Math.Atan2(target.plane.xdir.y, target.plane.xdir.x);
+    double majorAxeRadius = (double)target.firstRadius;
+    double minorAxisRatio = (double)target.secondRadius / majorAxeRadius;
+
+    // adjust if needed
+    if (minorAxisRatio > 1)
     {
-      // Calculate the point along the arc
-      double angle = 2 * Math.PI * (i / (double)numVertices);
-      SOG.Point pointOnEllipse =
-        new(
-          target.plane.origin.x + (double)target.secondRadius * Math.Cos(angle),
-          target.plane.origin.y + (double)target.firstRadius * Math.Sin(angle),
-          target.plane.origin.z
-        );
-
-      pointsOriginal.Add(pointOnEllipse);
-    }
-    if (pointsOriginal[0] != pointsOriginal[^1])
-    {
-      pointsOriginal.Add(pointsOriginal[0]);
+      majorAxeRadius = (double)target.secondRadius;
+      minorAxisRatio = 1 / minorAxisRatio;
+      angle += Math.PI / 2;
     }
 
-    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
-    return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
+    ACG.EllipticArcSegment segment = ACG.EllipticArcBuilderEx.CreateEllipse(
+      new ACG.Coordinate2D(centerPt),
+      angle,
+      majorAxeRadius * scaleFactor,
+      minorAxisRatio,
+      ACG.ArcOrientation.ArcCounterClockwise,
+      _contextStack.Current.Document.Map.SpatialReference
+    );
+
+    return new ACG.PolylineBuilderEx(segment, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

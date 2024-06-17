@@ -22,7 +22,8 @@ public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
     return new ACG.MapPointBuilderEx(
       target.x * scaleFactor,
       target.y * scaleFactor,
-      target.z * scaleFactor
+      target.z * scaleFactor,
+      _contextStack.Current.Document.Map.SpatialReference
     ).ToGeometry();
   }
 }

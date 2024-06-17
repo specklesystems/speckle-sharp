@@ -1,4 +1,4 @@
-﻿using Rhino;
+using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 

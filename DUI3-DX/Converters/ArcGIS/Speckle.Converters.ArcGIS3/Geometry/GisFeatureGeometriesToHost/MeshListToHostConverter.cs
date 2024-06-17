@@ -7,10 +7,15 @@ namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multipatch>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
+  private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
 
-  public MeshListToHostConverter(ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter)
+  public MeshListToHostConverter(
+    ITypedConverter<SOG.Point, ACG.MapPoint> pointConverter,
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
+  )
   {
     _pointConverter = pointConverter;
+    _contextStack = contextStack;
   }
 
   public ACG.Multipatch Convert(List<SOG.Mesh> target)
@@ -19,7 +24,7 @@ public class MeshListToHostConverter : ITypedConverter<List<SOG.Mesh>, ACG.Multi
     {
       throw new SpeckleConversionException("Feature contains no geometries");
     }
-    ACG.MultipatchBuilderEx multipatchPart = new();
+    ACG.MultipatchBuilderEx multipatchPart = new(_contextStack.Current.Document.Map.SpatialReference);
     foreach (SOG.Mesh part in target)
     {
       part.TriangulateMesh();
