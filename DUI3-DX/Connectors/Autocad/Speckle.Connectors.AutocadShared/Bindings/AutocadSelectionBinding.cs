@@ -11,7 +11,7 @@ public class AutocadSelectionBinding : ISelectionBinding
   private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
   private readonly HashSet<Document> _visitedDocuments = new();
 
-  public string Name { get; } = "selectionBinding";
+  public string Name => "selectionBinding";
 
   public IBridge Parent { get; }
 

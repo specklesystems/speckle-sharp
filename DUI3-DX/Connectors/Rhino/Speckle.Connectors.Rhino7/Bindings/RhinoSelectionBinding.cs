@@ -10,8 +10,8 @@ public class RhinoSelectionBinding : ISelectionBinding
 {
   private const string SELECTION_EVENT = "setSelection";
 
-  public string Name { get; } = "selectionBinding";
-  public IBridge Parent { get; set; }
+  public string Name => "selectionBinding";
+  public IBridge Parent { get; }
 
   public RhinoSelectionBinding(RhinoIdleManager idleManager, IBridge parent)
   {
@@ -34,7 +34,7 @@ public class RhinoSelectionBinding : ISelectionBinding
   private void OnSelectionChanged()
   {
     SelectionInfo selInfo = GetSelection();
-    Parent?.Send(SELECTION_EVENT, selInfo);
+    Parent.Send(SELECTION_EVENT, selInfo);
   }
 
   public SelectionInfo GetSelection()
