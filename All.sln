@@ -557,6 +557,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B1324D25
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Revit2023.Tests", "DUI3-DX\Converters\Revit\Speckle.Converters.Revit2023.Tests\Speckle.Converters.Revit2023.Tests.csproj", "{AEC26A0B-25F3-4544-A9D6-A427BFF79250}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Common.Tests", "DUI3-DX\Sdk\Speckle.Converters.Common.Tests\Speckle.Converters.Common.Tests.csproj", "{95E23A97-E5EA-4506-A52C-D3DA9012DA02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2807,6 +2809,22 @@ Global
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.ActiveCfg = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.Build.0 = Release|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug|x64.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|x64.ActiveCfg = Release|Any CPU
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3019,6 +3037,7 @@ Global
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{E1C43415-3200-45F4-8BF9-A4DD7D7F2ED6} = {D92751C8-1039-4005-90B2-913E55E0B8BD}
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250} = {D92751C8-1039-4005-90B2-913E55E0B8BD}
+		{95E23A97-E5EA-4506-A52C-D3DA9012DA02} = {2E00592E-558D-492D-88F9-3ECEE4C0C7DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
