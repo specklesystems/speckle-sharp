@@ -14,8 +14,8 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 
 public class RhinoBasicConnectorBinding : IBasicConnectorBinding
 {
-  public string Name { get; set; } = "baseBinding";
-  public IBridge Parent { get; set; }
+  public string Name => "baseBinding";
+  public IBridge Parent { get; }
   public BasicConnectorBindingCommands Commands { get; }
 
   private readonly DocumentModelStore _store;
