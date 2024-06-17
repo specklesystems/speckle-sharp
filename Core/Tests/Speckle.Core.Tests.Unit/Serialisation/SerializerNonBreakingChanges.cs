@@ -87,6 +87,24 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
     Assert.That(res.value, Is.EquivalentTo(testCase));
   }
 
+  [Test, TestCaseSource(nameof(s_arrayTestCases))]
+  public void ListToIList(double[] testCase)
+  {
+    var from = new ListDoubleValueMock { value = testCase.ToList() };
+
+    var res = from.SerializeAsTAndDeserialize<IReadOnlyListDoubleValueMock>();
+    Assert.That(res.value, Is.EquivalentTo(testCase));
+  }
+
+  [Test, TestCaseSource(nameof(s_arrayTestCases))]
+  public void ListToIReadOnlyList(double[] testCase)
+  {
+    var from = new ListDoubleValueMock { value = testCase.ToList() };
+
+    var res = from.SerializeAsTAndDeserialize<IListDoubleValueMock>();
+    Assert.That(res.value, Is.EquivalentTo(testCase));
+  }
+
   [Test, TestCaseSource(nameof(MyEnums))]
   public void EnumToInt(MyEnum testCase)
   {
@@ -169,6 +187,16 @@ public class TValueMock<T> : SerializerMock
 public class ListDoubleValueMock : SerializerMock
 {
   public List<double> value { get; set; }
+}
+
+public class IListDoubleValueMock : SerializerMock
+{
+  public IList<double> value { get; set; }
+}
+
+public class IReadOnlyListDoubleValueMock : SerializerMock
+{
+  public IReadOnlyList<double> value { get; set; }
 }
 
 public class ArrayDoubleValueMock : SerializerMock
