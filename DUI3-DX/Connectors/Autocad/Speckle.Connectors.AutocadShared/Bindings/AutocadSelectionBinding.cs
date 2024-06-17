@@ -11,7 +11,6 @@ public class AutocadSelectionBinding : ISelectionBinding
 
   public string Name { get; } = "selectionBinding";
 
-
   public IBridge Parent { get; }
 
   public AutocadSelectionBinding(IBridge parent)
