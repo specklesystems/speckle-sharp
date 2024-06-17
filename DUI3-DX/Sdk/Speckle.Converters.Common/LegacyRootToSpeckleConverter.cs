@@ -1,16 +1,14 @@
-using Speckle.Autofac.DependencyInjection;
+﻿using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Speckle.InterfaceGenerator;
 
 namespace Speckle.Converters.Common;
 
-[GenerateAutoInterface]
-public class RootToSpeckleConverter : IRootToSpeckleConverter
+public class LegacyRootToSpeckleConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
+  public LegacyRootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }
@@ -18,7 +16,6 @@ public class RootToSpeckleConverter : IRootToSpeckleConverter
   public Base Convert(object target)
   {
     Type type = target.GetType();
-
     try
     {
       var objectConverter = _toSpeckle.ResolveInstance(type.Name); //poc: would be nice to have supertypes resolve

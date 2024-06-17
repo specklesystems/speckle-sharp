@@ -1,7 +1,7 @@
-using Autodesk.Revit.DB;
-using Speckle.Converters.Common;
-using Speckle.Converters.RevitShared.Helpers;
+﻿using Speckle.Converters.Common;
 using Speckle.Core.Models;
+using Speckle.InterfaceGenerator;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -9,28 +9,26 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // opportunity to rethink or confirm hosted element handling? Should this be a connector responsibiliy?
 // No interfacing out however...
 // CNX-9414 Re-evaluate hosted element conversions
-public class HostedElementConversionToSpeckle
+[GenerateAutoInterface]
+public class HostedElementConversionToSpeckle : IHostedElementConversionToSpeckle
 {
-  private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly IRootToSpeckleConverter _converter;
-  private readonly IRevitConversionContextStack _contextStack;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
 
   public HostedElementConversionToSpeckle(
-    ToSpeckleConvertedObjectsCache convertedObjectsCache,
     IRootToSpeckleConverter converter,
-    IRevitConversionContextStack contextStack
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack
   )
   {
-    _convertedObjectsCache = convertedObjectsCache;
     _converter = converter;
     _contextStack = contextStack;
   }
 
-  public IEnumerable<Base> ConvertHostedElements(IEnumerable<ElementId> hostedElementIds)
+  public IEnumerable<Base> ConvertHostedElements(IEnumerable<IRevitElementId> hostedElementIds)
   {
     foreach (var elemId in hostedElementIds)
     {
-      Element element = _contextStack.Current.Document.GetElement(elemId);
+      IRevitElement element = _contextStack.Current.Document.GetElement(elemId).NotNull();
 
       Base @base;
       try

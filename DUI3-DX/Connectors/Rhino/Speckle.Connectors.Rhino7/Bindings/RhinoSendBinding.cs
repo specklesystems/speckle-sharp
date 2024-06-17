@@ -19,9 +19,9 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 
 public sealed class RhinoSendBinding : ISendBinding
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
-  public IBridge Parent { get; set; }
+  public IBridge Parent { get; }
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;

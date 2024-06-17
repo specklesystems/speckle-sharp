@@ -6,8 +6,8 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bindings;

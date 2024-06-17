@@ -1,6 +1,6 @@
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 
-namespace Speckle.Converters.RevitShared.Helpers;
+namespace Speckle.Connectors.RevitShared.Helpers;
 
 public class RevitContext
 {

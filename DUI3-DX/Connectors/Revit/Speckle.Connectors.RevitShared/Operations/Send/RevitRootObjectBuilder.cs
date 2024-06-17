@@ -3,12 +3,13 @@ using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Exceptions;
-using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
+using Speckle.Revit.Api;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
@@ -16,14 +17,14 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
 {
   // POC: SendSelection and RevitConversionContextStack should be interfaces, former needs interfaces
   private readonly IRootToSpeckleConverter _converter;
-  private readonly IRevitConversionContextStack _contextStack;
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
   private readonly Dictionary<string, Collection> _collectionCache;
   private readonly Collection _rootObject;
   private readonly ISendConversionCache _sendConversionCache;
 
   public RevitRootObjectBuilder(
     IRootToSpeckleConverter converter,
-    IRevitConversionContextStack contextStack,
+    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
     ISendConversionCache sendConversionCache
   )
   {
@@ -45,18 +46,18 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     CancellationToken ct = default
   )
   {
-    var doc = _contextStack.Current.Document;
+    var doc = ((DocumentProxy)_contextStack.Current.Document)._Instance;
 
     if (doc.IsFamilyDocument)
     {
       throw new SpeckleException("Family Environment documents are not supported.");
     }
 
-    var revitElements = new List<Element>(); // = _contextStack.Current.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var revitElements = new List<Element>();
 
     foreach (var id in objects)
     {
-      var el = _contextStack.Current.Document.GetElement(id);
+      var el = doc.GetElement(id);
       if (el != null)
       {
         revitElements.Add(el);

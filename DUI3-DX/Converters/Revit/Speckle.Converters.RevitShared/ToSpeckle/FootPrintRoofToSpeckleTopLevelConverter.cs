@@ -1,33 +1,33 @@
-using Autodesk.Revit.DB;
-using Objects;
-using Objects.BuiltElements.Revit;
+﻿using Objects;
 using Objects.BuiltElements.Revit.RevitRoof;
-using Objects.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.FootPrintRoof), 0)]
+[NameAndRankValue(nameof(IRevitFootPrintRoof), 0)]
 public class FootPrintRoofToSpeckleTopLevelConverter
-  : BaseTopLevelConverterToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
+  : BaseTopLevelConverterToSpeckle<IRevitFootPrintRoof, RevitFootprintRoof>
 {
-  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly ITypedConverter<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
-  private readonly ParameterValueExtractor _parameterValueExtractor;
-  private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly HostedElementConversionToSpeckle _hostedElementConverter;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<IRevitModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
+  private readonly IParameterValueExtractor _parameterValueExtractor;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IHostedElementConversionToSpeckle _hostedElementConverter;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IRevitFilterFactory _revitFilterFactory;
 
   public FootPrintRoofToSpeckleTopLevelConverter(
-    ITypedConverter<Level, RevitLevel> levelConverter,
-    ITypedConverter<ModelCurveArrArray, Polycurve[]> modelCurveArrArrayConverter,
-    ParameterValueExtractor parameterValueExtractor,
-    DisplayValueExtractor displayValueExtractor,
-    HostedElementConversionToSpeckle hostedElementConverter,
-    ParameterObjectAssigner parameterObjectAssigner
+    ITypedConverter<IRevitLevel, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<IRevitModelCurveArrArray, SOG.Polycurve[]> modelCurveArrArrayConverter,
+    IParameterValueExtractor parameterValueExtractor,
+    IDisplayValueExtractor displayValueExtractor,
+    IHostedElementConversionToSpeckle hostedElementConverter,
+    IParameterObjectAssigner parameterObjectAssigner,
+    IRevitFilterFactory revitFilterFactory
   )
   {
     _levelConverter = levelConverter;
@@ -36,25 +36,20 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     _displayValueExtractor = displayValueExtractor;
     _hostedElementConverter = hostedElementConverter;
     _parameterObjectAssigner = parameterObjectAssigner;
+    _revitFilterFactory = revitFilterFactory;
   }
 
-  public override RevitFootprintRoof Convert(FootPrintRoof target)
+  public override RevitFootprintRoof Convert(IRevitFootPrintRoof target)
   {
-    var baseLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
-      target,
-      DB.BuiltInParameter.ROOF_BASE_LEVEL_PARAM
-    );
+    var baseLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_BASE_LEVEL_PARAM);
 
     // We don't currently validate the success of this TryGet, it is assumed some Roofs don't have a top-level.
-    _parameterValueExtractor.TryGetValueAsDocumentObject<DB.Level>(
-      target,
-      DB.BuiltInParameter.ROOF_UPTO_LEVEL_PARAM,
-      out var topLevel
-    );
+    IRevitLevel? topLevel;
+    _parameterValueExtractor.TryGetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_UPTO_LEVEL_PARAM, out topLevel);
 
     //POC: CNX-9403 can be null if the sides have different slopes.
     //We currently don't validate the success or failure of this TryGet as it's not necessary, but will be once we start the above ticket.
-    _parameterValueExtractor.TryGetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE, out var slope);
+    _parameterValueExtractor.TryGetValueAsDouble(target, RevitBuiltInParameter.ROOF_SLOPE, out var slope);
 
     RevitFootprintRoof speckleFootprintRoof =
       new()
@@ -72,7 +67,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 
-    var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());
+    var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
     speckleFootprintRoof.type = elementType.Name;
     speckleFootprintRoof.family = elementType.FamilyName;
 
@@ -81,7 +76,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     _parameterObjectAssigner.AssignParametersToBase(target, speckleFootprintRoof);
     speckleFootprintRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
     speckleFootprintRoof.elements = _hostedElementConverter
-      .ConvertHostedElements(target.GetHostedElementIds())
+      .ConvertHostedElements(target.GetHostedElementIds(_revitFilterFactory))
       .ToList();
 
     return speckleFootprintRoof;
