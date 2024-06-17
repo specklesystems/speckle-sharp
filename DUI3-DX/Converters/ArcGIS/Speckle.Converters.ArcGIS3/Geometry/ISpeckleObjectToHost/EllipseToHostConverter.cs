@@ -29,6 +29,12 @@ public class EllipseToHostConverter : IToHostTopLevelConverter, ITypedConverter<
     {
       throw new ArgumentException("Invalid Ellipse provided");
     }
+    if (
+      target.plane.normal.x != 0 || target.plane.normal.y != 0 || target.plane.xdir.z != 0 || target.plane.ydir.z != 0
+    )
+    {
+      throw new ArgumentException("Only 2d-Ellipse shape is supported");
+    }
 
     ACG.MapPoint centerPt = _pointConverter.Convert(target.plane.origin);
     double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);

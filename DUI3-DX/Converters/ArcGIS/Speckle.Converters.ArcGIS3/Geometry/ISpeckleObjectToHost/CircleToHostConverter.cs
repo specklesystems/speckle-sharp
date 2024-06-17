@@ -28,6 +28,12 @@ public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<S
     {
       throw new SpeckleConversionException("Conversion failed: Circle doesn't have a radius");
     }
+    if (
+      target.plane.normal.x != 0 || target.plane.normal.y != 0 || target.plane.xdir.z != 0 || target.plane.ydir.z != 0
+    )
+    {
+      throw new ArgumentException("Only 2d-Circle shape is supported");
+    }
 
     // create a native ArcGIS circle segment
     ACG.MapPoint centerPt = _pointConverter.Convert(target.plane.origin);

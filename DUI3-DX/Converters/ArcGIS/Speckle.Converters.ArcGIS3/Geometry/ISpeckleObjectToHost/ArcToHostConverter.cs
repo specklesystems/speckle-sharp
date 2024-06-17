@@ -23,6 +23,12 @@ public class ArcToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.
 
   public ACG.Polyline Convert(SOG.Arc target)
   {
+    if (
+      target.plane.normal.x != 0 || target.plane.normal.y != 0 || target.plane.xdir.z != 0 || target.plane.ydir.z != 0
+    )
+    {
+      throw new ArgumentException("Only 2d-Arc shape is supported");
+    }
     ACG.MapPoint fromPt = _pointConverter.Convert(target.startPoint);
     ACG.MapPoint toPt = _pointConverter.Convert(target.endPoint);
     ACG.MapPoint midPt = _pointConverter.Convert(target.midPoint);
