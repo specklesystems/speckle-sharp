@@ -446,7 +446,7 @@ public partial class ConverterAutocadCivil
     var btrObjId = reference.BlockTableRecord;
     if (reference.IsDynamicBlock)
     {
-      btrObjId =(BlockTableRecord)
+      btrObjId =
         reference.AnonymousBlockTableRecord != ObjectId.Null
           ? reference.AnonymousBlockTableRecord
           : reference.DynamicBlockTableRecord;
