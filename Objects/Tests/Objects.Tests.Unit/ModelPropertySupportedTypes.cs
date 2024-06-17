@@ -6,6 +6,7 @@ using System.Linq;
 using NUnit.Framework;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
+using Speckle.Core.Tests.Unit.Serialisation;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Tests.Unit;
@@ -26,6 +27,7 @@ public class ModelPropertySupportedTypes
   /// Check the <see cref="Speckle.Core.Serialisation.SerializationUtilities.ValueConverter"/>
   /// Check the <see cref="BaseObjectSerializerV2"/>
   /// (or is an interface where all concrete types are supported)
+  /// You should also consider adding a test in SerializerNonBreakingChanges
   /// </remarks>
   private HashSet<Type> allowedTypes =
     new()
@@ -49,8 +51,8 @@ public class ModelPropertySupportedTypes
       typeof(Array),
       typeof(Nullable<>),
       typeof(Enum),
-      //typeof(IList<>),
-      //typeof(IReadOnlyList<>),
+      typeof(IList<>),
+      typeof(IReadOnlyList<>),
       typeof(Dictionary<,>),
       //typeof(IDictionary<,>),
       //typeof(IReadOnlyDictionary<,>),

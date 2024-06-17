@@ -105,6 +105,24 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
     Assert.That(res.value, Is.EquivalentTo(testCase));
   }
 
+  [Test, TestCaseSource(nameof(s_arrayTestCases))]
+  public void IListToList(double[] testCase)
+  {
+    var from = new IListDoubleValueMock { value = testCase.ToList() };
+
+    var res = from.SerializeAsTAndDeserialize<ListDoubleValueMock>();
+    Assert.That(res.value, Is.EquivalentTo(testCase));
+  }
+
+  [Test, TestCaseSource(nameof(s_arrayTestCases))]
+  public void IReadOnlyListToList(double[] testCase)
+  {
+    var from = new IReadOnlyListDoubleValueMock { value = testCase.ToList() };
+
+    var res = from.SerializeAsTAndDeserialize<ListDoubleValueMock>();
+    Assert.That(res.value, Is.EquivalentTo(testCase));
+  }
+
   [Test, TestCaseSource(nameof(MyEnums))]
   public void EnumToInt(MyEnum testCase)
   {
