@@ -6,7 +6,7 @@ namespace Speckle.Core.Models.Instances;
 public interface IInstanceComponent
 {
   /// <summary>
-  /// The maximum nesting depth at which this component (Instance or Instance Definition) was found.
+  /// The maximum "depth" at which this <see cref="InstanceProxy"/> or <see cref="InstanceDefinitionProxy"/> was found. It's important to get right: as instances can be composed of other instances, we need to start from the deepest instance elements first when reconstructing them, starting with definitions first.
   /// </summary>
   public int MaxDepth { get; set; }
 }
