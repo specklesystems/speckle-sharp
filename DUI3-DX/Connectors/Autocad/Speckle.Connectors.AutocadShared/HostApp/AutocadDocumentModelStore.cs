@@ -1,3 +1,4 @@
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
@@ -12,7 +13,8 @@ public class AutocadDocumentStore : DocumentModelStore
 
   public AutocadDocumentStore(
     JsonSerializerSettings jsonSerializerSettings,
-    AutocadDocumentManager autocadDocumentManager
+    AutocadDocumentManager autocadDocumentManager,
+    TopLevelExceptionHandler topLevelExceptionHandler
   )
     : base(jsonSerializerSettings, true)
   {
@@ -29,14 +31,15 @@ public class AutocadDocumentStore : DocumentModelStore
       OnDocChangeInternal(Application.DocumentManager.MdiActiveDocument);
     }
 
-    Application.DocumentManager.DocumentActivated += (_, e) => OnDocChangeInternal(e.Document);
+    Application.DocumentManager.DocumentActivated += (_, e) =>
+      topLevelExceptionHandler.CatchUnhandled(() => OnDocChangeInternal(e.Document));
 
     // since below event triggered as secondary, it breaks the logic in OnDocChangeInternal function, leaving it here for now.
     // Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated += (_, args) =>
     //  OnDocChangeInternal((Document)args.DocumentWindow.Document);
   }
 
-  private void OnDocChangeInternal(Document doc)
+  private void OnDocChangeInternal(Document? doc)
   {
     var currentDocName = doc != null ? doc.Name : _nullDocumentName;
     if (_previousDocName == currentDocName)
@@ -54,7 +57,7 @@ public class AutocadDocumentStore : DocumentModelStore
     Models = new();
 
     // POC: Will be addressed to move it into AutocadContext!
-    Document doc = Application.DocumentManager.MdiActiveDocument;
+    Document? doc = Application.DocumentManager.MdiActiveDocument;
 
     if (doc == null)
     {

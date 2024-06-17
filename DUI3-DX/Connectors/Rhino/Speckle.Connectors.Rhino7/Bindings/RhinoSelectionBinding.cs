@@ -8,30 +8,32 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 
 public class RhinoSelectionBinding : ISelectionBinding
 {
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
   private const string SELECTION_EVENT = "setSelection";
 
   public string Name => "selectionBinding";
   public IBridge Parent { get; }
 
-  public RhinoSelectionBinding(RhinoIdleManager idleManager, IBridge parent)
+  public RhinoSelectionBinding(
+    RhinoIdleManager idleManager,
+    IBridge parent,
+    TopLevelExceptionHandler topLevelExceptionHandler
+  )
   {
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
 
-    RhinoDoc.SelectObjects += (_, _) =>
+    RhinoDoc.SelectObjects += OnSelectionChange;
+    RhinoDoc.DeselectObjects += OnSelectionChange;
+    RhinoDoc.DeselectAllObjects += OnSelectionChange;
+
+    void OnSelectionChange(object o, EventArgs eventArgs)
     {
-      idleManager.SubscribeToIdle(OnSelectionChanged);
-    };
-    RhinoDoc.DeselectObjects += (_, _) =>
-    {
-      idleManager.SubscribeToIdle(OnSelectionChanged);
-    };
-    RhinoDoc.DeselectAllObjects += (_, _) =>
-    {
-      idleManager.SubscribeToIdle(OnSelectionChanged);
-    };
+      idleManager.SubscribeToIdle(() => _topLevelExceptionHandler.CatchUnhandled(UpdateSelection));
+    }
   }
 
-  private void OnSelectionChanged()
+  private void UpdateSelection()
   {
     SelectionInfo selInfo = GetSelection();
     Parent.Send(SELECTION_EVENT, selInfo);

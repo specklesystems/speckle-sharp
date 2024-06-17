@@ -3,6 +3,7 @@ using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
@@ -11,34 +12,38 @@ namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGISDocumentStore : DocumentModelStore
 {
-  public ArcGISDocumentStore(JsonSerializerSettings serializerOption)
+  public ArcGISDocumentStore(JsonSerializerSettings serializerOption, TopLevelExceptionHandler topLevelExceptionHandler)
     : base(serializerOption, true)
   {
     ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
-    ProjectSavingEvent.Subscribe(OnProjectSaving);
-    ProjectClosingEvent.Subscribe(OnProjectClosing);
+    ProjectSavingEvent.Subscribe(_ =>
+    {
+      topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
+      return Task.CompletedTask;
+    });
+    ProjectClosingEvent.Subscribe(_ =>
+    {
+      topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
+      return Task.CompletedTask;
+    });
   }
 
-  private Task OnProjectClosing(ProjectClosingEventArgs arg)
+  private void OnProjectClosing()
   {
     if (MapView.Active is null)
     {
-      return Task.CompletedTask;
+      return;
     }
 
     WriteToFile();
-    return Task.CompletedTask;
   }
 
-  private Task OnProjectSaving(ProjectEventArgs arg)
+  private void OnProjectSaving()
   {
-    if (MapView.Active is null)
+    if (MapView.Active is not null)
     {
-      return Task.CompletedTask;
+      WriteToFile();
     }
-
-    WriteToFile();
-    return Task.CompletedTask;
   }
 
   /// <summary>

@@ -89,6 +89,17 @@ public sealed class TopLevelExceptionHandler
     return CatchUnhandled(() => Task.FromResult(function.Invoke())).Result;
   }
 
+  /// <inheritdoc cref="CatchUnhandled(Action)"/>
+  public async Task CatchUnhandled(Func<Task> function)
+  {
+    await CatchUnhandled<object?>(async () =>
+      {
+        await function.Invoke().ConfigureAwait(false);
+        return null;
+      })
+      .ConfigureAwait(false);
+  }
+
   ///<inheritdoc cref="CatchUnhandled{T}(Func{T})"/>
   [SuppressMessage(
     "Design",
