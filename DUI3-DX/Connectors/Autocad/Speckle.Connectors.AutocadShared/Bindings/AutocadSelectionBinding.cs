@@ -9,8 +9,8 @@ public class AutocadSelectionBinding : ISelectionBinding
 {
   private const string SELECTION_EVENT = "setSelection";
 
-  public string Name { get; } = "selectionBinding";
-
+  private readonly HashSet<Document> _visitedDocuments = new();
+  public string Name => "selectionBinding";
   public IBridge Parent { get; }
 
   public AutocadSelectionBinding(IBridge parent)
