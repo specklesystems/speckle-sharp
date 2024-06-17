@@ -7,10 +7,9 @@
     <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
     <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Reference Include="Speckle.Revit2023.Interfaces">
-      <HintPath>..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Interfaces.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.24" />
   </ItemGroup>
 
 </Project>

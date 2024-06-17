@@ -14,16 +14,12 @@
     <PackageReference Include="NUnit" Version="4.1.0" />
     <PackageReference Include="NUnit.Analyzers" Version="4.2.0"/>
     <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.24" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Speckle.Revit2023.Interfaces">
-      <HintPath>..\..\..\..\speckle-sharp-host-apis\Revit\Revit2023\Speckle.Revit2023.Api\bin\Debug\net48\Speckle.Revit2023.Interfaces.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
 </Project>
