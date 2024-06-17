@@ -8,13 +8,13 @@ namespace Speckle.Connectors.Revit.Bindings;
 internal abstract class RevitBaseBinding : IBinding
 {
   // POC: name and bridge might be better for them to be protected props?
-  public string Name { get; protected set; }
-  public IBridge Parent { get; protected set; }
+  public string Name { get; }
+  public IBridge Parent { get; }
 
   protected readonly DocumentModelStore Store;
   protected readonly RevitContext RevitContext;
 
-  public RevitBaseBinding(string name, DocumentModelStore store, IBridge bridge, RevitContext revitContext)
+  protected RevitBaseBinding(string name, DocumentModelStore store, IBridge bridge, RevitContext revitContext)
   {
     Name = name;
     Parent = bridge;
