@@ -21,11 +21,10 @@ public class XyzConversionToPointTests
   {
     _revitConversionContextStack = _repository.Create<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>>();
     _scalingServiceToSpeckle = _repository.Create<IScalingServiceToSpeckle>();
- }
+  }
 
   [TearDown]
   public void Verify() => _repository.VerifyAll();
-
 
   [Test]
   public void Convert_Point()
@@ -44,13 +43,13 @@ public class XyzConversionToPointTests
     var units = "units";
     var conversionContext = _repository.Create<IConversionContext<IRevitDocument>>();
     conversionContext.Setup(x => x.SpeckleUnits).Returns(units);
-    
+
     _scalingServiceToSpeckle.Setup(a => a.ScaleLength(x)).Returns(xScaled);
     _scalingServiceToSpeckle.Setup(a => a.ScaleLength(y)).Returns(yScaled);
     _scalingServiceToSpeckle.Setup(a => a.ScaleLength(z)).Returns(zScaled);
-   
+
     _revitConversionContextStack.Setup(x => x.Current).Returns(conversionContext.Object);
-    
+
     var converter = new XyzConversionToPoint(_scalingServiceToSpeckle.Object, _revitConversionContextStack.Object);
     var point = converter.Convert(xyz.Object);
 
