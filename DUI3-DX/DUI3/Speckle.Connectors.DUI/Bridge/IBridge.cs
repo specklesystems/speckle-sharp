@@ -36,13 +36,8 @@ public interface IBridge
   /// <param name="action"> Action to run on main thread.</param>
   public void RunOnMainThread(Action action);
 
-  /// <param name="eventName"></param>
-  /// <exception cref="InvalidOperationException">Bridge was not associated with a binding</exception>
   public void Send(string eventName);
 
-  /// <inheritdoc cref="Send(string)"/>
-  /// <param name="data">data to store</param>
-  /// <typeparam name="T"></typeparam>
   public void Send<T>(string eventName, T data)
     where T : class;
 }
