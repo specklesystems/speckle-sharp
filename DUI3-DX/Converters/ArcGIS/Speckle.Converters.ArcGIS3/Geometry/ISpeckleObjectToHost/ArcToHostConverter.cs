@@ -4,8 +4,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
-//TODO: Ellipses don't convert correctly, see Autocad test stream
-//[NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class CurveToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.Arc, ACG.Polyline>
 {
   private readonly ITypedConverter<SOG.Point, ACG.MapPoint> _pointConverter;
@@ -19,36 +18,14 @@ public class CurveToHostConverter : IToHostTopLevelConverter, ITypedConverter<SO
 
   public ACG.Polyline Convert(SOG.Arc target)
   {
-    // Determine the number of vertices to create along the arc
-    int numVertices = Math.Max((int)target.length, 50); // Determine based on desired segment length or other criteria
-    List<SOG.Point> pointsOriginal = new();
+    // MapPoint fromPt = MapPointBuilderEx.CreateMapPoint(target.startPoint, 1);
+    ACG.MapPoint fromPt = _pointConverter.Convert(target.startPoint);
+    ACG.MapPoint toPt = _pointConverter.Convert(target.endPoint);
+    ACG.MapPoint midPt = _pointConverter.Convert(target.midPoint);
+    ACG.Coordinate2D interiorPt = new(midPt);
 
-    // get correct direction
-    double? angleStart = target.startAngle;
-    double? fullAngle = target.endAngle - target.startAngle;
-    double? radius = target.radius;
+    ACG.EllipticArcSegment segment = ACG.EllipticArcBuilderEx.CreateCircularArc(fromPt, toPt, interiorPt);
 
-    if (angleStart == null || fullAngle == null || radius == null)
-    {
-      throw new SpeckleConversionException("Conversion failed: Arc doesn't have start & end angle or radius");
-    }
-
-    // Calculate the vertices along the arc
-    for (int i = 0; i <= numVertices; i++)
-    {
-      // Calculate the point along the arc
-      double angle = (double)angleStart + (double)fullAngle * (i / (double)numVertices);
-      SOG.Point pointOnArc =
-        new(
-          target.plane.origin.x + (double)radius * Math.Cos(angle),
-          target.plane.origin.y + (double)radius * Math.Sin(angle),
-          target.plane.origin.z
-        );
-
-      pointsOriginal.Add(pointOnArc);
-    }
-
-    var points = pointsOriginal.Select(x => _pointConverter.Convert(x));
-    return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
+    return new ACG.PolylineBuilderEx(segment, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }
