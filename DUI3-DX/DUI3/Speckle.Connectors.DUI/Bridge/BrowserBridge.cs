@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Speckle.Newtonsoft.Json;
@@ -26,11 +27,12 @@ public class BrowserBridge : IBridge
   /// </summary>
 
   private readonly JsonSerializerSettings _serializerOptions;
-  private readonly Dictionary<string, string?> _resultsStore = new();
+  private readonly ConcurrentDictionary<string, string?> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
   private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
 
-  private Dictionary<string, MethodInfo> BindingMethodCache { get; set; } = new();
+  private IReadOnlyDictionary<string, MethodInfo> _bindingMethodCache = new Dictionary<string, MethodInfo>();
+
   private ActionBlock<RunMethodArgs>? _actionBlock;
   private Action<string>? _scriptMethod;
 
@@ -97,15 +99,16 @@ public class BrowserBridge : IBridge
     _scriptMethod = scriptMethod;
 
     _bindingType = binding.GetType();
-    BindingMethodCache = new Dictionary<string, MethodInfo>();
     ShowDevToolsAction = showDevToolsAction;
 
     // Note: we need to filter out getter and setter methods here because they are not really nicely
     // supported across browsers, hence the !method.IsSpecialName.
+    var bindingMethodCache = new Dictionary<string, MethodInfo>();
     foreach (var m in _bindingType.GetMethods().Where(method => !method.IsSpecialName))
     {
-      BindingMethodCache[m.Name] = m;
+      bindingMethodCache[m.Name] = m;
     }
+    _bindingMethodCache = bindingMethodCache;
 
     // Whenever the ui will call run method inside .net, it will post a message to this action block.
     // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
@@ -125,7 +128,7 @@ public class BrowserBridge : IBridge
   {
     Result<object?> result = await _topLevelExceptionHandler
       .CatchUnhandled(async () => await ExecuteMethod(args.MethodName, args.MethodArgs).ConfigureAwait(false))
-      .ConfigureAwait(false);
+      .ConfigureAwait(true);
 
     var resultJson = JsonConvert.SerializeObject(
       result.IsSuccess ? result.Value : result.Exception,
@@ -140,7 +143,7 @@ public class BrowserBridge : IBridge
   /// <returns></returns>
   public string[] GetBindingsMethodNames()
   {
-    var bindingNames = BindingMethodCache.Keys.ToArray();
+    var bindingNames = _bindingMethodCache.Keys.ToArray();
     Debug.WriteLine($"{FrontendBoundName}: " + JsonConvert.SerializeObject(bindingNames, Formatting.Indented));
     return bindingNames;
   }
@@ -206,7 +209,7 @@ public class BrowserBridge : IBridge
     // passing back the exception to the browser, but webview throws an access violation
     // error that kills Rhino.).
 
-    if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
+    if (!_bindingMethodCache.TryGetValue(methodName, out MethodInfo method))
     {
       throw new SpeckleException(
         $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}."
@@ -244,7 +247,6 @@ public class BrowserBridge : IBridge
     }
 
     // It's an async call
-    // See note at start of function. Do not asyncify!
     await resultTypedTask.ConfigureAwait(false);
 
     // If has a "Result" property return the value otherwise null (Task<void> etc)
@@ -294,8 +296,11 @@ public class BrowserBridge : IBridge
   /// <returns></returns>
   public string? GetCallResult(string requestId)
   {
-    var res = _resultsStore[requestId];
-    _resultsStore.Remove(requestId);
+    bool isFound = _resultsStore.TryRemove(requestId, out string? res);
+    if (!isFound)
+    {
+      throw new ArgumentException($"No result for the given request id was found: {requestId}", nameof(requestId));
+    }
     return res;
   }
 
