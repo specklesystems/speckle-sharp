@@ -39,22 +39,22 @@ public class Model : Base
 
   public ModelInfo? specs { get; set; } //container for model and project specifications
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? nodes { get; set; } //nodes list
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? elements { get; set; } //element (or member) list
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? loads { get; set; } //loads list
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? restraints { get; set; } //supports list
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? properties { get; set; } //properties list
 
-  [DetachProperty, Chunkable(5000)]
+  [DetachProperty]
   public List<Base>? materials { get; set; } //materials list
 
   // add "other" - ex. assemblies, grid lines, grid planes, storeys etc? alignment/paths?
