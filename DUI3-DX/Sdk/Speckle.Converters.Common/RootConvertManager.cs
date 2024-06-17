@@ -16,6 +16,7 @@ public class RootConvertManager : IRootConvertManager
   }
 
   public Type GetTargetType(object target) => target.GetType();
+
   public bool IsSubClass(Type baseType, Type childType) => baseType.IsAssignableFrom(childType);
 
   public Base Convert(Type type, object obj)

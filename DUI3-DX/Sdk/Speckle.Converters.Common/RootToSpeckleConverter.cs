@@ -13,7 +13,11 @@ public class RootToSpeckleConverter : IRootToSpeckleConverter
 
   private readonly Type _revitElementType;
 
-  public RootToSpeckleConverter(IProxyMapper proxyMapper, IRootConvertManager rootConvertManager, IRootElementProvider rootElementProvider)
+  public RootToSpeckleConverter(
+    IProxyMapper proxyMapper,
+    IRootConvertManager rootConvertManager,
+    IRootElementProvider rootElementProvider
+  )
   {
     _proxyMapper = proxyMapper;
     _rootConvertManager = rootConvertManager;
@@ -30,12 +34,14 @@ public class RootToSpeckleConverter : IRootToSpeckleConverter
       //try to fallback to element type
       if (_rootConvertManager.IsSubClass(_revitElementType, revitType))
       {
-        return _rootConvertManager.Convert(_rootElementProvider.GetRootType(), _proxyMapper.CreateProxy(_rootElementProvider.GetRootType(), target));
+        return _rootConvertManager.Convert(
+          _rootElementProvider.GetRootType(),
+          _proxyMapper.CreateProxy(_rootElementProvider.GetRootType(), target)
+        );
       }
       throw new NotSupportedException($"No wrapper found for Revit type: {revitType.Name}");
     }
     var (wrappedType, wrappedObject) = wrapper;
     return _rootConvertManager.Convert(wrappedType, wrappedObject);
   }
-  
 }

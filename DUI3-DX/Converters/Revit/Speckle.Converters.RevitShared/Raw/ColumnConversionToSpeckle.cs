@@ -42,6 +42,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     SOBR.RevitColumn speckleColumn =
       new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).NotNull().Name };
 
+    //should these all be try?
     if (
       _parameterValueExtractor.TryGetValueAsRevitLevel(
         target,
@@ -52,21 +53,41 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     {
       speckleColumn.level = _levelConverter.Convert(level);
     }
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsRevitLevel(
+        target,
+        RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM,
+        out var topLevel
+      )
+    )
+    {
+      speckleColumn.topLevel = _levelConverter.Convert(topLevel);
+    }
 
-   if ( _parameterValueExtractor.TryGetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM, out var topLevel))
-   {
-     speckleColumn.topLevel = _levelConverter.Convert(topLevel);
-   }
-   
-   if ( _parameterValueExtractor.TryGetValueAsDouble(target, RevitBuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM, out var baseOffset))
-   {
-     speckleColumn.baseOffset = baseOffset.Value;
-   }
-   
-   if ( _parameterValueExtractor.TryGetValueAsDouble(target, RevitBuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM, out var topOffset))
-   {
-     speckleColumn.topOffset = topOffset.Value;
-   }
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        RevitBuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM,
+        out var baseOffset
+      )
+    )
+    {
+      speckleColumn.baseOffset = baseOffset.Value;
+    }
+
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        RevitBuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM,
+        out var topOffset
+      )
+    )
+    {
+      speckleColumn.topOffset = topOffset.Value;
+    }
     speckleColumn.facingFlipped = target.FacingFlipped;
     speckleColumn.handFlipped = target.HandFlipped;
     speckleColumn.isSlanted = target.IsSlantedColumn;
@@ -111,7 +132,12 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
 
       return new SOG.Line(
         basePoint,
-        new SOG.Point(basePoint.x, basePoint.y, topLevelElevation ?? 0 + topLevelOffset, _contextStack.Current.SpeckleUnits),
+        new SOG.Point(
+          basePoint.x,
+          basePoint.y,
+          topLevelElevation ?? 0 + topLevelOffset,
+          _contextStack.Current.SpeckleUnits
+        ),
         _contextStack.Current.SpeckleUnits
       );
     }

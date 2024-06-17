@@ -10,6 +10,7 @@ public class FakeType : Type
   {
     Name = name;
   }
+
   public override object[] GetCustomAttributes(bool inherit) => throw new NotImplementedException();
 
   public override bool IsDefined(Type attributeType, bool inherit) => throw new NotImplementedException();
@@ -32,15 +33,25 @@ public class FakeType : Type
 
   protected override bool HasElementTypeImpl() => throw new NotImplementedException();
 
-  protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types,
-    ParameterModifier[] modifiers) =>
-    throw new NotImplementedException();
+  protected override PropertyInfo GetPropertyImpl(
+    string name,
+    BindingFlags bindingAttr,
+    Binder binder,
+    Type returnType,
+    Type[] types,
+    ParameterModifier[] modifiers
+  ) => throw new NotImplementedException();
 
   public override PropertyInfo[] GetProperties(BindingFlags bindingAttr) => throw new NotImplementedException();
 
-  protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention,
-    Type[] types, ParameterModifier[] modifiers) =>
-    throw new NotImplementedException();
+  protected override MethodInfo GetMethodImpl(
+    string name,
+    BindingFlags bindingAttr,
+    Binder binder,
+    CallingConventions callConvention,
+    Type[] types,
+    ParameterModifier[] modifiers
+  ) => throw new NotImplementedException();
 
   public override MethodInfo[] GetMethods(BindingFlags bindingAttr) => throw new NotImplementedException();
 
@@ -62,18 +73,31 @@ public class FakeType : Type
 
   protected override bool IsCOMObjectImpl() => throw new NotImplementedException();
 
-  public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args,
-    ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters) =>
-    throw new NotImplementedException();
+  public override object InvokeMember(
+    string name,
+    BindingFlags invokeAttr,
+    Binder binder,
+    object target,
+    object[] args,
+    ParameterModifier[] modifiers,
+    CultureInfo culture,
+    string[] namedParameters
+  ) => throw new NotImplementedException();
 
   public override Type UnderlyingSystemType { get; }
 
-  protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention,
-    Type[] types, ParameterModifier[] modifiers) =>
-    throw new NotImplementedException();
+  protected override ConstructorInfo GetConstructorImpl(
+    BindingFlags bindingAttr,
+    Binder binder,
+    CallingConventions callConvention,
+    Type[] types,
+    ParameterModifier[] modifiers
+  ) => throw new NotImplementedException();
 
   public override string Name { get; }
-  [SuppressMessage("Naming", "CA1720:Identifier contains type name")] public override Guid GUID { get; } = Guid.Empty;
+
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
+  public override Guid GUID { get; } = Guid.Empty;
   public override Module Module { get; }
   public override Assembly Assembly { get; }
   public override string FullName { get; }

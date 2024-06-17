@@ -13,7 +13,7 @@ public class RootToSpeckleConverterTests
   private readonly Mock<IRootConvertManager> _rootConvertManager;
   private readonly Mock<IProxyMapper> _proxyMapper;
   private readonly Mock<IRootElementProvider> _rootElementProvider;
-  
+
   public RootToSpeckleConverterTests()
   {
     _rootConvertManager = _repository.Create<IRootConvertManager>();
@@ -44,14 +44,16 @@ public class RootToSpeckleConverterTests
 
       _proxyMapper.Setup(x => x.GetMappedTypeFromHostType(targetType)).Returns((Type?)null);
       _proxyMapper.Setup(x => x.GetMappedTypeFromProxyType(targetType)).Returns((Type?)null);
-      
-      
+
       _rootConvertManager.Setup(x => x.IsSubClass(baseType, targetType)).Returns(true);
       _proxyMapper.Setup(x => x.CreateProxy(baseType, target)).Returns(wrappedTarget);
       _rootConvertManager.Setup(x => x.Convert(baseType, wrappedTarget)).Returns(converted);
 
-      var rootToSpeckleConverter =
-        new RootToSpeckleConverter(_proxyMapper.Object, _rootConvertManager.Object, _rootElementProvider.Object);
+      var rootToSpeckleConverter = new RootToSpeckleConverter(
+        _proxyMapper.Object,
+        _rootConvertManager.Object,
+        _rootElementProvider.Object
+      );
       var testConverted = rootToSpeckleConverter.Convert(target);
 
       testConverted.Should().BeSameAs(converted);
