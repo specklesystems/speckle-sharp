@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.DoubleNumerics;
 using System.Drawing;
 using System.Globalization;
@@ -157,16 +158,17 @@ internal static class ValueConverter
       #endregion
     }
 
-    // Handle List<?>
-    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+    // Handle List<>, IList<>, and IReadOnlyList<>
+    if (type.IsGenericType && IsGenericList(type))
     {
       if (value is not List<object> valueList)
       {
         return false;
       }
 
+      var targetType = typeof(List<>).MakeGenericType(type.GenericTypeArguments);
       Type listElementType = type.GenericTypeArguments[0];
-      IList ret = Activator.CreateInstance(type, valueList.Count) as IList;
+      IList ret = Activator.CreateInstance(targetType, valueList.Count) as IList;
       foreach (object inputListElement in valueList)
       {
         if (!ConvertValue(listElementType, inputListElement, out object? convertedListElement))
@@ -310,5 +312,22 @@ internal static class ValueConverter
     }
 
     return false;
+  }
+
+  /// <summary>
+  /// Tests that the given <paramref name="type"/> is assignable from a generic type def <see cref="List{T}"/>
+  /// </summary>
+  /// <param name="type"></param>
+  /// <returns></returns>
+  [Pure]
+  private static bool IsGenericList(Type type)
+  {
+    if (!type.IsGenericType)
+    {
+      return false;
+    }
+
+    Type typeDef = type.GetGenericTypeDefinition();
+    return typeDef == typeof(List<>) || typeDef == typeof(IList<>) || typeDef == typeof(IReadOnlyList<>);
   }
 }
