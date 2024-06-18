@@ -22,7 +22,15 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
-        newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
+        newFeatureClass
+          .CreateRow(
+            _fieldsUtils.AssignFieldValuesToRow(
+              rowBuffer,
+              fields,
+              feat.attributes.GetMembers(DynamicBaseMemberType.Dynamic)
+            )
+          )
+          .Dispose();
       }
     }
   }
@@ -50,22 +58,32 @@ public class FeatureClassUtils : IFeatureClassUtils
         }
 
         // get attributes
-        newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
+        newFeatureClass
+          .CreateRow(
+            _fieldsUtils.AssignFieldValuesToRow(
+              rowBuffer,
+              fields,
+              feat.attributes.GetMembers(DynamicBaseMemberType.Dynamic)
+            )
+          )
+          .Dispose();
       }
     }
   }
 
   public void AddNonGISFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
-    List<ACG.Geometry> features,
+    List<(Base baseObj, ACG.Geometry convertedGeom)> featuresTuples,
     List<FieldDescription> fields
   )
   {
-    foreach (ACG.Geometry geom in features)
+    foreach ((Base baseObj, ACG.Geometry geom) in featuresTuples)
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
         ACG.Geometry newGeom = geom;
+
+        // exception for Points: turn into MultiPoint layer
         if (geom is ACG.MapPoint pointGeom)
         {
           newGeom = new ACG.MultipointBuilderEx(
@@ -73,11 +91,25 @@ public class FeatureClassUtils : IFeatureClassUtils
             ACG.AttributeFlags.HasZ
           ).ToGeometry();
         }
+
         rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = newGeom;
 
-        // TODO: get attributes
-        // newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
-        newFeatureClass.CreateRow(rowBuffer).Dispose();
+        // set and pass attributes
+        Dictionary<string, object?> attributes = new();
+        foreach (FieldDescription field in fields)
+        {
+          string key = field.AliasName;
+          try
+          {
+            attributes[key] = baseObj[key];
+          }
+          catch (KeyNotFoundException)
+          {
+            attributes[key] = null;
+          }
+        }
+        // newFeatureClass.CreateRow(rowBuffer).Dispose();
+        newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, attributes)).Dispose();
       }
     }
   }

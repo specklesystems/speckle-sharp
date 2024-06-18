@@ -16,16 +16,20 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     _characterCleaner = characterCleaner;
   }
 
-  public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat)
+  public RowBuffer AssignFieldValuesToRow(
+    RowBuffer rowBuffer,
+    List<FieldDescription> fields,
+    Dictionary<string, object?> attributes
+  )
   {
     foreach (FieldDescription field in fields)
     {
       // try to assign values to writeable fields
-      if (feat.attributes is not null)
+      if (attributes is not null)
       {
         string key = field.AliasName; // use Alias, as Name is simplified to alphanumeric
         FieldType fieldType = field.FieldType;
-        var value = feat.attributes[key];
+        var value = attributes[key];
         if (value is not null)
         {
           // POC: get all values in a correct format
@@ -46,7 +50,11 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         }
         else
         {
-          rowBuffer[key] = null;
+          try
+          {
+            rowBuffer[key] = null;
+          }
+          catch (GeodatabaseGeneralException) { } // The index passed was not within the valid range. // unclear reason of the error
         }
       }
     }
@@ -87,5 +95,61 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       }
     }
     return fields;
+  }
+
+  public List<FieldDescription> CreateFieldsFromListOfBase(List<Base> target)
+  {
+    List<FieldDescription> fields = new();
+    List<string> fieldAdded = new();
+
+    foreach (var baseObj in target)
+    {
+      foreach (KeyValuePair<string, object?> field in baseObj.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+        TraverseAttributes(field, fields, fieldAdded);
+      }
+    }
+    return fields;
+  }
+
+  private void TraverseAttributes(
+    KeyValuePair<string, object?> field,
+    List<FieldDescription> fields,
+    List<string> fieldAdded
+  )
+  {
+    if (field.Value is Base attributeBase)
+    {
+      foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
+        TraverseAttributes(newAttributField, fields, fieldAdded);
+      }
+    }
+    else
+    {
+      TryAddField(field, fields, fieldAdded);
+    }
+  }
+
+  private void TryAddField(KeyValuePair<string, object?> field, List<FieldDescription> fields, List<string> fieldAdded)
+  {
+    try
+    {
+      if (field.Value is not null && !fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      {
+        string key = field.Key;
+        FieldType fieldType = FieldType.String; // GISAttributeFieldType.FieldTypeToNative(field.Value);
+
+        FieldDescription fieldDescription = new(_characterCleaner.CleanCharacters(key), fieldType) { AliasName = key };
+        fields.Add(fieldDescription);
+        fieldAdded.Add(key);
+      }
+    }
+    catch (GeodatabaseFieldException)
+    {
+      // do nothing
+    }
   }
 }

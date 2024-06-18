@@ -6,6 +6,7 @@ using Speckle.Converters.Common;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
@@ -13,14 +14,17 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
 {
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IConversionContextStack<ArcGISDocument, ACG.Unit> _contextStack;
+  private readonly IArcGISFieldUtils _fieldUtils;
 
   public NonNativeFeaturesUtils(
     IFeatureClassUtils featureClassUtils,
-    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack
+    IConversionContextStack<ArcGISDocument, ACG.Unit> contextStack,
+    IArcGISFieldUtils fieldUtils
   )
   {
     _featureClassUtils = featureClassUtils;
     _contextStack = contextStack;
+    _fieldUtils = fieldUtils;
   }
 
   public void WriteGeometriesToDatasets(
@@ -29,7 +33,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
   )
   {
     // 1. Sort features into groups by path and geom type
-    Dictionary<string, List<ACG.Geometry>> geometryGroups = new();
+    Dictionary<string, List<(Base baseObj, ACG.Geometry convertedGeom)>> geometryGroups = new();
     foreach (var item in conversionTracker)
     {
       try
@@ -40,9 +44,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
         string? datasetId = trackerItem.DatasetId;
         if (geom != null && datasetId == null) // only non-native geomerties, not written into a dataset yet
         {
-          string nestedParentPath = trackerItem.NestedLayerName;
-          string speckle_type = nestedParentPath.Split('\\')[^1];
-
+          string speckle_type = trackerItem.Base.speckle_type.Split(".")[^1];
           string? parentId = context.Parent?.Current.id;
 
           // add dictionnary item if doesn't exist yet
@@ -50,10 +52,10 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
           string uniqueKey = $"speckleTYPE_{speckle_type}_speckleID_{parentId}";
           if (!geometryGroups.TryGetValue(uniqueKey, out _))
           {
-            geometryGroups[uniqueKey] = new List<ACG.Geometry>();
+            geometryGroups[uniqueKey] = new();
           }
 
-          geometryGroups[uniqueKey].Add(geom);
+          geometryGroups[uniqueKey].Add((trackerItem.Base, geom));
 
           // record changes in conversion tracker
           trackerItem.AddDatasetId(uniqueKey);
@@ -83,10 +85,10 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     foreach (var item in geometryGroups)
     {
       string uniqueKey = item.Key;
-      List<ACG.Geometry> geomList = item.Value;
+      List<(Base, ACG.Geometry)> listOfGeometryTuples = item.Value;
       try
       {
-        CreateDatasetInDatabase(uniqueKey, geomList);
+        CreateDatasetInDatabase(uniqueKey, listOfGeometryTuples);
       }
       catch (GeodatabaseGeometryException ex)
       {
@@ -105,7 +107,10 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     }
   }
 
-  private void CreateDatasetInDatabase(string featureClassName, List<ACG.Geometry> geomList)
+  private void CreateDatasetInDatabase(
+    string featureClassName,
+    List<(Base baseObj, ACG.Geometry convertedGeom)> listOfGeometryTuples
+  )
   {
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
       new(_contextStack.Current.Document.SpeckleDatabasePath);
@@ -115,8 +120,10 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     // get Spatial Reference from the document
     ACG.SpatialReference spatialRef = _contextStack.Current.Document.Map.SpatialReference;
 
-    // TODO: create Fields
-    List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
+    // create Fields
+    List<FieldDescription> fields = _fieldUtils.CreateFieldsFromListOfBase(
+      listOfGeometryTuples.Select(x => x.baseObj).ToList()
+    );
 
     // delete FeatureClass if already exists
     foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
@@ -134,7 +141,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     try
     {
       // POC: make sure class has a valid crs
-      ACG.GeometryType geomType = geomList[0].GeometryType;
+      ACG.GeometryType geomType = listOfGeometryTuples[0].convertedGeom.GeometryType;
       ShapeDescription shpDescription = new(geomType, spatialRef) { HasZ = true };
       FeatureClassDescription featureClassDescription = new(featureClassName, fields, shpDescription);
       FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
@@ -155,7 +162,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     // Add features to the FeatureClass
     geodatabase.ApplyEdits(() =>
     {
-      _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, geomList, fields);
+      _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, listOfGeometryTuples, fields);
     });
   }
 }

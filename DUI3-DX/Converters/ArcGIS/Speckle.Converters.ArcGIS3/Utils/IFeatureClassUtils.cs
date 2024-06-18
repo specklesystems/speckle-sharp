@@ -16,7 +16,7 @@ public interface IFeatureClassUtils
   );
   void AddNonGISFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
-    List<ACG.Geometry> features,
+    List<(Base baseObj, ACG.Geometry convertedGeom)> featuresTuples,
     List<FieldDescription> fields
   );
   void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields);
