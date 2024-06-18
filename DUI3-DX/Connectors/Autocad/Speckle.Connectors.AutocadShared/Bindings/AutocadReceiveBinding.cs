@@ -45,7 +45,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
       {
         // Handle as GLOBAL ERROR at BrowserBridge
-        // TODO: this will crash autocad
         throw new InvalidOperationException("No download model card was found.");
       }
 

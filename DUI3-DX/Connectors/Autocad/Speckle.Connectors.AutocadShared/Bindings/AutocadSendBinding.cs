@@ -116,7 +116,6 @@ public sealed class AutocadSendBinding : ISendBinding
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
         // Handle as GLOBAL ERROR at BrowserBridge
-        // TODO: this will crash autocad
         throw new InvalidOperationException("No publish model card was found.");
       }
 
