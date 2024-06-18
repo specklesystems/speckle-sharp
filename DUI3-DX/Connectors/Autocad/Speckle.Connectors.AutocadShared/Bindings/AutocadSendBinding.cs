@@ -109,13 +109,7 @@ public sealed class AutocadSendBinding : ISendBinding
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
 
-  public Task Send(string modelCardId)
-  {
-    Parent.RunOnMainThread(async () => await SendInternal(modelCardId).ConfigureAwait(false));
-    return Task.CompletedTask;
-  }
-
-  private async Task SendInternal(string modelCardId)
+  public async Task Send(string modelCardId)
   {
     try
     {
@@ -131,20 +125,10 @@ public sealed class AutocadSendBinding : ISendBinding
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
-      // Document activation event handler to cancel operation if document is switched
-      Autodesk.AutoCAD.ApplicationServices.DocumentCollectionEventHandler? documentActivatedDuringOperation = null;
-      documentActivatedDuringOperation = (_, _) =>
-      {
-        Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
-        CancelSend(modelCardId);
-        Commands.SetGlobalNotification(
-          ToastNotificationType.WARNING,
-          "Publish cancelled",
-          "Publish operation in progress was cancelled due to document activation."
-        );
-      };
-
-      Application.DocumentManager.DocumentActivated += documentActivatedDuringOperation;
+      // Disable document activation (document creation and document switch)
+      // Not disabling results in DUI model card being out of sync with the active document
+      // The DocumentActivated event isn't usable probably because it is pushed to back of main thread queue
+      Application.DocumentManager.DocumentActivationEnabled = false;
 
       // Get elements to convert
       List<AutocadRootObject> autocadObjects = Application.DocumentManager.CurrentDocument.GetObjects(
@@ -184,6 +168,11 @@ public sealed class AutocadSendBinding : ISendBinding
     catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
+    }
+    finally
+    {
+      // renable document activation
+      Application.DocumentManager.DocumentActivationEnabled = true;
     }
   }
 

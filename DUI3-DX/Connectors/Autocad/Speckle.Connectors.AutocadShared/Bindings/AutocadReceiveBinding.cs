@@ -52,20 +52,10 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
-      // Document activation event handler to cancel operation if document is switched
-      Autodesk.AutoCAD.ApplicationServices.DocumentCollectionEventHandler? documentActivatedDuringOperation = null;
-      documentActivatedDuringOperation = (_, _) =>
-      {
-        Application.DocumentManager.DocumentActivated -= documentActivatedDuringOperation;
-        CancelReceive(modelCardId);
-        Commands.SetGlobalNotification(
-          ToastNotificationType.WARNING,
-          "Load cancelled",
-          "Load operation in progress was cancelled due to document activation."
-        );
-      };
-
-      Application.DocumentManager.DocumentActivated += documentActivatedDuringOperation;
+      // Disable document activation (document creation and document switch)
+      // Not disabling results in DUI model card being out of sync with the active document
+      // The DocumentActivated event isn't usable probably because it is pushed to back of main thread queue
+      Application.DocumentManager.DocumentActivationEnabled = false;
 
       // Receive host objects
       var operationResults = await unitOfWork.Service
@@ -87,6 +77,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
     {
       // SWALLOW -> UI handles it immediately, so we do not need to handle anything
       return;
+    }
+    finally
+    {
+      // renable document activation
+      Application.DocumentManager.DocumentActivationEnabled = true;
     }
   }
 
