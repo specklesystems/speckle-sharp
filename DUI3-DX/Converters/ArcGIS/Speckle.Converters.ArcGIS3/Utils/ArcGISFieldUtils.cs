@@ -124,13 +124,24 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
   {
     if (field.Value is Base attributeBase)
     {
-      // only traverse Base if it's Revit parameter
-      if (field.Value is Objects.BuiltElements.Revit.Parameter)
+      // only traverse Base if it's Revit parameter or Base containing those parameters
+      if (field.Key == "parameters")
       {
         foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
         {
           KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-          function += x => x[attributField.Key];
+          Func<Base, object?> addedFunction = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          function = addedFunction;
+          TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+        }
+      }
+      else if (field.Value is Objects.BuiltElements.Revit.Parameter)
+      {
+        foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
+        {
+          KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
+          Func<Base, object?> addedFunction = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          function = addedFunction;
           TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
         }
       }
@@ -138,11 +149,11 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     else if (field.Value is IList attributeList)
     {
       int count = 0;
-      foreach (KeyValuePair<string, object?> attributField in attributeList)
+      foreach (var attributField in attributeList)
       {
-        KeyValuePair<string, object?> newAttributField =
-          new($"{field.Key}[{count}].{attributField.Key}", attributField.Value);
-        function += x => x[attributField.Key];
+        KeyValuePair<string, object?> newAttributField = new($"{field.Key}[{count}]", attributField);
+        Func<Base, object?> addedFunction = x => (function(x) as List<object?>)?[count];
+        function = addedFunction;
         TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
         count += 1;
       }
