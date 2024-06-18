@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
-using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Connectors.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

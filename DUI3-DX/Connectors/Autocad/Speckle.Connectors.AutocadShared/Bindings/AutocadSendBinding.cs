@@ -18,7 +18,7 @@ namespace Speckle.Connectors.Autocad.Bindings;
 
 public sealed class AutocadSendBinding : ISendBinding
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 

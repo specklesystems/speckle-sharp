@@ -1,27 +1,28 @@
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
-[NameAndRankValue(nameof(DBA.TopographySurface), 0)]
+[NameAndRankValue(nameof(IRevitTopographySurface), 0)]
 public class TopographyTopLevelConverterToSpeckle
-  : BaseTopLevelConverterToSpeckle<DBA.TopographySurface, SOBR.RevitTopography>
+  : BaseTopLevelConverterToSpeckle<IRevitTopographySurface, SOBR.RevitTopography>
 {
-  private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IParameterObjectAssigner _parameterObjectAssigner;
 
   public TopographyTopLevelConverterToSpeckle(
-    DisplayValueExtractor displayValueExtractor,
-    ParameterObjectAssigner parameterObjectAssigner
+    IDisplayValueExtractor displayValueExtractor,
+    IParameterObjectAssigner parameterObjectAssigner
   )
   {
     _displayValueExtractor = displayValueExtractor;
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override SOBR.RevitTopography Convert(DBA.TopographySurface target)
+  public override SOBR.RevitTopography Convert(IRevitTopographySurface target)
   {
     var speckleTopo = new SOBR.RevitTopography
     {

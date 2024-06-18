@@ -163,7 +163,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     {
       if (member is Layer layer)
       {
-        layers.Add(layer);
+        if (member is not GroupLayer) // group layer selection clears other layers selection
+        {
+          layers.Add(layer);
+        }
       }
       else if (member is StandaloneTable table)
       {

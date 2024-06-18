@@ -12,8 +12,8 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 
 public class RhinoReceiveBinding : IReceiveBinding
 {
-  public string Name { get; set; } = "receiveBinding";
-  public IBridge Parent { get; set; }
+  public string Name => "receiveBinding";
+  public IBridge Parent { get; }
 
   private readonly CancellationManager _cancellationManager;
   private readonly DocumentModelStore _store;
