@@ -121,7 +121,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     ACG.SpatialReference spatialRef = _contextStack.Current.Document.Map.SpatialReference;
 
     // create Fields
-    List<FieldDescription> fields = _fieldUtils.CreateFieldsFromListOfBase(
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions = _fieldUtils.CreateFieldsFromListOfBase(
       listOfGeometryTuples.Select(x => x.baseObj).ToList()
     );
 
@@ -137,13 +137,26 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       }
     }
 
+    // delete Table if already exists
+    foreach (TableDefinition fClassDefinition in geodatabase.GetDefinitions<TableDefinition>())
+    {
+      // will cause GeodatabaseCatalogDatasetException if doesn't exist in the database
+      if (fClassDefinition.GetName() == featureClassName)
+      {
+        TableDescription existingDescription = new(fClassDefinition);
+        schemaBuilder.Delete(existingDescription);
+        schemaBuilder.Build();
+      }
+    }
+
     // Create FeatureClass
     try
     {
       // POC: make sure class has a valid crs
       ACG.GeometryType geomType = listOfGeometryTuples[0].convertedGeom.GeometryType;
       ShapeDescription shpDescription = new(geomType, spatialRef) { HasZ = true };
-      FeatureClassDescription featureClassDescription = new(featureClassName, fields, shpDescription);
+      FeatureClassDescription featureClassDescription =
+        new(featureClassName, fieldsAndFunctions.Select(x => x.Item1), shpDescription);
       FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
     }
     catch (ArgumentException ex)
@@ -162,7 +175,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     // Add features to the FeatureClass
     geodatabase.ApplyEdits(() =>
     {
-      _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, listOfGeometryTuples, fields);
+      _featureClassUtils.AddNonGISFeaturesToFeatureClass(newFeatureClass, listOfGeometryTuples, fieldsAndFunctions);
     });
   }
 }

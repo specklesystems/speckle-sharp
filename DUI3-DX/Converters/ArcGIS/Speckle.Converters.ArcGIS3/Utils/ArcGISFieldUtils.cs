@@ -1,3 +1,4 @@
+using System.Collections;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
 using Objects.GIS;
@@ -97,9 +98,9 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     return fields;
   }
 
-  public List<FieldDescription> CreateFieldsFromListOfBase(List<Base> target)
+  public List<(FieldDescription, Func<Base, object?>)> CreateFieldsFromListOfBase(List<Base> target)
   {
-    List<FieldDescription> fields = new();
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions = new();
     List<string> fieldAdded = new();
 
     foreach (var baseObj in target)
@@ -107,33 +108,57 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       foreach (KeyValuePair<string, object?> field in baseObj.GetMembers(DynamicBaseMemberType.Dynamic))
       {
         // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
-        TraverseAttributes(field, fields, fieldAdded);
+        Func<Base, object?> function = x => x[field.Key];
+        TraverseAttributes(field, function, fieldsAndFunctions, fieldAdded);
       }
     }
-    return fields;
+    return fieldsAndFunctions;
   }
 
   private void TraverseAttributes(
     KeyValuePair<string, object?> field,
-    List<FieldDescription> fields,
+    Func<Base, object?> function,
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions,
     List<string> fieldAdded
   )
   {
     if (field.Value is Base attributeBase)
     {
-      foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
+      // only traverse Base if it's Revit parameter
+      if (field.Value is Objects.BuiltElements.Revit.Parameter)
       {
-        KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-        TraverseAttributes(newAttributField, fields, fieldAdded);
+        foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
+        {
+          KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
+          function += x => x[attributField.Key];
+          TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+        }
+      }
+    }
+    else if (field.Value is IList attributeList)
+    {
+      int count = 0;
+      foreach (KeyValuePair<string, object?> attributField in attributeList)
+      {
+        KeyValuePair<string, object?> newAttributField =
+          new($"{field.Key}[{count}].{attributField.Key}", attributField.Value);
+        function += x => x[attributField.Key];
+        TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+        count += 1;
       }
     }
     else
     {
-      TryAddField(field, fields, fieldAdded);
+      TryAddField(field, function, fieldsAndFunctions, fieldAdded);
     }
   }
 
-  private void TryAddField(KeyValuePair<string, object?> field, List<FieldDescription> fields, List<string> fieldAdded)
+  private void TryAddField(
+    KeyValuePair<string, object?> field,
+    Func<Base, object?> function,
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions,
+    List<string> fieldAdded
+  )
   {
     try
     {
@@ -143,7 +168,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         FieldType fieldType = FieldType.String; // GISAttributeFieldType.FieldTypeToNative(field.Value);
 
         FieldDescription fieldDescription = new(_characterCleaner.CleanCharacters(key), fieldType) { AliasName = key };
-        fields.Add(fieldDescription);
+        fieldsAndFunctions.Add((fieldDescription, function));
         fieldAdded.Add(key);
       }
     }

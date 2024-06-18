@@ -14,5 +14,5 @@ public interface IArcGISFieldUtils
   );
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target);
 
-  public List<FieldDescription> CreateFieldsFromListOfBase(List<Base> target);
+  public List<(FieldDescription, Func<Base, object?>)> CreateFieldsFromListOfBase(List<Base> target);
 }

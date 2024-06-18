@@ -74,7 +74,7 @@ public class FeatureClassUtils : IFeatureClassUtils
   public void AddNonGISFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     List<(Base baseObj, ACG.Geometry convertedGeom)> featuresTuples,
-    List<FieldDescription> fields
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions
   )
   {
     foreach ((Base baseObj, ACG.Geometry geom) in featuresTuples)
@@ -96,20 +96,17 @@ public class FeatureClassUtils : IFeatureClassUtils
 
         // set and pass attributes
         Dictionary<string, object?> attributes = new();
-        foreach (FieldDescription field in fields)
+        foreach ((FieldDescription field, Func<Base, object?> function) in fieldsAndFunctions)
         {
           string key = field.AliasName;
-          try
-          {
-            attributes[key] = baseObj[key];
-          }
-          catch (KeyNotFoundException)
-          {
-            attributes[key] = null;
-          }
+          attributes[key] = function(baseObj)?.ToString();
         }
-        // newFeatureClass.CreateRow(rowBuffer).Dispose();
-        newFeatureClass.CreateRow(_fieldsUtils.AssignFieldValuesToRow(rowBuffer, fields, attributes)).Dispose();
+        // newFeatureClass.CreateRow(rowBuffer).Dispose(); // without extra attributes
+        newFeatureClass
+          .CreateRow(
+            _fieldsUtils.AssignFieldValuesToRow(rowBuffer, fieldsAndFunctions.Select(x => x.Item1).ToList(), attributes)
+          )
+          .Dispose();
       }
     }
   }
