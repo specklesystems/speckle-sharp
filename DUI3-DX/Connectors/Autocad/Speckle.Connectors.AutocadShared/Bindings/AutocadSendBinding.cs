@@ -109,7 +109,13 @@ public sealed class AutocadSendBinding : ISendBinding
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
 
-  public async Task Send(string modelCardId)
+  public Task Send(string modelCardId)
+  {
+    Parent.RunOnMainThread(async () => await SendInternal(modelCardId).ConfigureAwait(false));
+    return Task.CompletedTask;
+  }
+
+  private async Task SendInternal(string modelCardId)
   {
     try
     {
