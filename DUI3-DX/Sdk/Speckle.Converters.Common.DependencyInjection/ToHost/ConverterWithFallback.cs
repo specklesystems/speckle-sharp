@@ -50,7 +50,7 @@ public sealed class ConverterWithFallback : IRootToHostConverter
     var displayValue = target.TryGetDisplayValue<Base>();
     if (displayValue != null)
     {
-      if (displayValue is IEnumerable && !displayValue.Any())
+      if (displayValue is IList && !displayValue.Any())
       {
         throw new NotSupportedException($"No display value found for {type}");
       }
