@@ -1,19 +1,20 @@
-﻿using Rhino;
+﻿
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class BoxToSpeckleConverter : ITypedConverter<RG.Box, SOG.Box>
+public class BoxToSpeckleConverter : ITypedConverter<IRhinoBox, SOG.Box>
 {
-  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<IRhinoPlane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
 
   public BoxToSpeckleConverter(
-    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
-    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
+    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack
   )
   {
     _planeConverter = planeConverter;
@@ -26,7 +27,7 @@ public class BoxToSpeckleConverter : ITypedConverter<RG.Box, SOG.Box>
   /// </summary>
   /// <param name="target">The Rhino Box object to convert.</param>
   /// <returns>The converted Speckle Box object.</returns>
-  public SOG.Box Convert(RG.Box target) =>
+  public SOG.Box Convert(IRhinoBox target) =>
     new(
       _planeConverter.Convert(target.Plane),
       _intervalConverter.Convert(target.X),

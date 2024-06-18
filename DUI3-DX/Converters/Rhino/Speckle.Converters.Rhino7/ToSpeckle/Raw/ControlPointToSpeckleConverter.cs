@@ -1,15 +1,15 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class ControlPointToSpeckleConverter : ITypedConverter<RG.ControlPoint, SOG.ControlPoint>
+public class ControlPointToSpeckleConverter : ITypedConverter<IRhinoControlPoint, SOG.ControlPoint>
 {
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
 
-  public ControlPointToSpeckleConverter(IConversionContextStack<RhinoDoc, UnitSystem> contextStack)
+  public ControlPointToSpeckleConverter(IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack)
   {
     _contextStack = contextStack;
   }
@@ -19,8 +19,8 @@ public class ControlPointToSpeckleConverter : ITypedConverter<RG.ControlPoint, S
   /// </summary>
   /// <param name="target">The ControlPoint object to convert.</param>
   /// <returns>The converted Speckle ControlPoint object.</returns>
-  public SOG.ControlPoint Convert(RG.ControlPoint target) =>
+  public SOG.ControlPoint Convert(IRhinoControlPoint target) =>
     new(target.Location.X, target.Location.Y, target.Location.Z, target.Weight, _contextStack.Current.SpeckleUnits);
 
-  public Base Convert(object target) => Convert((RG.ControlPoint)target);
+  public Base Convert(object target) => Convert((IRhinoControlPoint)target);
 }

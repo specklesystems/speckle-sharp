@@ -1,27 +1,28 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
+public class ArcToSpeckleConverter : ITypedConverter<IRhinoArc, SOG.Arc>
 {
-  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<IRhinoPoint3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<IRhinoPlane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IRhinoBoxFactory _boxFactory;
 
   public ArcToSpeckleConverter(
-    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
-    ITypedConverter<RG.Box, SOG.Box> boxConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
-  )
+    ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
+    ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
+    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory boxFactory)
   {
     _pointConverter = pointConverter;
     _planeConverter = planeConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
+    _boxFactory = boxFactory;
   }
 
   /// <summary>
@@ -32,7 +33,7 @@ public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
   /// <remarks>
   /// This method assumes the domain of the arc is (0,1) as Arc types in Rhino do not have domain. You may want to request a conversion from ArcCurve instead.
   /// </remarks>
-  public SOG.Arc Convert(RG.Arc target) =>
+  public SOG.Arc Convert(IRhinoArc target) =>
     new(
       _planeConverter.Convert(target.Plane),
       target.Radius,
@@ -47,6 +48,6 @@ public class ArcToSpeckleConverter : ITypedConverter<RG.Arc, SOG.Arc>
       endPoint = _pointConverter.Convert(target.EndPoint),
       domain = new SOP.Interval(0, 1),
       length = target.Length,
-      bbox = _boxConverter.Convert(new RG.Box(target.BoundingBox()))
+      bbox = _boxConverter.Convert(_boxFactory.CreateBox(target.BoundingBox()))
     };
 }

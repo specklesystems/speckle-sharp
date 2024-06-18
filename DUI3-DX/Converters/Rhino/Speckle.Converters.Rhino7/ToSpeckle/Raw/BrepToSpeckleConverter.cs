@@ -1,31 +1,32 @@
 ﻿using Objects;
-using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
+public class BrepToSpeckleConverter : ITypedConverter<IRhinoBrep, SOG.Brep>
 {
-  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<RG.Curve, ICurve> _curveConverter;
-  private readonly ITypedConverter<RG.NurbsSurface, SOG.Surface> _surfaceConverter;
-  private readonly ITypedConverter<RG.Mesh, SOG.Mesh> _meshConverter;
-  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
-  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<IRhinoPoint3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<IRhinoCurve, ICurve> _curveConverter;
+  private readonly ITypedConverter<IRhinoNurbsSurface, SOG.Surface> _surfaceConverter;
+  private readonly ITypedConverter<IRhinoMesh, SOG.Mesh> _meshConverter;
+  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IRhinoBoxFactory _rhinoBoxFactory;
+  private readonly IRhinoMeshFactory _rhinoMeshFactory;
 
   public BrepToSpeckleConverter(
-    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<RG.Curve, ICurve> curveConverter,
-    ITypedConverter<RG.NurbsSurface, SOG.Surface> surfaceConverter,
-    ITypedConverter<RG.Mesh, SOG.Mesh> meshConverter,
-    ITypedConverter<RG.Box, SOG.Box> boxConverter,
-    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
-  )
+    ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
+    ITypedConverter<IRhinoCurve, ICurve> curveConverter,
+    ITypedConverter<IRhinoNurbsSurface, SOG.Surface> surfaceConverter,
+    ITypedConverter<IRhinoMesh, SOG.Mesh> meshConverter,
+    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
+    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory, IRhinoMeshFactory rhinoMeshFactory)
   {
     _pointConverter = pointConverter;
     _curveConverter = curveConverter;
@@ -34,6 +35,8 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
     _boxConverter = boxConverter;
     _intervalConverter = intervalConverter;
     _contextStack = contextStack;
+    _rhinoBoxFactory = rhinoBoxFactory;
+    _rhinoMeshFactory = rhinoMeshFactory;
   }
 
   /// <summary>
@@ -41,7 +44,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
   /// </summary>
   /// <param name="target">The Brep object to convert.</param>
   /// <returns>The converted Speckle Brep object.</returns>
-  public SOG.Brep Convert(RG.Brep target)
+  public SOG.Brep Convert(IRhinoBrep target)
   {
     var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;
     target.Repair(tol);
@@ -89,7 +92,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       Orientation = (SOG.BrepOrientation)target.SolidOrientation,
       volume = target.IsSolid ? target.GetVolume() : 0,
       area = target.GetArea(),
-      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(false))),
+      bbox = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.GetBoundingBox(false))),
       units = _contextStack.Current.SpeckleUnits
     };
 
@@ -106,7 +109,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
     return speckleBrep;
   }
 
-  private static List<SOG.BrepFace> ConvertBrepFaces(RG.Brep brep, SOG.Brep speckleParent) =>
+  private static List<SOG.BrepFace> ConvertBrepFaces(IRhinoBrep brep, SOG.Brep speckleParent) =>
     brep.Faces
       .Select(
         f =>
@@ -120,7 +123,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       )
       .ToList();
 
-  private List<SOG.BrepEdge> ConvertBrepEdges(RG.Brep brep, SOG.Brep speckleParent) =>
+  private List<SOG.BrepEdge> ConvertBrepEdges(IRhinoBrep brep, SOG.Brep speckleParent) =>
     brep.Edges
       .Select(
         edge =>
@@ -136,7 +139,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       )
       .ToList();
 
-  private List<SOG.BrepTrim> ConvertBrepTrims(RG.Brep brep, SOG.Brep speckleParent) =>
+  private List<SOG.BrepTrim> ConvertBrepTrims(IRhinoBrep brep, SOG.Brep speckleParent) =>
     brep.Trims
       .Select(trim =>
       {
@@ -149,8 +152,8 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
           (int)trim.IsoStatus,
           (SOG.BrepTrimType)trim.TrimType,
           trim.IsReversed(),
-          trim.StartVertex.VertexIndex,
-          trim.EndVertex.VertexIndex
+          trim.StartVertex?.VertexIndex ?? -1,
+          trim.EndVertex?.VertexIndex ?? -1
         )
         {
           Domain = _intervalConverter.Convert(trim.Domain)
@@ -160,7 +163,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       })
       .ToList();
 
-  private List<SOG.BrepLoop> ConvertBrepLoops(RG.Brep brep, SOG.Brep speckleParent) =>
+  private List<SOG.BrepLoop> ConvertBrepLoops(IRhinoBrep brep, SOG.Brep speckleParent) =>
     brep.Loops
       .Select(
         loop =>
@@ -173,14 +176,13 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       )
       .ToList();
 
-  private RG.Mesh? GetBrepDisplayMesh(RG.Brep brep)
+  private IRhinoMesh? GetBrepDisplayMesh(IRhinoBrep brep)
   {
-    var joinedMesh = new RG.Mesh();
+    var joinedMesh = _rhinoMeshFactory.Create();
 
     // get from settings
     //Settings.TryGetValue("sendMeshSetting", out string meshSetting);
 
-    RG.MeshingParameters mySettings = new(0.05, 0.05);
     // switch (SelectedMeshSettings)
     // {
     //   case MeshSettings.CurrentDoc:
@@ -194,7 +196,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
 
     try
     {
-      joinedMesh.Append(RG.Mesh.CreateFromBrep(brep, mySettings));
+      joinedMesh.Append(_rhinoMeshFactory.CreateFromBrep(brep, 0.05, 0.05));
       return joinedMesh;
     }
     catch (Exception ex) when (!ex.IsFatal())
