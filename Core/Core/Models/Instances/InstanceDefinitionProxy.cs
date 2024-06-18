@@ -12,8 +12,5 @@ public class InstanceDefinitionProxy : Base, IInstanceComponent
   /// </summary>
   public List<string> Objects { get; set; } // source app application ids for the objects
 
-  /// <summary>
-  /// The maximum "depth" at which this instance was found. It's important to get right: as instances can be composed of other instances, we need to start from the deepest instance elements first when reconstructing them.
-  /// </summary>
   public int MaxDepth { get; set; }
 }

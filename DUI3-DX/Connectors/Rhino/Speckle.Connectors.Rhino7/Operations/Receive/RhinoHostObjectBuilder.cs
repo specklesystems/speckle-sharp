@@ -90,7 +90,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var instanceComponents = new List<(string[] layerPath, IInstanceComponent obj)>();
 
-    // POC: these are not captured by traversal, so we need to readd them here
+    // POC: these are not captured by traversal, so we need to re-add them here
     if (instanceDefinitionProxies != null && instanceDefinitionProxies.Count > 0)
     {
       var transformed = instanceDefinitionProxies.Select(proxy => (Array.Empty<string>(), proxy as IInstanceComponent));

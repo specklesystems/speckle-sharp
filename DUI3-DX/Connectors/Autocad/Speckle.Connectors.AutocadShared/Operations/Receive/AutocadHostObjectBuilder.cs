@@ -62,6 +62,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     var objectGraph = _traversalFunction.Traverse(rootObject).Where(obj => obj.Current is not Collection);
 
+    // POC: these are not captured by traversal, so we need to re-add them here
     var instanceDefinitionProxies = (rootObject["instanceDefinitionProxies"] as List<object>)
       ?.Cast<InstanceDefinitionProxy>()
       .ToList();
@@ -91,8 +92,10 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     // Stage 1: Convert atomic objects
     Dictionary<string, List<Entity>> applicationIdMap = new();
+    var count = 0;
     foreach (var (layerName, atomicObject) in atomicObjects)
     {
+      onOperationProgressed?.Invoke("Converting objects", (double)++count / atomicObjects.Count);
       try
       {
         var convertedObjects = ConvertObject(atomicObject, layerName).ToList();

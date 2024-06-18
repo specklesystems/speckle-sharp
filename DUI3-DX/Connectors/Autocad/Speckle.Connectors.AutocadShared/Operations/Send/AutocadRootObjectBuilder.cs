@@ -52,6 +52,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     int count = 0;
 
     var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(objects);
+    // POC: until we formalise a bit more the root object
     modelWithLayers["instanceDefinitionProxies"] = instanceDefinitionProxies;
 
     List<SendConversionResult> results = new();
