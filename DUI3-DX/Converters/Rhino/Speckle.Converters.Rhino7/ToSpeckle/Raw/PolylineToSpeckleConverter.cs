@@ -1,29 +1,30 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 public class PolylineToSpeckleConverter
-  : ITypedConverter<RG.Polyline, SOG.Polyline>,
-    ITypedConverter<RG.PolylineCurve, SOG.Polyline>
+  : ITypedConverter<IRhinoPolyline, SOG.Polyline>,
+    ITypedConverter<IRhinoPolylineCurve, SOG.Polyline>
 {
-  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
-  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<IRhinoPoint3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IRhinoBoxFactory _rhinoBoxFactory;
 
   public PolylineToSpeckleConverter(
-    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<RG.Box, SOG.Box> boxConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter
-  )
+    ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
+    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter, IRhinoBoxFactory rhinoBoxFactory)
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
     _intervalConverter = intervalConverter;
+    _rhinoBoxFactory = rhinoBoxFactory;
   }
 
   /// <summary>
@@ -32,9 +33,9 @@ public class PolylineToSpeckleConverter
   /// <param name="target">The Rhino polyline to be converted.</param>
   /// <returns>The converted Speckle polyline.</returns>
   /// <remarks>⚠️ This conversion assumes domain interval is (0,LENGTH) as Rhino Polylines have no domain. If needed, you may want to use PolylineCurve conversion instead. </remarks>
-  public SOG.Polyline Convert(RG.Polyline target)
+  public SOG.Polyline Convert(IRhinoPolyline target)
   {
-    var box = _boxConverter.Convert(new RG.Box(target.BoundingBox));
+    var box = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.BoundingBox));
     var points = target.Select(pt => _pointConverter.Convert(pt)).ToList();
 
     if (target.IsClosed)
@@ -48,8 +49,8 @@ public class PolylineToSpeckleConverter
     )
     {
       bbox = box,
-      length = target.Length,
-      domain = new(0, target.Length),
+      length = target.Count,
+      domain = new(0, target.Count),
       closed = target.IsClosed
     };
   }
@@ -60,7 +61,7 @@ public class PolylineToSpeckleConverter
   /// <param name="target">The Rhino PolylineCurve to be converted.</param>
   /// <returns>The converted Speckle polyline.</returns>
   /// <remarks>✅ This conversion respects the domain of the original PolylineCurve</remarks>
-  public SOG.Polyline Convert(RG.PolylineCurve target)
+  public SOG.Polyline Convert(IRhinoPolylineCurve target)
   {
     var result = Convert(target.ToPolyline());
     result.domain = _intervalConverter.Convert(target.Domain);
