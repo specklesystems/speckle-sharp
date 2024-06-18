@@ -1,23 +1,23 @@
-﻿using Rhino.DocObjects;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-[NameAndRankValue(nameof(ExtrusionObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(IRhinoExtrusionObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class ExtrusionObjectToSpeckleTopLevelConverter : IToSpeckleTopLevelConverter
 {
-  private readonly ITypedConverter<RG.Brep, SOG.Brep> _curveConverter;
+  private readonly ITypedConverter<IRhinoBrep, SOG.Brep> _curveConverter;
 
-  public ExtrusionObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Brep, SOG.Brep> curveConverter)
+  public ExtrusionObjectToSpeckleTopLevelConverter(ITypedConverter<IRhinoBrep, SOG.Brep> curveConverter)
   {
     _curveConverter = curveConverter;
   }
 
   public Base Convert(object target)
   {
-    var curveObject = (ExtrusionObject)target;
+    var curveObject = (IRhinoExtrusionObject)target;
     var speckleCurve = _curveConverter.Convert(curveObject.ExtrusionGeometry.ToBrep());
     return speckleCurve;
   }

@@ -1,14 +1,17 @@
 ﻿using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class LineToHostConverter : ITypedConverter<SOG.Line, RG.LineCurve>, ITypedConverter<SOG.Line, RG.Line>
+public class LineToHostConverter : ITypedConverter<SOG.Line, IRhinoLineCurve>, ITypedConverter<SOG.Line, IRhinoLine>
 {
-  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOG.Point, IRhinoPoint3d> _pointConverter;
+  private readonly IRhinoLineFactory _rhinoLineFactory;
 
-  public LineToHostConverter(ITypedConverter<SOG.Point, RG.Point3d> pointConverter)
+  public LineToHostConverter(ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter, IRhinoLineFactory rhinoLineFactory)
   {
     _pointConverter = pointConverter;
+    _rhinoLineFactory = rhinoLineFactory;
   }
 
   /// <summary>
@@ -20,15 +23,15 @@ public class LineToHostConverter : ITypedConverter<SOG.Line, RG.LineCurve>, ITyp
   /// <remarks>
   /// <br/>⚠️ This conversion does not preserve the curve domain.
   /// If you need it preserved you must request a conversion to
-  /// <see cref="RG.LineCurve"/> conversion instead
+  /// <see cref="IRhinoLineCurve"/> conversion instead
   /// </remarks>
-  public RG.Line Convert(SOG.Line target) =>
-    new(_pointConverter.Convert(target.start), _pointConverter.Convert(target.end));
+  public IRhinoLine Convert(SOG.Line target) =>
+    _rhinoLineFactory.Create(_pointConverter.Convert(target.start), _pointConverter.Convert(target.end));
 
   /// <summary>
   /// Converts a Speckle Line object to a Rhino LineCurve object.
   /// </summary>
   /// <param name="target">The Speckle Line object to convert.</param>
   /// <returns>Returns the resulting Rhino LineCurve object.</returns>
-  RG.LineCurve ITypedConverter<SOG.Line, RG.LineCurve>.Convert(SOG.Line target) => new(Convert(target));
+  IRhinoLineCurve ITypedConverter<SOG.Line, IRhinoLineCurve>.Convert(SOG.Line target) => _rhinoLineFactory.Create(Convert(target));
 }

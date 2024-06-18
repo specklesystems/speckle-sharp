@@ -1,14 +1,14 @@
-﻿using Rhino.DocObjects;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-[NameAndRankValue(nameof(MeshObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshObjectToSpeckleTopLevelConverter : RhinoObjectToSpeckleTopLevelConverter<MeshObject, RG.Mesh, SOG.Mesh>
+[NameAndRankValue(nameof(IRhinoMeshObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class MeshObjectToSpeckleTopLevelConverter : RhinoObjectToSpeckleTopLevelConverter<IRhinoMeshObject, IRhinoMesh, SOG.Mesh>
 {
-  public MeshObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Mesh, SOG.Mesh> conversion)
+  public MeshObjectToSpeckleTopLevelConverter(ITypedConverter<IRhinoMesh, SOG.Mesh> conversion)
     : base(conversion) { }
 
-  protected override RG.Mesh GetTypedGeometry(MeshObject input) => input.MeshGeometry;
+  protected override IRhinoMesh GetTypedGeometry(IRhinoMeshObject input) => input.MeshGeometry;
 }

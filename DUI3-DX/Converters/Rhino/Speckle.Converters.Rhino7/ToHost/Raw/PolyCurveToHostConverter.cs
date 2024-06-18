@@ -1,19 +1,21 @@
 ﻿using Objects;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, RG.PolyCurve>
+public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, IRhinoPolyCurve>
 {
-  public ITypedConverter<ICurve, RG.Curve>? CurveConverter { get; set; } // POC: CNX-9311 Circular dependency injected by the container using property.
+  private readonly ITypedConverter<ICurve, IRhinoCurve> _curveConverter;
+  private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
+  private readonly IRhinoCurveFactory _rhinoCurveFactory;
 
-  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
-
-  public PolyCurveToHostConverter(ITypedConverter<SOP.Interval, RG.Interval> intervalConverter)
+  public PolyCurveToHostConverter(ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, ITypedConverter<ICurve, IRhinoCurve> curveConverter, IRhinoCurveFactory rhinoCurveFactory)
   {
     _intervalConverter = intervalConverter;
+    _curveConverter = curveConverter;
+    _rhinoCurveFactory = rhinoCurveFactory;
   }
 
   /// <summary>
@@ -22,13 +24,13 @@ public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, RG.PolyCu
   /// <param name="target">The SpecklePolyCurve object to convert.</param>
   /// <returns>The converted Rhino PolyCurve object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.PolyCurve Convert(SOG.Polycurve target)
+  public IRhinoPolyCurve Convert(SOG.Polycurve target)
   {
-    RG.PolyCurve result = new();
+    IRhinoPolyCurve result = _rhinoCurveFactory.Create();
 
     foreach (var segment in target.segments)
     {
-      var childCurve = CurveConverter.NotNull().Convert(segment);
+      var childCurve = _curveConverter.Convert(segment);
       bool success = result.AppendSegment(childCurve);
       if (!success)
       {

@@ -4,8 +4,8 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw, TOutRaw> : IToSpeckleTopLevelConverter
-  where TTopLevelIn : Rhino.DocObjects.RhinoObject
-  where TInRaw : RG.GeometryBase
+  where TTopLevelIn : notnull
+  where TInRaw : notnull
   where TOutRaw : Base
 {
   public ITypedConverter<TInRaw, TOutRaw> Conversion { get; }
