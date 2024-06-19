@@ -126,22 +126,21 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
       schemaBuilder.Delete(existingDescription);
       schemaBuilder.Build();
     }
-    catch (GeodatabaseTableException)
+    catch (Exception ex) when (!ex.IsFatal()) //(GeodatabaseTableException)
     {
-      // "The table was not found.", do nothing
-    }
-
-    // delete Table if already exists
-    try
-    {
-      TableDefinition fClassDefinition = geodatabase.GetDefinition<TableDefinition>(featureClassName);
-      TableDescription existingDescription = new(fClassDefinition);
-      schemaBuilder.Delete(existingDescription);
-      schemaBuilder.Build();
-    }
-    catch (GeodatabaseTableException)
-    {
-      // "The table was not found.", do nothing
+      // "The table was not found."
+      // delete Table if already exists
+      try
+      {
+        TableDefinition fClassDefinition = geodatabase.GetDefinition<TableDefinition>(featureClassName);
+        TableDescription existingDescription = new(fClassDefinition);
+        schemaBuilder.Delete(existingDescription);
+        schemaBuilder.Build();
+      }
+      catch (Exception ex2) when (!ex2.IsFatal()) //(GeodatabaseTableException)
+      {
+        // "The table was not found.", do nothing
+      }
     }
 
     // Create FeatureClass
