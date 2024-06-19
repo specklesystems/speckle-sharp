@@ -106,10 +106,14 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     foreach (var baseObj in target)
     {
       // get all members by default, but only Dynamic ones from the basic geometry
-      var members = baseObj.GetMembers(DynamicBaseMemberType.All);
+      Dictionary<string, object?> members = new();
       if (baseObj.speckle_type.StartsWith("Objects.Geometry"))
       {
         members = baseObj.GetMembers(DynamicBaseMemberType.Dynamic);
+      }
+      else
+      {
+        members = baseObj.GetMembers(DynamicBaseMemberType.All);
       }
 
       foreach (KeyValuePair<string, object?> field in members)
@@ -151,6 +155,10 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
           Func<Base, object?> functionAdded = x => (function(x) as Base)?[attributField.Key];
           TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         }
+      }
+      else
+      {
+        // for now, ignore all other properties of Base type
       }
     }
     else if (field.Value is IList attributeList)
