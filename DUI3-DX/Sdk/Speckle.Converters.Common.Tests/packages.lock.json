@@ -65,9 +65,9 @@
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.24, )",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
+        "requested": "[0.1.1-preview.0.25, )",
+        "resolved": "0.1.1-preview.0.25",
+        "contentHash": "K22SbzxnujxU/elofcsYceLQ2G2ketJWGSM39I+k6IcvRvcy/az5X1fjhzrYtzC0Y+/2aqm0oqydFP+3FROJjg=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -198,14 +198,6 @@
         "contentHash": "mTc7PM+wC9Hr7LWSwqt5mmnlAr7RJs+eTb3PGPRhwdOackk95MkhUZognuxXEdlW19HAFNmEBTSBY5DfLwM8jQ==",
         "dependencies": {
           "Serilog": "2.4.0"
-        }
-      },
-      "Serilog.Enrichers.GlobalLogContext": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "IIZcj5mAUVhIl/NTA+YI2KC+sPDzcwvs0ZMHH42jsPfl1a4LVX7ohVpw5UK+e3GxuV3Nv239Il5oM2peUIl44g==",
-        "dependencies": {
-          "Serilog": "2.12.0"
         }
       },
       "Serilog.Exceptions": {
@@ -421,8 +413,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {
@@ -438,7 +429,6 @@
           "Sentry.Serilog": "[3.33.0, )",
           "Serilog": "[2.12.0, )",
           "Serilog.Enrichers.ClientInfo": "[1.3.0, )",
-          "Serilog.Enrichers.GlobalLogContext": "[3.0.0, )",
           "Serilog.Exceptions": "[8.4.0, )",
           "Serilog.Sinks.Console": "[4.1.0, )",
           "Serilog.Sinks.Seq": "[5.2.2, )",
