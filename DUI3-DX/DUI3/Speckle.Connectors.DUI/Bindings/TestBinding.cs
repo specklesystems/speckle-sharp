@@ -9,8 +9,8 @@ namespace Speckle.Connectors.DUI.Bindings;
 /// </summary>
 public class TestBinding : IBinding
 {
-  public string Name { get; set; } = "testBinding";
-  public IBridge Parent { get; private set; }
+  public string Name => "testBinding";
+  public IBridge Parent { get; }
 
   public TestBinding(IBridge bridge)
   {
