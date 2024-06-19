@@ -135,6 +135,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         // add layer URI to bakedIds
         bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
 
+        // mark dataset as already created
+        bakedMapMembers[trackerItem.DatasetId] = mapMember;
+
         // add report item
         AddResultsFromTracker(trackerItem, results);
       }
