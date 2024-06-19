@@ -12,5 +12,6 @@ public class RhinoConverterModule : ISpeckleModule
     builder.AddConverterCommon<RootToSpeckleConverter, RhinoToSpeckleUnitConverter, RhinoUnitSystem>();
     // single stack per conversion
     builder.AddScoped<IConversionContextStack<IRhinoDoc, RhinoUnitSystem>, RhinoConversionContextStack>();
+    builder.AddScoped<IRootElementProvider, RhinoRootElementProvider>();
   }
 }

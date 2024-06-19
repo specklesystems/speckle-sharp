@@ -16,10 +16,8 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
-using Speckle.ProxyGenerator;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
-using IProxyMapper = Speckle.Converters.Common.IProxyMapper;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
@@ -75,17 +73,4 @@ public class RevitConnectorModule : ISpeckleModule
     // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
   }
-}
-
-public class ProxyMapper : IProxyMapper
-{
-  public Type? GetMappedTypeFromHostType(Type type) => ProxyMap.GetMappedTypeFromHostType(type);
-
-  public Type? GetMappedTypeFromProxyType(Type type) => ProxyMap.GetMappedTypeFromProxyType(type);
-
-  public Type? GetHostTypeFromMappedType(Type type) => ProxyMap.GetHostTypeFromMappedType(type);
-
-  public object CreateProxy(Type type, object toWrap) => ProxyMap.CreateProxy(type, toWrap);
-
-  public T CreateProxy<T>(object toWrap) => ProxyMap.CreateProxy<T>(toWrap);
 }
