@@ -2,7 +2,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.InterfaceGenerator;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Common;
 
@@ -26,7 +25,7 @@ public class RootToSpeckleConverter : IRootToSpeckleConverter
     {
       throw new NotSupportedException($"No wrapper found for Revit type: {revitType.Name}");
     }
-    var (wrappedType, wrappedObject) = wrapper.Value;
+    var (wrappedType, wrappedObject) = wrapper;
     try
     {
       var objectConverter = _toSpeckle.ResolveInstance(wrappedType.Name); //poc: would be nice to have supertypes resolve

@@ -13,7 +13,7 @@ public class RhinoSelectionBinding : ISelectionBinding
   public string Name { get; } = "selectionBinding";
   public IBridge Parent { get; set; }
 
-  public RhinoSelectionBinding(RhinoIdleManager idleManager, IBridge parent)
+  public RhinoSelectionBinding(IRhinoIdleManager idleManager, IBridge parent)
   {
     Parent = parent;
 
@@ -34,7 +34,7 @@ public class RhinoSelectionBinding : ISelectionBinding
   private void OnSelectionChanged()
   {
     SelectionInfo selInfo = GetSelection();
-    Parent?.Send(SELECTION_EVENT, selInfo);
+    Parent.Send(SELECTION_EVENT, selInfo);
   }
 
   public SelectionInfo GetSelection()
