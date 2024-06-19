@@ -15,7 +15,6 @@ public static class ContainerRegistration
     builder.AddSingleton<CancellationManager>();
     builder.AddScoped<ReceiveOperation>();
 
-    // POC: will likely need refactoring with our reporting pattern.
     //TODO: Logger will likely be removed from Core, we'll plan to figure out the config later...
     var serilogLogger = SpeckleLog.Logger;
 
