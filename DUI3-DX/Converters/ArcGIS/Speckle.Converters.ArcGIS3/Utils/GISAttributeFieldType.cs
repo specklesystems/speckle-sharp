@@ -96,7 +96,7 @@ public static class GISAttributeFieldType
       {
         return fieldType switch
         {
-          FieldType.String => (string)value,
+          FieldType.String => value.ToString(),
           FieldType.Single => Convert.ToSingle(value),
           FieldType.Integer => Convert.ToInt32(value), // need this step because sent "ints" seem to be received as "longs"
           FieldType.BigInteger => Convert.ToInt64(value),
