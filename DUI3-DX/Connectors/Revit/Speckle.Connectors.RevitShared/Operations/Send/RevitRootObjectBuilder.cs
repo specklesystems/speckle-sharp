@@ -72,12 +72,14 @@ public class RevitRootObjectBuilder : IRootObjectBuilder<ElementId>
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
     var cacheHitCount = 0;
     List<SendConversionResult> results = new(revitElements.Count);
+    var path = new string[2];
     foreach (Element revitElement in revitElements)
     {
       ct.ThrowIfCancellationRequested();
 
       var cat = revitElement.Category.Name;
-      var path = new[] { doc.GetElement(revitElement.LevelId) is not Level level ? "No level" : level.Name, cat };
+      path[0] = doc.GetElement(revitElement.LevelId) is not Level level ? "No level" : level.Name;
+      path[1] = cat;
       var collection = GetAndCreateObjectHostCollection(path);
 
       var applicationId = revitElement.Id.ToString();
