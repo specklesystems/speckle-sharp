@@ -126,27 +126,29 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     );
 
     // delete FeatureClass if already exists
-    foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
+    try
     {
-      // will cause GeodatabaseCatalogDatasetException if doesn't exist in the database
-      if (fClassDefinition.GetName() == featureClassName)
-      {
-        FeatureClassDescription existingDescription = new(fClassDefinition);
-        schemaBuilder.Delete(existingDescription);
-        schemaBuilder.Build();
-      }
+      FeatureClassDefinition fClassDefinition = geodatabase.GetDefinition<FeatureClassDefinition>(featureClassName);
+      FeatureClassDescription existingDescription = new(fClassDefinition);
+      schemaBuilder.Delete(existingDescription);
+      schemaBuilder.Build();
+    }
+    catch (GeodatabaseTableException)
+    {
+      // "The table was not found.", do nothing
     }
 
     // delete Table if already exists
-    foreach (TableDefinition fClassDefinition in geodatabase.GetDefinitions<TableDefinition>())
+    try
     {
-      // will cause GeodatabaseCatalogDatasetException if doesn't exist in the database
-      if (fClassDefinition.GetName() == featureClassName)
-      {
-        TableDescription existingDescription = new(fClassDefinition);
-        schemaBuilder.Delete(existingDescription);
-        schemaBuilder.Build();
-      }
+      TableDefinition fClassDefinition = geodatabase.GetDefinition<TableDefinition>(featureClassName);
+      TableDescription existingDescription = new(fClassDefinition);
+      schemaBuilder.Delete(existingDescription);
+      schemaBuilder.Build();
+    }
+    catch (GeodatabaseTableException)
+    {
+      // "The table was not found.", do nothing
     }
 
     // Create FeatureClass
