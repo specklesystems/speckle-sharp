@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Speckle.Newtonsoft.Json;
-using Speckle.Core.Logging;
 using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
@@ -19,7 +18,7 @@ namespace Speckle.Connectors.DUI.Bridge;
 /// </summary>
 [ClassInterface(ClassInterfaceType.AutoDual)]
 [ComVisible(true)]
-public class BrowserBridge : IBridge
+public sealed class BrowserBridge : IBridge
 {
   /// <summary>
   /// The name under which we expect the frontend to hoist this bindings class to the global scope.
@@ -130,10 +129,7 @@ public class BrowserBridge : IBridge
       .CatchUnhandled(async () => await ExecuteMethod(args.MethodName, args.MethodArgs).ConfigureAwait(false))
       .ConfigureAwait(true);
 
-    var resultJson = JsonConvert.SerializeObject(
-      result.IsSuccess ? result.Value : result.Exception,
-      _serializerOptions
-    );
+    string? resultJson = result.IsSuccess ? JsonConvert.SerializeObject(result.Value, _serializerOptions) : null;
     NotifyUIMethodCallResultReady(args.RequestId, resultJson);
   }
 
@@ -199,20 +195,16 @@ public class BrowserBridge : IBridge
   /// </summary>
   /// <param name="methodName"></param>
   /// <param name="args"></param>
-  /// <exception cref="SpeckleException"></exception>
+  /// <exception cref="ArgumentException">The <paramref name="methodName"/> was not found or the given <paramref name="args"/> were not valid for the method call</exception>
+  /// <exception cref="TargetInvocationException">The invoked method throws an exception</exception>
   /// <returns>The Json</returns>
   private async Task<object?> ExecuteMethod(string methodName, string args)
   {
-    // Note: we have this pokemon catch 'em all here because throwing errors in .NET is
-    // very risky, and we might crash the host application. Behaviour seems also to differ
-    // between various browser controls (e.g.: cefsharp handles things nicely - basically
-    // passing back the exception to the browser, but webview throws an access violation
-    // error that kills Rhino.).
-
     if (!_bindingMethodCache.TryGetValue(methodName, out MethodInfo method))
     {
-      throw new SpeckleException(
-        $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}."
+      throw new ArgumentException(
+        $"Cannot find method {methodName} in bindings class {_bindingType?.AssemblyQualifiedName}.",
+        nameof(methodName)
       );
     }
 
@@ -220,25 +212,30 @@ public class BrowserBridge : IBridge
     var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
     if (parameters.Length != jsonArgsArray?.Length)
     {
-      throw new SpeckleException(
-        $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray?.Length}."
+      throw new ArgumentException(
+        $"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray?.Length}.",
+        nameof(args)
       );
     }
 
-    var typedArgs = new object[jsonArgsArray.Length];
+    var typedArgs = new object?[jsonArgsArray.Length];
 
     for (int i = 0; i < typedArgs.Length; i++)
     {
       var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
-      if (ccc is null)
-      {
-        continue;
-      }
-
       typedArgs[i] = ccc;
     }
 
-    var resultTyped = method.Invoke(Binding, typedArgs);
+    object? resultTyped;
+    try
+    {
+      resultTyped = method.Invoke(Binding, typedArgs);
+    }
+    catch (TargetInvocationException ex)
+    {
+      throw new TargetInvocationException($"Unhandled exception while executing {methodName}", ex.InnerException);
+    }
+
     // Was the method called async?
     if (resultTyped is not Task resultTypedTask)
     {
