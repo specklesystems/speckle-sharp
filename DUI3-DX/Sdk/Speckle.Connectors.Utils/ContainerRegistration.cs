@@ -16,7 +16,7 @@ public static class ContainerRegistration
     builder.AddScoped<ReceiveOperation>();
 
     // POC: will likely need refactoring with our reporting pattern.
-    //TODO: Logger will likly be removed from Core, we'll plan to figure out the config later...
+    //TODO: Logger will likely be removed from Core, we'll plan to figure out the config later...
     var serilogLogger = SpeckleLog.Logger;
 
     ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);

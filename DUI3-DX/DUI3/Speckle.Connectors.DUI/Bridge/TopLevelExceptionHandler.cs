@@ -56,10 +56,11 @@ public readonly struct Result<T>
 public sealed class TopLevelExceptionHandler
 {
   private readonly ILogger<TopLevelExceptionHandler> _logger;
-  private readonly IBridge? _bridge;
+  private readonly IBridge _bridge;
+
   private const string UNHANDLED_LOGGER_TEMPLATE = "An unhandled Exception occured";
 
-  public TopLevelExceptionHandler(ILoggerFactory loggerFactory, IBridge? bridge = null)
+  public TopLevelExceptionHandler(ILoggerFactory loggerFactory, IBridge bridge)
   {
     _logger = loggerFactory.CreateLogger<TopLevelExceptionHandler>();
     _bridge = bridge;
@@ -87,17 +88,6 @@ public sealed class TopLevelExceptionHandler
   public Result<T> CatchUnhandled<T>(Func<T> function)
   {
     return CatchUnhandled(() => Task.FromResult(function.Invoke())).Result;
-  }
-
-  /// <inheritdoc cref="CatchUnhandled(Action)"/>
-  public async Task CatchUnhandled(Func<Task> function)
-  {
-    await CatchUnhandled<object?>(async () =>
-      {
-        await function.Invoke().ConfigureAwait(false);
-        return null;
-      })
-      .ConfigureAwait(false);
   }
 
   ///<inheritdoc cref="CatchUnhandled{T}(Func{T})"/>
@@ -128,7 +118,7 @@ public sealed class TopLevelExceptionHandler
   }
 
   private void SetGlobalNotification(ToastNotificationType type, string title, string message, bool autoClose) =>
-    _bridge?.Send(
+    _bridge.Send(
       BasicConnectorBindingCommands.SET_GLOBAL_NOTIFICATION, //TODO: We could move these constants into a DUI3 constants static class
       new
       {
