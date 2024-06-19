@@ -1,5 +1,4 @@
 ﻿using Objects;
-using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -12,13 +11,13 @@ public class ArcCurveToSpeckleConverter : ITypedConverter<IRhinoArcCurve, ICurve
   private readonly ITypedConverter<IRhinoCircle, SOG.Circle> _circleConverter;
   private readonly ITypedConverter<IRhinoArc, SOG.Arc> _arcConverter;
   private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
 
   public ArcCurveToSpeckleConverter(
     ITypedConverter<IRhinoCircle, SOG.Circle> circleConverter,
     ITypedConverter<IRhinoArc, SOG.Arc> arcConverter,
     ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack
   )
   {
     _circleConverter = circleConverter;

@@ -1,5 +1,4 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Rhino7.Interfaces;
 
@@ -9,13 +8,13 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRhinoEllipse, SOG.Elli
 {
   private readonly ITypedConverter<IRhinoPlane, SOG.Plane> _planeConverter;
   private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
   private readonly IRhinoBoxFactory _rhinoBoxFactory;
 
   public EllipseToSpeckleConverter(
     ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
   {
     _planeConverter = planeConverter;
     _boxConverter = boxConverter;

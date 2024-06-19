@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Rhino;
 using Speckle.Converters.Common;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7;
 
@@ -10,8 +10,8 @@ namespace Speckle.Converters.Rhino7;
   "CA1711:Identifiers should not have incorrect suffix",
   Justification = "Name ends in Stack but it is in fact a Stack, just not inheriting from `System.Collections.Stack`"
 )]
-public class RhinoConversionContextStack : ConversionContextStack<RhinoDoc, UnitSystem>
+public class RhinoConversionContextStack : ConversionContextStack<IRhinoDoc, RhinoUnitSystem>
 {
-  public RhinoConversionContextStack(IHostToSpeckleUnitConverter<UnitSystem> unitConverter)
-    : base(RhinoDoc.ActiveDoc, RhinoDoc.ActiveDoc.ModelUnitSystem, unitConverter) { }
+  public RhinoConversionContextStack(IRhinoDocFactory rhinoDocFactory, IHostToSpeckleUnitConverter<RhinoUnitSystem> unitConverter)
+    : base(rhinoDocFactory.ActiveDoc(), rhinoDocFactory.ActiveDoc().ModelUnitSystem, unitConverter) { }
 }

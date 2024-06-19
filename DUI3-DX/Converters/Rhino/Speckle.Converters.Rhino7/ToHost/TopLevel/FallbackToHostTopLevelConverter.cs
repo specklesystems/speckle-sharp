@@ -1,42 +1,43 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(DisplayableObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class FallbackToHostTopLevelConverter
   : IToHostTopLevelConverter,
-    ITypedConverter<DisplayableObject, List<RG.GeometryBase>>
+    ITypedConverter<DisplayableObject, List<IRhinoGeometryBase>>
 {
-  private readonly ITypedConverter<SOG.Line, RG.LineCurve> _lineConverter;
-  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
-  private readonly ITypedConverter<SOG.Mesh, RG.Mesh> _meshConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<SOG.Line, IRhinoLineCurve> _lineConverter;
+  private readonly ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOG.Mesh, IRhinoMesh> _meshConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IRhinoTransformFactory _rhinoTransformFactory;
 
   public FallbackToHostTopLevelConverter(
-    ITypedConverter<SOG.Line, RG.LineCurve> lineConverter,
-    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
-    ITypedConverter<SOG.Mesh, RG.Mesh> meshConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
-  )
+    ITypedConverter<SOG.Line, IRhinoLineCurve> lineConverter,
+    ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> polylineConverter,
+    ITypedConverter<SOG.Mesh, IRhinoMesh> meshConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoTransformFactory rhinoTransformFactory)
   {
     _lineConverter = lineConverter;
     _polylineConverter = polylineConverter;
     _meshConverter = meshConverter;
     _contextStack = contextStack;
+    _rhinoTransformFactory = rhinoTransformFactory;
   }
 
   public object Convert(Base target) => Convert((DisplayableObject)target);
 
-  public List<RG.GeometryBase> Convert(DisplayableObject target)
+  public List<IRhinoGeometryBase> Convert(DisplayableObject target)
   {
-    var result = new List<RG.GeometryBase>();
+    var result = new List<IRhinoGeometryBase>();
     foreach (var item in target.displayValue)
     {
-      RG.GeometryBase x = item switch
+      IRhinoGeometryBase x = item switch
       {
         SOG.Line line => _lineConverter.Convert(line),
         SOG.Polyline polyline => _polylineConverter.Convert(polyline),
@@ -50,7 +51,7 @@ public class FallbackToHostTopLevelConverter
     return result;
   }
 
-  private RG.Transform GetUnitsTransform(Base speckleObject)
+  private IRhinoTransform GetUnitsTransform(Base speckleObject)
   {
     /*
      * POC: CNX-9270 Looking at a simpler, more performant way of doing unit scaling on `ToNative`
@@ -60,10 +61,10 @@ public class FallbackToHostTopLevelConverter
     if (speckleObject["units"] is string units)
     {
       var scaleFactor = Units.GetConversionFactor(units, _contextStack.Current.SpeckleUnits);
-      var scale = RG.Transform.Scale(RG.Point3d.Origin, scaleFactor);
+      var scale = _rhinoTransformFactory.Scale(_rhinoTransformFactory.Origin, scaleFactor);
       return scale;
     }
 
-    return RG.Transform.Identity;
+    return _rhinoTransformFactory.Identity;
   }
 }
