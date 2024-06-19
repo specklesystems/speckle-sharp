@@ -76,7 +76,6 @@ public class AllRevitCategories : IAllRevitCategories
         );
     }
 
-
     return categoryInfo;
   }
 
@@ -145,7 +144,7 @@ public class AllRevitCategories : IAllRevitCategories
     {
       return categoryInfo;
     }
-    
+
     categoryName = CategoryNameFormatted(categoryName);
 
     IRevitObjectCache<IRevitCategoryInfo> revitCategoryInfoCache;

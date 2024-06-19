@@ -271,7 +271,9 @@ public partial class ConverterRevit
       var filter = new ElementCategoryFilter(category);
       var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
 
-      allSubelementsInView = new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+      allSubelementsInView = new HashSet<ElementId>(
+        collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds()
+      );
     }
     else
     {

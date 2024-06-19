@@ -390,9 +390,8 @@ public partial class ConverterRevit
 #else
     ForgeTypeId unitTypeId = null;
 #endif
-    
     ParameterToSpeckleData paramData;
-    
+
     // Local function to create ParameterToSpeckleData
     ParameterToSpeckleData CreateParamData()
     {
@@ -411,9 +410,8 @@ public partial class ConverterRevit
       {
         unitTypeId = rp.GetUnitTypeId();
         newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
-        newParamData.ApplicationUnits = unitsOverride != null 
-          ? UnitsToNative(unitsOverride).ToUniqueString() 
-          : unitTypeId.ToUniqueString();
+        newParamData.ApplicationUnits =
+          unitsOverride != null ? UnitsToNative(unitsOverride).ToUniqueString() : unitTypeId.ToUniqueString();
       }
       return newParamData;
     }

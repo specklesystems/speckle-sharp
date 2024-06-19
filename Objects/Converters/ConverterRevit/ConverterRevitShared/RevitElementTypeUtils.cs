@@ -145,7 +145,7 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     {
       return default;
     }
-    
+
     var types = revitDocumentAggregateCache
       .GetOrInitializeWithDefaultFactory<List<ElementType>>()
       .GetOrAddGroupOfTypes(typeInfo);
