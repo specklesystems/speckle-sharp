@@ -14,7 +14,9 @@ public class LineToSpeckleConverter : ITypedConverter<IRhinoLine, SOG.Line>, ITy
   public LineToSpeckleConverter(
     ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;

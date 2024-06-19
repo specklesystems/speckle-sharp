@@ -1,5 +1,4 @@
-﻿
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Rhino7.Interfaces;
 

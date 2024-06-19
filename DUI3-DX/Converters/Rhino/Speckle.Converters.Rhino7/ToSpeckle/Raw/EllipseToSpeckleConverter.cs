@@ -14,7 +14,9 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRhinoEllipse, SOG.Elli
   public EllipseToSpeckleConverter(
     ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _planeConverter = planeConverter;
     _boxConverter = boxConverter;

@@ -8,7 +8,10 @@ public class LineToHostConverter : ITypedConverter<SOG.Line, IRhinoLineCurve>, I
   private readonly ITypedConverter<SOG.Point, IRhinoPoint3d> _pointConverter;
   private readonly IRhinoLineFactory _rhinoLineFactory;
 
-  public LineToHostConverter(ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter, IRhinoLineFactory rhinoLineFactory)
+  public LineToHostConverter(
+    ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter,
+    IRhinoLineFactory rhinoLineFactory
+  )
   {
     _pointConverter = pointConverter;
     _rhinoLineFactory = rhinoLineFactory;
@@ -33,5 +36,6 @@ public class LineToHostConverter : ITypedConverter<SOG.Line, IRhinoLineCurve>, I
   /// </summary>
   /// <param name="target">The Speckle Line object to convert.</param>
   /// <returns>Returns the resulting Rhino LineCurve object.</returns>
-  IRhinoLineCurve ITypedConverter<SOG.Line, IRhinoLineCurve>.Convert(SOG.Line target) => _rhinoLineFactory.Create(Convert(target));
+  IRhinoLineCurve ITypedConverter<SOG.Line, IRhinoLineCurve>.Convert(SOG.Line target) =>
+    _rhinoLineFactory.Create(Convert(target));
 }

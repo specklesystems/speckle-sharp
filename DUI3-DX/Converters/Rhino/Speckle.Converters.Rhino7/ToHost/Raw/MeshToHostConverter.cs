@@ -12,7 +12,12 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
   private readonly IRhinoNgonFactory _rhinoNgonFactory;
   private readonly IRhinoPointFactory _rhinoPointFactory;
 
-  public MeshToHostConverter(ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter, IRhinoMeshFactory rhinoMeshFactory, IRhinoNgonFactory rhinoNgonFactory, IRhinoPointFactory rhinoPointFactory)
+  public MeshToHostConverter(
+    ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
+    IRhinoMeshFactory rhinoMeshFactory,
+    IRhinoNgonFactory rhinoNgonFactory,
+    IRhinoPointFactory rhinoPointFactory
+  )
   {
     _pointListConverter = pointListConverter;
     _rhinoMeshFactory = rhinoMeshFactory;
@@ -70,8 +75,7 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
       else if (n == 4)
       {
         // quad
-        m.Faces.AddFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3], target.faces[i + 4]
-        );
+        m.Faces.AddFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3], target.faces[i + 4]);
       }
       else
       {

@@ -26,7 +26,10 @@ public class BrepToSpeckleConverter : ITypedConverter<IRhinoBrep, SOG.Brep>
     ITypedConverter<IRhinoMesh, SOG.Mesh> meshConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
     ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory, IRhinoMeshFactory rhinoMeshFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory,
+    IRhinoMeshFactory rhinoMeshFactory
+  )
   {
     _pointConverter = pointConverter;
     _curveConverter = curveConverter;

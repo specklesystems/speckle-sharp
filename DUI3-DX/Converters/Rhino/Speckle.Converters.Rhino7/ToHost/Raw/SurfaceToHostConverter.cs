@@ -36,7 +36,7 @@ public class SurfaceToHostConverter : ITypedConverter<SOG.Surface, IRhinoNurbsSu
     var correctUKnots = GetCorrectKnots(target.knotsU, target.countU, target.degreeU);
     for (int i = 0; i < correctUKnots.Count; i++)
     {
-      result.KnotsU.SetKnot(i,  correctUKnots[i]);
+      result.KnotsU.SetKnot(i, correctUKnots[i]);
     }
 
     var correctVKnots = GetCorrectKnots(target.knotsV, target.countV, target.degreeV);

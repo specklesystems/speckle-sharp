@@ -16,7 +16,9 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<IRhinoNurbsSurface
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
     ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
     ITypedConverter<IRhinoControlPoint, SOG.ControlPoint> controlPointConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _boxConverter = boxConverter;
     _intervalConverter = intervalConverter;

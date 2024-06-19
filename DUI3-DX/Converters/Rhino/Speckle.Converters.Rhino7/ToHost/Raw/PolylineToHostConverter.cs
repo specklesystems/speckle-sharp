@@ -13,7 +13,9 @@ public class PolylineToHostConverter
 
   public PolylineToHostConverter(
     ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, IRhinoLineFactory rhinoLineFactory)
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoLineFactory rhinoLineFactory
+  )
   {
     _pointListConverter = pointListConverter;
     _intervalConverter = intervalConverter;

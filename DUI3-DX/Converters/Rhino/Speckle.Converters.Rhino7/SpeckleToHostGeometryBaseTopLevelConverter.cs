@@ -16,7 +16,9 @@ public abstract class SpeckleToHostGeometryBaseTopLevelConverter<TIn, TOut> : IT
 
   protected SpeckleToHostGeometryBaseTopLevelConverter(
     IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<TIn, TOut> geometryBaseConverter, IRhinoTransformFactory transformFactory)
+    ITypedConverter<TIn, TOut> geometryBaseConverter,
+    IRhinoTransformFactory transformFactory
+  )
   {
     ContextStack = contextStack;
     _geometryBaseConverter = geometryBaseConverter;

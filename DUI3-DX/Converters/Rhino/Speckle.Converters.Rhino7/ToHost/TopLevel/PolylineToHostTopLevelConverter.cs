@@ -1,5 +1,4 @@
-﻿
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Rhino7.Interfaces;
 
@@ -12,7 +11,7 @@ public class PolylineToHostTopLevelConverter
   public PolylineToHostTopLevelConverter(
     IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
     ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> geometryBaseConverter,
-      IRhinoTransformFactory rhinoTransformFactory
+    IRhinoTransformFactory rhinoTransformFactory
   )
     : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
 }

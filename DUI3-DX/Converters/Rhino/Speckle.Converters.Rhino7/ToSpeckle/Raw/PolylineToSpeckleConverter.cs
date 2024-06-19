@@ -18,7 +18,9 @@ public class PolylineToSpeckleConverter
     ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
     IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter, IRhinoBoxFactory rhinoBoxFactory)
+    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;

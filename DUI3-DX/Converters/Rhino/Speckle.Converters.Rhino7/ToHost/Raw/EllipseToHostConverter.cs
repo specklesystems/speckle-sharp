@@ -13,7 +13,9 @@ public class EllipseToHostConverter
 
   public EllipseToHostConverter(
     ITypedConverter<SOG.Plane, IRhinoPlane> planeConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, IRhinoEllipseFactory rhinoEllipseFactory)
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoEllipseFactory rhinoEllipseFactory
+  )
   {
     _planeConverter = planeConverter;
     _intervalConverter = intervalConverter;
@@ -35,7 +37,11 @@ public class EllipseToHostConverter
       throw new InvalidOperationException($"Ellipses cannot have null radii");
     }
 
-    return _rhinoEllipseFactory.Create(_planeConverter.Convert(target.plane), target.firstRadius.Value, target.secondRadius.Value);
+    return _rhinoEllipseFactory.Create(
+      _planeConverter.Convert(target.plane),
+      target.firstRadius.Value,
+      target.secondRadius.Value
+    );
   }
 
   /// <summary>

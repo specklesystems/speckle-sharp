@@ -11,7 +11,11 @@ public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, IRhinoPol
   private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
   private readonly IRhinoCurveFactory _rhinoCurveFactory;
 
-  public PolyCurveToHostConverter(ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, ITypedConverter<ICurve, IRhinoCurve> curveConverter, IRhinoCurveFactory rhinoCurveFactory)
+  public PolyCurveToHostConverter(
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    ITypedConverter<ICurve, IRhinoCurve> curveConverter,
+    IRhinoCurveFactory rhinoCurveFactory
+  )
   {
     _intervalConverter = intervalConverter;
     _curveConverter = curveConverter;

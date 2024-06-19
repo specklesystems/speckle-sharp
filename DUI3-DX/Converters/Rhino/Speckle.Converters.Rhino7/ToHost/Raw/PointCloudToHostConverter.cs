@@ -9,7 +9,10 @@ public class PointCloudToHostConverter : ITypedConverter<SOG.Pointcloud, IRhinoP
   private readonly ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> _pointListConverter;
   private readonly IRhinoPointCloudFactory _rhinoPointCloudFactory;
 
-  public PointCloudToHostConverter(ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter, IRhinoPointCloudFactory rhinoPointCloudFactory)
+  public PointCloudToHostConverter(
+    ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
+    IRhinoPointCloudFactory rhinoPointCloudFactory
+  )
   {
     _pointListConverter = pointListConverter;
     _rhinoPointCloudFactory = rhinoPointCloudFactory;

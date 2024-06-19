@@ -10,7 +10,11 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, IRhinoNurbsC
   private readonly IRhinoCurveFactory _rhinoCurveFactory;
   private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
 
-  public NurbsCurveToHostConverter(ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, IRhinoCurveFactory rhinoCurveFactory, IRhinoPointFactory rhinoPointFactory)
+  public NurbsCurveToHostConverter(
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoCurveFactory rhinoCurveFactory,
+    IRhinoPointFactory rhinoPointFactory
+  )
   {
     _intervalConverter = intervalConverter;
     _rhinoCurveFactory = rhinoCurveFactory;
@@ -46,7 +50,7 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, IRhinoNurbsC
       }
       else
       {
-        nurbsCurve.Knots.SetKnot(j,  target.knots[j]);
+        nurbsCurve.Knots.SetKnot(j, target.knots[j]);
       }
     }
 

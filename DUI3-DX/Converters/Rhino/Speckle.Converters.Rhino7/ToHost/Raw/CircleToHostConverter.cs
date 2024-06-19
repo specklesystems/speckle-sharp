@@ -8,7 +8,9 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 /// Implements the <see cref="ITypedConverter{TIn,TOut}"/> interface,
 /// providing implementation for <see cref="SOG.Circle"/> to <see cref="IRhinoCircle"/> and <see cref="IRhinoArcCurve"/> conversion.
 /// </summary>
-public class CircleToHostConverter : ITypedConverter<SOG.Circle, IRhinoCircle>, ITypedConverter<SOG.Circle, IRhinoArcCurve>
+public class CircleToHostConverter
+  : ITypedConverter<SOG.Circle, IRhinoCircle>,
+    ITypedConverter<SOG.Circle, IRhinoArcCurve>
 {
   private readonly ITypedConverter<SOG.Plane, IRhinoPlane> _planeConverter;
   private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
@@ -25,7 +27,9 @@ public class CircleToHostConverter : ITypedConverter<SOG.Circle, IRhinoCircle>, 
   /// </param>
   public CircleToHostConverter(
     ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
-    ITypedConverter<SOG.Plane, IRhinoPlane> planeConverter, IRhinoCircleFactory rhinoCircleFactory)
+    ITypedConverter<SOG.Plane, IRhinoPlane> planeConverter,
+    IRhinoCircleFactory rhinoCircleFactory
+  )
   {
     _intervalConverter = intervalConverter;
     _planeConverter = planeConverter;

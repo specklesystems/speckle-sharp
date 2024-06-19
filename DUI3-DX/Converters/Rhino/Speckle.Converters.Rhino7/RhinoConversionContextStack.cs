@@ -12,6 +12,9 @@ namespace Speckle.Converters.Rhino7;
 )]
 public class RhinoConversionContextStack : ConversionContextStack<IRhinoDoc, RhinoUnitSystem>
 {
-  public RhinoConversionContextStack(IRhinoDocFactory rhinoDocFactory, IHostToSpeckleUnitConverter<RhinoUnitSystem> unitConverter)
+  public RhinoConversionContextStack(
+    IRhinoDocFactory rhinoDocFactory,
+    IHostToSpeckleUnitConverter<RhinoUnitSystem> unitConverter
+  )
     : base(rhinoDocFactory.ActiveDoc(), rhinoDocFactory.ActiveDoc().ModelUnitSystem, unitConverter) { }
 }

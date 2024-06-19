@@ -21,7 +21,9 @@ public class FallbackToHostTopLevelConverter
     ITypedConverter<SOG.Line, IRhinoLineCurve> lineConverter,
     ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> polylineConverter,
     ITypedConverter<SOG.Mesh, IRhinoMesh> meshConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoTransformFactory rhinoTransformFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoTransformFactory rhinoTransformFactory
+  )
   {
     _lineConverter = lineConverter;
     _polylineConverter = polylineConverter;

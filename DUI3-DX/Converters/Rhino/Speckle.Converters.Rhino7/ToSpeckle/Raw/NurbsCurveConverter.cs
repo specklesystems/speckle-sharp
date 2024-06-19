@@ -16,7 +16,9 @@ public class NurbsCurveConverter : ITypedConverter<IRhinoNurbsCurve, SOG.Curve>
     ITypedConverter<IRhinoPolyline, SOG.Polyline> polylineConverter,
     ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-  IConversionContextStack<IRhinoDoc, RhinoUnitSystem>contextStack , IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _polylineConverter = polylineConverter;
     _intervalConverter = intervalConverter;

@@ -26,5 +26,6 @@ public class PointToHostConverter : ITypedConverter<SOG.Point, IRhinoPoint3d>, I
   /// <param name="target">The Speckle Point object to convert.</param>
   /// <returns>The converted Rhino Point object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  IRhinoPoint ITypedConverter<SOG.Point, IRhinoPoint>.Convert(SOG.Point target) => _rhinoPointFactory.Create(Convert(target));
+  IRhinoPoint ITypedConverter<SOG.Point, IRhinoPoint>.Convert(SOG.Point target) =>
+    _rhinoPointFactory.Create(Convert(target));
 }

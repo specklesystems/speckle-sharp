@@ -14,7 +14,9 @@ public class ArcToHostConverter : ITypedConverter<SOG.Arc, IRhinoArc>, ITypedCon
 
   public ArcToHostConverter(
     ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, IRhinoArcFactory rhinoArcFactory)
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoArcFactory rhinoArcFactory
+  )
   {
     _pointConverter = pointConverter;
     this._intervalConverter = intervalConverter;

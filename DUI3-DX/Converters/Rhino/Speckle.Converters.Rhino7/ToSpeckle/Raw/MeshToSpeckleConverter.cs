@@ -13,7 +13,9 @@ public class MeshToSpeckleConverter : ITypedConverter<IRhinoMesh, SOG.Mesh>
 
   public MeshToSpeckleConverter(
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _boxConverter = boxConverter;
     _contextStack = contextStack;

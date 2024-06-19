@@ -12,7 +12,9 @@ public class RawPointCloudToSpeckle : ITypedConverter<IRhinoPointCloud, SOG.Poin
 
   public RawPointCloudToSpeckle(
     IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<IRhinoBox, SOG.Box> boxConverter, IRhinoBoxFactory rhinoBoxFactory)
+    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
+    IRhinoBoxFactory rhinoBoxFactory
+  )
   {
     _contextStack = contextStack;
     _boxConverter = boxConverter;

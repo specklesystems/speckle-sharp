@@ -16,7 +16,9 @@ public class ArcToSpeckleConverter : ITypedConverter<IRhinoArc, SOG.Arc>
     ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
     ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory boxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory boxFactory
+  )
   {
     _pointConverter = pointConverter;
     _planeConverter = planeConverter;

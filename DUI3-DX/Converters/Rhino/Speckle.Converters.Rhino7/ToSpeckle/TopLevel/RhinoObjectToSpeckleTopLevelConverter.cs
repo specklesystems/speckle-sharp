@@ -8,11 +8,11 @@ public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw,
   where TInRaw : notnull
   where TOutRaw : Base
 {
-  public ITypedConverter<TInRaw, TOutRaw> Conversion { get; }
+  private readonly ITypedConverter<TInRaw, TOutRaw> _conversion;
 
   protected RhinoObjectToSpeckleTopLevelConverter(ITypedConverter<TInRaw, TOutRaw> conversion)
   {
-    Conversion = conversion;
+    _conversion = conversion;
   }
 
   // POC: IIndex would fix this as I would just request the type from `RhinoObject.Geometry` directly.
@@ -20,10 +20,10 @@ public abstract class RhinoObjectToSpeckleTopLevelConverter<TTopLevelIn, TInRaw,
 
   public virtual Base Convert(object target)
   {
-    var typedTarget = (TTopLevelIn)target;
+    var typedTarget = (TTopLevelIn)target; //can only be this typee
     var typedGeometry = GetTypedGeometry(typedTarget);
 
-    var result = Conversion.Convert(typedGeometry);
+    var result = _conversion.Convert(typedGeometry);
 
     // POC: Any common operations for all RhinoObjects should be done here, not on the specific implementer
     // Things like user-dictionaries and other user-defined metadata.

@@ -7,7 +7,7 @@ namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 public class PolyCurveToSpeckleConverter : ITypedConverter<IRhinoPolyCurve, SOG.Polycurve>
 {
-  public ITypedConverter<IRhinoCurve, ICurve>? CurveConverter { get; set; } // POC: CNX-9279 This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
+  private readonly ITypedConverter<IRhinoCurve, ICurve> _curveConverter;
   private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
   private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
@@ -16,12 +16,16 @@ public class PolyCurveToSpeckleConverter : ITypedConverter<IRhinoPolyCurve, SOG.
   public PolyCurveToSpeckleConverter(
     ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
     ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack, IRhinoBoxFactory rhinoBoxFactory)
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory,
+    ITypedConverter<IRhinoCurve, ICurve> curveConverter
+  )
   {
     _intervalConverter = intervalConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
     _rhinoBoxFactory = rhinoBoxFactory;
+    _curveConverter = curveConverter;
   }
 
   /// <summary>
@@ -41,7 +45,7 @@ public class PolyCurveToSpeckleConverter : ITypedConverter<IRhinoPolyCurve, SOG.
       domain = _intervalConverter.Convert(target.Domain),
       length = target.GetLength(),
       bbox = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.GetBoundingBox(true))),
-      segments = target.DuplicateSegments().Select(x => CurveConverter.NotNull().Convert(x)).ToList(),
+      segments = target.DuplicateSegments().Select(x => _curveConverter.Convert(x)).ToList(),
       units = _contextStack.Current.SpeckleUnits
     };
     return myPoly;

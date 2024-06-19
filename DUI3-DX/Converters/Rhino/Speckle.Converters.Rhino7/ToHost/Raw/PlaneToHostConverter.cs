@@ -11,7 +11,9 @@ public class PlaneToHostConverter : ITypedConverter<SOG.Plane, IRhinoPlane>
 
   public PlaneToHostConverter(
     ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter,
-    ITypedConverter<SOG.Vector, IRhinoVector3d> vectorConverter, IRhinoPlaneFactory rhinoPlaneFactory)
+    ITypedConverter<SOG.Vector, IRhinoVector3d> vectorConverter,
+    IRhinoPlaneFactory rhinoPlaneFactory
+  )
   {
     _pointConverter = pointConverter;
     _vectorConverter = vectorConverter;

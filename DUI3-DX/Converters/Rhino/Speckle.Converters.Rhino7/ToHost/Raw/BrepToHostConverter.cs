@@ -19,7 +19,9 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
     ITypedConverter<ICurve, IRhinoCurve> curveConverter,
     ITypedConverter<SOG.Surface, IRhinoNurbsSurface> surfaceConverter,
     ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter, IRhinoBrepFactory rhinoBrepFactory)
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoBrepFactory rhinoBrepFactory
+  )
   {
     _contextStack = contextStack;
     _curveConverter = curveConverter;
