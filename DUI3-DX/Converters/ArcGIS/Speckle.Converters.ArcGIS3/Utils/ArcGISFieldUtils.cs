@@ -130,19 +130,19 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
         {
           KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-          Func<Base, object?> addedFunction = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
-          function = addedFunction;
-          TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+          Func<Base, object?> functionAdded = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         }
       }
       else if (field.Value is Objects.BuiltElements.Revit.Parameter)
       {
-        foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
+        foreach (
+          KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Instance)
+        )
         {
           KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-          Func<Base, object?> addedFunction = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
-          function = addedFunction;
-          TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+          Func<Base, object?> functionAdded = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         }
       }
     }
@@ -152,9 +152,8 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       foreach (var attributField in attributeList)
       {
         KeyValuePair<string, object?> newAttributField = new($"{field.Key}[{count}]", attributField);
-        Func<Base, object?> addedFunction = x => (function(x) as List<object?>)?[count];
-        function = addedFunction;
-        TraverseAttributes(newAttributField, function, fieldsAndFunctions, fieldAdded);
+        Func<Base, object?> functionAdded = x => (function(x) as List<object?>)?[count];
+        TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         count += 1;
       }
     }
