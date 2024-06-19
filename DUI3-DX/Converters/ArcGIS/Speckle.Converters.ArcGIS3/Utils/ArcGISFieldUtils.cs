@@ -105,7 +105,14 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
 
     foreach (var baseObj in target)
     {
-      foreach (KeyValuePair<string, object?> field in baseObj.GetMembers(DynamicBaseMemberType.All))
+      // get all members by default, but only Dynamic ones from the basic geometry
+      var members = baseObj.GetMembers(DynamicBaseMemberType.All);
+      if (baseObj.speckle_type.StartsWith("Objects.Geometry"))
+      {
+        members = baseObj.GetMembers(DynamicBaseMemberType.Dynamic);
+      }
+
+      foreach (KeyValuePair<string, object?> field in members)
       {
         // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
         Func<Base, object?> function = x => x[field.Key];
@@ -124,8 +131,8 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
   {
     if (field.Value is Base attributeBase)
     {
-      // only traverse Base if it's Revit parameter or Base containing those parameters
-      if (field.Key == "parameters")
+      // only traverse Base if it's Rhino userStrings, or Revit parameter, or Base containing Revit parameters
+      if (field.Key == "parameters" || field.Key == "userStrings")
       {
         foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
         {
@@ -177,12 +184,14 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
 
       if (!fieldAdded.Contains(cleanKey) && cleanKey != FID_FIELD_NAME) // && field.Value is not null
       {
+        // TODO 1: use field.Value to define FieldType
         FieldType fieldType = FieldType.String; // GISAttributeFieldType.FieldTypeToNative(field.Value);
 
         FieldDescription fieldDescription = new(cleanKey, fieldType) { AliasName = key };
         fieldsAndFunctions.Add((fieldDescription, function));
         fieldAdded.Add(cleanKey);
       }
+      // TODO 2: if field exists, check field.Value again, and revise FieldType if needed
     }
     catch (GeodatabaseFieldException)
     {
