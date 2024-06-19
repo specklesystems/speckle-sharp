@@ -7,13 +7,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  
-  <PropertyGroup Label="Package Config">
-    <!-- Version info -->
-    <Version Condition="$(Version) == ''">3.0.999-local</Version>
-    <FileVersion Condition="$(FileVersion) == ''">3.0.999.0000</FileVersion>
-    <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="All"/>

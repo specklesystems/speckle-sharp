@@ -91,24 +91,26 @@ public sealed class TopLevelExceptionHandler
   }
 
   ///<inheritdoc cref="CatchUnhandled{T}(Func{T})"/>
-  [SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "Top Level Exception Handler"
-  )]
   public async Task<Result<T>> CatchUnhandled<T>(Func<Task<T>> function)
   {
     try
     {
-      return new(await function.Invoke().ConfigureAwait(false));
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      _logger.LogError(ex, UNHANDLED_LOGGER_TEMPLATE);
+      try
+      {
+        return new(await function.Invoke().ConfigureAwait(false));
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        _logger.LogError(ex, UNHANDLED_LOGGER_TEMPLATE);
 
-      //TODO: On the UI side, we'll need to display exception messages using the UI Oguzhan made (with stack trace etc..)
-      SetGlobalNotification(ToastNotificationType.DANGER, "Unhandled Exception Occured", ex.ToFormattedString(), false);
-      return new(ex);
+        SetGlobalNotification(
+          ToastNotificationType.DANGER,
+          "Unhandled Exception Occured",
+          ex.ToFormattedString(),
+          false
+        );
+        return new(ex);
+      }
     }
     catch (Exception ex)
     {

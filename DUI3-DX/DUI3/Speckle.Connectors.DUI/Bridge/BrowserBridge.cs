@@ -127,9 +127,12 @@ public sealed class BrowserBridge : IBridge
   {
     Result<object?> result = await _topLevelExceptionHandler
       .CatchUnhandled(async () => await ExecuteMethod(args.MethodName, args.MethodArgs).ConfigureAwait(false))
-      .ConfigureAwait(true);
+      .ConfigureAwait(false);
 
-    string? resultJson = result.IsSuccess ? JsonConvert.SerializeObject(result.Value, _serializerOptions) : null;
+    string resultJson = result.IsSuccess
+      ? JsonConvert.SerializeObject(result.Value, _serializerOptions)
+      : SerializeFormattedException(result.Exception);
+
     NotifyUIMethodCallResultReady(args.RequestId, resultJson);
   }
 
@@ -255,22 +258,17 @@ public sealed class BrowserBridge : IBridge
   /// <summary>
   /// Errors that not handled on bindings.
   /// </summary>
-  private void ReportUnhandledError(string requestId, Exception e)
+  private string SerializeFormattedException(Exception e)
   {
-    var message = e.Message;
-    if (e is TargetInvocationException tie) // Exception on SYNC function calls. Message should be passed from inner exception since it is wrapped.
-    {
-      message = tie.InnerException?.Message;
-    }
+    //TODO: I'm not sure we still require this... the top level handler is already displaying the toast
     var errorDetails = new
     {
-      Message = message, // Topmost message
+      Message = e.Message, // Topmost message
       Error = e.ToFormattedString(), // All messages from exceptions
-      StackTrace = e.ToString()
+      StackTrace = e.ToString(),
     };
 
-    var serializedError = JsonConvert.SerializeObject(errorDetails, _serializerOptions);
-    NotifyUIMethodCallResultReady(requestId, serializedError);
+    return JsonConvert.SerializeObject(errorDetails, _serializerOptions);
   }
 
   /// <summary>
