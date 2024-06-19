@@ -105,7 +105,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
 
     foreach (var baseObj in target)
     {
-      foreach (KeyValuePair<string, object?> field in baseObj.GetMembers(DynamicBaseMemberType.Dynamic))
+      foreach (KeyValuePair<string, object?> field in baseObj.GetMembers(DynamicBaseMemberType.All))
       {
         // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
         Func<Base, object?> function = x => x[field.Key];
@@ -130,7 +130,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         foreach (KeyValuePair<string, object?> attributField in attributeBase.GetMembers(DynamicBaseMemberType.Dynamic))
         {
           KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-          Func<Base, object?> functionAdded = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          Func<Base, object?> functionAdded = x => (function(x) as Base)?[attributField.Key];
           TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         }
       }
@@ -141,7 +141,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         )
         {
           KeyValuePair<string, object?> newAttributField = new($"{field.Key}.{attributField.Key}", attributField.Value);
-          Func<Base, object?> functionAdded = x => (function(x) as KeyValuePair<string, object?>?)?.Value;
+          Func<Base, object?> functionAdded = x => (function(x) as Base)?[attributField.Key];
           TraverseAttributes(newAttributField, functionAdded, fieldsAndFunctions, fieldAdded);
         }
       }
@@ -172,14 +172,16 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
   {
     try
     {
-      if (field.Value is not null && !fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      string key = field.Key;
+      string cleanKey = _characterCleaner.CleanCharacters(key);
+
+      if (!fieldAdded.Contains(cleanKey) && cleanKey != FID_FIELD_NAME) // && field.Value is not null
       {
-        string key = field.Key;
         FieldType fieldType = FieldType.String; // GISAttributeFieldType.FieldTypeToNative(field.Value);
 
-        FieldDescription fieldDescription = new(_characterCleaner.CleanCharacters(key), fieldType) { AliasName = key };
+        FieldDescription fieldDescription = new(cleanKey, fieldType) { AliasName = key };
         fieldsAndFunctions.Add((fieldDescription, function));
-        fieldAdded.Add(key);
+        fieldAdded.Add(cleanKey);
       }
     }
     catch (GeodatabaseFieldException)

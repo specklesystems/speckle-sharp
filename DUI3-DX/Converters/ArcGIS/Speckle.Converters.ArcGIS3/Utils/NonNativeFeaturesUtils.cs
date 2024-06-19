@@ -162,6 +162,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     catch (ArgumentException ex)
     {
       // if name has invalid characters/combinations
+      // or 'The table contains multiple fields with the same name.:
       throw new ArgumentException($"{ex.Message}: {featureClassName}", ex);
     }
     bool buildStatus = schemaBuilder.Build();
