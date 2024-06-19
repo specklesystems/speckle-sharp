@@ -2,6 +2,7 @@ using System.Collections;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
 using Objects.GIS;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
@@ -123,6 +124,21 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         TraverseAttributes(field, function, fieldsAndFunctions, fieldAdded);
       }
     }
+
+    // change all FieldType.Blob to String
+    // "Blob" will never be used on receive, so it is a placeholder for non-properly identified fields
+    for (int i = 0; i < fieldsAndFunctions.Count; i++)
+    {
+      (FieldDescription description, Func<Base, object?> function) = fieldsAndFunctions[i];
+      if (description.FieldType is FieldType.Blob)
+      {
+        fieldsAndFunctions[i] = new(
+          new FieldDescription(description.Name, FieldType.String) { AliasName = description.AliasName },
+          function
+        );
+      }
+    }
+
     return fieldsAndFunctions;
   }
 
@@ -208,16 +224,52 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       string key = field.Key;
       string cleanKey = _characterCleaner.CleanCharacters(key);
 
-      if (!fieldAdded.Contains(cleanKey) && cleanKey != FID_FIELD_NAME) // && field.Value is not null
+      if (cleanKey == FID_FIELD_NAME) // we cannot add field with reserved name
       {
-        // TODO 1: use field.Value to define FieldType
-        FieldType fieldType = FieldType.String; // GISAttributeFieldType.FieldTypeToNative(field.Value);
+        return;
+      }
+
+      if (!fieldAdded.Contains(cleanKey))
+      {
+        // use field.Value to define FieldType
+        FieldType fieldType = GISAttributeFieldType.GetFieldTypeFromRawValue(field.Value);
 
         FieldDescription fieldDescription = new(cleanKey, fieldType) { AliasName = key };
         fieldsAndFunctions.Add((fieldDescription, function));
         fieldAdded.Add(cleanKey);
       }
-      // TODO 2: if field exists, check field.Value again, and revise FieldType if needed
+      else
+      {
+        // if field exists, check field.Value again, and revise FieldType if needed
+        int index = fieldsAndFunctions.TakeWhile(x => x.Item1.Name != cleanKey).Count();
+
+        (FieldDescription, Func<Base, object?>) itemInList;
+        try
+        {
+          itemInList = fieldsAndFunctions[index];
+        }
+        catch (Exception ex) when (!ex.IsFatal())
+        {
+          return;
+        }
+
+        FieldType existingFieldType = itemInList.Item1.FieldType;
+        FieldType newFieldType = GISAttributeFieldType.GetFieldTypeFromRawValue(field.Value);
+
+        // adjust FieldType if needed, default everything to Strings if fields types differ:
+        // 1. change to NewType, if old type was undefined ("Blob")
+        // 2. change to NewType if it's String (and the old one is not)
+        if (
+          newFieldType != FieldType.Blob && existingFieldType == FieldType.Blob
+          || (newFieldType == FieldType.String && existingFieldType != FieldType.String)
+        )
+        {
+          fieldsAndFunctions[index] = (
+            new FieldDescription(itemInList.Item1.Name, newFieldType) { AliasName = itemInList.Item1.AliasName },
+            itemInList.Item2
+          );
+        }
+      }
     }
     catch (GeodatabaseFieldException)
     {

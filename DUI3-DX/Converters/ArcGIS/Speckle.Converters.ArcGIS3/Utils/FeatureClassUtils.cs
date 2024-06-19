@@ -99,7 +99,7 @@ public class FeatureClassUtils : IFeatureClassUtils
         foreach ((FieldDescription field, Func<Base, object?> function) in fieldsAndFunctions)
         {
           string key = field.AliasName;
-          attributes[key] = function(baseObj)?.ToString();
+          attributes[key] = function(baseObj);
         }
         // newFeatureClass.CreateRow(rowBuffer).Dispose(); // without extra attributes
         newFeatureClass

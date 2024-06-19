@@ -116,4 +116,23 @@ public static class GISAttributeFieldType
 
     return value;
   }
+
+  public static FieldType GetFieldTypeFromRawValue(object? value)
+  {
+    // using "Blob" as a placeholder for unrecognized values/nulls.
+    // Once all elements are iterated, FieldType.Blob will be replaced with FieldType.String if no better type found
+    if (value is not null)
+    {
+      return value switch
+      {
+        string => FieldType.String,
+        int => FieldType.Integer,
+        long => FieldType.BigInteger,
+        double => FieldType.Double,
+        _ => FieldType.Blob,
+      };
+    }
+
+    return FieldType.Blob;
+  }
 }
