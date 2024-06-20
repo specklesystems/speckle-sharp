@@ -1,4 +1,5 @@
 ﻿using Objects;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Rhino7.Interfaces;
@@ -7,18 +8,17 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, IRhinoPolyCurve>
 {
-  private readonly ITypedConverter<ICurve, IRhinoCurve> _curveConverter;
+  public ITypedConverter<ICurve, IRhinoCurve>? CurveConverter { get; set; } // POC: CNX-9311 Circular dependency injected by the container using property.
+
   private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
   private readonly IRhinoCurveFactory _rhinoCurveFactory;
 
   public PolyCurveToHostConverter(
     ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
-    ITypedConverter<ICurve, IRhinoCurve> curveConverter,
     IRhinoCurveFactory rhinoCurveFactory
   )
   {
     _intervalConverter = intervalConverter;
-    _curveConverter = curveConverter;
     _rhinoCurveFactory = rhinoCurveFactory;
   }
 
@@ -31,10 +31,11 @@ public class PolyCurveToHostConverter : ITypedConverter<SOG.Polycurve, IRhinoPol
   public IRhinoPolyCurve Convert(SOG.Polycurve target)
   {
     IRhinoPolyCurve result = _rhinoCurveFactory.Create();
+    var converter = CurveConverter.NotNull();
 
     foreach (var segment in target.segments)
     {
-      var childCurve = _curveConverter.Convert(segment);
+      var childCurve = converter.Convert(segment);
       bool success = result.AppendSegment(childCurve);
       if (!success)
       {
