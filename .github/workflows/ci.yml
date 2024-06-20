@@ -35,10 +35,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: ⚒️ Run GitVersion
-        run: ./build.sh build-server-version
+        run: ./build.ps1 build-server-version
 
       - name: ⚒️ Run build
-        run: ./build.sh
+        run: ./build.ps1
 
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4
