@@ -107,15 +107,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     foreach (var baseObj in target)
     {
       // get all members by default, but only Dynamic ones from the basic geometry
-      Dictionary<string, object?> members = new();
-      if (baseObj.speckle_type.StartsWith("Objects.Geometry"))
-      {
-        members = baseObj.GetMembers(DynamicBaseMemberType.Dynamic);
-      }
-      else
-      {
-        members = baseObj.GetMembers(DynamicBaseMemberType.All);
-      }
+      Dictionary<string, object?> members = baseObj.GetMembers(DynamicBaseMemberType.Instance);
 
       foreach (KeyValuePair<string, object?> field in members)
       {
@@ -151,6 +143,9 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
   {
     if (field.Value is Base attributeBase)
     {
+      // ignore all properties of Base type, until we find a common approach for host apps to send them
+      return;
+      /*
       // only traverse Base if it's Rhino userStrings, or Revit parameter, or Base containing Revit parameters
       if (field.Key == "parameters")
       {
@@ -194,7 +189,10 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       {
         // for now, ignore all other properties of Base type
       }
+      */
     }
+    // also ignore lists before we find a strategy for hostApps to send properties in a common way
+    /*
     else if (field.Value is IList attributeList)
     {
       int count = 0;
@@ -206,6 +204,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         count += 1;
       }
     }
+    */
     else
     {
       TryAddField(field, function, fieldsAndFunctions, fieldAdded);
