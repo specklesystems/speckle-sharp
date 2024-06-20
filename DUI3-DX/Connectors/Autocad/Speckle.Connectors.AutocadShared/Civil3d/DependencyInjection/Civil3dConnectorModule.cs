@@ -1,4 +1,4 @@
-#if AUTOCAD2023
+#if CIVIL3D
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;
@@ -19,9 +19,9 @@ using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Speckle.Connectors.Autocad.DependencyInjection;
+namespace Speckle.Connectors.Civil3d.DependencyInjection;
 
-public class AutocadConnectorModule : ISpeckleModule
+public class Civil3dConnectorModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
@@ -49,13 +49,12 @@ public class AutocadConnectorModule : ISpeckleModule
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();
-    builder.AddSingleton<IBinding, ConfigBinding>("connectorName", "Autocad"); // POC: Easier like this for now, should be cleaned up later
+    builder.AddSingleton<IBinding, ConfigBinding>("connectorName", "Civil3d"); // POC: Easier like this for now, should be cleaned up later
     builder.AddSingleton<IBinding, AccountBinding>();
     builder.AddSingleton<IBinding, AutocadBasicConnectorBinding>();
     builder.AddSingleton<IBasicConnectorBinding, AutocadBasicConnectorBinding>();
     builder.AddSingleton<IBinding, AutocadSelectionBinding>();
     builder.AddSingleton<IBinding, AutocadSendBinding>();
-    builder.AddSingleton<IBinding, AutocadReceiveBinding>();
 
     // register send filters
     builder.AddTransient<ISendFilter, AutocadSelectionFilter>();

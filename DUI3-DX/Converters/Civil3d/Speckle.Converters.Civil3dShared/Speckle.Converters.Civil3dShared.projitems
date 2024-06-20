@@ -9,5 +9,9 @@
     <Import_RootNamespace>Speckle.Converters.Civil3dShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)ToSpeckle\Civil\" />
   </ItemGroup>
 </Project>

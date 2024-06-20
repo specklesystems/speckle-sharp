@@ -3,17 +3,13 @@
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>2ec4f6f1-8448-49db-bcb9-85f7f0b0a496</SharedGUID>
+    <SharedGUID>b54a7c1f-4413-471d-b4ee-f9a6fb8fcfe8</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Speckle.Converters.CivilShared</Import_RootNamespace>
+    <Import_RootNamespace>Speckle.Connectors.Civil3dShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)ToHost\" />
-    <Folder Include="$(MSBuildThisFileDirectory)ToSpeckle\Civil\" />
-    <Folder Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\Civil3dConnectorModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Civil3dSettings.cs" />
   </ItemGroup>
 </Project>

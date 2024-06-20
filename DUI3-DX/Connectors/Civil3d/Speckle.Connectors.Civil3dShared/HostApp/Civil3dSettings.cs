@@ -1,15 +1,16 @@
 using System.IO;
 using Speckle.Core.Kits; // POC: Must go https://spockle.atlassian.net/browse/CNX-9325
 
-namespace Speckle.Connectors.Autocad.HostApp;
+namespace Speckle.Connectors.Civil3d.HostApp;
 
-public class AutocadSettings
+public class Civil3dSettings
 {
-  public AutocadSettings(HostApplication hostAppInfo, HostAppVersion hostAppVersion)
+  public Civil3dSettings(HostApplication hostAppInfo, HostAppVersion hostAppVersion)
   {
     HostAppInfo = hostAppInfo;
     HostAppVersion = hostAppVersion;
-    Modules = new[] { new DirectoryInfo(typeof(AutocadSettings).Assembly.Location).Parent.FullName };
+    var dir = new DirectoryInfo(typeof(Civil3dSettings).Assembly.Location);
+    Modules = new[] { dir.Parent.FullName };
   }
 
   public HostApplication HostAppInfo { get; private set; }

@@ -13,6 +13,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Autocad.Interfaces;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -27,7 +28,7 @@ public sealed class AutocadSendBinding : ISendBinding
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-  private readonly AutocadSettings _autocadSettings;
+  private readonly IAutocadSettings _autocadSettings;
   private readonly ISendConversionCache _sendConversionCache;
 
   /// <summary>
@@ -41,7 +42,7 @@ public sealed class AutocadSendBinding : ISendBinding
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
-    AutocadSettings autocadSettings,
+    IAutocadSettings autocadSettings,
     IUnitOfWorkFactory unitOfWorkFactory,
     ISendConversionCache sendConversionCache
   )

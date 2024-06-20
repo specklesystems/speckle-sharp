@@ -8,9 +8,9 @@ public class AutocadPlugin : IAutocadPlugin
 {
   private readonly AutocadIdleManager _idleManager;
   private readonly DUI3ControlWebView _panel;
-  private readonly AutocadSettings _settings;
+  private readonly IAutocadSettings _settings;
 
-  public AutocadPlugin(DUI3ControlWebView panel, AutocadSettings settings, AutocadIdleManager idleManager)
+  public AutocadPlugin(DUI3ControlWebView panel, IAutocadSettings settings, AutocadIdleManager idleManager)
   {
     _panel = panel;
     _settings = settings;
