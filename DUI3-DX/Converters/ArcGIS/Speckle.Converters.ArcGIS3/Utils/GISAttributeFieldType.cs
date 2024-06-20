@@ -94,6 +94,7 @@ public static class GISAttributeFieldType
     {
       try
       {
+        static T? GetValue<T>(string? s, Func<string, T> func) => s is null ? default : func(s);
         return fieldType switch
         {
           FieldType.String => Convert.ToString(value),
@@ -102,9 +103,9 @@ public static class GISAttributeFieldType
           FieldType.BigInteger => Convert.ToInt64(value),
           FieldType.SmallInteger => Convert.ToInt16(value),
           FieldType.Double => Convert.ToDouble(value),
-          FieldType.Date => DateTime.Parse((string)value, null),
-          FieldType.DateOnly => DateOnly.Parse((string)value),
-          FieldType.TimeOnly => TimeOnly.Parse((string)value),
+          FieldType.Date => GetValue(value.ToString(), s => DateTime.Parse(s, null)),
+          FieldType.DateOnly => GetValue(value.ToString(), s => DateOnly.Parse(s, null)),
+          FieldType.TimeOnly => GetValue(value.ToString(), s => TimeOnly.Parse(s, null)),
           _ => value,
         };
       }
