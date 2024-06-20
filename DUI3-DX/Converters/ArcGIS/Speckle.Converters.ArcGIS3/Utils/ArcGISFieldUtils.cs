@@ -108,6 +108,9 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
     {
       // get all members by default, but only Dynamic ones from the basic geometry
       Dictionary<string, object?> members = new();
+
+      // leave out until we decide which properties to support on Receive
+      /*
       if (baseObj.speckle_type.StartsWith("Objects.Geometry"))
       {
         members = baseObj.GetMembers(DynamicBaseMemberType.Dynamic);
@@ -116,6 +119,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
       {
         members = baseObj.GetMembers(DynamicBaseMemberType.All);
       }
+      */
 
       foreach (KeyValuePair<string, object?> field in members)
       {
