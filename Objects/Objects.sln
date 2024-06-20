@@ -125,11 +125,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2024", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino8", "Converters\ConverterRhinoGh\ConverterRhino8\ConverterRhino8.csproj", "{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterGrasshopper8", "Converters\ConverterRhinoGh\ConverterGrasshopper8\ConverterGrasshopper8.csproj", "{738A607A-C51C-447B-AFBB-47D7FED47CA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper8", "Converters\ConverterRhinoGh\ConverterGrasshopper8\ConverterGrasshopper8.csproj", "{738A607A-C51C-447B-AFBB-47D7FED47CA0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{985946E0-ACEC-4EF7-92D6-E0B153271393}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Objects.Tests.Unit", "Tests\Objects.Tests.Unit\Objects.Tests.Unit.csproj", "{70AB0F97-B226-44F9-8CCE-0927A9C18037}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects.Tests.Unit", "Tests\Objects.Tests.Unit\Objects.Tests.Unit.csproj", "{70AB0F97-B226-44F9-8CCE-0927A9C18037}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2025", "Converters\ConverterAutocadCivil\ConverterAutocad2025\ConverterAutocad2025.csproj", "{0E85DB68-4547-4059-83BD-D66F54F0201E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterCivil2025", "Converters\ConverterAutocadCivil\ConverterCivil2025\ConverterCivil2025.csproj", "{82C22520-8EFE-426B-8865-43965FA3DD87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -491,6 +495,22 @@ Global
 		{70AB0F97-B226-44F9-8CCE-0927A9C18037}.Release|Any CPU.Build.0 = Release|Any CPU
 		{70AB0F97-B226-44F9-8CCE-0927A9C18037}.Release|x64.ActiveCfg = Release|Any CPU
 		{70AB0F97-B226-44F9-8CCE-0927A9C18037}.Release|x64.Build.0 = Release|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Debug|x64.Build.0 = Debug|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Release|x64.ActiveCfg = Release|Any CPU
+		{0E85DB68-4547-4059-83BD-D66F54F0201E}.Release|x64.Build.0 = Release|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Debug|x64.Build.0 = Debug|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Release|x64.ActiveCfg = Release|Any CPU
+		{82C22520-8EFE-426B-8865-43965FA3DD87}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -556,6 +576,8 @@ Global
 		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{738A607A-C51C-447B-AFBB-47D7FED47CA0} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{70AB0F97-B226-44F9-8CCE-0927A9C18037} = {985946E0-ACEC-4EF7-92D6-E0B153271393}
+		{0E85DB68-4547-4059-83BD-D66F54F0201E} = {5419488F-6509-4F16-A342-BB2BE2689E00}
+		{82C22520-8EFE-426B-8865-43965FA3DD87} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}
@@ -564,6 +586,7 @@ Global
 		Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{05ff1d88-1b2d-4a25-bf65-2895d4e6746d}*SharedItemsImports = 5
 		Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{08ee146e-9f7a-4c82-b790-688fe4532ca7}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{0af5ba0f-0fea-463b-9877-f063892ea7de}*SharedItemsImports = 5
+		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{0e85db68-4547-4059-83bd-d66f54f0201e}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{13f93c20-793c-4f2d-b836-68d7744063df}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{156ff86c-8531-46d0-aa23-97db326bc591}*SharedItemsImports = 5
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{1dc0a8f4-1f14-47e8-8456-9d8e9c0e6cff}*SharedItemsImports = 5
@@ -584,6 +607,7 @@ Global
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{63b3f901-7c14-4530-8a6f-ccad68586664}*SharedItemsImports = 5
 		Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{651f0278-3de2-4371-8586-70d3732f9770}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{6d1265b2-31fb-4096-9ec9-dd937a349b9c}*SharedItemsImports = 5
+		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{738a607a-c51c-447b-afbb-47d7fed47ca0}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{73d708ca-e956-455a-be62-785b0cc79264}*SharedItemsImports = 5
 		Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{74081536-2a3e-447d-8f53-bdc5dcb5d98b}*SharedItemsImports = 5
 		Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{79aa475d-7cde-4501-90ce-9a0d9d0db023}*SharedItemsImports = 5

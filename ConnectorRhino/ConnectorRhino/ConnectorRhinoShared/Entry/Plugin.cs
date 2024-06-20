@@ -16,6 +16,7 @@ using Rhino.PlugIns;
 using Rhino.Runtime;
 using Serilog.Context;
 using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -181,9 +182,9 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 #endif
       var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
 
-      var hostAppName = Utils.AppName;
-      var hostAppVersion = Utils.RhinoAppName;
-      SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
+      var hostAppName = HostApplications.Rhino.Slug;
+      var hostAppVersion = Utils.GetRhinoHostAppVersion();
+      SpeckleLog.Initialize(HostApplications.Rhino.Slug, Utils.GetRhinoHostAppVersion(), logConfig);
       SpeckleLog.Logger.Information(
         "Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}",
         hostAppName,

@@ -24,7 +24,9 @@ namespace Objects.Converter.Revit;
 
 public partial class ConverterRevit : ISpeckleConverter
 {
-#if REVIT2024
+#if REVIT2025
+  public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2025);
+#elif REVIT2024
   public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2024);
 #elif REVIT2023
   public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
@@ -658,7 +660,11 @@ public partial class ConverterRevit : ISpeckleConverter
         return ProfileWallToNative(o);
 
       case BER.RevitFaceWall o:
+#if REVIT2021 || REVIT2022
+        return FaceWallToNative(o);
+#else
         return FaceWallToNativeV2(o);
+#endif
 
       case BE.Wall o:
         return WallToNative(o);

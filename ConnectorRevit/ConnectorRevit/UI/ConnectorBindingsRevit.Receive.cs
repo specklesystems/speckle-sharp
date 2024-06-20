@@ -53,6 +53,9 @@ public partial class ConnectorBindingsRevit
 
     converter.SetConverterSettings(settings);
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> typeCountDict = new();
+
     Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = myCommit;
     Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
@@ -70,7 +73,26 @@ public partial class ConnectorBindingsRevit
     foreach (var previewObj in Preview)
     {
       progress.Report.Log(previewObj);
+      if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
+      {
+        typeCountDict.TryGetValue(previewBaseObj.speckle_type, out var currentCount);
+        typeCountDict[previewBaseObj.speckle_type] = ++currentCount;
+      }
     }
+
+    // track the object type counts as an event before we try to receive
+    // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountList = typeCountDict
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(200);
+
+    Analytics.TrackEvent(
+      Analytics.Events.ConvertToNative,
+      new Dictionary<string, object>() { { "typeCount", typeCountList } }
+    );
 
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work
@@ -122,7 +144,7 @@ public partial class ConnectorBindingsRevit
 
           if (state.ReceiveMode == ReceiveMode.Update)
           {
-            DeleteObjects(previousObjects, convertedObjects);
+            DeleteObjects(previousObjects, convertedObjects, transactionManager);
           }
 
           previousObjects.AddConvertedElements(convertedObjects);
@@ -159,10 +181,12 @@ public partial class ConnectorBindingsRevit
   //delete previously sent object that are no more in this stream
   private void DeleteObjects(
     IReceivedObjectIdMap<Base, Element> previousObjects,
-    IConvertedObjectsCache<Base, Element> convertedObjects
+    IConvertedObjectsCache<Base, Element> convertedObjects,
+    TransactionManager transactionManager
   )
   {
     var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
+    transactionManager.StartSubtransaction();
     for (var i = previousAppIds.Count - 1; i >= 0; i--)
     {
       var appId = previousAppIds[i];
@@ -193,6 +217,8 @@ public partial class ConnectorBindingsRevit
         previousObjects.RemoveConvertedId(appId);
       }
     }
+
+    transactionManager.CommitSubtransaction();
   }
 
   private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(
@@ -333,6 +359,7 @@ public partial class ConnectorBindingsRevit
       if (index % 50 == 0)
       {
         transactionManager.Commit();
+        transactionManager.Start();
       }
 
       // Check if parent conversion succeeded or fallback is enabled before attempting the children

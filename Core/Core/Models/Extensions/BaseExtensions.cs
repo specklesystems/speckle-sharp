@@ -193,19 +193,19 @@ public static class BaseExtensions
     return speckleObject.TryGetDisplayValue() != null;
   }
 
-  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj)
+  public static IReadOnlyList<T>? TryGetDisplayValue<T>(this Base obj)
     where T : Base
   {
     var rawDisplayValue = obj["displayValue"] ?? obj["@displayValue"];
     return rawDisplayValue switch
     {
       T b => new List<T> { b },
-      IEnumerable enumerable => enumerable.OfType<T>(),
+      IReadOnlyList<T> list => list,
       _ => null
     };
   }
 
-  public static IEnumerable<Base>? TryGetDisplayValue(this Base obj)
+  public static IReadOnlyList<Base>? TryGetDisplayValue(this Base obj)
   {
     return TryGetDisplayValue<Base>(obj);
   }
@@ -225,5 +225,68 @@ public static class BaseExtensions
   public static IEnumerable<Base>? TryGetParameters(this Base obj)
   {
     return TryGetParameters<Base>(obj);
+  }
+
+  /// <summary>
+  /// A variation of the OG Traversal extension from Alan, but with tracking the object path as well.
+  /// </summary>
+  /// <param name="recursionBreaker"> Delegate condition to stop traverse.</param>
+  /// <returns>List of base objects with their collection path.</returns>
+  public static IEnumerable<(string[], Base)> TraverseWithPath(this Base root, BaseRecursionBreaker recursionBreaker)
+  {
+    var stack = new Stack<(List<string>, Base)>();
+    stack.Push((new List<string>(), root));
+
+    while (stack.Count > 0)
+    {
+      (List<string> path, Base current) = stack.Pop();
+      yield return (path.ToArray(), current);
+
+      if (recursionBreaker(current))
+      {
+        continue;
+      }
+
+      foreach (string child in current.GetDynamicMemberNames())
+      {
+        // NOTE: we can store collections rather than just path names. Where we have an actual collection, use that, where not, create a mock one based on the prop name
+        var localPathFragment = child;
+        if (current is Collection { name: { } } c)
+        {
+          localPathFragment = c.name;
+        }
+
+        var newPath = new List<string>(path) { localPathFragment };
+        switch (current[child])
+        {
+          case Base o:
+            stack.Push((newPath, o));
+            break;
+          case IDictionary dictionary:
+          {
+            foreach (object obj in dictionary.Keys)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+
+            break;
+          }
+          case IList collection:
+          {
+            foreach (object obj in collection)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
   }
 }

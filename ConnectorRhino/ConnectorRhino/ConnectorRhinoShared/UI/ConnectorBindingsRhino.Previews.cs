@@ -23,7 +23,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     // report and converter
     progress.Report = new ProgressReport();
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
 
     converter.SetContextDocument(Doc);
 
@@ -112,7 +112,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     if (commit.id != SelectedReceiveCommit)
     {
       // check for converter
-      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
       converter.SetContextDocument(Doc);
 
       // set converter settings

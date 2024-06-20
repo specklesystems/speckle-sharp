@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Objects.Converter.Civil3D2021</AssemblyName>
         <RootNamespace>Objects.Converter.Civil</RootNamespace>
-        <DefineConstants>$(DefineConstants);CIVIL2021</DefineConstants>
+        <DefineConstants>$(DefineConstants);CIVIL2021;CIVIL;CIVIL2021_OR_GREATER</DefineConstants>
         <PackageId>Speckle.Objects.Converter.Civil2021</PackageId>
         <Product>Objects.Converter.Civil2021</Product>
         <Description>Converter for Civil3D 2021</Description>

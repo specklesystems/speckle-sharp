@@ -1,8 +1,10 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
+using Speckle.Automate.Sdk.DataAnnotations;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Logging;
 
@@ -39,7 +41,7 @@ public static class AutomationRunner
     catch (Exception ex) when (!ex.IsFatal())
     {
       Console.WriteLine(ex.ToString());
-      automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
+      automationContext.MarkRunException("Function error. Check the automation run logs for details.");
     }
     finally
     {
@@ -57,16 +59,14 @@ public static class AutomationRunner
     Func<AutomationContext, Task> automateFunction,
     AutomationRunData automationRunData,
     string speckleToken
-  )
-  {
-    return await RunFunction(
+  ) =>
+    await RunFunction(
         async (context, _) => await automateFunction(context).ConfigureAwait(false),
         automationRunData,
         speckleToken,
         new Fake()
       )
       .ConfigureAwait(false);
-  }
 
   private struct Fake { }
 
@@ -95,18 +95,20 @@ public static class AutomationRunner
   public static async Task<int> Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
     where TInput : struct
   {
-    int returnCode = 0; // This is the CLI return code, defaults to 0 (Success), change to 1 to flag a failed run.
-
     Argument<string> pathArg = new(name: "Input Path", description: "A file path to retrieve function inputs");
     RootCommand rootCommand = new();
 
+    // a stupid hack to be able to exit with a specific integer exit code
+    // read more at https://github.com/dotnet/command-line-api/issues/1570
+    var exitCode = 0;
+
     rootCommand.AddArgument(pathArg);
     rootCommand.SetHandler(
-      async (inputPath) =>
+      async inputPath =>
       {
-        FunctionRunData<TInput>? data = FunctionRunDataParser.FromPath<TInput>(inputPath);
+        FunctionRunData<TInput> data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        AutomationContext context = await RunFunction(
+        var context = await RunFunction(
             automateFunction,
             data.AutomationRunData,
             data.SpeckleToken,
@@ -114,10 +116,7 @@ public static class AutomationRunner
           )
           .ConfigureAwait(false);
 
-        if (context.RunStatus != AutomationStatusMapping.Get(AutomationStatus.Succeeded))
-        {
-          returnCode = 1; // Flag run as failed.
-        }
+        exitCode = context.RunStatus == "EXCEPTION" ? 1 : 0;
       },
       pathArg
     );
@@ -128,11 +127,12 @@ public static class AutomationRunner
     Command generateSchemaCommand = new("generate-schema", "Generate JSON schema for the function inputs");
     generateSchemaCommand.AddArgument(schemaFilePathArg);
     generateSchemaCommand.SetHandler(
-      (schemaFilePath) =>
+      schemaFilePath =>
       {
         JSchemaGenerator generator = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+        generator.GenerationProviders.Add(new SpeckleSecretProvider());
         JSchema schema = generator.Generate(typeof(TInput));
-        schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
+        schema.ToString(SchemaVersion.Draft2019_09);
         File.WriteAllText(schemaFilePath, schema.ToString());
       },
       schemaFilePathArg
@@ -141,6 +141,39 @@ public static class AutomationRunner
 
     await rootCommand.InvokeAsync(args).ConfigureAwait(false);
 
-    return returnCode;
+    // if we've gotten this far, the execution should technically be completed as expected
+    // thus exiting with 0 is the semantically correct thing to do
+    return exitCode;
+  }
+}
+
+public class SpeckleSecretProvider : JSchemaGenerationProvider
+{
+  // `GetSchema` returning `null` indicates that the given type should not have a customised schema
+  // Nullability of JSchemaTypeGenerationContext appears to be incorrect.
+#pragma warning disable CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
+  public override JSchema? GetSchema(JSchemaTypeGenerationContext context)
+  {
+    var attributes = context.MemberProperty?.AttributeProvider?.GetAttributes(false) ?? new List<Attribute>();
+    var isSecretString = attributes.Any(att => att is SecretAttribute);
+
+    if (isSecretString)
+    {
+      return CreateSchemaWithWriteOnly(context.ObjectType, context.Required);
+    }
+
+    return null;
+  }
+#pragma warning restore CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
+
+
+  private JSchema CreateSchemaWithWriteOnly(Type type, Required required)
+  {
+    JSchemaGenerator generator = new();
+    JSchema schema = generator.Generate(type, required != Required.Always);
+
+    schema.WriteOnly = true;
+
+    return schema;
   }
 }

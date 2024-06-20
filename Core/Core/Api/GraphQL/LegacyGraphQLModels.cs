@@ -330,6 +330,21 @@ public class ServerInfo
   /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
   /// </remarks>
   public string url { get; set; }
+
+  public ServerMigration migration { get; set; }
+}
+
+public class ServerMigration
+{
+  /// <summary>
+  /// New URI where this server is now deployed
+  /// </summary>
+  public Uri movedTo { get; set; }
+
+  /// <summary>
+  /// Previous URI where this server used to be deployed
+  /// </summary>
+  public Uri movedFrom { get; set; }
 }
 
 public class StreamData

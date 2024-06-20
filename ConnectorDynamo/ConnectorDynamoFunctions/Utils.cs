@@ -62,10 +62,10 @@ public static class Utils
     {
       try
       {
-        System.Type type = Globals.RevitDocument.GetType();
+        Type type = Globals.RevitDocument.GetType();
         var app = (object)type.GetProperty("Application").GetValue(Globals.RevitDocument, null);
 
-        System.Type type2 = app.GetType();
+        Type type2 = app.GetType();
         var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
 
         if (version.Contains("2024"))
@@ -96,6 +96,50 @@ public static class Utils
       {
         return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
       }
+    }
+  }
+
+  internal static HostAppVersion? GetRevitHostAppVersion()
+  {
+    if (Globals.RevitDocument == null)
+    {
+      return null;
+    }
+
+    try
+    {
+      Type type = Globals.RevitDocument.GetType();
+
+      var app = type.GetProperty("Application").GetValue(Globals.RevitDocument, null);
+
+      Type type2 = app.GetType();
+      var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
+
+      if (version.Contains("2024"))
+      {
+        return HostAppVersion.vRevit2024;
+      }
+
+      if (version.Contains("2023"))
+      {
+        return HostAppVersion.vRevit2023;
+      }
+
+      if (version.Contains("2022"))
+      {
+        return HostAppVersion.vRevit2022;
+      }
+
+      if (version.Contains("2021"))
+      {
+        return HostAppVersion.vRevit2021;
+      }
+
+      return HostAppVersion.vRevit;
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      return HostAppVersion.vRevit;
     }
   }
 

@@ -13,7 +13,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   public override List<string> GetSelectedObjects()
   {
     var objs = new List<string>();
-    var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
 
     if (Converter == null || Doc == null)
     {

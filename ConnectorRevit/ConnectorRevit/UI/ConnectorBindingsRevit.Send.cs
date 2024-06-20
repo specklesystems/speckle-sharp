@@ -99,6 +99,9 @@ public partial class ConnectorBindingsRevit
     var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
     var convertedCount = 0;
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> typeCountDict = new();
+
     await APIContext
       .Run(() =>
       {
@@ -113,6 +116,11 @@ public partial class ConnectorBindingsRevit
           {
             break;
           }
+
+          // log selection object type
+          var revitObjectType = revitElement.GetType().ToString();
+          typeCountDict.TryGetValue(revitObjectType, out var currentCount);
+          typeCountDict[revitObjectType] = ++currentCount;
 
           bool isAlreadyConverted = GetOrCreateApplicationObject(
             revitElement,
@@ -136,10 +144,12 @@ public partial class ConnectorBindingsRevit
 
             Base result = ConvertToSpeckle(revitElement, converter);
 
+            // log converted object
             reportObj.Update(
               status: ApplicationObject.State.Created,
               logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
             );
+
             if (result.applicationId != reportObj.applicationId)
             {
               SpeckleLog.Logger.Information(
@@ -179,6 +189,20 @@ public partial class ConnectorBindingsRevit
     {
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
+
+    // track the object type counts as an event before we try to send
+    // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountList = typeCountDict
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(200);
+
+    Analytics.TrackEvent(
+      Analytics.Events.ConvertToSpeckle,
+      new Dictionary<string, object>() { { "typeCount", typeCountList } }
+    );
 
     commitObjectBuilder.BuildCommitObject(commitObject);
 

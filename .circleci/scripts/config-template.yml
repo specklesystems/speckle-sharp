@@ -7,7 +7,7 @@ orbs:
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
   docker: circleci/docker@2.2.0
-
+  macos: circleci/macos@2.4.1
 # The main workflows for our monorepo pipeline.
 
 workflows:
@@ -28,7 +28,7 @@ workflows:
             tags:
               only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish
+            - publish-nugets
           context: nuget
 
 commands:
@@ -49,20 +49,8 @@ commands:
             echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$BASH_ENV"
           environment:
             WORKFLOW_NUM: << pipeline.number >>
-
-  packandpublish:
+  publish-nugets:
     steps:
-      - run:
-          name: Build nuget packages
-          command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
-            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
-            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER.$WORKFLOW_NUM)
-            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:IsDesktopBuild=false
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Push nuget packages
           command: $HOME/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
@@ -93,6 +81,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
             $HOME/.dotnet/dotnet --version
       - run:
           name: Enforce formatting
@@ -108,6 +97,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
             $HOME/.dotnet/dotnet build SDK.slnf -c Release -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Build nuget packages
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
+            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
+            VERSION=$(echo $VER.$WORKFLOW_NUM)
+            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
@@ -129,6 +129,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -221,19 +222,18 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
                   msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
             - run:
-                name: Create Auth & OV Signing Cert
+                name: Setup Digicert ONE Client Cert
                 command: |
                   cd C:\
                   echo $env:SM_CLIENT_CERT_FILE_B64 > certificate.txt
                   certutil -decode certificate.txt certificate.p12
-                  echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
             - run:
                 name: Sync Certs
                 command: |
                   & $env:SSM\smksp_cert_sync.exe
             - run:
                 name: Build Installer
-                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER
+                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
@@ -274,7 +274,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-mac:
     macos:
-      xcode: 12.5.1
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
     parameters:
       slnname:
         type: string
@@ -303,6 +304,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./
@@ -310,6 +312,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
@@ -580,7 +583,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-archicad-add-on-mac: # build Archicad C++ add-on
     macos:
-      xcode: 12.5.1
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
     parameters:
       archicadversion:
         type: string
@@ -592,6 +596,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
+      - macos/install-rosetta
       - cached-checkout
       - attach_workspace:
           at: ./

@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorAutocad</RootNamespace>
+    <AssemblyName>SpeckleConnectorAutocad</AssemblyName>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyTitle>ConnectorAutocad</AssemblyTitle>
+    <Product>ConnectorAutocad</Product>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2025\acad.exe</StartProgram>
+    <UseWPF>true</UseWPF>
+    <DefineConstants>$(DefineConstants);AUTOCAD2025</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2025" />
+  </Target>
+  <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <Message Text="Calling 2025 post build" Importance="high" />
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2025\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2025.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App"></FrameworkReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+  </ItemGroup>
+</Project>

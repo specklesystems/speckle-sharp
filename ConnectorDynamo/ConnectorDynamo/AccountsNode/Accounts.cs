@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using Dynamo.Graph.Nodes;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
+using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Account = Speckle.Core.Credentials.Account;
 
 namespace Speckle.ConnectorDynamo.AccountsNode;
@@ -108,11 +107,7 @@ public class Accounts : NodeModel
   {
     SelectedUserId = account.userInfo.id;
 
-    Analytics.TrackEvent(
-      account,
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Account Select" } }
-    );
+    AnalyticsUtils.TrackNodeRun(account, "Account Select");
 
     OnNodeModified(true);
   }

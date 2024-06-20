@@ -19,7 +19,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 {
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
     converter.SetContextDocument(Doc);
 
     // set converter settings
@@ -53,6 +53,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var commitLayers = new Dictionary<string, Layer>();
     var commitCollections = new Dictionary<string, Collection>();
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> typeCountDict = new();
+
     // convert all commit objs
     foreach (var selectedId in state.SelectedObjectIds)
     {
@@ -63,6 +66,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       var reportObj = new ApplicationObject(selectedId, "Unknown");
       if (Utils.FindObjectBySelectedId(Doc, selectedId, out object obj, out string descriptor))
       {
+        // log selection object type
+        var objectType = obj.GetType().ToString();
+        typeCountDict.TryGetValue(objectType, out var currentCount);
+        typeCountDict[objectType] = ++currentCount;
+
         // create applicationObject
         reportObj = new ApplicationObject(selectedId, descriptor);
         converter.Report.Log(reportObj); // Log object so converter can access
@@ -228,10 +236,25 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
 
+    // track the object type counts as an event before we try to send
+    // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountList = typeCountDict
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(200);
+
+    Speckle.Core.Logging.Analytics.TrackEvent(
+      Speckle.Core.Logging.Analytics.Events.ConvertToSpeckle,
+      new Dictionary<string, object>() { { "typeCount", typeCountList } }
+    );
+
     progress.CancellationToken.ThrowIfCancellationRequested();
 
     progress.Max = objCount;
 
+    // send the commit
     var transports = new List<ITransport> { new ServerTransport(client.Account, streamId) };
 
     var objectId = await Operations.Send(
@@ -251,7 +274,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       objectId = objectId,
       branchName = state.BranchName,
       message = state.CommitMessage ?? $"Sent {objCount} elements from Rhino.",
-      sourceApplication = Utils.RhinoAppName
+      sourceApplication = Utils.GetRhinoHostAppVersion()
     };
 
     if (state.PreviousCommitId != null)
@@ -260,6 +283,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
 
     var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
+
     return commitId;
   }
 }

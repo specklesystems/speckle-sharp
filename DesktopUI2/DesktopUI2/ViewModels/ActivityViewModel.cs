@@ -31,7 +31,7 @@ public class ActivityViewModel : ReactiveObject
         Margin = new Thickness(10, 10, 10, 0);
         Icon = "Pencil";
         Align = HorizontalAlignment.Center;
-        Message = $"created this stream • {Formatting.TimeAgo(item.time)}";
+        Message = $"created this project • {Formatting.TimeAgo(item.time)}";
         break;
     }
 

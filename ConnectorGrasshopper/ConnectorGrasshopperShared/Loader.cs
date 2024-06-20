@@ -37,14 +37,6 @@ public class Loader : GH_AssemblyPriority
 
   public override GH_LoadingInstruction PriorityLoad()
   {
-    string version = RhinoApp.Version.Major switch
-    {
-      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
-      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
-      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
-      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
-    };
-
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
         false;
@@ -53,26 +45,12 @@ public class Loader : GH_AssemblyPriority
 #endif
     var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
 
-    SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
-    try
-    {
-      Setup.Init(version, HostApplications.Grasshopper.Slug);
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
-      // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
-      // Recommended practice is to assume that our connector would be installed alongside theirs.
-      SpeckleLog.Logger.Error(
-        ex,
-        "Swallowing exception in {methodName}: {exceptionMessage}",
-        nameof(PriorityLoad),
-        ex.Message
-      );
-    }
+    // We initialise with Rhino values. Grasshopper will use it's own tracking class that will override said values in all calls.
+    Setup.Init(GetRhinoHostAppVersion(), HostApplications.Rhino.Slug, logConfig);
 
     Instances.CanvasCreated += OnCanvasCreated;
-#if RHINO7
+
+#if RHINO7_OR_GREATER
     if (Instances.RunningHeadless)
     {
       // If GH is running headless, we listen for document added/removed events.
@@ -87,6 +65,24 @@ public class Loader : GH_AssemblyPriority
     Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
     return GH_LoadingInstruction.Proceed;
   }
+
+  public static string GetRhinoHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Rhino.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Rhino.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Rhino.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
+
+  public static string GetGrasshopperHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
   private void OnDocumentAdded(GH_DocumentServer sender, GH_Document doc)
   {
@@ -497,7 +493,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void DisposeHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     _headlessDoc?.Dispose();
 #endif
     _headlessDoc = null;
@@ -505,7 +501,7 @@ public class Loader : GH_AssemblyPriority
 
   public static void SetupHeadlessDoc()
   {
-#if RHINO7
+#if RHINO7_OR_GREATER
     // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
     //   SpeckleGHSettings.HeadlessTemplateFilename);
     // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
@@ -515,7 +511,8 @@ public class Loader : GH_AssemblyPriority
 
     _headlessDoc = RhinoDoc.CreateHeadless(null);
     Console.WriteLine(
-      $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+      $"Speckle - Backup headless doc is ready: '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+    Console.WriteLine("Speckle - To modify the units in a headless run, you can override the 'RhinoDoc.ActiveDoc' in the '.gh' file using a c#/python script.");
 #endif
   }
 
@@ -526,14 +523,18 @@ public class Loader : GH_AssemblyPriority
   /// <returns></returns>
   public static RhinoDoc GetCurrentDocument()
   {
-#if RHINO7
-    if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null)
+#if RHINO7_OR_GREATER
+    if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null && _headlessDoc != null)
     {
+      // Running headless, with no ActiveDoc override and _headlessDoc was correctly initialised.
+      // Only time the _headlessDoc is not set is upon document opening, where the components will
+      // check for this as their normal initialisation routine, but the document will be refreshed on every solution run.
       Console.WriteLine(
-        $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        $"Speckle - Fetching headless doc '{_headlessDoc?.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
       Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
       return _headlessDoc;
     }
+    
     return RhinoDoc.ActiveDoc;
 #else
     return RhinoDoc.ActiveDoc;

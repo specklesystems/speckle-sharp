@@ -170,17 +170,15 @@ public partial class ConverterRevit
       }
 
       List<string> notes = null;
-      var solid = BrepToNative(speckleWall.brep, out notes);
-      var faceReference = solid.Faces.get_Item(0);
-      var faceref = faceReference.Reference;
-      var freeform = CreateFreeformElementFamily(new List<Solid> { solid }, speckleWall.id, "Mass");
+      Solid solid = BrepToNative(speckleWall.brep, out notes);
+      DB.FamilyInstance freeform = CreateFreeformElementFamily(new List<Solid> { solid }, speckleWall.id, "Mass");
       Doc.Regenerate();
-      faceref = GetFaceRef(freeform);
+      Reference faceref = GetFaceRef(freeform);
+
       var revitWall = FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceref);
-      //Doc.Delete(freeform.Id);
+
       SetInstanceParameters(revitWall, speckleWall);
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
-      //appObj = SetHostedElements(speckleWall, revitWall, appObj);
     }
     catch (Exception ex) when (!ex.IsFatal())
     {

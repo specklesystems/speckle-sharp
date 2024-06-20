@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ public partial class Client
   /// <param name="cancellationToken">[Optional] defaults to an empty cancellation token</param>
   /// <returns><see cref="Version"/> object excluding any strings (eg "2.7.2-alpha.6995" becomes "2.7.2.6995")</returns>
   /// <exception cref="SpeckleException"></exception>
+  [Obsolete("Use GraphQLHttpClient.GetServerVersion instead")]
   public async Task<System.Version> GetServerVersion(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
