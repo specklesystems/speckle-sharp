@@ -103,7 +103,7 @@ public static class GISAttributeFieldType
           FieldType.BigInteger => Convert.ToInt64(value),
           FieldType.SmallInteger => Convert.ToInt16(value),
           FieldType.Double => Convert.ToDouble(value),
-          FieldType.Date => GetValue(value.ToString(), s => DateTime.Parse(s , null)),
+          FieldType.Date => GetValue(value.ToString(), s => DateTime.Parse(s, null)),
           FieldType.DateOnly => GetValue(value.ToString(), s => DateOnly.Parse(s, null)),
           FieldType.TimeOnly => GetValue(value.ToString(), s => TimeOnly.Parse(s, null)),
           _ => value,
