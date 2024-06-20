@@ -11,20 +11,23 @@ namespace Speckle.Connectors.Revit.Bindings;
 internal sealed class SelectionBinding : RevitBaseBinding, ISelectionBinding
 {
   private readonly IRevitIdleManager _revitIdleManager;
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
 
   public SelectionBinding(
     RevitContext revitContext,
     DocumentModelStore store,
     IRevitIdleManager idleManager,
-    IBridge bridge
+    IBridge bridge,
+    TopLevelExceptionHandler topLevelExceptionHandler
   )
     : base("selectionBinding", store, bridge, revitContext)
   {
     _revitIdleManager = idleManager;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
     RevitContext.UIApplication.NotNull().SelectionChanged += (_, _) =>
-      _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
+      topLevelExceptionHandler.CatchUnhandled(() => _revitIdleManager.SubscribeToIdle(OnSelectionChanged));
   }
 
   private void OnSelectionChanged()

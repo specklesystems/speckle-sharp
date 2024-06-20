@@ -27,6 +27,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
 
   public RevitSendBinding(
     IRevitIdleManager idleManager,
@@ -36,7 +37,8 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
     IBridge bridge,
     IUnitOfWorkFactory unitOfWorkFactory,
     RevitSettings revitSettings,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    TopLevelExceptionHandler topLevelExceptionHandler
   )
     : base("sendBinding", store, bridge, revitContext)
   {
@@ -45,12 +47,15 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
     _unitOfWorkFactory = unitOfWorkFactory;
     _revitSettings = revitSettings;
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
 
     Commands = new SendBindingUICommands(bridge);
     // TODO expiry events
     // TODO filters need refresh events
-    revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) => DocChangeHandler(e);
-    Store.DocumentChanged += (_, _) => OnDocumentChanged();
+    revitContext.UIApplication.NotNull().Application.DocumentChanged += (_, e) =>
+      _topLevelExceptionHandler.CatchUnhandled(() => DocChangeHandler(e));
+
+    Store.DocumentChanged += (_, _) => _topLevelExceptionHandler.CatchUnhandled(OnDocumentChanged);
   }
 
   public List<ISendFilter> GetSendFilters()

@@ -29,6 +29,7 @@ public sealed class AutocadSendBinding : ISendBinding
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -43,7 +44,8 @@ public sealed class AutocadSendBinding : ISendBinding
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
     IUnitOfWorkFactory unitOfWorkFactory,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    TopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;
@@ -53,10 +55,13 @@ public sealed class AutocadSendBinding : ISendBinding
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
 
-    Application.DocumentManager.DocumentActivated += (sender, args) => SubscribeToObjectChanges(args.Document);
+    Application.DocumentManager.DocumentActivated += (_, args) =>
+      topLevelExceptionHandler.CatchUnhandled(() => SubscribeToObjectChanges(args.Document));
+
     if (Application.DocumentManager.CurrentDocument != null)
     {
       // catches the case when autocad just opens up with a blank new doc
@@ -74,9 +79,14 @@ public sealed class AutocadSendBinding : ISendBinding
     }
 
     _docSubsTracker.Add(doc.Name);
-    doc.Database.ObjectAppended += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    doc.Database.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    doc.Database.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+    doc.Database.ObjectAppended += (_, e) => OnObjectChanged(e.DBObject);
+    doc.Database.ObjectErased += (_, e) => OnObjectChanged(e.DBObject);
+    doc.Database.ObjectModified += (_, e) => OnObjectChanged(e.DBObject);
+  }
+
+  void OnObjectChanged(DBObject dbObject)
+  {
+    _topLevelExceptionHandler.CatchUnhandled(() => OnChangeChangedObjectIds(dbObject));
   }
 
   private void OnChangeChangedObjectIds(DBObject dBObject)

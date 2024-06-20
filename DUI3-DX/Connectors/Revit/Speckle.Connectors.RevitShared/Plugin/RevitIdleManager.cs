@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Plugin;
@@ -9,6 +10,7 @@ namespace Speckle.Connectors.Revit.Plugin;
 // is probably misnamed, perhaps OnIdleCallbackManager
 internal sealed class RevitIdleManager : IRevitIdleManager
 {
+  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
   private readonly UIApplication _uiApplication;
 
   private readonly ConcurrentDictionary<string, Action> _calls = new();
@@ -16,8 +18,9 @@ internal sealed class RevitIdleManager : IRevitIdleManager
   // POC: still not thread safe
   private volatile bool _hasSubscribed;
 
-  public RevitIdleManager(RevitContext revitContext)
+  public RevitIdleManager(RevitContext revitContext, TopLevelExceptionHandler topLevelExceptionHandler)
   {
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     _uiApplication = revitContext.UIApplication!;
   }
 
@@ -46,15 +49,18 @@ internal sealed class RevitIdleManager : IRevitIdleManager
 
   private void RevitAppOnIdle(object sender, IdlingEventArgs e)
   {
-    foreach (KeyValuePair<string, Action> kvp in _calls)
+    _topLevelExceptionHandler.CatchUnhandled(() =>
     {
-      kvp.Value();
-    }
+      foreach (KeyValuePair<string, Action> kvp in _calls)
+      {
+        kvp.Value.Invoke();
+      }
 
-    _calls.Clear();
-    _uiApplication.Idling -= RevitAppOnIdle;
+      _calls.Clear();
+      _uiApplication.Idling -= RevitAppOnIdle;
 
-    // setting last will delay ntering re-subscritption
-    _hasSubscribed = false;
+      // setting last will delay ntering re-subscritption
+      _hasSubscribed = false;
+    });
   }
 }
