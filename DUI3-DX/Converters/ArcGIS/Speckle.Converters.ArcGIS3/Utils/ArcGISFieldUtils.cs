@@ -32,31 +32,24 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
         string key = field.AliasName; // use Alias, as Name is simplified to alphanumeric
         FieldType fieldType = field.FieldType;
         var value = attributes[key];
-        if (value is not null)
+
+        try
         {
-          // POC: get all values in a correct format
-          try
-          {
-            rowBuffer[key] = GISAttributeFieldType.SpeckleValueToNativeFieldType(fieldType, value);
-          }
-          catch (GeodatabaseFeatureException)
-          {
-            //'The value type is incompatible.'
-            // log error!
-            rowBuffer[key] = null;
-          }
-          catch (GeodatabaseFieldException)
-          {
-            // non-editable Field, do nothing
-          }
+          rowBuffer[key] = GISAttributeFieldType.SpeckleValueToNativeFieldType(fieldType, value);
         }
-        else
+        catch (GeodatabaseFeatureException)
         {
-          try
-          {
-            rowBuffer[key] = null;
-          }
-          catch (GeodatabaseGeneralException) { } // The index passed was not within the valid range. // unclear reason of the error
+          //'The value type is incompatible.'
+          // log error!
+          rowBuffer[key] = null;
+        }
+        catch (GeodatabaseFieldException)
+        {
+          // non-editable Field, do nothing
+        }
+        catch (GeodatabaseGeneralException)
+        {
+          // The index passed was not within the valid range. // unclear reason of the error
         }
       }
     }
