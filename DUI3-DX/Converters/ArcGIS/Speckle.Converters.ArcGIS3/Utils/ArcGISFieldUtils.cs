@@ -105,8 +105,9 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
 
     foreach (var baseObj in target)
     {
+      Dictionary<string, object?> members = new();
       // get all members by default, but only Dynamic ones from the basic geometry
-      Dictionary<string, object?> members = baseObj.GetMembers(DynamicBaseMemberType.Instance);
+      // Dictionary<string, object?> members = baseObj.GetMembers(DynamicBaseMemberType.Dynamic);
 
       foreach (KeyValuePair<string, object?> field in members)
       {
