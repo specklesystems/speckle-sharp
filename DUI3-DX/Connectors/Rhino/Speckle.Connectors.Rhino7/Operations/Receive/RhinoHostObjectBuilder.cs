@@ -1,31 +1,30 @@
 using System.Diagnostics.Contracts;
-using Rhino;
-using Rhino.DocObjects;
-using Rhino.Geometry;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
+  private readonly IRhinoDocFactory _rhinoDocFactory;
 
   public RhinoHostObjectBuilder(
     IRootToHostConverter converter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    GraphTraversal traverseFunction
-  )
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    GraphTraversal traverseFunction, IRhinoDocFactory rhinoDocFactory)
   {
     _converter = converter;
     _contextStack = contextStack;
     _traverseFunction = traverseFunction;
+    _rhinoDocFactory = rhinoDocFactory;
   }
 
   public HostObjectBuilderResult Build(
@@ -53,15 +52,15 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   // POC: Potentially refactor out into an IObjectBaker.
   private HostObjectBuilderResult BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
   {
-    RhinoDoc doc = _contextStack.Current.Document;
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
+    var doc = _contextStack.Current.Document;
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, _rhinoDocFactory.UnsetIntIndex);
 
     // POC: We could move this out into a separate service for testing and re-use.
     // Cleans up any previously received objects
-    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
+    if (rootLayerIndex != _rhinoDocFactory.UnsetIntIndex)
     {
-      Layer documentLayer = doc.Layers[rootLayerIndex];
-      Layer[]? childLayers = documentLayer.GetChildren();
+      var documentLayer = doc.Layers[rootLayerIndex];
+      var childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
         using var layerNoDraw = new DisableRedrawScope(doc.Views);
@@ -77,7 +76,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     }
 
     var cache = new Dictionary<string, int>();
-    rootLayerIndex = doc.Layers.Add(new Layer { Name = baseLayerName });
+    rootLayerIndex = doc.Layers.Add(_rhinoDocFactory.CreateLayer(baseLayerName));
     cache.Add(baseLayerName, rootLayerIndex);
 
     using var noDraw = new DisableRedrawScope(doc.Views);
@@ -91,7 +90,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       {
         var path = GetLayerPath(tc);
 
-        var fullLayerName = string.Join(Layer.PathSeparator, path);
+        var fullLayerName = string.Join(_rhinoDocFactory.LayerPathSeparator, path);
         var layerIndex = cache.TryGetValue(fullLayerName, out int value)
           ? value
           : GetAndCreateLayerFromPath(path, baseLayerName, cache);
@@ -120,31 +119,31 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     List<string> newObjectIds = new();
     switch (conversionResult)
     {
-      case IEnumerable<GeometryBase> list:
+      case IEnumerable<IRhinoGeometryBase> list:
       {
-        Group group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
+        var group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
         newObjectIds.Add(group.Id.ToString());
         break;
       }
-      case GeometryBase newObject:
+      case IRhinoGeometryBase newObject:
       {
-        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+        var newObjectGuid = doc.Objects.Add(newObject, _rhinoDocFactory.CreateAttributes(layerIndex));
         newObjectIds.Add(newObjectGuid.ToString());
         break;
       }
       default:
         throw new SpeckleConversionException(
-          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {conversionResult.GetType().Name}"
+          $"Unexpected result from conversion: Expected {nameof(IRhinoGeometryBase)} but instead got {conversionResult.GetType().Name}"
         );
     }
 
     return newObjectIds;
   }
 
-  private Group BakeObjectsAsGroup(string groupName, IEnumerable<GeometryBase> list, int layerIndex)
+  private IRhinoGroup BakeObjectsAsGroup(string groupName, IEnumerable<IRhinoGeometryBase> list, int layerIndex)
   {
     var doc = _contextStack.Current.Document;
-    var objectIds = list.Select(obj => doc.Objects.Add(obj, new ObjectAttributes { LayerIndex = layerIndex }));
+    var objectIds = list.Select(obj => doc.Objects.Add(obj,_rhinoDocFactory.CreateAttributes(layerIndex)));
     var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
     var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
     return group;
@@ -154,12 +153,12 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   private int GetAndCreateLayerFromPath(string[] path, string baseLayerName, Dictionary<string, int> cache)
   {
     var currentLayerName = baseLayerName;
-    RhinoDoc currentDocument = _contextStack.Current.Document;
+    var currentDocument = _contextStack.Current.Document;
 
     var previousLayer = currentDocument.Layers.FindName(currentLayerName);
     foreach (var layerName in path)
     {
-      currentLayerName = baseLayerName + Layer.PathSeparator + layerName;
+      currentLayerName = baseLayerName + _rhinoDocFactory.LayerPathSeparator + layerName;
       currentLayerName = currentLayerName.Replace("{", "").Replace("}", ""); // Rhino specific cleanup for gh (see RemoveInvalidRhinoChars)
       if (cache.TryGetValue(currentLayerName, out int value))
       {
@@ -168,7 +167,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       }
 
       var cleanNewLayerName = layerName.Replace("{", "").Replace("}", "");
-      var newLayer = new Layer { Name = cleanNewLayerName, ParentLayerId = previousLayer.Id };
+      var newLayer = _rhinoDocFactory.CreateLayer(cleanNewLayerName, previousLayer.Id);
       var index = currentDocument.Layers.Add(newLayer);
       cache.Add(currentLayerName, index);
       previousLayer = currentDocument.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this
