@@ -90,11 +90,11 @@ public static class GISAttributeFieldType
         return value;
     }
 
-    if (value is not null)
+    if (value != null)
     {
       try
       {
-        static T? GetValue<T>(string? s, Func<string, T> func) => s is null ? default : func(s);
+        static object? GetValue(string? s, Func<string, object> func) => s is null ? null : func(s);
         return fieldType switch
         {
           FieldType.String => Convert.ToString(value),
@@ -109,13 +109,15 @@ public static class GISAttributeFieldType
           _ => value,
         };
       }
-      catch (InvalidCastException)
+      catch (Exception ex) when (ex is InvalidCastException or FormatException or ArgumentNullException)
       {
-        return value;
+        return null;
       }
     }
-
-    return value;
+    else
+    {
+      return null;
+    }
   }
 
   public static FieldType GetFieldTypeFromRawValue(object? value)
