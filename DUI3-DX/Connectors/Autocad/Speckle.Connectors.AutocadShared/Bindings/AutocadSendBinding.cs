@@ -29,7 +29,7 @@ public sealed class AutocadSendBinding : ISendBinding
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -45,7 +45,7 @@ public sealed class AutocadSendBinding : ISendBinding
     AutocadSettings autocadSettings,
     IUnitOfWorkFactory unitOfWorkFactory,
     ISendConversionCache sendConversionCache,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;

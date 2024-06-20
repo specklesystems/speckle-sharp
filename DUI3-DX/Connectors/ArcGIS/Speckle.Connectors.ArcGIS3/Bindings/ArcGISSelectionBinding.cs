@@ -10,7 +10,7 @@ public class ArcGISSelectionBinding : ISelectionBinding
   public string Name => "selectionBinding";
   public IBridge Parent { get; }
 
-  public ArcGISSelectionBinding(IBridge parent, TopLevelExceptionHandler topLevelHandler)
+  public ArcGISSelectionBinding(IBridge parent, ITopLevelExceptionHandler topLevelHandler)
   {
     Parent = parent;
 

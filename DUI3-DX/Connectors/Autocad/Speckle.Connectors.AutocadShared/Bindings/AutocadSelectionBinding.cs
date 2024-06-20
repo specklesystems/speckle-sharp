@@ -8,14 +8,14 @@ namespace Speckle.Connectors.Autocad.Bindings;
 public class AutocadSelectionBinding : ISelectionBinding
 {
   private const string SELECTION_EVENT = "setSelection";
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
   private readonly HashSet<Document> _visitedDocuments = new();
 
   public string Name => "selectionBinding";
 
   public IBridge Parent { get; }
 
-  public AutocadSelectionBinding(IBridge parent, TopLevelExceptionHandler topLevelExceptionHandler)
+  public AutocadSelectionBinding(IBridge parent, ITopLevelExceptionHandler topLevelExceptionHandler)
   {
     _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;

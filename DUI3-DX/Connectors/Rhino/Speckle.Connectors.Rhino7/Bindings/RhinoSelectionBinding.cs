@@ -9,7 +9,7 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 public class RhinoSelectionBinding : ISelectionBinding
 {
   private readonly RhinoIdleManager _idleManager;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
   private const string SELECTION_EVENT = "setSelection";
 
   public string Name => "selectionBinding";
@@ -18,7 +18,7 @@ public class RhinoSelectionBinding : ISelectionBinding
   public RhinoSelectionBinding(
     RhinoIdleManager idleManager,
     IBridge parent,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _idleManager = idleManager;

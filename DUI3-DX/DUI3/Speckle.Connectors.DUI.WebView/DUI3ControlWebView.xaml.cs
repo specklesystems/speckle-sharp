@@ -9,9 +9,9 @@ namespace Speckle.Connectors.DUI.WebView;
 public sealed partial class DUI3ControlWebView : UserControl
 {
   private readonly IEnumerable<Lazy<IBinding>> _bindings;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
-  public DUI3ControlWebView(IEnumerable<Lazy<IBinding>> bindings, TopLevelExceptionHandler topLevelExceptionHandler)
+  public DUI3ControlWebView(IEnumerable<Lazy<IBinding>> bindings, ITopLevelExceptionHandler topLevelExceptionHandler)
   {
     _bindings = bindings;
     _topLevelExceptionHandler = topLevelExceptionHandler;

@@ -31,7 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -47,7 +47,7 @@ public sealed class ArcGISSendBinding : ISendBinding
     IUnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager,
     ISendConversionCache sendConversionCache,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;

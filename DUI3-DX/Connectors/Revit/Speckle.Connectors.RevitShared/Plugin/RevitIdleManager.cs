@@ -10,7 +10,7 @@ namespace Speckle.Connectors.Revit.Plugin;
 // is probably misnamed, perhaps OnIdleCallbackManager
 internal sealed class RevitIdleManager : IRevitIdleManager
 {
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
   private readonly UIApplication _uiApplication;
 
   private readonly ConcurrentDictionary<string, Action> _calls = new();
@@ -18,7 +18,7 @@ internal sealed class RevitIdleManager : IRevitIdleManager
   // POC: still not thread safe
   private volatile bool _hasSubscribed;
 
-  public RevitIdleManager(RevitContext revitContext, TopLevelExceptionHandler topLevelExceptionHandler)
+  public RevitIdleManager(RevitContext revitContext, ITopLevelExceptionHandler topLevelExceptionHandler)
   {
     _topLevelExceptionHandler = topLevelExceptionHandler;
     _uiApplication = revitContext.UIApplication!;

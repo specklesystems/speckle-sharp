@@ -36,7 +36,7 @@ public sealed class RhinoSendBinding : ISendBinding
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   public RhinoSendBinding(
     DocumentModelStore store,
@@ -48,7 +48,7 @@ public sealed class RhinoSendBinding : ISendBinding
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,
     ISendConversionCache sendConversionCache,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;

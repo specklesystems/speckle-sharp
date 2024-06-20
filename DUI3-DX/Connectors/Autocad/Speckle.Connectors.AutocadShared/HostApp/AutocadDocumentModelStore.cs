@@ -14,7 +14,7 @@ public class AutocadDocumentStore : DocumentModelStore
   public AutocadDocumentStore(
     JsonSerializerSettings jsonSerializerSettings,
     AutocadDocumentManager autocadDocumentManager,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
     : base(jsonSerializerSettings, true)
   {

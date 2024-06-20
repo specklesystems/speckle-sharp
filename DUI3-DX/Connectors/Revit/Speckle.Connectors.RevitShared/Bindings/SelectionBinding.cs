@@ -11,14 +11,14 @@ namespace Speckle.Connectors.Revit.Bindings;
 internal sealed class SelectionBinding : RevitBaseBinding, ISelectionBinding
 {
   private readonly IRevitIdleManager _revitIdleManager;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   public SelectionBinding(
     RevitContext revitContext,
     DocumentModelStore store,
     IRevitIdleManager idleManager,
     IBridge bridge,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
     : base("selectionBinding", store, bridge, revitContext)
   {

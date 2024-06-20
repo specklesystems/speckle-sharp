@@ -4,6 +4,7 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.Utils;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -53,7 +54,8 @@ public readonly struct Result<T>
 /// Depending on the host app, this may trigger windows event logging, and recovery snapshots before ultimately terminating the process<br/>
 /// Attempting to swallow them may lead to data corruption, deadlocking, or things worse than a managed host app crash.
 /// </remarks>
-public sealed class TopLevelExceptionHandler
+[GenerateAutoInterface]
+public sealed class TopLevelExceptionHandler : ITopLevelExceptionHandler
 {
   private readonly ILogger<TopLevelExceptionHandler> _logger;
   private readonly IBridge _bridge;

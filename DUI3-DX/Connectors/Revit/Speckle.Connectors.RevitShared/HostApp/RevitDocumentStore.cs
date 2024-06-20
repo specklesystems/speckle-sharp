@@ -31,7 +31,7 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
     IdStorageSchema idStorageSchema,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
     : base(serializerSettings, true)
   {

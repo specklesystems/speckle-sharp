@@ -27,7 +27,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   public RevitSendBinding(
     IRevitIdleManager idleManager,
@@ -38,7 +38,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
     IUnitOfWorkFactory unitOfWorkFactory,
     RevitSettings revitSettings,
     ISendConversionCache sendConversionCache,
-    TopLevelExceptionHandler topLevelExceptionHandler
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
     : base("sendBinding", store, bridge, revitContext)
   {

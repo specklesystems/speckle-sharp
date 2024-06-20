@@ -28,7 +28,7 @@ public sealed class BrowserBridge : IBridge
   private readonly JsonSerializerSettings _serializerOptions;
   private readonly ConcurrentDictionary<string, string?> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
-  private readonly TopLevelExceptionHandler _topLevelExceptionHandler;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   private IReadOnlyDictionary<string, MethodInfo> _bindingMethodCache = new Dictionary<string, MethodInfo>();
 
@@ -79,7 +79,7 @@ public sealed class BrowserBridge : IBridge
   {
     _serializerOptions = jsonSerializerSettings;
     _logger = loggerFactory.CreateLogger<BrowserBridge>();
-    _topLevelExceptionHandler = new(loggerFactory, this); //TODO: Probably we could inject this with a Lazy somewhere
+    _topLevelExceptionHandler = new TopLevelExceptionHandler(loggerFactory, this); //TODO: Probably we could inject this with a Lazy somewhere
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
   }

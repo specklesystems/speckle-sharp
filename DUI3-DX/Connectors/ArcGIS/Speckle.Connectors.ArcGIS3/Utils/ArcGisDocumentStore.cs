@@ -12,7 +12,10 @@ namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGISDocumentStore : DocumentModelStore
 {
-  public ArcGISDocumentStore(JsonSerializerSettings serializerOption, TopLevelExceptionHandler topLevelExceptionHandler)
+  public ArcGISDocumentStore(
+    JsonSerializerSettings serializerOption,
+    ITopLevelExceptionHandler topLevelExceptionHandler
+  )
     : base(serializerOption, true)
   {
     ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)));
