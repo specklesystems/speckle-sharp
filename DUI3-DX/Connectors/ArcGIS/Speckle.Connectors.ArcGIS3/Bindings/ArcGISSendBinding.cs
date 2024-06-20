@@ -228,11 +228,34 @@ public sealed class ArcGISSendBinding : ISendBinding
 
   private void GetIdsForMapMemberPropertiesChangedEvent(MapMemberPropertiesChangedEventArgs args)
   {
-    foreach (MapMember member in args.MapMembers)
+    // don't subscribe to all events (e.g. expanding group, changing visibility etc.)
+    bool validEvent = false;
+    foreach (var hint in args.EventHints)
     {
-      ChangedObjectIds.Add(member.URI);
+      if (
+        hint == MapMemberEventHint.DataSource
+        || hint == MapMemberEventHint.DefinitionQuery
+        || hint == MapMemberEventHint.LabelClasses
+        || hint == MapMemberEventHint.LabelVisibility
+        || hint == MapMemberEventHint.Name
+        || hint == MapMemberEventHint.Renderer
+        || hint == MapMemberEventHint.SceneLayerType
+        || hint == MapMemberEventHint.URL
+      )
+      {
+        validEvent = true;
+        break;
+      }
     }
-    RunExpirationChecks(false);
+
+    if (validEvent)
+    {
+      foreach (MapMember member in args.MapMembers)
+      {
+        ChangedObjectIds.Add(member.URI);
+      }
+      RunExpirationChecks(false);
+    }
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
