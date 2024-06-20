@@ -38,15 +38,31 @@ public class CurveToSpeckleConverter : ITypedConverter<IRhinoCurve, ICurve>, ITy
   /// This is the main converter when the type of curve you input or output does not matter to the caller.<br/>
   /// ⚠️ If an unsupported type of Curve is input, it will be converted to NURBS.
   /// </remarks>
-  public ICurve Convert(IRhinoCurve target) =>
-    target switch
+  public ICurve Convert(IRhinoCurve target)
+  {
+    var polyline = target.ToPolylineCurve();
+    if (polyline is not null)
     {
-      IRhinoPolyCurve polyCurve => _polyCurveConverter.Convert(polyCurve),
-      IRhinoArcCurve arcCurve => _arcCurveConverter.Convert(arcCurve),
-      IRhinoPolylineCurve polylineCurve => _polylineConverter.Convert(polylineCurve),
-      IRhinoLineCurve lineCurve => _lineCurveConverter.Convert(lineCurve),
-      _ => _nurbsCurveConverter.Convert(target.ToNurbsCurve())
-    };
+      return _polylineConverter.Convert(polyline);
+    }
+    var arcCurve = target.ToArcCurve();
+    if (arcCurve is not null)
+    {
+      return _arcCurveConverter.Convert(arcCurve);
+    }
+    var polyCurve = target.ToPolyCurve();
+    if (polyCurve is not null)
+    {
+      return _polyCurveConverter.Convert(polyCurve);
+    }
+    var lineCurve = target.ToLineCurve();
+    if (lineCurve is not null)
+    {
+      return _lineCurveConverter.Convert(lineCurve);
+    }
+    var nurbsCurve = target.ToNurbsCurve();
+    return _nurbsCurveConverter.Convert(nurbsCurve);
+  }
 
   Base ITypedConverter<IRhinoCurve, Base>.Convert(IRhinoCurve target) => (Base)Convert(target);
 }
