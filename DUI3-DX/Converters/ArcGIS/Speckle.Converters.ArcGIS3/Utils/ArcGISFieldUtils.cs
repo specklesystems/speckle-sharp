@@ -1,4 +1,3 @@
-using System.Collections;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
 using Objects.GIS;
