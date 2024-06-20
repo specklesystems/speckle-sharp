@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
     steps:
@@ -25,11 +25,20 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.2xx # Align with global.json (including roll forward rules)
+      
+      - name: Cache Nuget     
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: ⚒️ Run GitVersion
-        run: ./build.sh build-server-version
+        run: ./build.ps1 build-server-version
 
       - name: ⚒️ Run build
-        run: ./build.sh
+        run: ./build.ps1
 
       - name: ⬆️ Upload artifacts
         uses: actions/upload-artifact@v4

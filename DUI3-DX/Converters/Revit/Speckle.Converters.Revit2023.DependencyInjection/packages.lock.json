@@ -2,55 +2,6 @@
   "version": 1,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
-      "coverlet.collector": {
-        "type": "Direct",
-        "requested": "[6.0.2, )",
-        "resolved": "6.0.2",
-        "contentHash": "bJShQ6uWRTQ100ZeyiMqcFlhP7WJ+bCuabUs885dJiBEzMsJMSFr7BOyeCw4rgvQokteGi5rKQTlkhfQPUXg2A=="
-      },
-      "FluentAssertions": {
-        "type": "Direct",
-        "requested": "[6.12.0, )",
-        "resolved": "6.12.0",
-        "contentHash": "ZXhHT2YwP9lajrwSKbLlFqsmCCvFJMoRSK9t7sImfnCyd0OB3MhgxdoMcVqxbq1iyxD6mD2fiackWmBb7ayiXQ==",
-        "dependencies": {
-          "System.Threading.Tasks.Extensions": "4.5.0"
-        }
-      },
-      "Microsoft.NET.Test.Sdk": {
-        "type": "Direct",
-        "requested": "[17.10.0, )",
-        "resolved": "17.10.0",
-        "contentHash": "0/2HeACkaHEYU3wc83YlcD2Fi4LMtECJjqrtvw0lPi9DCEa35zSPt1j4fuvM8NagjDqJuh1Ja35WcRtn1Um6/A==",
-        "dependencies": {
-          "Microsoft.CodeCoverage": "17.10.0"
-        }
-      },
-      "Moq": {
-        "type": "Direct",
-        "requested": "[4.20.70, )",
-        "resolved": "4.20.70",
-        "contentHash": "4rNnAwdpXJBuxqrOCzCyICXHSImOTRktCgCWXWykuF1qwoIsVvEnR7PjbMk/eLOxWvhmj5Kwt+kDV3RGUYcNwg==",
-        "dependencies": {
-          "Castle.Core": "5.1.1",
-          "System.Threading.Tasks.Extensions": "4.5.4"
-        }
-      },
-      "NUnit": {
-        "type": "Direct",
-        "requested": "[4.1.0, )",
-        "resolved": "4.1.0",
-        "contentHash": "MT/DpAhjtiytzhTgTqIhBuWx4y26PKfDepYUHUM+5uv4TsryHC2jwFo5e6NhWkApCm/G6kZ80dRjdJFuAxq3rg==",
-        "dependencies": {
-          "System.Threading.Tasks.Extensions": "4.5.4"
-        }
-      },
-      "NUnit.Analyzers": {
-        "type": "Direct",
-        "requested": "[4.2.0, )",
-        "resolved": "4.2.0",
-        "contentHash": "4fJojPkzdoa4nB2+p6U+fITvPnVvwWSnsmiJ/Dl30xqiL3oxNbYvfeSLVd91hOmEjoUqSwN3Z7j1aFedjqWbUA=="
-      },
       "PolySharp": {
         "type": "Direct",
         "requested": "[1.14.1, )",
@@ -63,16 +14,16 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
-      "Speckle.Revit2023.Interfaces": {
+      "Speckle.Revit2023.Api": {
         "type": "Direct",
         "requested": "[0.1.1-preview.0.24, )",
         "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
-      },
-      "Castle.Core": {
-        "type": "Transitive",
-        "resolved": "5.1.1",
-        "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g=="
+        "contentHash": "hPRXbyvgmealdPPWTxjHbpBRTsyt67DddoIs09M0n319eHh/eONnPC+SgBzJmmB834TtzzayMVk06S1cMT0Iow==",
+        "dependencies": {
+          "Mapster": "7.3.0",
+          "Speckle.Revit.API": "2023.0.0",
+          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.24"
+        }
       },
       "GraphQL.Client": {
         "type": "Transitive",
@@ -106,6 +57,21 @@
         "resolved": "6.0.0",
         "contentHash": "yg72rrYDapfsIUrul7aF6wwNnTJBOFvuA9VdDTQpPa8AlAriHbufeXYLBcodKjfUdkCnaiggX1U/nEP08Zb5GA=="
       },
+      "Mapster": {
+        "type": "Transitive",
+        "resolved": "7.3.0",
+        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
+        "dependencies": {
+          "Mapster.Core": "1.2.0",
+          "Microsoft.CSharp": "4.3.0",
+          "System.Reflection.Emit": "4.3.0"
+        }
+      },
+      "Mapster.Core": {
+        "type": "Transitive",
+        "resolved": "1.2.0",
+        "contentHash": "TNdqZk2zAuBYfJF88D/3clQTOyOdqr1crU81yZQtlGa+e7FYWhJdK/buBWT+TpM3qQko9UzmzfOT4iq3JCs/ZA=="
+      },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -113,11 +79,6 @@
         "dependencies": {
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
-      },
-      "Microsoft.CodeCoverage": {
-        "type": "Transitive",
-        "resolved": "17.10.0",
-        "contentHash": "yC7oSlnR54XO5kOuHlVOKtxomNNN1BWXX8lK1G2jaPXT9sUok7kCOoA4Pgs0qyFaCtMrNsprztYMeoEGqCm4uA=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -264,6 +225,16 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
+      "Speckle.Revit.API": {
+        "type": "Transitive",
+        "resolved": "2023.0.0",
+        "contentHash": "tq40eD7psgTbV+epNouYyqfo6+hEi7FmXZqcxEOsAV7zfYyWhL6Rt3vmojkWGNuerGbH6oRI6KIIxrnlCNb8Hw=="
+      },
+      "Speckle.Revit2023.Interfaces": {
+        "type": "Transitive",
+        "resolved": "0.1.1-preview.0.24",
+        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
+      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -347,6 +318,11 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
+      "System.Reflection.Emit": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -414,6 +390,20 @@
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[2.0.999-local, )",
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+        }
+      },
+      "speckle.converters.common.dependencyinjection": {
+        "type": "Project",
+        "dependencies": {
+          "Speckle.Autofac": "[2.0.999-local, )",
+          "Speckle.Converters.Common": "[2.0.999-local, )"
+        }
+      },
+      "speckle.converters.revit2023": {
+        "type": "Project",
+        "dependencies": {
+          "Speckle.Converters.Common": "[2.0.999-local, )",
           "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
         }
       },
