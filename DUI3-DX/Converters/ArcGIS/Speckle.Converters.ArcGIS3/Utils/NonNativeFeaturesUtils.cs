@@ -119,14 +119,27 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     List<FieldDescription> fields = new(); // _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // delete FeatureClass if already exists
-    foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
+    try
     {
-      // will cause GeodatabaseCatalogDatasetException if doesn't exist in the database
-      if (fClassDefinition.GetName() == featureClassName)
+      FeatureClassDefinition fClassDefinition = geodatabase.GetDefinition<FeatureClassDefinition>(featureClassName);
+      FeatureClassDescription existingDescription = new(fClassDefinition);
+      schemaBuilder.Delete(existingDescription);
+      schemaBuilder.Build();
+    }
+    catch (Exception ex) when (!ex.IsFatal()) //(GeodatabaseTableException)
+    {
+      // "The table was not found."
+      // delete Table if already exists
+      try
       {
-        FeatureClassDescription existingDescription = new(fClassDefinition);
+        TableDefinition fClassDefinition = geodatabase.GetDefinition<TableDefinition>(featureClassName);
+        TableDescription existingDescription = new(fClassDefinition);
         schemaBuilder.Delete(existingDescription);
         schemaBuilder.Build();
+      }
+      catch (Exception ex2) when (!ex2.IsFatal()) //(GeodatabaseTableException)
+      {
+        // "The table was not found.", do nothing
       }
     }
 
