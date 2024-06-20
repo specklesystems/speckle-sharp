@@ -1,5 +1,4 @@
-﻿
-using Speckle.Rhino7.Interfaces;
+﻿using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 

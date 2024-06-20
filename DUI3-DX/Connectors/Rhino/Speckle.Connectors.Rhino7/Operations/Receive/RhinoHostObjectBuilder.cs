@@ -19,7 +19,9 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   public RhinoHostObjectBuilder(
     IRootToHostConverter converter,
     IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    GraphTraversal traverseFunction, IRhinoDocFactory rhinoDocFactory)
+    GraphTraversal traverseFunction,
+    IRhinoDocFactory rhinoDocFactory
+  )
   {
     _converter = converter;
     _contextStack = contextStack;
@@ -53,7 +55,11 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   private HostObjectBuilderResult BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
   {
     var doc = _contextStack.Current.Document;
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, _rhinoDocFactory.UnsetIntIndex);
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(
+      Guid.Empty,
+      baseLayerName,
+      _rhinoDocFactory.UnsetIntIndex
+    );
 
     // POC: We could move this out into a separate service for testing and re-use.
     // Cleans up any previously received objects
@@ -143,7 +149,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   private IRhinoGroup BakeObjectsAsGroup(string groupName, IEnumerable<IRhinoGeometryBase> list, int layerIndex)
   {
     var doc = _contextStack.Current.Document;
-    var objectIds = list.Select(obj => doc.Objects.Add(obj,_rhinoDocFactory.CreateAttributes(layerIndex)));
+    var objectIds = list.Select(obj => doc.Objects.Add(obj, _rhinoDocFactory.CreateAttributes(layerIndex)));
     var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
     var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
     return group;
