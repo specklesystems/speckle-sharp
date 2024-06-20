@@ -366,9 +366,11 @@ public sealed class ServerApi : IDisposable, IServerApi
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
     string objectsPostParameter = JsonConvert.SerializeObject(objectIds);
-    var payload = new Dictionary<string, string> { { "objects", objectsPostParameter } };
+    // var payload = new Dictionary<string, string> { { "objects", objectsPostParameter } };
+    var payload = new Dictionary<string, IReadOnlyList<string>> { { "objects", objectIds } };
     string serializedPayload = JsonConvert.SerializeObject(payload);
-    var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
+    // var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
+    var uri = new Uri($"/api/v2/projects/{streamId}/objects/diff/", UriKind.Relative);
 
     HttpResponseMessage response;
     using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
@@ -399,8 +401,11 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
+    // var uriString = $"/objects/{streamId}";
+    var uriString = $"/api/v2/projects/{streamId}/objects";
+
     using HttpRequestMessage message =
-      new() { RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative), Method = HttpMethod.Post };
+      new() { RequestUri = new Uri(uriString, UriKind.Relative), Method = HttpMethod.Post };
 
     MultipartFormDataContent multipart = new();
 
