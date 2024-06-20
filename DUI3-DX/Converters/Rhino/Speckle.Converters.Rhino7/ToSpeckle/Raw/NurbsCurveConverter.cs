@@ -40,10 +40,6 @@ public class NurbsCurveConverter : ITypedConverter<IRhinoNurbsCurve, SOG.Curve>
   public SOG.Curve Convert(IRhinoNurbsCurve target)
   {
     target.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
-    if (target.IsClosed)
-    {
-      poly.Add(poly[0]);
-    }
 
     SOG.Polyline displayValue = _polylineConverter.Convert(poly);
 

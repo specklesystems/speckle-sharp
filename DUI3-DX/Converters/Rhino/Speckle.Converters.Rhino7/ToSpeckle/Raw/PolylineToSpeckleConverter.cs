@@ -40,7 +40,7 @@ public class PolylineToSpeckleConverter
     var box = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.BoundingBox));
     var points = target.Select(pt => _pointConverter.Convert(pt)).ToList();
 
-    if (target.IsClosed)
+    if (points[0] == points[^1] && target.IsClosed)
     {
       points.RemoveAt(points.Count - 1);
     }
