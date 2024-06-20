@@ -1,6 +1,8 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
+using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
@@ -55,8 +57,7 @@ public sealed class ActiveUserResource
     const string QUERY = """
                           query User($projectsLimit : Int!) {
                            activeUser {
-                             projects(limit: $projectsLimit)
-                             {
+                             projects(limit: $projectsLimit) {
                                 totalCount
                                 items {
                                    id
@@ -80,5 +81,41 @@ public sealed class ActiveUserResource
       .ConfigureAwait(false);
 
     return response.activeUser.projects;
+  }
+
+  public async Task<List<Project>> FilterProjects(
+    UserProjectsFilter filter,
+    int limit = 10,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+                         query ProjectsFilter($filter: UserProjectsFilter!, $limit: Int!) {
+                           activeUser {
+                             projects(filter: $filter, limit: $limit) {
+                                totalCount
+                                items {
+                                   id
+                                   name
+                                   description
+                                   visibility
+                                   allowPublicComments
+                                   role
+                                   createdAt
+                                   updatedAt
+                                   sourceApps
+                                }
+                             }
+                           }
+                         }
+                         """;
+
+    var request = new GraphQLRequest { Query = QUERY, Variables = new { filter, limit } };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.activeUser.projects.items;
   }
 }

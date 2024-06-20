@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using GraphQL.Client.Http;
 using System.Linq;
+using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api.GraphQL;
 
@@ -13,7 +14,7 @@ public static class GraphQLHttpClientExtensions
   /// </summary>
   /// <param name="cancellationToken">[Optional] defaults to an empty cancellation token</param>
   /// <returns><see cref="Version"/> object excluding any strings (eg "2.7.2-alpha.6995" becomes "2.7.2.6995")</returns>
-  /// <exception cref="SpeckleGraphQLException"></exception>
+  /// <exception cref="SpeckleGraphQLException{ServerInfoResponse}"></exception>
   public static async Task<System.Version> GetServerVersion(
     this GraphQLHttpClient client,
     CancellationToken cancellationToken = default

@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
+using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Api;
 
@@ -14,6 +16,8 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the branches from</param>
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithModels)}")]
   public async Task<List<Branch>> StreamGetBranchesWithLimitRetry(string streamId, int commitsLimit = 10)
   {
     List<Branch> branches;
@@ -39,6 +43,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithModels)}")]
   public async Task<List<Branch>> StreamGetBranches(
     string streamId,
     int branchesLimit = 10,
@@ -88,6 +93,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns>The branch id.</returns>
   /// <seealso cref="GraphQL.Resources.ModelResource.Create"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Create)}")]
   public async Task<string> BranchCreate(BranchCreateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -110,6 +116,7 @@ public partial class Client
   /// <remarks>Updated to Model.GetWithVersions</remarks>
   /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
   /// <seealso cref="GraphQL.Resources.ModelResource.GetWithVersions"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Get)}")]
   public async Task<Branch> BranchGet(
     string streamId,
     string branchName,
@@ -160,6 +167,7 @@ public partial class Client
   /// <param name="modelId">Id of the model</param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Get)}")]
   public async Task<Branch> ModelGet(string projectId, string modelId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -197,6 +205,7 @@ public partial class Client
   /// <param name="branchInput"></param>
   /// <returns>The stream's id.</returns>
   /// <seealso cref="GraphQL.Resources.ModelResource.Update"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Update)}")]
   public async Task<bool> BranchUpdate(BranchUpdateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -216,6 +225,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ModelResource.Delete"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Delete)}")]
   public async Task<bool> BranchDelete(BranchDeleteInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

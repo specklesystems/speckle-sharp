@@ -41,3 +41,5 @@ public sealed record ProjectUpdateInput(
 
 //TODO: can we enum the role?
 public sealed record ProjectUpdateRoleInput(string userId, string projectId, string? role);
+
+public sealed record UserProjectsFilter(string search, IReadOnlyList<string>? onlyWithRoles = null);

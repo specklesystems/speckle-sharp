@@ -16,7 +16,6 @@ public sealed class ProjectResource
     _client = client;
   }
 
-  //TODO: Figure out operation name, should we use the `GraphQLRequest` ctor arg or bake in string?
   public async Task<Project> Get(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -186,9 +185,9 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectUpdate($update: ProjectUpdateInput!) {
-                           data:projectMutations{
-                             update(update: $update) {
+                         mutation ProjectUpdate($input: ProjectUpdateInput!) {
+                           projectMutations{
+                             update(update: $input) {
                                id
                                name
                                description
@@ -222,9 +221,9 @@ public sealed class ProjectResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { deleteId } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["projectMutations"];
+    return response.projectMutations.delete;
   }
 
   public async Task<Project> UpdateRole(ProjectUpdateRoleInput input, CancellationToken cancellationToken = default)

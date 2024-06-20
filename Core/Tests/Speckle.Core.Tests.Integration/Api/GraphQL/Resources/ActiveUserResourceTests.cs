@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using NUnit.Framework.Internal;
-using Speckle.Core.Api;
+﻿using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
 
@@ -19,12 +17,12 @@ public class ActiveUserResourceTests : ResourcesTests
   }
 
   [Test]
-  public static void ActiveUserGet_NonAuthed()
+  public void ActiveUserGet_NonAuthed()
   {
     //TODO: Exceptional cases
-    // using Client unauthed = new(new() {serverInfo = new(){url=FirstUser.}});
-    //
-    // Assert.ThrowsAsync<Exception>(async () => _ = await unauthed.ActiveUser.Get()); //TODO: check behaviour
+    using Client unauthed = new(new() { serverInfo = new() { url = FirstUser.ServerUrl } });
+
+    Assert.ThrowsAsync<SpeckleGraphQLException<ActiveUserData>>(async () => _ = await unauthed.ActiveUser.Get()); //TODO: check behaviour
   }
 
   [Test]

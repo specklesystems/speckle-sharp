@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api;
@@ -55,6 +56,7 @@ public partial class Client
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.Get"/>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithModels)}")]
   public async Task<Stream> StreamGet(string id, int branchesLimit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -103,6 +105,8 @@ public partial class Client
   /// <param name="limit">Max number of streams to return</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="ActiveUserResource.GetProjects"/>
+  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.GetProjects)}")]
   public async Task<List<Stream>> StreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -157,6 +161,7 @@ public partial class Client
     return res.activeUser.streams.items;
   }
 
+  //TODO: API GAP
   /// <summary>
   /// Gets all favorite streams for the current user
   /// </summary>
@@ -217,6 +222,8 @@ public partial class Client
   /// <param name="limit">Max number of streams to return</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ActiveUserResource.FilterProjects"/>
+  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.FilterProjects)}")]
   public async Task<List<Stream>> StreamSearch(
     string query,
     int limit = 10,
@@ -262,6 +269,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.Create"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.Create)}")]
   public async Task<string> StreamCreate(StreamCreateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -280,6 +288,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.Update"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.Update)}")]
   public async Task<bool> StreamUpdate(StreamUpdateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -300,6 +309,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.Delete"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.Delete)}")]
   public async Task<bool> StreamDelete(string id, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -343,6 +353,7 @@ public partial class Client
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
   /// <seealso cref="GraphQL.Resources.ProjectResource.UpdateRole"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.UpdateRole)}")]
   public async Task<bool> StreamUpdatePermission(
     StreamPermissionInput updatePermissionInput,
     CancellationToken cancellationToken = default
@@ -370,6 +381,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithTeam"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithTeam)}")]
   public async Task<Stream> StreamGetPendingCollaborators(
     string streamId,
     CancellationToken cancellationToken = default
@@ -405,6 +417,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Create"/>
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Create)}")]
   public async Task<bool> StreamInviteCreate(
     StreamInviteCreateInput inviteCreateInput,
     CancellationToken cancellationToken = default
@@ -437,6 +450,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Cancel"/>
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Cancel)}")]
   public async Task<bool> StreamInviteCancel(
     string streamId,
     string inviteId,
@@ -467,6 +481,7 @@ public partial class Client
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Use)}")]
   public async Task<bool> StreamInviteUse(
     string streamId,
     string token,
@@ -499,6 +514,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithTeam"/>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithTeam)}")]
   public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

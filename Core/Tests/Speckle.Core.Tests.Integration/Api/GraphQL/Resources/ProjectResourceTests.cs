@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Api.GraphQL.Enums;
+﻿using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
@@ -30,6 +31,7 @@ public class ProjectResourceTests : ResourcesTests
   [Test, Order(20)]
   public async Task ProjectGet()
   {
+    await ProjectCreate();
     Project result = await Sut.Get(_project.id);
 
     Assert.That(result.id, Is.EqualTo(_project.id));
@@ -42,6 +44,8 @@ public class ProjectResourceTests : ResourcesTests
   [Test, Order(30)]
   public async Task ProjectUpdate()
   {
+    await ProjectCreate();
+
     const string NEW_NAME = "MY new name";
     const string NEW_DESCRIPTION = "MY new name";
     const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Public;
@@ -62,6 +66,8 @@ public class ProjectResourceTests : ResourcesTests
   [TestCase(null)] //Revoke access
   public async Task ProjectUpdateRole(string newRole)
   {
+    await ProjectCreate();
+
     //TODO: figure out if this test could work, we may need to invite the user first...
     ProjectUpdateRoleInput input = new(SecondUser.Account.userInfo.id, _project.id, newRole);
     _ = await Sut.UpdateRole(input);
@@ -73,9 +79,11 @@ public class ProjectResourceTests : ResourcesTests
   [Test, Order(100)]
   public async Task ProjectDelete()
   {
+    await ProjectCreate();
+
     bool response = await Sut.Delete(_project.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<Exception>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
+    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectData>>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
   }
 }

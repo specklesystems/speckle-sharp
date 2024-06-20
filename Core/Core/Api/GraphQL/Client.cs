@@ -177,7 +177,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
         typeof(T).Name,
         ex.Message
       );
-      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", ex, request, null);
+      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", request, null, ex);
     }
     finally
     {
@@ -353,9 +353,9 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
         );
         throw new SpeckleGraphQLException<T>(
           "The graphql request failed without a graphql response",
-          ex,
           request,
-          null
+          null,
+          ex
         );
       }
     }

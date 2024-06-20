@@ -8,6 +8,7 @@ namespace Speckle.Core.Api;
 
 public partial class Client
 {
+  //TODO: API gap
   /// <summary>
   /// Gets the activity of a stream
   /// </summary>

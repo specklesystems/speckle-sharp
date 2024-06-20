@@ -4,9 +4,9 @@ using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
 using Speckle.Core.Transports;
 
-namespace Speckle.Core.Tests.Integration;
+namespace Speckle.Core.Tests.Integration.Api;
 
-public class Api : IDisposable
+public class Legacy : IDisposable
 {
   private string _branchId = "";
   private string _branchName = "";

@@ -25,6 +25,7 @@ public class ProjectMutation
 {
   public Project create { get; init; }
   public Project update { get; init; }
+  public bool delete { get; init; }
   public ProjectInviteMutation invites { get; init; }
 }
 

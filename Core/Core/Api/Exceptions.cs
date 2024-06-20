@@ -9,24 +9,17 @@ namespace Speckle.Core.Api;
 /// <summary>
 /// Base class for GraphQL API exceptions
 /// </summary>
-public class SpeckleGraphQLException<T> : SpeckleException
+public class SpeckleGraphQLException<T> : SpeckleGraphQLException
 {
-  private readonly GraphQLRequest _request;
-  public GraphQLResponse<T>? Response { get; }
+  public new GraphQLResponse<T>? Response => (GraphQLResponse<T>?)base.Response;
 
-  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<T>? response)
-    : base(message)
-  {
-    _request = request;
-    Response = response;
-  }
-
-  public SpeckleGraphQLException(string message, Exception inner, GraphQLRequest request, GraphQLResponse<T>? response)
-    : this(message, inner)
-  {
-    _request = request;
-    Response = response;
-  }
+  public SpeckleGraphQLException(
+    string message,
+    GraphQLRequest request,
+    GraphQLResponse<T>? response,
+    Exception? innerException = null
+  )
+    : base(message, request, response, innerException) { }
 
   public SpeckleGraphQLException() { }
 
@@ -35,24 +28,36 @@ public class SpeckleGraphQLException<T> : SpeckleException
 
   public SpeckleGraphQLException(string message, Exception innerException)
     : base(message, innerException) { }
+}
+
+public class SpeckleGraphQLException : SpeckleException
+{
+  private readonly GraphQLRequest _request;
+  public IGraphQLResponse? Response { get; }
 
   public IEnumerable<string> ErrorMessages =>
     Response?.Errors != null ? Response.Errors.Select(e => e.Message) : Enumerable.Empty<string>();
 
   public IDictionary<string, object>? Extensions => Response?.Extensions;
-}
 
-public class SpeckleGraphQLException : SpeckleGraphQLException<object>
-{
-  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<object>? response)
-    : base(message, request, response) { }
+  public SpeckleGraphQLException(
+    string? message,
+    GraphQLRequest request,
+    IGraphQLResponse? response,
+    Exception? innerException = null
+  )
+    : base(message, innerException)
+  {
+    _request = request;
+    Response = response;
+  }
 
   public SpeckleGraphQLException() { }
 
-  public SpeckleGraphQLException(string message)
+  public SpeckleGraphQLException(string? message)
     : base(message) { }
 
-  public SpeckleGraphQLException(string message, Exception innerException)
+  public SpeckleGraphQLException(string? message, Exception? innerException)
     : base(message, innerException) { }
 }
 

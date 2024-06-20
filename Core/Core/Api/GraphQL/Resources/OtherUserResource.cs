@@ -20,16 +20,16 @@ public sealed class OtherUserResource
     //language=graphql
     const string QUERY = """
                          query LimitedUser($id: String!) {
-                                               otherUser(id: $id){
-                                                 id,
-                                                 name,
-                                                 bio,
-                                                 company,
-                                                 avatar,
-                                                 verified,
-                                                 role,
-                                               }
-                                             }
+                           otherUser(id: $id){
+                             id,
+                             name,
+                             bio,
+                             company,
+                             avatar,
+                             verified,
+                             role,
+                           }
+                         }
                          """;
 
     var request = new GraphQLRequest { Query = QUERY, Variables = new { id } };

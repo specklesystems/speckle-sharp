@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
+using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Api;
 
@@ -15,6 +17,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.Get"/>
+  [Obsolete($"Use client.{nameof(Version)}.{nameof(VersionResource.Get)}")]
   public async Task<Commit> CommitGet(string streamId, string commitId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -50,6 +53,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns>The requested commits</returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.GetVersions"/>
+  [Obsolete($"Use client.{nameof(Version)}.{nameof(VersionResource.GetVersions)}")]
   public async Task<List<Commit>> StreamGetCommits(
     string streamId,
     int limit = 10,
