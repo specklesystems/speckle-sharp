@@ -65,9 +65,9 @@
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.25, )",
-        "resolved": "0.1.1-preview.0.25",
-        "contentHash": "K22SbzxnujxU/elofcsYceLQ2G2ketJWGSM39I+k6IcvRvcy/az5X1fjhzrYtzC0Y+/2aqm0oqydFP+3FROJjg=="
+        "requested": "[0.1.1-preview.0.26, )",
+        "resolved": "0.1.1-preview.0.26",
+        "contentHash": "bh9v0aQYuy7jlvtiOAZCOFa1NxQHpQUUAeM/wM+imQeiMw/6xhlBx5yT/15N1CL6JJzchKRzTAnK4xDk9WKCmw=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -504,7 +504,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.25, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.26, )"
         }
       },
       "Speckle.Core": {
