@@ -8,17 +8,17 @@
         "resolved": "1.14.1",
         "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
-      "RhinoCommon": {
-        "type": "Direct",
-        "requested": "[7.13.21348.13001, )",
-        "resolved": "7.13.21348.13001",
-        "contentHash": "JQdaNw61ddBqIe08E9O4N/grwrN1hjDHcYW7tWylwCZyFR7SepoCD4NS+6LN6+oSQhNbhLi9Bf+hQOFYFdRAEA=="
-      },
       "Speckle.InterfaceGenerator": {
         "type": "Direct",
         "requested": "[0.9.5, )",
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
+      },
+      "Speckle.Rhino7.Interfaces": {
+        "type": "Direct",
+        "requested": "[0.1.1-preview.0.27, )",
+        "resolved": "0.1.1-preview.0.27",
+        "contentHash": "/W0fXXPDb97aV/6mBdUbPE+kvfqg4s7cdxqhVB3JhMmSzdf27RULslD7R/dYIYFuLnmAB3iQgdz53YMVtMrRfg=="
       },
       "GraphQL.Client": {
         "type": "Transitive",
@@ -205,11 +205,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit2023.Interfaces": {
-        "type": "Transitive",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -359,8 +354,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
@@ -373,8 +367,8 @@
       "speckle.converters.rhino7": {
         "type": "Project",
         "dependencies": {
-          "RhinoCommon": "[7.13.21348.13001, )",
-          "Speckle.Converters.Common": "[2.0.999-local, )"
+          "Speckle.Converters.Common": "[2.0.999-local, )",
+          "Speckle.Rhino7.Interfaces": "[0.1.1-preview.0.27, )"
         }
       },
       "Speckle.Core": {
