@@ -15,7 +15,11 @@ public class RhinoSelectionBinding : ISelectionBinding
   public string Name => "selectionBinding";
   public IBridge Parent { get; }
 
-  public RhinoSelectionBinding(IRhinoIdleManager idleManager, IBridge parent, ITopLevelExceptionHandler topLevelExceptionHandler)
+  public RhinoSelectionBinding(
+    IRhinoIdleManager idleManager,
+    IBridge parent,
+    ITopLevelExceptionHandler topLevelExceptionHandler
+  )
   {
     _idleManager = idleManager;
     _topLevelExceptionHandler = topLevelExceptionHandler;
