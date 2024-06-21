@@ -2,6 +2,7 @@ using System.Reflection;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
+using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -58,7 +59,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model) => _store.RemoveModel(model);
 
-  public void HighlightObjects(List<string> objectIds) => HighlightObjectsOnView(objectIds);
+  public void HighlightObjects(List<string> objectIds) =>
+    HighlightObjectsOnView(objectIds.Select(x => new ObjectID(x)).ToList());
 
   public void HighlightModel(string modelCardId)
   {
@@ -69,16 +71,16 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       return;
     }
 
-    var objectIds = new List<string>();
+    var objectIds = new List<ObjectID>();
 
     if (model is SenderModelCard senderModelCard)
     {
-      objectIds = senderModelCard.SendFilter.NotNull().GetObjectIds();
+      objectIds = senderModelCard.SendFilter.NotNull().GetObjectIds().Select(x => new ObjectID(x)).ToList();
     }
 
     if (model is ReceiverModelCard receiverModelCard)
     {
-      objectIds = receiverModelCard.BakedObjectIds.NotNull();
+      objectIds = receiverModelCard.BakedObjectIds.NotNull().Select(x => new ObjectID(x)).ToList();
     }
 
     if (objectIds is null)
@@ -88,42 +90,44 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     HighlightObjectsOnView(objectIds);
   }
 
-  private async void HighlightObjectsOnView(List<string> objectIds)
+  private async void HighlightObjectsOnView(List<ObjectID> objectIds)
   {
     MapView mapView = MapView.Active;
 
     await QueuedTask
       .Run(() =>
       {
-        List<MapMember> mapMembers = GetMapMembers(objectIds, mapView);
+        List<ObjectID> objectIdAndmapMembers = GetMapMembers(objectIds, mapView);
         ClearSelectionInTOC();
         ClearSelection();
-        SelectMapMembersInTOC(mapMembers);
-        SelectMapMembers(mapMembers);
+        SelectMapMembersInTOC(objectIdAndmapMembers);
+        SelectMapMembers(objectIdAndmapMembers);
         mapView.ZoomToSelected();
       })
       .ConfigureAwait(false);
   }
 
-  private List<MapMember> GetMapMembers(List<string> objectIds, MapView mapView)
+  private List<ObjectID> GetMapMembers(List<ObjectID> objectIds, MapView mapView)
   {
-    List<MapMember> mapMembers = new();
+    List<ObjectID> objectIdAndmapMembers = new();
 
-    foreach (string objectId in objectIds)
+    foreach (ObjectID objectId in objectIds)
     {
-      MapMember mapMember = mapView.Map.FindLayer(objectId);
+      MapMember mapMember = mapView.Map.FindLayer(objectId.MappedLayerURI);
       if (mapMember is null)
       {
-        mapMember = mapView.Map.FindStandaloneTable(objectId);
+        mapMember = mapView.Map.FindStandaloneTable(objectId.MappedLayerURI);
       }
       if (mapMember is null)
       {
         continue;
       }
-      mapMembers.Add(mapMember);
+
+      ObjectID newObjectId = new(objectId.MappedLayerURI, objectId.FeatureId, mapMember);
+      objectIdAndmapMembers.Add(newObjectId);
     }
 
-    return mapMembers;
+    return objectIdAndmapMembers;
   }
 
   private void ClearSelection()
@@ -143,10 +147,16 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     MapView.Active.ClearTOCSelection();
   }
 
-  private void SelectMapMembers(List<MapMember> mapMembers)
+  private void SelectMapMembers(List<ObjectID> objectIdAndmapMembers)
   {
-    foreach (var member in mapMembers)
+    foreach (ObjectID objectId in objectIdAndmapMembers)
     {
+      if (objectId.MapMember == null)
+      {
+        continue;
+      }
+
+      MapMember member = objectId.MapMember;
       if (member is FeatureLayer layer)
       {
         layer.Select();
@@ -154,13 +164,19 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     }
   }
 
-  private void SelectMapMembersInTOC(List<MapMember> mapMembers)
+  private void SelectMapMembersInTOC(List<ObjectID> objectIdAndmapMembers)
   {
     List<Layer> layers = new();
     List<StandaloneTable> tables = new();
 
-    foreach (MapMember member in mapMembers)
+    foreach (ObjectID objectId in objectIdAndmapMembers)
     {
+      if (objectId.MapMember == null)
+      {
+        continue;
+      }
+
+      MapMember member = objectId.MapMember;
       if (member is Layer layer)
       {
         if (member is not GroupLayer) // group layer selection clears other layers selection

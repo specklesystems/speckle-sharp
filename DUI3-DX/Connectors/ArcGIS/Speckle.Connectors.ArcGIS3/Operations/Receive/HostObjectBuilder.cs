@@ -117,7 +117,13 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       else if (trackerItem.DatasetId == null)
       {
         results.Add(
-          new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Unknown error: Dataset not created"))
+          new(
+            Status.ERROR,
+            trackerItem.Base,
+            null,
+            null,
+            new ArgumentException($"Unknown error: Dataset not created for {trackerItem.Base.speckle_type}")
+          )
         );
       }
       else if (bakedMapMembers.TryGetValue(trackerItem.DatasetId, out MapMember? value))
@@ -155,12 +161,18 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     if (trackerItem.MappedLayerURI == null)
     {
       results.Add(
-        new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Created Layer URI not found"))
+        new(
+          Status.ERROR,
+          trackerItem.Base,
+          null,
+          null,
+          new ArgumentException($"Created Layer URI not found for {trackerItem.Base.speckle_type}")
+        )
       );
     }
     else
     {
-      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow);
+      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow, null);
       if (trackerItem.HostAppGeom != null) // individual hostAppGeometry
       {
         results.Add(
