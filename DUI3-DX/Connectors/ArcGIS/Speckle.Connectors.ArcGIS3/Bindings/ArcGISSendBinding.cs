@@ -31,6 +31,7 @@ public sealed class ArcGISSendBinding : ISendBinding
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -45,7 +46,8 @@ public sealed class ArcGISSendBinding : ISendBinding
     IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;
@@ -53,6 +55,7 @@ public sealed class ArcGISSendBinding : ISendBinding
     _sendFilters = sendFilters.ToList();
     _cancellationManager = cancellationManager;
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
     SubscribeToArcGISEvents();
@@ -60,17 +63,40 @@ public sealed class ArcGISSendBinding : ISendBinding
 
   private void SubscribeToArcGISEvents()
   {
-    LayersRemovedEvent.Subscribe(GetIdsForLayersRemovedEvent, true);
-    StandaloneTablesRemovedEvent.Subscribe(GetIdsForStandaloneTablesRemovedEvent, true);
-    MapPropertyChangedEvent.Subscribe(GetIdsForMapPropertyChangedEvent, true); // Map units, CRS etc.
-    MapMemberPropertiesChangedEvent.Subscribe(GetIdsForMapMemberPropertiesChangedEvent, true); // e.g. Layer name
+    LayersRemovedEvent.Subscribe(
+      a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForLayersRemovedEvent(a)),
+      true
+    );
 
-    ActiveMapViewChangedEvent.Subscribe(SubscribeToMapMembersDataSourceChange, true);
-    LayersAddedEvent.Subscribe(GetIdsForLayersAddedEvent, true);
-    StandaloneTablesAddedEvent.Subscribe(GetIdsForStandaloneTablesAddedEvent, true);
+    StandaloneTablesRemovedEvent.Subscribe(
+      a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForStandaloneTablesRemovedEvent(a)),
+      true
+    );
+
+    MapPropertyChangedEvent.Subscribe(
+      a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForMapPropertyChangedEvent(a)),
+      true
+    ); // Map units, CRS etc.
+
+    MapMemberPropertiesChangedEvent.Subscribe(
+      a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForMapMemberPropertiesChangedEvent(a)),
+      true
+    ); // e.g. Layer name
+
+    ActiveMapViewChangedEvent.Subscribe(
+      _ => _topLevelExceptionHandler.CatchUnhandled(SubscribeToMapMembersDataSourceChange),
+      true
+    );
+
+    LayersAddedEvent.Subscribe(a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForLayersAddedEvent(a)), true);
+
+    StandaloneTablesAddedEvent.Subscribe(
+      a => _topLevelExceptionHandler.CatchUnhandled(() => GetIdsForStandaloneTablesAddedEvent(a)),
+      true
+    );
   }
 
-  private void SubscribeToMapMembersDataSourceChange(ActiveMapViewChangedEventArgs args)
+  private void SubscribeToMapMembersDataSourceChange()
   {
     var task = QueuedTask.Run(() =>
     {
