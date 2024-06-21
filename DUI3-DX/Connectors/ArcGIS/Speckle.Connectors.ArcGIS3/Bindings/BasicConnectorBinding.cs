@@ -1,4 +1,6 @@
 using System.Reflection;
+using ArcGIS.Core.Data;
+using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
@@ -101,7 +103,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
         ClearSelectionInTOC();
         ClearSelection();
         SelectMapMembersInTOC(objectIdAndmapMembers);
-        SelectMapMembers(objectIdAndmapMembers);
+        SelectMapMembersAndFeatures(objectIdAndmapMembers);
         mapView.ZoomToSelected();
       })
       .ConfigureAwait(false);
@@ -147,7 +149,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     MapView.Active.ClearTOCSelection();
   }
 
-  private void SelectMapMembers(List<ObjectID> objectIdAndmapMembers)
+  private void SelectMapMembersAndFeatures(List<ObjectID> objectIdAndmapMembers)
   {
     foreach (ObjectID objectId in objectIdAndmapMembers)
     {
@@ -159,7 +161,32 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       MapMember member = objectId.MapMember;
       if (member is FeatureLayer layer)
       {
-        layer.Select();
+        // select full layer if featureID not specified
+        if (objectId.FeatureId == null)
+        {
+          layer.Select();
+        }
+        else
+        {
+          using (RowCursor rowCursor = layer.Search())
+          {
+            int index = 0;
+            while (rowCursor.MoveNext())
+            {
+              if (index == objectId.FeatureId)
+              {
+                //Get the shape from the row and set extent
+                using (var feature = rowCursor.Current as Feature)
+                {
+                  Geometry? geometry = feature?.GetShape();
+                  MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
+                }
+                break;
+              }
+              index += 1;
+            }
+          }
+        }
       }
     }
   }
