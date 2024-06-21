@@ -45,7 +45,7 @@ public class BasicConnectorBindingCommands
   private const string NOTIFY_DOCUMENT_CHANGED_EVENT_NAME = "documentChanged";
   private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
-  private const string SET_GLOBAL_NOTIFICATION = "setGlobalNotification";
+  internal const string SET_GLOBAL_NOTIFICATION = "setGlobalNotification";
 
   protected IBridge Bridge { get; }
 

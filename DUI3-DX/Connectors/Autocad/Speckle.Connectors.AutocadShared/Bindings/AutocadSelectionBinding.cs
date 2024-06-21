@@ -8,20 +8,24 @@ namespace Speckle.Connectors.Autocad.Bindings;
 public class AutocadSelectionBinding : ISelectionBinding
 {
   private const string SELECTION_EVENT = "setSelection";
-
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
   private readonly HashSet<Document> _visitedDocuments = new();
+
   public string Name => "selectionBinding";
+
   public IBridge Parent { get; }
 
-  public AutocadSelectionBinding(IBridge parent)
+  public AutocadSelectionBinding(IBridge parent, ITopLevelExceptionHandler topLevelExceptionHandler)
   {
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
 
     // POC: Use here Context for doc. In converters it's OK but we are still lacking to use context into bindings.
     // It is with the case of if binding created with already a document
     // This is valid when user opens acad file directly double clicking
     TryRegisterDocumentForSelection(Application.DocumentManager.MdiActiveDocument);
-    Application.DocumentManager.DocumentActivated += (sender, e) => OnDocumentChanged(e.Document);
+    Application.DocumentManager.DocumentActivated += (_, e) =>
+      _topLevelExceptionHandler.CatchUnhandled(() => OnDocumentChanged(e.Document));
   }
 
   private void OnDocumentChanged(Document? document) => TryRegisterDocumentForSelection(document);
@@ -36,9 +40,7 @@ public class AutocadSelectionBinding : ISelectionBinding
     if (!_visitedDocuments.Contains(document))
     {
       document.ImpliedSelectionChanged += (_, _) =>
-      {
-        Parent.RunOnMainThread(OnSelectionChanged);
-      };
+        _topLevelExceptionHandler.CatchUnhandled(() => Parent.RunOnMainThread(OnSelectionChanged));
 
       _visitedDocuments.Add(document);
     }
