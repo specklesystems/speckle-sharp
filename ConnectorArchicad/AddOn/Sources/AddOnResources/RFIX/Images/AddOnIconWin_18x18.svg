@@ -1,0 +1,17 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 159 159" width="159" height="159">
+	<title>AddOnIconWin_18x18-svg</title>
+	<style>
+		.s0 { fill: #2464eb } 
+		.s1 { fill: #7abbff } 
+		.s2 { fill: #1c4ed8 } 
+	</style>
+	<g id="Layer">
+		<g id="Layer">
+			<g id="Layer">
+				<path id="Layer" fill-rule="evenodd" class="s0" d="m142.7 33.6l-105.8 5.8v105.5l105.8-5.8z" style="fill:#2464eb;"/>
+				<path id="Layer" fill-rule="evenodd" class="s1" d="m120.8 14l-105.8 5.8 21.9 19.6 105.8-5.8z" style="fill:#7abbff;"/>
+				<path id="Layer" fill-rule="evenodd" class="s2" d="m36.9 39.4l-21.9-19.6v105.5l21.9 19.6z" style="fill:#1c4ed8;"/>
+			</g>
+		</g>
+	</g>
+</svg>
