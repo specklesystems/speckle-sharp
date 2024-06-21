@@ -11,6 +11,7 @@ using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
 using RasterLayer = Objects.GIS.RasterLayer;
+using Speckle.Connectors.ArcGIS.Utils;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -151,23 +152,37 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private void AddResultsFromTracker(ObjectConversionTracker trackerItem, List<ReceiveConversionResult> results)
   {
-    // prioritize individual hostAppGeometry type, if available:
-    if (trackerItem.HostAppGeom != null)
+    if (trackerItem.MappedLayerURI == null)
     {
       results.Add(
-        new(Status.SUCCESS, trackerItem.Base, trackerItem.MappedLayerURI, trackerItem.HostAppGeom.GetType().ToString())
+        new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Created Layer URI not found"))
       );
     }
     else
     {
-      results.Add(
-        new(
-          Status.SUCCESS,
-          trackerItem.Base,
-          trackerItem.MappedLayerURI,
-          trackerItem.HostAppMapMember?.GetType().ToString()
-        )
-      );
+      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow);
+      if (trackerItem.HostAppGeom != null) // individual hostAppGeometry
+      {
+        results.Add(
+          new(
+            Status.SUCCESS,
+            trackerItem.Base,
+            objectId.ObjectIdToString(),
+            trackerItem.HostAppGeom.GetType().ToString()
+          )
+        );
+      }
+      else // hostApp Layers
+      {
+        results.Add(
+          new(
+            Status.SUCCESS,
+            trackerItem.Base,
+            objectId.ObjectIdToString(),
+            trackerItem.HostAppMapMember?.GetType().ToString()
+          )
+        );
+      }
     }
   }
 
