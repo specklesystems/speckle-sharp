@@ -557,9 +557,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B1324D25
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Revit2023.Tests", "DUI3-DX\Converters\Revit\Speckle.Converters.Revit2023.Tests\Speckle.Converters.Revit2023.Tests.csproj", "{AEC26A0B-25F3-4544-A9D6-A427BFF79250}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Civil3d2024", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.Civil3d2024\Speckle.Connectors.Civil3d2024.csproj", "{B5A077DF-ED31-4784-8D0B-72BB0471058C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Common.Tests", "DUI3-DX\Sdk\Speckle.Converters.Common.Tests\Speckle.Converters.Common.Tests.csproj", "{95E23A97-E5EA-4506-A52C-D3DA9012DA02}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Civil3d2024", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.Civil3d2024\Speckle.Connectors.Civil3d2024.csproj", "{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2811,22 +2811,6 @@ Global
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.ActiveCfg = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.Build.0 = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|x64.Build.0 = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|x64.Build.0 = Debug|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|Any CPU.Build.0 = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|x64.ActiveCfg = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|x64.Build.0 = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|x64.ActiveCfg = Release|Any CPU
-		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|x64.Build.0 = Release|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
@@ -2843,6 +2827,22 @@ Global
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|Any CPU.Build.0 = Release|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|x64.ActiveCfg = Release|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Release|x64.Build.0 = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Debug|x64.Build.0 = Debug|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release Mac|x64.Build.0 = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release|x64.ActiveCfg = Release|Any CPU
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3056,6 +3056,7 @@ Global
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250} = {D92751C8-1039-4005-90B2-913E55E0B8BD}
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02} = {2E00592E-558D-492D-88F9-3ECEE4C0C7DA}
+		{DDBBA313-69A6-40DE-AB3A-79EE5BF32A7E} = {743489BF-1941-43D5-8AF9-35C56D0DCC34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
@@ -3154,7 +3155,6 @@ Global
 		Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{adfa7990-c2e7-49da-b726-bfe19e08ccca}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{b47492d9-2eda-4016-a930-7fa708c85c3d}*SharedItemsImports = 13
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{b4d6f6dc-0712-4f9f-a24f-6b76dae84b6f}*SharedItemsImports = 5
-		DUI3-DX\Connectors\Autocad\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.projitems*{b5a077df-ed31-4784-8d0b-72bb0471058c}*SharedItemsImports = 5
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
 		ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{b81e0f77-1abd-4941-9d76-c0dc6b1b6b82}*SharedItemsImports = 5
@@ -3175,6 +3175,7 @@ Global
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d9f443b5-c55b-4ad8-9c70-bc3d2be781be}*SharedItemsImports = 5
 		DUI3-DX\Connectors\Revit\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems*{dc570fff-6fe5-47bd-8bc1-b471a6067786}*SharedItemsImports = 13
+		DUI3-DX\Connectors\Autocad\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.projitems*{ddbba313-69a6-40de-ab3a-79ee5bf32a7e}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{debc2174-5e31-4b6e-8680-690d75e50e2d}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 5
 		DUI3-DX\Converters\Revit\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems*{e1c43415-3200-45f4-8bf9-a4dd7d7f2ed6}*SharedItemsImports = 13
