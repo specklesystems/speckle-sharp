@@ -5,7 +5,6 @@ using Speckle.Connectors.Autocad.Bindings;
 using Speckle.Connectors.Autocad.Filters;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.Autocad.Interfaces;
-using Speckle.Connectors.Autocad.Operations.Receive;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.Autocad.Plugin;
 using Speckle.Connectors.DUI;
@@ -19,7 +18,7 @@ using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Speckle.Connectors.Civil3d.DependencyInjection;
+namespace Speckle.Connectors.Autocad.DependencyInjection;
 
 public class Civil3dConnectorModule : ISpeckleModule
 {
@@ -44,7 +43,6 @@ public class Civil3dConnectorModule : ISpeckleModule
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     // Object Builders
-    builder.AddScoped<IHostObjectBuilder, AutocadHostObjectBuilder>();
     builder.AddScoped<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
 
     // Register bindings

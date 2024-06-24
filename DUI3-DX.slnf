@@ -19,6 +19,8 @@
       "DUI3-DX\\Converters\\ArcGIS\\Speckle.Converters.ArcGIS3\\Speckle.Converters.ArcGIS3.csproj",
       "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2023.DependencyInjection\\Speckle.Converters.Autocad2023.DependencyInjection.csproj",
       "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2023\\Speckle.Converters.Autocad2023.csproj",
+      "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2024.DependencyInjection\\Speckle.Converters.Autocad2024.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2024\\Speckle.Converters.Autocad2024.csproj",
       "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.AutocadShared\\Speckle.Converters.AutocadShared.shproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.DependencyInjection\\Speckle.Converters.Revit2023.DependencyInjection.csproj",
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.Tests\\Speckle.Converters.Revit2023.Tests.csproj",
