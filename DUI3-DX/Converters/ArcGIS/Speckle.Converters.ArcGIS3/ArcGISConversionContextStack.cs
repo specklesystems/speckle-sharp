@@ -5,6 +5,7 @@ using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3;
 
@@ -13,12 +14,14 @@ public class ArcGISDocument
   public Project Project { get; }
   public Map Map { get; }
   public Uri SpeckleDatabasePath { get; }
+  public SpatialReference IncomingSpatialReference { get; set; }
 
   public ArcGISDocument()
   {
     Project = Project.Current;
     Map = MapView.Active.Map;
     SpeckleDatabasePath = EnsureOrAddSpeckleDatabase();
+    IncomingSpatialReference = MapView.Active.Map.SpatialReference;
   }
 
   private const string FGDB_NAME = "Speckle.gdb";

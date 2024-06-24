@@ -47,6 +47,17 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
+    // Receive geo-located data in the correct place
+    // 1. From Revit
+    CRSorigin? dataOrigin = CRSorigin.FromRevitData(rootObject);
+
+    // save SpatialReference, use it for dataset writing
+    if (dataOrigin is CRSorigin crsOrigin)
+    {
+      SpatialReference incomingSpatialRef = crsOrigin.CreateCustomCRS();
+      _contextStack.Current.Document.IncomingSpatialReference = incomingSpatialRef;
+    }
+
     var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
       .Where(ctx => ctx.Current is not Collection || IsGISType(ctx.Current))

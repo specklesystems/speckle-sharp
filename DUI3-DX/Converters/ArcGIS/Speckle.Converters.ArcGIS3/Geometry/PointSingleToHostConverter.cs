@@ -18,7 +18,10 @@ public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
 
   public ACG.MapPoint Convert(SOG.Point target)
   {
-    double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
+    double scaleFactor = Units.GetConversionFactor(
+      target.units,
+      _contextStack.Current.Document.IncomingSpatialReference.Unit.ToString()
+    );
     return new ACG.MapPointBuilderEx(
       target.x * scaleFactor,
       target.y * scaleFactor,
