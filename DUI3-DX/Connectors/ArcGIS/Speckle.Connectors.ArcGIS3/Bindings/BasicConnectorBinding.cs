@@ -1,6 +1,5 @@
 using System.Reflection;
 using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
@@ -99,11 +98,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     await QueuedTask
       .Run(() =>
       {
-        List<ObjectID> objectIdAndmapMembers = GetMapMembers(objectIds, mapView);
+        List<ObjectID> objectIdAndMapMembers = GetMapMembers(objectIds, mapView);
         ClearSelectionInTOC();
         ClearSelection();
-        SelectMapMembersInTOC(objectIdAndmapMembers);
-        SelectMapMembersAndFeatures(objectIdAndmapMembers);
+        SelectMapMembersInTOC(objectIdAndMapMembers);
+        SelectMapMembersAndFeatures(objectIdAndMapMembers);
         mapView.ZoomToSelected();
       })
       .ConfigureAwait(false);
@@ -111,11 +110,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   private List<ObjectID> GetMapMembers(List<ObjectID> objectIds, MapView mapView)
   {
-    List<ObjectID> objectIdAndmapMembers = new();
+    List<ObjectID> objectIdAndMapMembers = new();
 
     foreach (ObjectID objectId in objectIds)
     {
-      MapMember mapMember = mapView.Map.FindLayer(objectId.MappedLayerURI);
+      MapMember mapMember = mapView.Map.FindLayer(objectId.MappedLayerURI, true);
       if (mapMember is null)
       {
         mapMember = mapView.Map.FindStandaloneTable(objectId.MappedLayerURI);
@@ -126,10 +125,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       }
 
       ObjectID newObjectId = new(objectId.MappedLayerURI, objectId.FeatureId, mapMember);
-      objectIdAndmapMembers.Add(newObjectId);
+      objectIdAndMapMembers.Add(newObjectId);
     }
 
-    return objectIdAndmapMembers;
+    return objectIdAndMapMembers;
   }
 
   private void ClearSelection()
@@ -149,9 +148,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     MapView.Active.ClearTOCSelection();
   }
 
-  private void SelectMapMembersAndFeatures(List<ObjectID> objectIdAndmapMembers)
+  private void SelectMapMembersAndFeatures(List<ObjectID> objectIdAndMapMembers)
   {
-    foreach (ObjectID objectId in objectIdAndmapMembers)
+    foreach (ObjectID objectId in objectIdAndMapMembers)
     {
       if (objectId.MapMember == null)
       {
@@ -161,42 +160,28 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       MapMember member = objectId.MapMember;
       if (member is FeatureLayer layer)
       {
-        // select full layer if featureID not specified
         if (objectId.FeatureId == null)
         {
+          // select full layer if featureID not specified
           layer.Select();
         }
         else
         {
-          using (RowCursor rowCursor = layer.Search())
-          {
-            int index = 0;
-            while (rowCursor.MoveNext())
-            {
-              if (index == objectId.FeatureId)
-              {
-                //Get the shape from the row and set extent
-                using (var feature = rowCursor.Current as Feature)
-                {
-                  Geometry? geometry = feature?.GetShape();
-                  MapView.Active.SelectFeatures(geometry, SelectionCombinationMethod.Add);
-                }
-                break;
-              }
-              index += 1;
-            }
-          }
+          // query features by ID
+          var objectIDfield = layer.GetFeatureClass().GetDefinition().GetObjectIDField();
+          QueryFilter anotherQueryFilter = new() { WhereClause = $"{objectIDfield} = {objectId.FeatureId + 1}" };
+          using (Selection onlyOneSelection = layer.Select(anotherQueryFilter, SelectionCombinationMethod.New)) { }
         }
       }
     }
   }
 
-  private void SelectMapMembersInTOC(List<ObjectID> objectIdAndmapMembers)
+  private void SelectMapMembersInTOC(List<ObjectID> objectIdAndMapMembers)
   {
     List<Layer> layers = new();
     List<StandaloneTable> tables = new();
 
-    foreach (ObjectID objectId in objectIdAndmapMembers)
+    foreach (ObjectID objectId in objectIdAndMapMembers)
     {
       if (objectId.MapMember == null)
       {

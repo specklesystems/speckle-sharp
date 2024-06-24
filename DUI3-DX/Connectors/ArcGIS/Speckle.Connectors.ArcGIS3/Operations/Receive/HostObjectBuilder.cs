@@ -131,7 +131,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         // add layer and layer URI to tracker
         trackerItem.AddConvertedMapMember(value);
         trackerItem.AddLayerURI(value.URI);
-        conversionTracker[item.Key] = trackerItem;
+        conversionTracker[item.Key] = trackerItem; // not necessary atm, but needed if we use conversionTracker further
         // only add a report item
         AddResultsFromTracker(trackerItem, results);
       }
@@ -143,7 +143,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         // add layer and layer URI to tracker
         trackerItem.AddConvertedMapMember(mapMember);
         trackerItem.AddLayerURI(mapMember.URI);
-        conversionTracker[item.Key] = trackerItem;
+        conversionTracker[item.Key] = trackerItem; // not necessary atm, but needed if we use conversionTracker further
 
         // add layer URI to bakedIds
         bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
