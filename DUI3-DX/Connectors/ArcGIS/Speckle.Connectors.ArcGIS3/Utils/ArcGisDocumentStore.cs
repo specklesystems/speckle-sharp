@@ -18,17 +18,23 @@ public class ArcGISDocumentStore : DocumentModelStore
   )
     : base(serializerOption, true)
   {
-    ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)));
-    ProjectSavingEvent.Subscribe(_ =>
-    {
-      topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
-      return Task.CompletedTask;
-    });
-    ProjectClosingEvent.Subscribe(_ =>
-    {
-      topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
-      return Task.CompletedTask;
-    });
+    ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)), true);
+    ProjectSavingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
+        return Task.CompletedTask;
+      },
+      true
+    );
+    ProjectClosingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
+        return Task.CompletedTask;
+      },
+      true
+    );
   }
 
   private void OnProjectClosing()
