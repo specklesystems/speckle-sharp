@@ -559,7 +559,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Revit202
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Civil3d2024", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.Civil3d2024\Speckle.Connectors.Civil3d2024.csproj", "{B5A077DF-ED31-4784-8D0B-72BB0471058C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Common.Tests", "DUI3-DX\Sdk\Speckle.Converters.Common.Tests\Speckle.Converters.Common.Tests.csproj", "{95E23A97-E5EA-4506-A52C-D3DA9012DA02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Common.Tests", "DUI3-DX\Sdk\Speckle.Converters.Common.Tests\Speckle.Converters.Common.Tests.csproj", "{95E23A97-E5EA-4506-A52C-D3DA9012DA02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2811,6 +2811,22 @@ Global
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.ActiveCfg = Release|Any CPU
 		{AEC26A0B-25F3-4544-A9D6-A427BFF79250}.Release|x64.Build.0 = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Debug|x64.Build.0 = Debug|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release Mac|x64.Build.0 = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|x64.ActiveCfg = Release|Any CPU
+		{B5A077DF-ED31-4784-8D0B-72BB0471058C}.Release|x64.Build.0 = Release|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
 		{95E23A97-E5EA-4506-A52C-D3DA9012DA02}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
