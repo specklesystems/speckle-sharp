@@ -9,12 +9,11 @@ public class AutocadSettings
   {
     HostAppInfo = hostAppInfo;
     HostAppVersion = hostAppVersion;
-    var dir = new DirectoryInfo(typeof(AutocadSettings).Assembly.Location);
-    Modules = new[] { dir.Parent.FullName };
+    Modules = new[] { new DirectoryInfo(typeof(AutocadSettings).Assembly.Location).Parent.FullName };
   }
 
-  public HostApplication HostAppInfo { get; set; }
-  public HostAppVersion HostAppVersion { get; set; }
+  public HostApplication HostAppInfo { get; private set; }
+  public HostAppVersion HostAppVersion { get; private set; }
 
-  public IReadOnlyList<string> Modules { get; set; }
+  public IReadOnlyList<string> Modules { get; private set; }
 }

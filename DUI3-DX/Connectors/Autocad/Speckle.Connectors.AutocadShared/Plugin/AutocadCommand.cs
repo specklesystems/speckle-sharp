@@ -42,7 +42,6 @@ public class AutocadCommand
 #else
     AutocadSettings autocadSettings = new(HostApplications.AutoCAD, HostAppVersion.v2023);
 #endif
-    var executingAssembly = Assembly.GetExecutingAssembly();
     Container = builder
       .LoadAutofacModules(Assembly.GetExecutingAssembly(), autocadSettings.Modules)
       .AddSingleton(autocadSettings)
