@@ -16,9 +16,9 @@
       },
       "Speckle.Rhino7.Interfaces": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.27, )",
-        "resolved": "0.1.1-preview.0.27",
-        "contentHash": "/W0fXXPDb97aV/6mBdUbPE+kvfqg4s7cdxqhVB3JhMmSzdf27RULslD7R/dYIYFuLnmAB3iQgdz53YMVtMrRfg=="
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "TcbfXlRMnQRat1JodgW+YW5FflTYem1GGo9DtKA+6iAuVaYagN5dxsrM5LE6M3pCnEV9rkEQOjFo7sgnnbo4mw=="
       },
       "GraphQL.Client": {
         "type": "Transitive",

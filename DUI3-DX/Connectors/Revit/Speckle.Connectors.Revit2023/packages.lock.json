@@ -315,18 +315,18 @@
       },
       "Speckle.Revit2023.Api": {
         "type": "Transitive",
-        "resolved": "0.1.1-preview.0.27",
-        "contentHash": "lYsz0dkPIHKJKbly8jyL4zGx7BNgYViw8hE3SKuP10InSF/zkcZoPJ3Zz9SEDTYVB4a7tm185a/z64Ti3IFReg==",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "ejwYS/HI8yy0rJE4vgTr5aj8Fkg/E9JnMGjwyVS2fLtI4f7+FmwAY6inTUT2p/RAoRc2nQw+TerDpUtOhddzag==",
         "dependencies": {
           "Mapster": "7.3.0",
           "Speckle.Revit.API": "2023.0.0",
-          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.27"
+          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.28"
         }
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Transitive",
-        "resolved": "0.1.1-preview.0.27",
-        "contentHash": "/tVBpS/NsqtQtA90X3zeW4grMaELS+i0J9PqZwdxYBMmB8rzoYCzbBME7KoxIXQK1FHILKeJv2AHGWkgg1c+rg=="
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
@@ -528,7 +528,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.27, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.28, )"
         }
       },
       "speckle.converters.revit2023.dependencyinjection": {
@@ -537,7 +537,7 @@
           "Speckle.Converters.Common": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )",
           "Speckle.Converters.Revit2023": "[2.0.999-local, )",
-          "Speckle.Revit2023.Api": "[0.1.1-preview.0.27, )"
+          "Speckle.Revit2023.Api": "[0.1.1-preview.0.28, )"
         }
       },
       "Speckle.Core": {

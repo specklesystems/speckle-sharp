@@ -65,9 +65,9 @@
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.27, )",
-        "resolved": "0.1.1-preview.0.27",
-        "contentHash": "/tVBpS/NsqtQtA90X3zeW4grMaELS+i0J9PqZwdxYBMmB8rzoYCzbBME7KoxIXQK1FHILKeJv2AHGWkgg1c+rg=="
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "Castle.Core": {
         "type": "Transitive",

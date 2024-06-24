@@ -134,8 +134,8 @@ public class BrepToSpeckleConverter : ITypedConverter<IRhinoBrep, SOG.Brep>
             speckleParent,
             edge.EdgeCurveIndex,
             edge.TrimIndices(),
-            edge.StartVertex?.VertexIndex ?? -1,
-            edge.EndVertex?.VertexIndex ?? -1,
+            edge.StartVertex.VertexIndex,
+            edge.EndVertex.VertexIndex,
             edge.ProxyCurveIsReversed,
             _intervalConverter.Convert(edge.Domain)
           )
@@ -155,8 +155,8 @@ public class BrepToSpeckleConverter : ITypedConverter<IRhinoBrep, SOG.Brep>
           (int)trim.IsoStatus,
           (SOG.BrepTrimType)trim.TrimType,
           trim.IsReversed(),
-          trim.StartVertex?.VertexIndex ?? -1,
-          trim.EndVertex?.VertexIndex ?? -1
+          trim.StartVertex.VertexIndex,
+          trim.EndVertex.VertexIndex
         )
         {
           Domain = _intervalConverter.Convert(trim.Domain)
