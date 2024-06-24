@@ -42,22 +42,52 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     SOBR.RevitColumn speckleColumn =
       new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).NotNull().Name };
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-    speckleColumn.level = _levelConverter.Convert(level.NotNull());
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsRevitLevel(
+        target,
+        RevitBuiltInParameter.FAMILY_BASE_LEVEL_PARAM,
+        out var level
+      )
+    )
+    {
+      speckleColumn.level = _levelConverter.Convert(level);
+    }
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsRevitLevel(
+        target,
+        RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM,
+        out var topLevel
+      )
+    )
+    {
+      speckleColumn.topLevel = _levelConverter.Convert(topLevel);
+    }
 
-    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        RevitBuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM,
+        out var baseOffset
+      )
+    )
+    {
+      speckleColumn.baseOffset = baseOffset.Value;
+    }
 
-    speckleColumn.topLevel = _levelConverter.Convert(topLevel.NotNull());
-    speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(
-      target,
-      RevitBuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
-    );
-
-    speckleColumn.topOffset = _parameterValueExtractor.GetValueAsDouble(
-      target,
-      RevitBuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM
-    );
-
+    //should these all be try?
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        RevitBuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM,
+        out var topOffset
+      )
+    )
+    {
+      speckleColumn.topOffset = topOffset.Value;
+    }
     speckleColumn.facingFlipped = target.FacingFlipped;
     speckleColumn.handFlipped = target.HandFlipped;
     speckleColumn.isSlanted = target.IsSlantedColumn;
@@ -69,7 +99,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     }
 
     speckleColumn.baseLine =
-      GetBaseCurve(target, speckleColumn.topLevel.elevation, speckleColumn.topOffset)
+      GetBaseCurve(target, speckleColumn.topLevel?.elevation, speckleColumn.topOffset)
       ?? throw new SpeckleConversionException("Unable to find a valid baseCurve for column");
 
     speckleColumn.displayValue = _displayValueExtractor.GetDisplayValue(target);
@@ -79,7 +109,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
     return speckleColumn;
   }
 
-  private ICurve? GetBaseCurve(IRevitFamilyInstance target, double topLevelElevation, double topLevelOffset)
+  private ICurve? GetBaseCurve(IRevitFamilyInstance target, double? topLevelElevation, double topLevelOffset)
   {
     Base baseGeometry = _locationConverter.Convert(target.Location);
     ICurve? baseCurve = baseGeometry as ICurve;
@@ -102,7 +132,12 @@ public class ColumnConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, S
 
       return new SOG.Line(
         basePoint,
-        new SOG.Point(basePoint.x, basePoint.y, topLevelElevation + topLevelOffset, _contextStack.Current.SpeckleUnits),
+        new SOG.Point(
+          basePoint.x,
+          basePoint.y,
+          topLevelElevation ?? 0 + topLevelOffset,
+          _contextStack.Current.SpeckleUnits
+        ),
         _contextStack.Current.SpeckleUnits
       );
     }

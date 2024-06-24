@@ -19,7 +19,7 @@ namespace Speckle.Connectors.Autocad.Bindings;
 
 public sealed class AutocadSendBinding : ISendBinding
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
@@ -30,6 +30,7 @@ public sealed class AutocadSendBinding : ISendBinding
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -44,7 +45,8 @@ public sealed class AutocadSendBinding : ISendBinding
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
     IUnitOfWorkFactory unitOfWorkFactory,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;
@@ -54,10 +56,13 @@ public sealed class AutocadSendBinding : ISendBinding
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
 
-    Application.DocumentManager.DocumentActivated += (sender, args) => SubscribeToObjectChanges(args.Document);
+    Application.DocumentManager.DocumentActivated += (_, args) =>
+      topLevelExceptionHandler.CatchUnhandled(() => SubscribeToObjectChanges(args.Document));
+
     if (Application.DocumentManager.CurrentDocument != null)
     {
       // catches the case when autocad just opens up with a blank new doc
@@ -75,9 +80,14 @@ public sealed class AutocadSendBinding : ISendBinding
     }
 
     _docSubsTracker.Add(doc.Name);
-    doc.Database.ObjectAppended += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    doc.Database.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    doc.Database.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+    doc.Database.ObjectAppended += (_, e) => OnObjectChanged(e.DBObject);
+    doc.Database.ObjectErased += (_, e) => OnObjectChanged(e.DBObject);
+    doc.Database.ObjectModified += (_, e) => OnObjectChanged(e.DBObject);
+  }
+
+  void OnObjectChanged(DBObject dbObject)
+  {
+    _topLevelExceptionHandler.CatchUnhandled(() => OnChangeChangedObjectIds(dbObject));
   }
 
   private void OnChangeChangedObjectIds(DBObject dBObject)
@@ -131,6 +141,11 @@ public sealed class AutocadSendBinding : ISendBinding
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
+      // Disable document activation (document creation and document switch)
+      // Not disabling results in DUI model card being out of sync with the active document
+      // The DocumentActivated event isn't usable probably because it is pushed to back of main thread queue
+      Application.DocumentManager.DocumentActivationEnabled = false;
+
       // Get elements to convert
       List<AutocadRootObject> autocadObjects = Application.DocumentManager.CurrentDocument.GetObjects(
         modelCard.SendFilter.NotNull().GetObjectIds()
@@ -169,6 +184,11 @@ public sealed class AutocadSendBinding : ISendBinding
     catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
+    }
+    finally
+    {
+      // renable document activation
+      Application.DocumentManager.DocumentActivationEnabled = true;
     }
   }
 

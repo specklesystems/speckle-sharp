@@ -70,7 +70,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       {
         if (IsGISType(obj))
         {
-          string nestedLayerPath = $"{string.Join("\\", path)}\\{((Collection)obj).name}";
+          string nestedLayerPath = $"{string.Join("\\", path)}";
           string datasetId = (string)_converter.Convert(obj);
           conversionTracker[ctx] = new ObjectConversionTracker(obj, nestedLayerPath, datasetId);
         }
@@ -92,10 +92,17 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     onOperationProgressed?.Invoke("Writing to Database", null);
     _nonGisFeaturesUtils.WriteGeometriesToDatasets(conversionTracker);
 
+    // Create main group layer
+    Dictionary<string, GroupLayer> createdLayerGroups = new();
+    Map map = _contextStack.Current.Document.Map;
+    GroupLayer groupLayer = LayerFactory.Instance.CreateGroupLayer(map, 0, $"{projectName}: {modelName}");
+    createdLayerGroups["Basic Speckle Group"] = groupLayer; // key doesn't really matter here
+
     // 3. add layer and tables to the Table Of Content
     int bakeCount = 0;
     Dictionary<string, MapMember> bakedMapMembers = new();
     onOperationProgressed?.Invoke("Adding to Map", bakeCount);
+
     foreach (var item in conversionTracker)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -120,7 +127,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       else
       {
         // add layer and layer URI to tracker
-        MapMember mapMember = AddDatasetsToMap(trackerItem);
+        MapMember mapMember = AddDatasetsToMap(trackerItem, createdLayerGroups);
         trackerItem.AddConvertedMapMember(mapMember);
         trackerItem.AddLayerURI(mapMember.URI);
         conversionTracker[item.Key] = trackerItem;
@@ -128,11 +135,15 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
         // add layer URI to bakedIds
         bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
 
+        // mark dataset as already created
+        bakedMapMembers[trackerItem.DatasetId] = mapMember;
+
         // add report item
         AddResultsFromTracker(trackerItem, results);
       }
       onOperationProgressed?.Invoke("Adding to Map", (double)++bakeCount / conversionTracker.Count);
     }
+    bakedObjectIds.AddRange(createdLayerGroups.Values.Select(x => x.URI));
 
     // TODO: validated a correct set regarding bakedobject ids
     return new(bakedObjectIds, results);
@@ -160,13 +171,21 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
   }
 
-  private MapMember AddDatasetsToMap(ObjectConversionTracker trackerItem)
+  private MapMember AddDatasetsToMap(
+    ObjectConversionTracker trackerItem,
+    Dictionary<string, GroupLayer> createdLayerGroups
+  )
   {
+    // get layer details
     string? datasetId = trackerItem.DatasetId; // should not ne null here
+    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     string nestedLayerName = trackerItem.NestedLayerName;
 
-    Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
-    Map map = _contextStack.Current.Document.Map;
+    // add group for the current layer
+    string shortName = nestedLayerName.Split("\\")[^1];
+    string nestedLayerPath = string.Join("\\", nestedLayerName.Split("\\").SkipLast(1));
+
+    GroupLayer groupLayer = CreateNestedGroupLayer(nestedLayerPath, createdLayerGroups);
 
     // Most of the Speckle-written datasets will be containing geometry and added as Layers
     // although, some datasets might be just tables (e.g. native GIS Tables, in the future maybe Revit schedules etc.
@@ -174,14 +193,44 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // expensive, than assuming by default that it's a layer with geometry (which in most cases it's expected to be)
     try
     {
-      var layer = LayerFactory.Instance.CreateLayer(uri, map, layerName: nestedLayerName);
+      var layer = LayerFactory.Instance.CreateLayer(uri, groupLayer, layerName: shortName);
+      layer.SetExpanded(true);
       return layer;
     }
     catch (ArgumentException)
     {
-      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, map, tableName: nestedLayerName);
+      var table = StandaloneTableFactory.Instance.CreateStandaloneTable(uri, groupLayer, tableName: shortName);
       return table;
     }
+  }
+
+  private GroupLayer CreateNestedGroupLayer(string nestedLayerPath, Dictionary<string, GroupLayer> createdLayerGroups)
+  {
+    GroupLayer lastGroup = createdLayerGroups.FirstOrDefault().Value;
+    if (lastGroup == null) // if layer not found
+    {
+      throw new InvalidOperationException("Speckle Layer Group not found");
+    }
+
+    // iterate through each nested level
+    string createdGroupPath = "";
+    var allPathElements = nestedLayerPath.Split("\\").Where(x => !string.IsNullOrEmpty(x));
+    foreach (string pathElement in allPathElements)
+    {
+      createdGroupPath += "\\" + pathElement;
+      if (createdLayerGroups.TryGetValue(createdGroupPath, out var existingGroupLayer))
+      {
+        lastGroup = existingGroupLayer;
+      }
+      else
+      {
+        // create new GroupLayer under last found Group, named with last pathElement
+        lastGroup = LayerFactory.Instance.CreateGroupLayer(lastGroup, 0, pathElement);
+        lastGroup.SetExpanded(true);
+      }
+      createdLayerGroups[createdGroupPath] = lastGroup;
+    }
+    return lastGroup;
   }
 
   [Pure]
@@ -190,7 +239,9 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
     string[] reverseOrderPath =
       collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
+
+    var originalPath = reverseOrderPath.Reverse().ToArray();
+    return originalPath.Where(x => !string.IsNullOrEmpty(x)).ToArray();
   }
 
   [Pure]

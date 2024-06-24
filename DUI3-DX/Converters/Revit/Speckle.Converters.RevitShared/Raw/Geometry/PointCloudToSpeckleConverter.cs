@@ -37,7 +37,7 @@ public class PointCloudToSpeckleConverter : ITypedConverter<IRevitPointCloudInst
     {
       var minPlane = _revitPlaneUtils.CreateByNormalAndOrigin(
         _revitxyzUtils.BasisZ,
-        transform.OfPoint(boundingBox.Min)
+        transform.OfPoint(boundingBox.NotNull().Min)
       );
       var filter = _revitFilterFactory.CreateMultiPlaneFilter(minPlane);
       var points = target.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error

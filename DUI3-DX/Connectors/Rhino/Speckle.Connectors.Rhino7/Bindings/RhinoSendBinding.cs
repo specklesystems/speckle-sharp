@@ -18,9 +18,9 @@ namespace Speckle.Connectors.Rhino7.Bindings;
 
 public sealed class RhinoSendBinding : ISendBinding
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
-  public IBridge Parent { get; set; }
+  public IBridge Parent { get; }
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
@@ -36,6 +36,7 @@ public sealed class RhinoSendBinding : ISendBinding
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   public RhinoSendBinding(
     DocumentModelStore store,
@@ -46,7 +47,8 @@ public sealed class RhinoSendBinding : ISendBinding
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;
@@ -57,6 +59,7 @@ public sealed class RhinoSendBinding : ISendBinding
     _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
     SubscribeToRhinoEvents();
@@ -64,48 +67,45 @@ public sealed class RhinoSendBinding : ISendBinding
 
   private void SubscribeToRhinoEvents()
   {
-    // POC: It is unclear to me why is the binding keeping track of ChangedObjectIds. Change tracking should be moved to a separate type.
-    RhinoDoc.LayerTableEvent += (_, _) =>
-    {
-      Commands.RefreshSendFilters();
-    };
-
     RhinoDoc.AddRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.ObjectId.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.ObjectId.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
 
     RhinoDoc.DeleteRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.ObjectId.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.ObjectId.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
 
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
-      ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
+        ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;

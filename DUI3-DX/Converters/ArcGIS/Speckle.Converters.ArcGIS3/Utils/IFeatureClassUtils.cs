@@ -16,8 +16,8 @@ public interface IFeatureClassUtils
   );
   void AddNonGISFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
-    List<ACG.Geometry> features,
-    List<FieldDescription> fields
+    List<(Base baseObj, ACG.Geometry convertedGeom)> featuresTuples,
+    List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions
   );
   void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);

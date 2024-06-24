@@ -4,6 +4,7 @@ using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using Revit.Async;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.RevitShared.Helpers;
@@ -29,7 +30,8 @@ internal sealed class RevitDocumentStore : DocumentModelStore
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
     DocumentModelStorageSchema documentModelStorageSchema,
-    IdStorageSchema idStorageSchema
+    IdStorageSchema idStorageSchema,
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
     : base(serializerSettings, true)
   {
@@ -40,12 +42,15 @@ internal sealed class RevitDocumentStore : DocumentModelStore
 
     UIApplication uiApplication = _revitContext.UIApplication.NotNull();
 
-    uiApplication.ViewActivated += OnViewActivated;
+    uiApplication.ViewActivated += (s, e) => topLevelExceptionHandler.CatchUnhandled(() => OnViewActivated(s, e));
 
-    uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
-    uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+    uiApplication.Application.DocumentOpening += (_, _) =>
+      topLevelExceptionHandler.CatchUnhandled(() => IsDocumentInit = false);
 
-    Models.CollectionChanged += (_, _) => WriteToFile();
+    uiApplication.Application.DocumentOpened += (_, _) =>
+      topLevelExceptionHandler.CatchUnhandled(() => IsDocumentInit = false);
+
+    Models.CollectionChanged += (_, _) => topLevelExceptionHandler.CatchUnhandled(WriteToFile);
 
     // There is no event that we can hook here for double-click file open...
     // It is kind of harmless since we create this object as "SingleInstance".

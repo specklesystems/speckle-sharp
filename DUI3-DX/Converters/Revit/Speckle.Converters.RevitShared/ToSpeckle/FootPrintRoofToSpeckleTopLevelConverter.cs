@@ -44,7 +44,8 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     var baseLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_BASE_LEVEL_PARAM);
 
     // We don't currently validate the success of this TryGet, it is assumed some Roofs don't have a top-level.
-    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_UPTO_LEVEL_PARAM);
+    IRevitLevel? topLevel;
+    _parameterValueExtractor.TryGetValueAsRevitLevel(target, RevitBuiltInParameter.ROOF_UPTO_LEVEL_PARAM, out topLevel);
 
     //POC: CNX-9403 can be null if the sides have different slopes.
     //We currently don't validate the success or failure of this TryGet as it's not necessary, but will be once we start the above ticket.
@@ -53,7 +54,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     RevitFootprintRoof speckleFootprintRoof =
       new()
       {
-        level = _levelConverter.Convert(baseLevel.NotNull()),
+        level = _levelConverter.Convert(baseLevel),
         cutOffLevel = topLevel is not null ? _levelConverter.Convert(topLevel) : null,
         slope = slope
       };

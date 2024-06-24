@@ -51,6 +51,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
       // Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
+      // Disable document activation (document creation and document switch)
+      // Not disabling results in DUI model card being out of sync with the active document
+      // The DocumentActivated event isn't usable probably because it is pushed to back of main thread queue
+      Application.DocumentManager.DocumentActivationEnabled = false;
+
       // Receive host objects
       var operationResults = await unitOfWork.Service
         .Execute(
@@ -71,6 +76,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
     {
       // SWALLOW -> UI handles it immediately, so we do not need to handle anything
       return;
+    }
+    finally
+    {
+      // renable document activation
+      Application.DocumentManager.DocumentActivationEnabled = true;
     }
   }
 

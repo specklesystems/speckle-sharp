@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.22" />
+    <PackageReference Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.24" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />

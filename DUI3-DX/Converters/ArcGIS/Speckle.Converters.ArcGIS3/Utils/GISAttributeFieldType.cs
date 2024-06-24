@@ -90,30 +90,52 @@ public static class GISAttributeFieldType
         return value;
     }
 
-    if (value is not null)
+    if (value != null)
     {
       try
       {
+        static object? GetValue(string? s, Func<string, object> func) => s is null ? null : func(s);
         return fieldType switch
         {
-          FieldType.String => (string)value,
+          FieldType.String => Convert.ToString(value),
           FieldType.Single => Convert.ToSingle(value),
           FieldType.Integer => Convert.ToInt32(value), // need this step because sent "ints" seem to be received as "longs"
           FieldType.BigInteger => Convert.ToInt64(value),
           FieldType.SmallInteger => Convert.ToInt16(value),
           FieldType.Double => Convert.ToDouble(value),
-          FieldType.Date => DateTime.Parse((string)value, null),
-          FieldType.DateOnly => DateOnly.Parse((string)value),
-          FieldType.TimeOnly => TimeOnly.Parse((string)value),
+          FieldType.Date => GetValue(value.ToString(), s => DateTime.Parse(s, null)),
+          FieldType.DateOnly => GetValue(value.ToString(), s => DateOnly.Parse(s, null)),
+          FieldType.TimeOnly => GetValue(value.ToString(), s => TimeOnly.Parse(s, null)),
           _ => value,
         };
       }
-      catch (InvalidCastException)
+      catch (Exception ex) when (ex is InvalidCastException or FormatException or ArgumentNullException)
       {
-        return value;
+        return null;
       }
     }
+    else
+    {
+      return null;
+    }
+  }
 
-    return value;
+  public static FieldType GetFieldTypeFromRawValue(object? value)
+  {
+    // using "Blob" as a placeholder for unrecognized values/nulls.
+    // Once all elements are iterated, FieldType.Blob will be replaced with FieldType.String if no better type found
+    if (value is not null)
+    {
+      return value switch
+      {
+        string => FieldType.String,
+        int => FieldType.Integer,
+        long => FieldType.BigInteger,
+        double => FieldType.Double,
+        _ => FieldType.Blob,
+      };
+    }
+
+    return FieldType.Blob;
   }
 }
