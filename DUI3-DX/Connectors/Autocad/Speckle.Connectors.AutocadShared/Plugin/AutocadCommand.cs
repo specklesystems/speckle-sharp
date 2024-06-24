@@ -3,7 +3,7 @@ using System.Reflection;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.Autocad.DependencyInjection;
+using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Core.Kits;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.DUI.WebView;

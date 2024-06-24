@@ -1,6 +1,6 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Sentry.Reflection;
-using Speckle.Connectors.Autocad.DependencyInjection;
+using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
