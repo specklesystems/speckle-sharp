@@ -149,16 +149,16 @@ public partial class Client
                     }}"
     };
 
-    var res = await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
 
-    if (res.activeUser == null)
+    if (res.ActiveUserInfo == null)
     {
       throw new SpeckleException(
         "User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again."
       );
     }
 
-    return res.activeUser.streams.items;
+    return res.ActiveUserInfo.streams.items;
   }
 
   //TODO: API GAP
@@ -209,8 +209,8 @@ public partial class Client
                       }}
                     }}"
     };
-    return (await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false))
-      .activeUser
+    return (await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false))
+      .ActiveUserInfo
       .favoriteStreams
       .items;
   }
@@ -513,8 +513,6 @@ public partial class Client
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithTeam"/>
-  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithTeam)}")]
   public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

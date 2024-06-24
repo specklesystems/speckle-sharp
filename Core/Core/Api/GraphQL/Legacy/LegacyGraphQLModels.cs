@@ -1,13 +1,19 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api;
 
 #region inputs
 
+internal static class DeprecationMessages
+{
+  public const string FE2_DEPRECATION_MESSAGE =
+    $"Stream/Branch/Commit API is now deprecated, Use the new Project/Model/Version API functions in {nameof(Client)}";
+}
+
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamCreateInput
 {
   public string name { get; set; }
@@ -15,6 +21,7 @@ public class StreamCreateInput
   public bool isPublic { get; set; } = true;
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamUpdateInput
 {
   public string id { get; set; }
@@ -23,6 +30,7 @@ public class StreamUpdateInput
   public bool isPublic { get; set; } = true;
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamPermissionInput
 {
   public string streamId { get; set; }
@@ -30,12 +38,14 @@ public class StreamPermissionInput
   public string role { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamRevokePermissionInput
 {
   public string streamId { get; set; }
   public string userId { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamInviteCreateInput
 {
   public string streamId { get; set; }
@@ -45,6 +55,7 @@ public class StreamInviteCreateInput
   public string role { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchCreateInput
 {
   public string streamId { get; set; }
@@ -52,6 +63,7 @@ public class BranchCreateInput
   public string description { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchUpdateInput
 {
   public string streamId { get; set; }
@@ -60,12 +72,14 @@ public class BranchUpdateInput
   public string description { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchDeleteInput
 {
   public string streamId { get; set; }
   public string id { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitCreateInput
 {
   public string streamId { get; set; }
@@ -80,6 +94,7 @@ public class CommitCreateInput
   public List<string> previousCommitIds { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitUpdateInput
 {
   public string streamId { get; set; }
@@ -87,12 +102,14 @@ public class CommitUpdateInput
   public string message { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitDeleteInput
 {
   public string streamId { get; set; }
   public string id { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitReceivedInput
 {
   public string streamId { get; set; }
@@ -103,6 +120,7 @@ public class CommitReceivedInput
 
 #endregion
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Stream
 {
   public string id { get; set; }
@@ -147,6 +165,7 @@ public class Stream
   }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Collaborator
 {
   public string id { get; set; }
@@ -160,11 +179,13 @@ public class Collaborator
   }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamInvitesResponse
 {
   public List<PendingStreamCollaborator> streamInvites { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class PendingStreamCollaborator
 {
   public string id { get; set; }
@@ -178,6 +199,7 @@ public class PendingStreamCollaborator
   public string token { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Branches
 {
   public int totalCount { get; set; }
@@ -185,6 +207,7 @@ public class Branches
   public List<Branch> items { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Commits
 {
   public int totalCount { get; set; }
@@ -192,6 +215,7 @@ public class Commits
   public List<Commit> items { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Commit
 {
   public string id { get; set; }
@@ -213,6 +237,7 @@ public class Commit
   }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Activity
 {
   public int totalCount { get; set; }
@@ -220,6 +245,7 @@ public class Activity
   public List<ActivityItem> items { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class ActivityItem
 {
   public string actionType { get; set; }
@@ -232,6 +258,7 @@ public class ActivityItem
   public string message { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Info
 {
   public string message { get; set; }
@@ -240,6 +267,7 @@ public class Info
   public InfoCommit commit { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class InfoCommit
 {
   public string message { get; set; }
@@ -247,6 +275,7 @@ public class InfoCommit
   public string branchName { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class SpeckleObject
 {
   public string id { get; set; }
@@ -256,6 +285,7 @@ public class SpeckleObject
   public DateTime createdAt { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Branch
 {
   public string id { get; set; }
@@ -269,6 +299,7 @@ public class Branch
   }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Streams
 {
   public int totalCount { get; set; }
@@ -276,12 +307,14 @@ public class Streams
   public List<Stream> items { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Resource
 {
   public string resourceId { get; set; }
   public ResourceType resourceType { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public enum ResourceType
 {
   commit,
@@ -290,6 +323,7 @@ public enum ResourceType
   comment
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Location
 {
   public double x { get; set; }
@@ -297,67 +331,33 @@ public class Location
   public double z { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class UserSearchData
 {
   public UserSearch userSearch { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class UserSearch
 {
   public string cursor { get; set; }
   public List<LimitedUser> items { get; set; }
 }
 
-// TODO: prob remove and bring one level up and shared w Core.Credentials
-public class ServerInfo
-{
-  public string name { get; set; }
-  public string company { get; set; }
-  public string version { get; set; }
-  public string adminContact { get; set; }
-  public string description { get; set; }
-
-  /// <remarks>
-  /// This field is not returned from the GQL API,
-  /// it should populated on construction from the response headers.
-  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
-  /// </remarks>
-  public bool frontend2 { get; set; }
-
-  /// <remarks>
-  /// This field is not returned from the GQL API,
-  /// it should populated on construction.
-  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
-  /// </remarks>
-  public string url { get; set; }
-
-  public ServerMigration migration { get; set; }
-}
-
-public class ServerMigration
-{
-  /// <summary>
-  /// New URI where this server is now deployed
-  /// </summary>
-  public Uri movedTo { get; set; }
-
-  /// <summary>
-  /// Previous URI where this server used to be deployed
-  /// </summary>
-  public Uri movedFrom { get; set; }
-}
-
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamData
 {
   public Stream stream { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamsData
 {
   public Streams streams { get; set; }
 }
 
 #region comments
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Comments
 {
   public int totalCount { get; set; }
@@ -365,6 +365,7 @@ public class Comments
   public List<CommentItem> items { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentData
 {
   public Comments comments { get; set; }
@@ -375,6 +376,7 @@ public class CommentData
   public object sectionBox { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentItem
 {
   public string id { get; set; }
@@ -391,6 +393,7 @@ public class CommentItem
   public List<Resource> resources { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class ContentContent
 {
   public string Type { get; set; }
@@ -399,116 +402,28 @@ public class ContentContent
   public string Text { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentsData
 {
   public Comments comments { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentItemData
 {
   public CommentItem comment { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentActivityMessage
 {
   public string type { get; set; }
   public CommentItem comment { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentActivityResponse
 {
   public CommentActivityMessage commentActivity { get; set; }
-}
-#endregion
-
-#region manager api
-
-public class Connector
-{
-  public List<ConnectorVersion> Versions { get; set; } = new();
-}
-
-public class ConnectorVersion
-{
-  public ConnectorVersion(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
-  {
-    Number = number;
-    Url = url;
-    Date = DateTime.Now;
-    Prerelease = Number.Contains("-");
-    Os = os;
-    Architecture = architecture;
-  }
-
-  public string Number { get; set; }
-  public string Url { get; set; }
-  public Os Os { get; set; }
-  public Architecture Architecture { get; set; } = Architecture.Any;
-  public DateTime Date { get; set; }
-
-  [JsonIgnore]
-  public string DateTimeAgo => Helpers.TimeAgo(Date);
-
-  public bool Prerelease { get; set; }
-}
-
-/// <summary>
-/// OS
-/// NOTE: do not edit order and only append new items as they are serialized to ints
-/// </summary>
-public enum Os
-{
-  Win, //0
-  OSX, //1
-  Linux, //2
-  Any //3
-}
-
-/// <summary>
-/// Architecture
-/// NOTE: do not edit order and only append new items as they are serialized to ints
-/// </summary>
-public enum Architecture
-{
-  Any, //0
-  Arm, //1
-  Intel //2
-}
-
-//GHOST API
-public class Meta
-{
-  public Pagination pagination { get; set; }
-}
-
-public class Pagination
-{
-  public int page { get; set; }
-  public string limit { get; set; }
-  public int pages { get; set; }
-  public int total { get; set; }
-  public object next { get; set; }
-  public object prev { get; set; }
-}
-
-public class Tags
-{
-  public List<Tag> tags { get; set; }
-  public Meta meta { get; set; }
-}
-
-public class Tag
-{
-  public string id { get; set; }
-  public string name { get; set; }
-  public string slug { get; set; }
-  public string description { get; set; }
-  public string feature_image { get; set; }
-  public string visibility { get; set; }
-  public string codeinjection_head { get; set; }
-  public object codeinjection_foot { get; set; }
-  public object canonical_url { get; set; }
-  public string accent_color { get; set; }
-  public string url { get; set; }
 }
 #endregion

@@ -46,7 +46,9 @@ public sealed class ModelResource
                          """;
     var request = new GraphQLRequest { Query = QUERY, Variables = new { projectId, modelId } };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
 
     return response.project.model;
   }
@@ -109,7 +111,9 @@ public sealed class ModelResource
       }
     };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
 
     return response.project.model;
   }

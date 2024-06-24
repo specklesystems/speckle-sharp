@@ -22,7 +22,7 @@ public class ActiveUserResourceTests : ResourcesTests
     //TODO: Exceptional cases
     using Client unauthed = new(new() { serverInfo = new() { url = FirstUser.ServerUrl } });
 
-    Assert.ThrowsAsync<SpeckleGraphQLException<ActiveUserData>>(async () => _ = await unauthed.ActiveUser.Get()); //TODO: check behaviour
+    Assert.ThrowsAsync<SpeckleGraphQLException<ActiveUserResponse>>(async () => _ = await unauthed.ActiveUser.Get()); //TODO: check behaviour
   }
 
   [Test]

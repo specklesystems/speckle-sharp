@@ -1,7 +1,6 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
-using Speckle.Core.Credentials;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
@@ -21,7 +20,7 @@ public class OtherUserResourceTests : ResourcesTests
   [Test]
   public void OtherUserGet_NonExistentUser()
   {
-    Assert.CatchAsync<SpeckleGraphQLException<LimitedUserData>>(async () =>
+    Assert.CatchAsync<SpeckleGraphQLException<LimitedUserResponse>>(async () =>
     {
       _ = await Sut.Get("AnIdThatDoesntExist");
     });

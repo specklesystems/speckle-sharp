@@ -42,7 +42,7 @@ public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
   [Test]
   public void ProjectGet_NonExistentProject()
   {
-    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectData>>(async () => await Sut.Get("NonExistentProject"));
+    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => await Sut.Get("NonExistentProject"));
   }
 
   [Test]

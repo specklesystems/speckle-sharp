@@ -36,7 +36,9 @@ public sealed class ProjectResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.project;
   }
 
@@ -77,7 +79,9 @@ public sealed class ProjectResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, modelsLimit } };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.project;
   }
 
@@ -149,7 +153,9 @@ public sealed class ProjectResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, modelsLimit } };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.project;
   }
 

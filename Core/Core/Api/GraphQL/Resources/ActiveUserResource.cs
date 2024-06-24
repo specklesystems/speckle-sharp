@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Credentials;
+using UserInfo = Speckle.Core.Api.GraphQL.Models.UserInfo;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -21,7 +23,7 @@ public sealed class ActiveUserResource
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public async Task<User> Get(CancellationToken cancellationToken = default)
+  public async Task<UserInfo> Get(CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -42,10 +44,10 @@ public sealed class ActiveUserResource
     var request = new GraphQLRequest { Query = QUERY };
 
     var response = await _client
-      .ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
 
-    return response.activeUser;
+    return response.ActiveUserInfo;
   }
 
   public async Task<ResourceCollection<Project>> GetProjects(
@@ -77,10 +79,10 @@ public sealed class ActiveUserResource
     var request = new GraphQLRequest { Query = QUERY, Variables = new { projectsLimit } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
 
-    return response.activeUser.projects;
+    return response.ActiveUserInfo.projects;
   }
 
   public async Task<List<Project>> FilterProjects(
@@ -114,8 +116,46 @@ public sealed class ActiveUserResource
     var request = new GraphQLRequest { Query = QUERY, Variables = new { filter, limit } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response.activeUser.projects.items;
+    return response.ActiveUserInfo.projects.items;
+  }
+
+  public async Task<List<Project>> PendingInvites(CancellationToken cancellationToken = default)
+  {
+    //language=graphql
+    const string QUERY = """
+                         query ProjectInvites {
+                           activeUser {
+                             projectInvites {
+                               id
+                               inviteId
+                               invitedBy {
+                                 avatar
+                                 bio
+                                 company
+                                 id
+                                 name
+                                 role
+                                 verified
+                               }
+                               projectId
+                               projectName
+                               role
+                               streamId
+                               streamName
+                               title
+                               token
+                             }
+                           }
+                         }
+                         """;
+
+    var request = new GraphQLRequest { Query = QUERY };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.ActiveUserInfo.projects.items;
   }
 }

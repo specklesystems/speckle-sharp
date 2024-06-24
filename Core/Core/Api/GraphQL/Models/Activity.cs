@@ -4,7 +4,7 @@ using System;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
-public class Activity
+public sealed class Activity
 {
   public string actionType { get; init; }
   public string id { get; init; }

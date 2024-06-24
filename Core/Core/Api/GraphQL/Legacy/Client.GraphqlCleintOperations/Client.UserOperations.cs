@@ -16,7 +16,7 @@ public partial class Client
   /// <returns></returns>
   /// <seealso cref="ActiveUserResource.Get"/>
   [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.Get)}")]
-  public async Task<User> ActiveUserGet(CancellationToken cancellationToken = default)
+  public async Task<UserInfo> ActiveUserGet(CancellationToken cancellationToken = default)
   {
     return await ActiveUser.Get(cancellationToken).ConfigureAwait(false);
   }

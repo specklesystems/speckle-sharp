@@ -84,6 +84,6 @@ public class ProjectResourceTests : ResourcesTests
     bool response = await Sut.Delete(_project.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectData>>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
+    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
   }
 }

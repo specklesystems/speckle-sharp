@@ -4,6 +4,7 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -92,7 +93,7 @@ public static class Fixtures
     using var client = new Client(acc);
 
     var user1 = await client.ActiveUserGet();
-    acc.userInfo.id = user1.id;
+    acc.userInfo = user1;
     return acc;
   }
 

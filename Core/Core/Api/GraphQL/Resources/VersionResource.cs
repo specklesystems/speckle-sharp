@@ -65,7 +65,9 @@ public sealed class VersionResource
         }
       };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.project.model.version;
   }
 
@@ -121,7 +123,9 @@ public sealed class VersionResource
         }
       };
 
-    var response = await _client.ExecuteGraphQLRequest<ProjectData>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.project.model.versions.items;
   }
 

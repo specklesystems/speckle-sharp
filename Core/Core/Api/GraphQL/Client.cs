@@ -15,6 +15,7 @@ using Polly.Contrib.WaitAndRetry;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
+using Serilog.Events;
 using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Api.GraphQL.Serializer;
@@ -101,17 +102,13 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
         delay,
         (ex, timeout, context) =>
         {
-          var graphqlEx = (SpeckleGraphQLException<T>)ex;
-          SpeckleLog.Logger
-            .ForContext("graphqlExtensions", graphqlEx.Extensions)
-            .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
-            .Warning(
-              ex,
-              "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}.",
-              typeof(T).Name,
-              ex.Message,
-              timeout
-            );
+          SpeckleLog.Logger.Information(
+            ex,
+            "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}",
+            typeof(T).Name,
+            ex.Message,
+            timeout
+          );
         }
       );
 
@@ -121,17 +118,16 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
   /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
   /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
   /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
+  /// <exception cref="ObjectDisposedException">This <see cref="Client"/> already been disposed</exception>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
+    var timer = Stopwatch.StartNew();
 
-    SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
-    var timer = new Stopwatch();
-    var success = false;
-    timer.Start();
+    Exception? exception = null;
     try
     {
-      var result = await ExecuteWithResiliencePolicies(async () =>
+      return await ExecuteWithResiliencePolicies(async () =>
         {
           GraphQLResponse<T> result = await GQLClient
             .SendMutationAsync<T>(request, cancellationToken)
@@ -140,58 +136,28 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
           return result.Data;
         })
         .ConfigureAwait(false);
-      success = true;
-      return result;
     }
-    // cancellations are bubbling up with no logging
-    catch (OperationCanceledException)
+    catch (Exception ex)
     {
+      exception = ex;
       throw;
-    }
-    // we catch forbidden to rethrow, making sure its not logged.
-    catch (SpeckleGraphQLForbiddenException<T>)
-    {
-      throw;
-    }
-    // anything else related to graphql gets logged
-    catch (SpeckleGraphQLException<T> gqlException)
-    {
-      SpeckleLog.Logger
-        .ForContext("graphqlResponse", gqlException.Response)
-        .ForContext("graphqlExtensions", gqlException.Extensions)
-        .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
-        .Warning(
-          gqlException,
-          "Execution of the graphql request to get {resultType} failed with {graphqlExceptionType} {exceptionMessage}.",
-          typeof(T).Name,
-          gqlException.GetType().Name,
-          gqlException.Message
-        );
-      throw;
-    }
-    // we log and wrap anything that is not a graphql exception.
-    // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      SpeckleLog.Logger.Warning(
-        ex,
-        "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
-        typeof(T).Name,
-        ex.Message
-      );
-      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", request, null, ex);
     }
     finally
     {
-      // this is a performance metric log operation
-      // this makes sure that both success and failed operations report
-      // the same performance log
-      timer.Stop();
-      var status = success ? "succeeded" : "failed";
-      SpeckleLog.Logger.Information(
-        "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
+      LogEventLevel logLevel = exception switch
+      {
+        null => LogEventLevel.Information,
+        OperationCanceledException
+          => cancellationToken.IsCancellationRequested ? LogEventLevel.Debug : LogEventLevel.Error,
+        SpeckleException => LogEventLevel.Warning,
+        _ => LogEventLevel.Error,
+      };
+      SpeckleLog.Logger.Write(
+        logLevel,
+        exception,
+        "Execution of the graphql request to get {resultType} completed with success:{status} after {elapsed} seconds",
         typeof(T).Name,
-        status,
+        exception is not null,
         timer.Elapsed.TotalSeconds
       );
     }
@@ -279,6 +245,59 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
     };
   }
 
+  public IDisposable __SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
+  {
+    using IDisposable requestContext = LogContext.Push(CreateEnrichers<T>(request));
+    try
+    {
+      var res = GQLClient.CreateSubscriptionStream<T>(request);
+      return res.Subscribe(
+        response =>
+        {
+          try
+          {
+            MaybeThrowFromGraphQLErrors(request, response);
+
+            callback.Invoke(this, response.Data);
+          }
+          // anything else related to graphql gets logged
+          catch (SpeckleGraphQLException<T> gqlException)
+          {
+            SpeckleLog.Logger
+              .ForContext("graphqlResponse", gqlException.Response)
+              .ForContext("graphqlExtensions", gqlException.Extensions)
+              .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
+              .Information(gqlException, "Execution of the graphql request to get {resultType} failed", typeof(T).Name);
+            throw; //TODO: where are we throwing to?
+          }
+        },
+        ex =>
+        {
+          // we're logging this as an error for now, to keep track of failures
+          // so far we've swallowed these errors
+          SpeckleLog.Logger.Error(
+            ex,
+            "Subscription for {resultType} terminated unexpectedly with {exceptionMessage}",
+            typeof(T).Name,
+            ex.Message
+          );
+          // we could be throwing like this:
+          // throw ex;
+        }
+      );
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Warning(
+        ex,
+        "Subscribing to graphql {resultType} failed without a graphql response. Cause {exceptionMessage}",
+        typeof(T).Name,
+        ex.Message
+      );
+      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", request, null, ex);
+    }
+  }
+
   public IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
     using (LogContext.Push(CreateEnrichers<T>(request)))
@@ -336,7 +355,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
             // so far we've swallowed these errors
             SpeckleLog.Logger.Error(
               ex,
-              "Subscription request for {resultType} failed with {exceptionMessage}",
+              "Subscription for {resultType} terminated unexpectedly with {exceptionMessage}",
               typeof(T).Name,
               ex.Message
             );

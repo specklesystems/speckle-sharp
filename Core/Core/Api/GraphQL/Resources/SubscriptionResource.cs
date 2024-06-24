@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using GraphQL;
 using Speckle.Core.Api.SubscriptionModels;
 
@@ -11,17 +12,22 @@ public sealed class SubscriptionResource
   internal SubscriptionResource(ISpeckleGraphQLSubscriber client)
   {
     _client = client;
+    // _userProjectsAdded = UserProjectAddedSubscription();
   }
 
-  private GraphQLSubscription<UserStreamAddedResult> UserProjectAddedSubscription()
-  {
-    private const string UserProjectsAddedQuery = """
-                                                  
-                                                    """;
-    GraphQLRequest request = new(UserProjectsAddedQuery);
-    return new(request,_client);
-  }
-
-  private readonly GraphQLSubscription<UserStreamAddedResult> UserProjectsAdded = new(_client, UserProjectsAddedQuery);
-  public event 
+  // private readonly GraphQLSubscription<UserStreamAddedResult> _userProjectsAdded;
+  // public event Action<object, UserStreamAddedResult> UserProjectsAdded
+  // {
+  //   add => _userProjectsAdded.Callback += value;
+  //   remove => _userProjectsAdded.Callback -= value;
+  // }
+  //
+  // private GraphQLSubscription<UserStreamAddedResult> UserProjectAddedSubscription()
+  // {
+  //   const string UserProjectsAddedQuery = """
+  //
+  //                                         """;
+  //   GraphQLRequest request = new(UserProjectsAddedQuery);
+  //   return new GraphQLSubscription<UserStreamAddedResult>(request, _client);
+  // }
 }

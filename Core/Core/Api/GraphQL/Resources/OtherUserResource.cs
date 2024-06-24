@@ -35,7 +35,7 @@ public sealed class OtherUserResource
     var request = new GraphQLRequest { Query = QUERY, Variables = new { id } };
 
     var respose = await _client
-      .ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken)
+      .ExecuteGraphQLRequest<LimitedUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
     return respose.otherUser;
   }

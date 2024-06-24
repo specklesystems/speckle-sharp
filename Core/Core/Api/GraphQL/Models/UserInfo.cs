@@ -28,7 +28,7 @@ public sealed class LimitedUser : UserBase
   }
 }
 
-public sealed class User : UserBase
+public sealed class UserInfo : UserBase
 {
   //public List<ApiToken> apiTokens { get; init; }
   //public ServerappListItem autorizedApps { get; init; }

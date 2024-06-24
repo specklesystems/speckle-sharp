@@ -23,10 +23,10 @@ public class SpeckleGraphQLException<T> : SpeckleGraphQLException
 
   public SpeckleGraphQLException() { }
 
-  public SpeckleGraphQLException(string message)
+  public SpeckleGraphQLException(string? message)
     : base(message) { }
 
-  public SpeckleGraphQLException(string message, Exception innerException)
+  public SpeckleGraphQLException(string? message, Exception? innerException)
     : base(message, innerException) { }
 }
 
@@ -68,42 +68,54 @@ public class SpeckleGraphQLException : SpeckleException
 /// </summary>
 public class SpeckleGraphQLForbiddenException<T> : SpeckleGraphQLException<T>
 {
-  public SpeckleGraphQLForbiddenException(GraphQLRequest request, GraphQLResponse<T> response)
-    : base("Your request was forbidden", request, response) { }
+  public SpeckleGraphQLForbiddenException(
+    GraphQLRequest request,
+    GraphQLResponse<T> response,
+    Exception? innerException = null
+  )
+    : base("Your request was forbidden", request, response, innerException) { }
 
   public SpeckleGraphQLForbiddenException() { }
 
-  public SpeckleGraphQLForbiddenException(string message)
+  public SpeckleGraphQLForbiddenException(string? message)
     : base(message) { }
 
-  public SpeckleGraphQLForbiddenException(string message, Exception innerException)
+  public SpeckleGraphQLForbiddenException(string? message, Exception? innerException)
     : base(message, innerException) { }
 }
 
 public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T>
 {
-  public SpeckleGraphQLInternalErrorException(GraphQLRequest request, GraphQLResponse<T> response)
-    : base("Your request failed on the server side", request, response) { }
+  public SpeckleGraphQLInternalErrorException(
+    GraphQLRequest request,
+    GraphQLResponse<T> response,
+    Exception? innerException = null
+  )
+    : base("Your request failed on the server side", request, response, innerException) { }
 
   public SpeckleGraphQLInternalErrorException() { }
 
-  public SpeckleGraphQLInternalErrorException(string message)
+  public SpeckleGraphQLInternalErrorException(string? message)
     : base(message) { }
 
-  public SpeckleGraphQLInternalErrorException(string message, Exception innerException)
+  public SpeckleGraphQLInternalErrorException(string? message, Exception? innerException)
     : base(message, innerException) { }
 }
 
 public class SpeckleGraphQLStreamNotFoundException<TStreamData> : SpeckleGraphQLException<TStreamData>
 {
-  public SpeckleGraphQLStreamNotFoundException(GraphQLRequest request, GraphQLResponse<TStreamData> response)
-    : base("Stream not found", request, response) { }
+  public SpeckleGraphQLStreamNotFoundException(
+    GraphQLRequest request,
+    GraphQLResponse<TStreamData> response,
+    Exception? innerException = null
+  )
+    : base("Stream not found", request, response, innerException) { }
 
   public SpeckleGraphQLStreamNotFoundException() { }
 
-  public SpeckleGraphQLStreamNotFoundException(string message)
+  public SpeckleGraphQLStreamNotFoundException(string? message)
     : base(message) { }
 
-  public SpeckleGraphQLStreamNotFoundException(string message, Exception innerException)
+  public SpeckleGraphQLStreamNotFoundException(string? message, Exception? innerException)
     : base(message, innerException) { }
 }

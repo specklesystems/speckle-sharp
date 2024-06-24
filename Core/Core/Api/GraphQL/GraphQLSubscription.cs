@@ -10,7 +10,7 @@ public sealed class GraphQLSubscription<T> : IDisposable
   private IDisposable? _socket;
   private volatile bool _isDisposed;
 
-  internal GraphQLSubscription(ISpeckleGraphQLSubscriber client, GraphQLRequest request)
+  internal GraphQLSubscription(GraphQLRequest request, ISpeckleGraphQLSubscriber client)
   {
     _client = client;
     _request = request;
