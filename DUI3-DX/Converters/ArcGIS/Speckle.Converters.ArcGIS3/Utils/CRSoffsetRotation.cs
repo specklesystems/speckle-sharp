@@ -10,15 +10,15 @@ public readonly struct CRSoffsetRotation
   public double TrueNorthRadians { get; }
 
   /// <summary>
-  /// Initializes a new instance of <see cref="CRSorigin"/>.
+  /// Initializes a new instance of <see cref="CRSoffsetRotation"/>.
   /// </summary>
-  /// <param name="latDegrees">Latitude (Y) in degrees.</param>
-  /// <param name="lonDegrees">Longitude (X) in degrees.</param>
+  /// <param name="latOffset">Latitude (Y) ofsset in the current SpatialReference units.</param>
+  /// <param name="lonOffset">Longitude (X) ofsset in the current SpatialReference units.</param>
   /// <param name="trueNorthRadians">Angle to True North in radians.</param>
-  public CRSoffsetRotation(double latDegrees, double lonDegrees, double trueNorthRadians)
+  public CRSoffsetRotation(double latOffset, double lonOffset, double trueNorthRadians)
   {
-    LatOffset = latDegrees;
-    LonOffset = lonDegrees;
+    LatOffset = latOffset;
+    LonOffset = lonOffset;
     TrueNorthRadians = trueNorthRadians;
   }
 }
