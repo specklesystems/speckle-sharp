@@ -6,7 +6,7 @@
     <UseWpf>true</UseWpf>
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>
-    <DefineConstants>$(DefineConstants);AUTOCAD2023</DefineConstants>
+    <DefineConstants>$(DefineConstants);AUTOCAD2023;AUTOCAD</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

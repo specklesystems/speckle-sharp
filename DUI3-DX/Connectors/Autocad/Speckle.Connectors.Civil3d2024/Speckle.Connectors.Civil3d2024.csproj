@@ -6,7 +6,7 @@
     <UseWpf>true</UseWpf>
     <StartAction>Program</StartAction>
     <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2024\acad.exe</StartProgram>
-    <DefineConstants>$(DefineConstants);CIVIL3D2024;CIVIL3D;CIVIL3D2021_OR_GREATER;CIVIL3D2022_OR_GREATER;CIVIL3D2023_OR_GREATER;CIVIL3D2024_OR_GREATER;</DefineConstants>
+    <DefineConstants>$(DefineConstants);CIVIL3D2024;CIVIL3D;</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

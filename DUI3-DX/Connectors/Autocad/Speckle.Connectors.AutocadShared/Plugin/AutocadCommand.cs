@@ -3,11 +3,7 @@ using System.Reflection;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
 using Speckle.Autofac.DependencyInjection;
-#if CIVIL3D
-using Speckle.Connectors.Civil3d.DependencyInjection;
-#else
 using Speckle.Connectors.Autocad.DependencyInjection;
-#endif
 using Speckle.Core.Kits;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.DUI.WebView;
@@ -40,9 +36,9 @@ public class AutocadCommand
     var builder = SpeckleContainerBuilder.CreateInstance();
 
 #if CIVIL3D
-    IAutocadSettings autocadSettings = new Civil3dSettings(HostApplications.Civil3D, HostAppVersion.v2024);
+    AutocadSettings autocadSettings = new (HostApplications.Civil3D, HostAppVersion.v2024);
 #else
-    IAutocadSettings autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
+    AutocadSettings autocadSettings = new(HostApplications.AutoCAD, HostAppVersion.v2023);
 #endif
     var executingAssembly = Assembly.GetExecutingAssembly();
     Container = builder

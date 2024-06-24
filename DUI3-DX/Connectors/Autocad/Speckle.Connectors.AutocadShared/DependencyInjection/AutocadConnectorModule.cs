@@ -1,4 +1,4 @@
-#if AUTOCAD2023
+#if AUTOCAD
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;

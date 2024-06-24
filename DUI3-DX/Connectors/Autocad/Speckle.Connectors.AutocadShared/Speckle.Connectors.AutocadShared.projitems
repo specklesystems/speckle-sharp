@@ -13,22 +13,20 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadReceiveBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Civil3d\DependencyInjection\Civil3dSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutocadConnectorModule.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Civil3d\DependencyInjection\Civil3dConnectorModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\Civil3dConnectorModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Filters\AutocadSelectionFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentModelStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadIdleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadLayerManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutocadSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DatabaseExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DocumentExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EntityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\AutocadHostObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\AutocadRootObjectBuilder.cs" />
@@ -37,8 +35,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Civil3d\DependencyInjection\" />
   </ItemGroup>
 </Project>
