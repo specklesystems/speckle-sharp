@@ -148,7 +148,9 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
         }
         else
         {
-          //???
+          // This will happen, in some cases, where we highlight individual objects. Should be caught by the top level handler and not
+          // crash the host app.
+          throw;
         }
       }
     });
