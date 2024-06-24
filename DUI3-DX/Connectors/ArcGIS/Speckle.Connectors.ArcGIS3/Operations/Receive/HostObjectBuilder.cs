@@ -128,13 +128,19 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       }
       else if (bakedMapMembers.TryGetValue(trackerItem.DatasetId, out MapMember? value))
       {
+        // add layer and layer URI to tracker
+        trackerItem.AddConvertedMapMember(value);
+        trackerItem.AddLayerURI(value.URI);
+        conversionTracker[item.Key] = trackerItem;
         // only add a report item
         AddResultsFromTracker(trackerItem, results);
       }
       else
       {
-        // add layer and layer URI to tracker
+        // add layer to Map
         MapMember mapMember = AddDatasetsToMap(trackerItem, createdLayerGroups);
+
+        // add layer and layer URI to tracker
         trackerItem.AddConvertedMapMember(mapMember);
         trackerItem.AddLayerURI(mapMember.URI);
         conversionTracker[item.Key] = trackerItem;
@@ -158,7 +164,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private void AddResultsFromTracker(ObjectConversionTracker trackerItem, List<ReceiveConversionResult> results)
   {
-    if (trackerItem.MappedLayerURI == null)
+    if (trackerItem.MappedLayerURI == null) // should not happen
     {
       results.Add(
         new(
