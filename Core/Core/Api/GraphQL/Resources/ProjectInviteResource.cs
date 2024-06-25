@@ -16,7 +16,7 @@ public sealed class ProjectInviteResource
   {
     _client = client;
   }
-  
+
   /// <param name="projectId"></param>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
@@ -101,7 +101,7 @@ public sealed class ProjectInviteResource
 
   //TODO: what is this return...
   /// <summary>
-  /// 
+  ///
   /// </summary>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
@@ -177,7 +177,8 @@ public sealed class ProjectInviteResource
     var response = await _client
       .ExecuteGraphQLRequest<Dictionary<string, PendingStreamCollaborator?>>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["projectInvite"]
+    //TODO: FIGURE OUT THIS RETURN
+    return response["projectInvite"];
   }
 
   //TODO: again, what to return...
@@ -257,87 +258,5 @@ public sealed class ProjectInviteResource
       .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
       .ConfigureAwait(false);
     return response["cancel"];
-  }
-
-  /// <param name="projectId"></param>
-  /// <param name="input"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<Project> BatchCreate(
-    string projectId,
-    IReadOnlyList<ProjectInviteCreateInput> input,
-    CancellationToken cancellationToken = default
-  )
-  {
-    //language=graphql
-    const string QUERY = """
-                         mutation ProjectInviteBatchCreate($projectId: ID!, $input: [ProjectInviteCreateInput!]!) {
-                           projectMutations {
-                             invites {
-                               batchCreate(projectId: $projectId, input: $input) {
-                                 id
-                                 name
-                                 description
-                                 visibility
-                                 allowPublicComments
-                                 role
-                                 createdAt
-                                 updatedAt
-                                 team {
-                                   role
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                                 invitedTeam {
-                                   id
-                                   inviteId
-                                   projectId
-                                   projectName
-                                   streamName
-                                   title
-                                   role
-                                   streamId
-                                   token
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                   invitedBy {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                               }
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, input } };
-
-    var response = await _client
-      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return response.projectMutations.invites.batchCreate;
   }
 }

@@ -329,9 +329,7 @@ public sealed class ProjectResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
-    var response = await _client
-      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var response = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
     return response.projectMutations.updateRole;
   }
 }

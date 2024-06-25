@@ -97,7 +97,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
 
     var delay = Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5);
     var graphqlRetry = Policy
-      .Handle<SpeckleGraphQLInternalErrorException<T>>()
+      .Handle<SpeckleGraphQLInternalErrorException>()
       .WaitAndRetryAsync(
         delay,
         (ex, timeout, context) =>
@@ -179,7 +179,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
         )
       )
       {
-        throw new SpeckleGraphQLForbiddenException<T>(request, response);
+        throw new SpeckleGraphQLForbiddenException(request, response);
       }
 
       if (
@@ -189,7 +189,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
         )
       )
       {
-        throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
+        throw new SpeckleGraphQLStreamNotFoundException(request, response);
       }
 
       if (
@@ -200,7 +200,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
         )
       )
       {
-        throw new SpeckleGraphQLInternalErrorException<T>(request, response);
+        throw new SpeckleGraphQLInternalErrorException(request, response);
       }
 
       throw new SpeckleGraphQLException<T>("Request failed with errors", request, response);
@@ -321,7 +321,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
               }
             }
             // we catch forbidden to rethrow, making sure its not logged.
-            catch (SpeckleGraphQLForbiddenException<T>)
+            catch (SpeckleGraphQLForbiddenException)
             {
               throw;
             }

@@ -84,11 +84,11 @@ public class SpeckleGraphQLForbiddenException : SpeckleGraphQLException
     : base(message, innerException) { }
 }
 
-public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T>
+public class SpeckleGraphQLInternalErrorException : SpeckleGraphQLException
 {
   public SpeckleGraphQLInternalErrorException(
     GraphQLRequest request,
-    GraphQLResponse<T> response,
+    IGraphQLResponse response,
     Exception? innerException = null
   )
     : base("Your request failed on the server side", request, response, innerException) { }
@@ -102,11 +102,11 @@ public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T
     : base(message, innerException) { }
 }
 
-public class SpeckleGraphQLStreamNotFoundException<TStreamData> : SpeckleGraphQLException<TStreamData>
+public class SpeckleGraphQLStreamNotFoundException : SpeckleGraphQLException
 {
   public SpeckleGraphQLStreamNotFoundException(
     GraphQLRequest request,
-    GraphQLResponse<TStreamData> response,
+    IGraphQLResponse response,
     Exception? innerException = null
   )
     : base("Stream not found", request, response, innerException) { }

@@ -37,11 +37,11 @@ public partial class Client
 
       return stream.id == id;
     }
-    catch (SpeckleGraphQLForbiddenException<StreamData>)
+    catch (SpeckleGraphQLForbiddenException)
     {
       return false;
     }
-    catch (SpeckleGraphQLStreamNotFoundException<StreamData>)
+    catch (SpeckleGraphQLStreamNotFoundException)
     {
       return false;
     }
