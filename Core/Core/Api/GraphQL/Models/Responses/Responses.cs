@@ -8,14 +8,14 @@ namespace Speckle.Core.Api.GraphQL.Models.Responses;
 // TODO: All of these structs could be replaced by this DataResponse, if we use an alias (see https://www.baeldung.com/graphql-field-name)
 //internal readonly record struct DataResponse<T>([property: JsonRequired] T data);
 
-internal readonly record struct ProjectResponse([property: JsonRequired] Project project);
+internal record ProjectResponse([property: JsonRequired] Project project);
 
-internal readonly record struct ActiveUserResponse([property: JsonRequired] UserInfo ActiveUserInfo);
+internal record ActiveUserResponse(UserInfo? activeUser);
 
-internal readonly record struct LimitedUserResponse([property: JsonRequired] LimitedUser otherUser);
+internal record LimitedUserResponse(LimitedUser? otherUser);
 
-internal readonly record struct ServerInfoResponse([property: JsonRequired] ServerInfo serverInfo);
+internal record ServerInfoResponse([property: JsonRequired] ServerInfo serverInfo);
 
-internal readonly record struct ProjectMutationResponse([property: JsonRequired] ProjectMutation projectMutations);
+internal record ProjectMutationResponse([property: JsonRequired] ProjectMutation projectMutations);
 
-internal readonly record struct ModelMutationResponse([property: JsonRequired] ModelMutation modelMutations);
+internal record ModelMutationResponse([property: JsonRequired] ModelMutation modelMutations);

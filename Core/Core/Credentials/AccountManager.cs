@@ -131,7 +131,7 @@ public static class AccountManager
       );
     }
 
-    return response.Data.ActiveUserInfo;
+    return response.Data.activeUser;
   }
 
   /// <summary>

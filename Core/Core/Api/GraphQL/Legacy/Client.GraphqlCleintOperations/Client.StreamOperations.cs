@@ -152,14 +152,14 @@ public partial class Client
 
     var res = await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
 
-    if (res.ActiveUserInfo == null)
+    if (res.activeUser == null)
     {
       throw new SpeckleException(
         "User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again."
       );
     }
 
-    return res.ActiveUserInfo.streams.items;
+    return res.activeUser.streams.items;
   }
 
   //TODO: API GAP
@@ -211,7 +211,7 @@ public partial class Client
                     }}"
     };
     return (await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false))
-      .ActiveUserInfo
+      .activeUser
       .favoriteStreams
       .items;
   }

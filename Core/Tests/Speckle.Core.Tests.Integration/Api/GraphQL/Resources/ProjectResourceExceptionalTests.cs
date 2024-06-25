@@ -10,10 +10,20 @@ namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 [TestOf(typeof(ProjectResource))]
 public class ProjectResourceExceptionalTests
 {
-  private ProjectResource Sut => ResourcesTestsFixture.FirstUser.Project;
-  private Client UnauthedUser => ResourcesTestsFixture.UnauthedUser;
-  private Client SecondUser => ResourcesTestsFixture.SecondUser;
-  private Project testProject => ResourcesTestsFixture.Project;
+  private Client _testUser,
+    _secondUser,
+    _unauthedUser;
+  private Project _testProject;
+  private ProjectResource Sut => _testUser.Project;
+
+  [OneTimeSetUp]
+  public async Task Setup()
+  {
+    _testUser = await Fixtures.SeedUserWithClient();
+    _secondUser = await Fixtures.SeedUserWithClient();
+    _unauthedUser = Fixtures.Unauthed;
+    _testProject = await _testUser.Project.Create(new("test project123", "desc", null));
+  }
 
   //TODO: There's got to be a smarter way to parametrise this.
   //We want to check the following cases
@@ -28,7 +38,7 @@ public class ProjectResourceExceptionalTests
     ProjectCreateInput input =
       new("The best project", "The best description for the best project", ProjectVisibility.Private);
 
-    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.Create(input));
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await _unauthedUser.Project.Create(input));
   }
 
   [Test, Order(10)]
@@ -38,26 +48,28 @@ public class ProjectResourceExceptionalTests
 
     Project privateStream = await Sut.Create(input);
 
-    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.Get(privateStream.id));
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await _unauthedUser.Project.Get(privateStream.id));
   }
 
   [Test]
   public void ProjectGet_NonExistentProject()
   {
-    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => await Sut.Get("NonExistentProject"));
+    Assert.ThrowsAsync<SpeckleGraphQLStreamNotFoundException>(async () => await Sut.Get("NonExistentProject"));
   }
 
   [Test]
   public void ProjectUpdate_NonExistentProject()
   {
-    Assert.ThrowsAsync<Exception>(async () => _ = await Sut.Update(new("NonExistentProject", "My new name")));
+    Assert.CatchAsync<SpeckleGraphQLException>(
+      async () => _ = await Sut.Update(new("NonExistentProject", "My new name"))
+    );
   }
 
   [Test, Order(20)]
   public void ProjectUpdate_NoAuth()
   {
-    Assert.ThrowsAsync<Exception>(
-      async () => _ = await UnauthedUser.Project.Update(new(testProject.id, "My new name"))
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(
+      async () => _ = await _unauthedUser.Project.Update(new(_testProject.id, "My new name"))
     );
   }
 
@@ -67,9 +79,9 @@ public class ProjectResourceExceptionalTests
   [TestCase(null)]
   public void ProjectUpdateRole_NonExistentProject(string newRole)
   {
-    ProjectUpdateRoleInput input = new(SecondUser.Account.id, "NonExistentProject", newRole);
+    ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
 
-    Assert.ThrowsAsync<Exception>(async () => await Sut.UpdateRole(input));
+    Assert.CatchAsync<SpeckleGraphQLException>(async () => await Sut.UpdateRole(input));
   }
 
   [Test]
@@ -78,17 +90,16 @@ public class ProjectResourceExceptionalTests
   [TestCase(null)]
   public void ProjectUpdateRole_NonAuth(string newRole)
   {
-    ProjectUpdateRoleInput input = new(SecondUser.Account.id, "NonExistentProject", newRole);
-
-    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.UpdateRole(input));
+    ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
+    Assert.CatchAsync<SpeckleGraphQLException>(async () => await _unauthedUser.Project.UpdateRole(input));
   }
 
   [Test, Order(100)]
   public async Task ProjectDelete_NonExistentProject()
   {
-    bool response = await Sut.Delete(testProject.id);
+    bool response = await Sut.Delete(_testProject.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<Exception>(async () => _ = await Sut.Get(testProject.id)); //TODO: Exception types
+    Assert.ThrowsAsync<SpeckleGraphQLStreamNotFoundException>(async () => _ = await Sut.Get(_testProject.id)); //TODO: Exception types
   }
 }

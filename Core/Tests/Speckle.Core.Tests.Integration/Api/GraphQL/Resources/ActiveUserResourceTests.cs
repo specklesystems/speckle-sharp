@@ -8,30 +8,37 @@ namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 [TestOf(typeof(ActiveUserResource))]
 public class ActiveUserResourceTests
 {
-  private ActiveUserResource Sut => ResourcesTestsFixture.FirstUser.ActiveUser;
-  private Client FirstUser => ResourcesTestsFixture.FirstUser;
+  private Client _testUser;
+  private ActiveUserResource Sut => _testUser.ActiveUser;
+
+  [OneTimeSetUp]
+  public async Task Setup()
+  {
+    _testUser = await Fixtures.SeedUserWithClient();
+  }
 
   [Test]
   public async Task ActiveUserGet()
   {
     var res = await Sut.Get();
-    Assert.That(res.id, Is.EqualTo(FirstUser.Account.userInfo.id));
+    Assert.That(res.id, Is.EqualTo(_testUser.Account.userInfo.id));
   }
 
   [Test]
-  public void ActiveUserGet_NonAuthed()
+  public async Task ActiveUserGet_NonAuthed()
   {
     //TODO: Exceptional cases
-    using Client unauthed = new(new() { serverInfo = new() { url = FirstUser.ServerUrl } });
+    using Client unauthed = new(new() { serverInfo = new() { url = _testUser.ServerUrl } });
 
-    Assert.ThrowsAsync<SpeckleGraphQLException<ActiveUserResponse>>(async () => _ = await unauthed.ActiveUser.Get()); //TODO: check behaviour
+    var result = await unauthed.ActiveUser.Get();
+    Assert.That(result, Is.EqualTo(null));
   }
 
   [Test]
   public async Task ActiveUserGetProjects()
   {
-    var p1 = await FirstUser.Project.Create(new("Project 1", null, null));
-    var p2 = await FirstUser.Project.Create(new("Project 2", null, null));
+    var p1 = await _testUser.Project.Create(new("Project 1", null, null));
+    var p2 = await _testUser.Project.Create(new("Project 2", null, null));
 
     var res = await Sut.GetProjects();
 

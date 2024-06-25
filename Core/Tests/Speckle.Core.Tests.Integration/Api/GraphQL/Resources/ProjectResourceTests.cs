@@ -10,9 +10,18 @@ namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 [TestOf(typeof(ProjectResource))]
 public class ProjectResourceTests
 {
-  private ProjectResource Sut => ResourcesTestsFixture.FirstUser.Project;
-  private Project TestProject => ResourcesTestsFixture.Project;
-  private Client TestOtherUser => ResourcesTestsFixture.SecondUser;
+  private Client _testUser,
+    _secondUser;
+  private Project _testProject;
+  private ProjectResource Sut => _testUser.Project;
+
+  [OneTimeSetUp]
+  public async Task Setup()
+  {
+    _testUser = await Fixtures.SeedUserWithClient();
+    _secondUser = await Fixtures.SeedUserWithClient();
+    _testProject = await _testUser.Project.Create(new("test project123", "desc", null));
+  }
 
   [TestCase("Very private project", "My secret project", ProjectVisibility.Private)]
   [TestCase("Very public project", null, ProjectVisibility.Public)]
@@ -23,20 +32,20 @@ public class ProjectResourceTests
     Assert.That(result, Is.Not.Null);
     Assert.That(result, Has.Property(nameof(Project.id)).Not.Null);
     Assert.That(result, Has.Property(nameof(Project.name)).EqualTo(input.name));
-    Assert.That(result, Has.Property(nameof(Project.description)).EqualTo(input.description));
+    Assert.That(result, Has.Property(nameof(Project.description)).EqualTo(input.description ?? string.Empty));
     Assert.That(result, Has.Property(nameof(Project.visibility)).EqualTo(input.visibility));
   }
 
   [Test]
   public async Task ProjectGet()
   {
-    Project result = await Sut.Get(TestProject.id);
+    Project result = await Sut.Get(_testProject.id);
 
-    Assert.That(result.id, Is.EqualTo(TestProject.id));
-    Assert.That(result.name, Is.EqualTo(TestProject.name));
-    Assert.That(result.description, Is.EqualTo(TestProject.description));
-    Assert.That(result.visibility, Is.EqualTo(TestProject.visibility));
-    Assert.That(result.createdAt, Is.EqualTo(TestProject.createdAt));
+    Assert.That(result.id, Is.EqualTo(_testProject.id));
+    Assert.That(result.name, Is.EqualTo(_testProject.name));
+    Assert.That(result.description, Is.EqualTo(_testProject.description));
+    Assert.That(result.visibility, Is.EqualTo(_testProject.visibility));
+    Assert.That(result.createdAt, Is.EqualTo(_testProject.createdAt));
   }
 
   [Test]
@@ -46,9 +55,9 @@ public class ProjectResourceTests
     const string NEW_DESCRIPTION = "MY new name";
     const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Public;
 
-    Project newProject = await Sut.Update(new(TestProject.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));
+    Project newProject = await Sut.Update(new(_testProject.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));
 
-    Assert.That(newProject.id, Is.EqualTo(TestProject.id));
+    Assert.That(newProject.id, Is.EqualTo(_testProject.id));
     Assert.That(newProject.name, Is.EqualTo(NEW_NAME));
     Assert.That(newProject.description, Is.EqualTo(NEW_DESCRIPTION));
     Assert.That(newProject.visibility, Is.EqualTo(NEW_VISIBILITY));
@@ -61,19 +70,20 @@ public class ProjectResourceTests
   public async Task ProjectUpdateRole(string newRole)
   {
     //TODO: figure out if this test could work, we may need to invite the user first...
-    ProjectUpdateRoleInput input = new(TestOtherUser.Account.userInfo.id, TestProject.id, newRole);
+    ProjectUpdateRoleInput input = new(_secondUser.Account.userInfo.id, _testProject.id, newRole);
     _ = await Sut.UpdateRole(input);
 
-    Project finalProject = await TestOtherUser.Project.Get(TestProject.id);
+    Project finalProject = await _secondUser.Project.Get(_testProject.id);
     Assert.That(finalProject.role, Is.EqualTo(newRole));
   }
 
   [Test]
   public async Task ProjectDelete()
   {
-    bool response = await Sut.Delete(TestProject.id);
+    Project toDelete = await Sut.Create(new("Delete me", null, null));
+    bool response = await Sut.Delete(toDelete.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => _ = await Sut.Get(TestProject.id)); //TODO: Exception types
+    Assert.ThrowsAsync<SpeckleGraphQLStreamNotFoundException>(async () => _ = await Sut.Get(toDelete.id));
   }
 }

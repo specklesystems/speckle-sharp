@@ -5,8 +5,6 @@ using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Models.Responses;
-using Speckle.Core.Credentials;
-using UserInfo = Speckle.Core.Api.GraphQL.Models.UserInfo;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -24,8 +22,9 @@ public sealed class ActiveUserResource
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <returns>the requested user, or null if the user does not exist (i.e. <see cref="Client"/> was initialised with an unauthenticated account)</returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<UserInfo> Get(CancellationToken cancellationToken = default)
+  public async Task<UserInfo?> Get(CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -49,7 +48,7 @@ public sealed class ActiveUserResource
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
 
-    return response.ActiveUserInfo;
+    return response.activeUser;
   }
 
   /// <param name="projectsLimit"></param>
@@ -88,7 +87,7 @@ public sealed class ActiveUserResource
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
 
-    return response.ActiveUserInfo.projects;
+    return response.activeUser.projects;
   }
 
   /// <param name="filter"></param>
@@ -129,7 +128,7 @@ public sealed class ActiveUserResource
     var response = await _client
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response.ActiveUserInfo.projects.items;
+    return response.activeUser.projects.items;
   }
 
   /// <param name="cancellationToken"></param>
@@ -170,6 +169,6 @@ public sealed class ActiveUserResource
     var response = await _client
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response.ActiveUserInfo.projects.items;
+    return response.activeUser.projects.items;
   }
 }

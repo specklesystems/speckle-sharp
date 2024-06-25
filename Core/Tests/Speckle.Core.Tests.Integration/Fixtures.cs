@@ -26,6 +26,13 @@ public static class Fixtures
 {
   public static readonly ServerInfo Server = new() { url = "http://localhost:3000", name = "Docker Server" };
 
+  public static Client Unauthed => new Client(new Account { serverInfo = Server, userInfo = new UserInfo() });
+
+  public static async Task<Client> SeedUserWithClient()
+  {
+    return new Client(await SeedUser());
+  }
+
   public static async Task<Account> SeedUser()
   {
     var seed = Guid.NewGuid().ToString().ToLower();

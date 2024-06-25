@@ -21,9 +21,9 @@ public sealed class OtherUserResource
   /// </summary>
   /// <param name="id"></param>
   /// <param name="cancellationToken"></param>
-  /// <returns></returns>
+  /// <returns>the requested user, or null if the user does not exist</returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<LimitedUser> Get(string id, CancellationToken cancellationToken = default)
+  public async Task<LimitedUser?> Get(string id, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
