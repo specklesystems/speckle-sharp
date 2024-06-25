@@ -279,11 +279,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit2023.Interfaces": {
-        "type": "Transitive",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -487,8 +482,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {

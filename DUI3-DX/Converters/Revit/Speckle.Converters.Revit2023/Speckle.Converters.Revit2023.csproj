@@ -9,7 +9,7 @@
   <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.24" />
+    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.28" />
   </ItemGroup>
 
   <ItemGroup>

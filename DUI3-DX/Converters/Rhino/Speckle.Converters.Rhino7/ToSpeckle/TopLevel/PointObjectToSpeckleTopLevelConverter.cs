@@ -1,15 +1,15 @@
-﻿using Rhino.DocObjects;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-[NameAndRankValue(nameof(PointObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(IRhinoPointObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointObjectToSpeckleTopLevelConverter
-  : RhinoObjectToSpeckleTopLevelConverter<PointObject, RG.Point, SOG.Point>
+  : RhinoObjectToSpeckleTopLevelConverter<IRhinoPointObject, IRhinoPoint, SOG.Point>
 {
-  public PointObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Point, SOG.Point> conversion)
+  public PointObjectToSpeckleTopLevelConverter(ITypedConverter<IRhinoPoint, SOG.Point> conversion)
     : base(conversion) { }
 
-  protected override RG.Point GetTypedGeometry(PointObject input) => input.PointGeometry;
+  protected override IRhinoPoint GetTypedGeometry(IRhinoPointObject input) => input.PointGeometry;
 }

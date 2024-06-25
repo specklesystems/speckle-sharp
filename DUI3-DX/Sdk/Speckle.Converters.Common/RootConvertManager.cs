@@ -27,7 +27,7 @@ public class RootConvertManager : IRootConvertManager
 
       if (objectConverter == null)
       {
-        throw new NotSupportedException($"No conversion found for {type.Name}");
+        throw new NotSupportedException($"No conversion found for {type.Name} with actual type of {obj.GetType()}");
       }
       var convertedObject = objectConverter.Convert(obj);
 
