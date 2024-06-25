@@ -37,8 +37,9 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
     builder.AddSingleton<DocumentModelStore, AutocadDocumentStore>();
     builder.AddSingleton<AutocadContext>();
-    builder.AddSingleton<AutocadLayerManager>();
     builder.AddSingleton<AutocadIdleManager>();
+
+    builder.AddScoped<AutocadLayerManager>();
 
     // Operations
     builder.AddScoped<SendOperation<AutocadRootObject>>();

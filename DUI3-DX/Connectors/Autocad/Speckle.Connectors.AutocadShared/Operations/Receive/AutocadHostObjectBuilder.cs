@@ -21,7 +21,8 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
   private readonly AutocadLayerManager _autocadLayerManager;
   private readonly IRootToHostConverter _converter;
   private readonly GraphTraversal _traversalFunction;
-  private readonly HashSet<string> _uniqueLayerNames = new();
+
+  // private readonly HashSet<string> _uniqueLayerNames = new();
   private readonly IInstanceObjectsManager<AutocadRootObject, List<Entity>> _instanceObjectsManager;
 
   public AutocadHostObjectBuilder(
@@ -55,6 +56,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     PreReceiveDeepClean(baseLayerPrefix);
+
     List<ReceiveConversionResult> results = new();
     List<string> bakedObjectIds = new();
 
@@ -79,7 +81,7 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
     foreach (TraversalContext tc in objectGraph)
     {
-      var layerName = GetLayerPath(tc, baseLayerPrefix);
+      var layerName = _autocadLayerManager.GetLayerPath(tc, baseLayerPrefix);
       if (tc.Current is IInstanceComponent instanceComponent)
       {
         instanceComponents.Add((new string[] { layerName }, instanceComponent));
@@ -143,21 +145,8 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
 
   private void PreReceiveDeepClean(string baseLayerPrefix)
   {
+    _autocadLayerManager.DeleteAllLayersByPrefix(baseLayerPrefix);
     _instanceObjectsManager.PurgeInstances(baseLayerPrefix);
-
-    using var transaction = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction();
-    var layerTable = (LayerTable)
-      transaction.GetObject(Application.DocumentManager.CurrentDocument.Database.LayerTableId, OpenMode.ForRead);
-
-    foreach (var layerId in layerTable)
-    {
-      var layer = (LayerTableRecord)transaction.GetObject(layerId, OpenMode.ForRead);
-      if (layer.Name.Contains(baseLayerPrefix))
-      {
-        _autocadLayerManager.CreateLayerOrPurge(layer.Name);
-      }
-    }
-    transaction.Commit();
   }
 
   private IEnumerable<Entity> ConvertObject(Base obj, string layerName)
@@ -166,13 +155,8 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
       Application.DocumentManager.MdiActiveDocument
     );
 
-    if (_uniqueLayerNames.Add(layerName))
-    {
-      _autocadLayerManager.CreateLayerOrPurge(layerName);
-    }
+    _autocadLayerManager.CreateLayerForReceive(layerName);
 
-    //POC: this transaction used to be called in the converter, We've moved it here to unify converter implementation
-    //POC: Is this transaction 100% needed? we are already inside a transaction?
     object converted;
     using (var tr = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction())
     {
@@ -193,13 +177,5 @@ public class AutocadHostObjectBuilder : IHostObjectBuilder
       conversionResult.AppendToDb(layerName);
       yield return conversionResult;
     }
-  }
-
-  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
-  {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] path = collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-
-    return _autocadLayerManager.GetFullLayerName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
   }
 }
