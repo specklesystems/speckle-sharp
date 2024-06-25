@@ -27,10 +27,7 @@ public class ActiveUserResourceTests
   [Test]
   public async Task ActiveUserGet_NonAuthed()
   {
-    //TODO: Exceptional cases
-    using Client unauthed = new(new() { serverInfo = new() { url = _testUser.ServerUrl } });
-
-    var result = await unauthed.ActiveUser.Get();
+    var result = await Fixtures.Unauthed.ActiveUser.Get();
     Assert.That(result, Is.EqualTo(null));
   }
 

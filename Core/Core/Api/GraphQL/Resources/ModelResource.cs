@@ -17,12 +17,12 @@ public sealed class ModelResource
     _client = client;
   }
 
-  /// <param name="projectId"></param>
   /// <param name="modelId"></param>
+  /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<Model> Get(string projectId, string modelId, CancellationToken cancellationToken = default)
+  public async Task<Model> Get(string modelId, string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -50,7 +50,7 @@ public sealed class ModelResource
                            }
                          }
                          """;
-    var request = new GraphQLRequest { Query = QUERY, Variables = new { projectId, modelId } };
+    var request = new GraphQLRequest { Query = QUERY, Variables = new { modelId, projectId } };
 
     var response = await _client
       .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)

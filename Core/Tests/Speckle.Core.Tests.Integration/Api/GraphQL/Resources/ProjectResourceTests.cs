@@ -2,7 +2,6 @@
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
-using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
@@ -52,7 +51,7 @@ public class ProjectResourceTests
   public async Task ProjectUpdate()
   {
     const string NEW_NAME = "MY new name";
-    const string NEW_DESCRIPTION = "MY new name";
+    const string NEW_DESCRIPTION = "MY new desc";
     const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Public;
 
     Project newProject = await Sut.Update(new(_testProject.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));

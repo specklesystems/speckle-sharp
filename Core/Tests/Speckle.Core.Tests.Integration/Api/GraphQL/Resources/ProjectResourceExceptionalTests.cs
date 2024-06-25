@@ -41,7 +41,7 @@ public class ProjectResourceExceptionalTests
     Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await _unauthedUser.Project.Create(input));
   }
 
-  [Test, Order(10)]
+  [Test]
   public async Task ProjectGet_WithoutAuth()
   {
     ProjectCreateInput input = new("Private STream", "A very private stream", ProjectVisibility.Private);
@@ -60,12 +60,12 @@ public class ProjectResourceExceptionalTests
   [Test]
   public void ProjectUpdate_NonExistentProject()
   {
-    Assert.CatchAsync<SpeckleGraphQLException>(
+    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(
       async () => _ = await Sut.Update(new("NonExistentProject", "My new name"))
     );
   }
 
-  [Test, Order(20)]
+  [Test]
   public void ProjectUpdate_NoAuth()
   {
     Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(
@@ -81,7 +81,7 @@ public class ProjectResourceExceptionalTests
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
 
-    Assert.CatchAsync<SpeckleGraphQLException>(async () => await Sut.UpdateRole(input));
+    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(async () => await Sut.UpdateRole(input));
   }
 
   [Test]
@@ -91,10 +91,10 @@ public class ProjectResourceExceptionalTests
   public void ProjectUpdateRole_NonAuth(string newRole)
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
-    Assert.CatchAsync<SpeckleGraphQLException>(async () => await _unauthedUser.Project.UpdateRole(input));
+    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(async () => await _unauthedUser.Project.UpdateRole(input));
   }
 
-  [Test, Order(100)]
+  [Test]
   public async Task ProjectDelete_NonExistentProject()
   {
     bool response = await Sut.Delete(_testProject.id);

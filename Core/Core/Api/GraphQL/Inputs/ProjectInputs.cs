@@ -11,7 +11,6 @@ public sealed record ProjectCommentsFilter(
 
 public sealed record ProjectCreateInput(string? name, string? description, ProjectVisibility? visibility);
 
-//TODO: what properties are required here? and what are valid roles?
 public sealed record ProjectInviteCreateInput(string? email, string? role, string? serverRole, string? userId);
 
 public sealed record ProjectInviteUseInput(bool accept, string projectId, string token);
