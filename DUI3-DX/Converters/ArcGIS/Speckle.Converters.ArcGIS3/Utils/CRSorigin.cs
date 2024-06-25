@@ -25,6 +25,7 @@ public readonly struct CRSorigin
 
   public static CRSorigin? FromRevitData(Base rootObject)
   {
+    // rewrite function to take into account Local reference point in Revit, and Transformation matrix
     foreach (KeyValuePair<string, object?> prop in rootObject.GetMembers(DynamicBaseMemberType.Dynamic))
     {
       if (prop.Key == "info")

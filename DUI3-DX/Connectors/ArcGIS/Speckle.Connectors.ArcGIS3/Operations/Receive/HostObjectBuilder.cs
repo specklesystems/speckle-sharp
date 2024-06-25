@@ -47,11 +47,10 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
-    // Receive geo-located data in the correct place
-    // 1. From Revit
-    CRSorigin? dataOrigin = CRSorigin.FromRevitData(rootObject);
+    // Browse for any trace of geolocation in non-GIS apps (e.g. Revit: implemented, Blender: todo on Blender side, Civil3d: ?)
+    CRSorigin? dataOrigin = null; // e.g. CRSorigin.FromRevitData(rootObject);
 
-    // save SpatialReference, use it for dataset writing
+    // save SpatialReference (overwrite default Map.SpatialRef), use it for dataset writing
     if (dataOrigin is CRSorigin crsOrigin)
     {
       SpatialReference incomingSpatialRef = crsOrigin.CreateCustomCRS();
