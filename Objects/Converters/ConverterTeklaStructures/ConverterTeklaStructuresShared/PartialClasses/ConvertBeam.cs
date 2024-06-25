@@ -192,12 +192,14 @@ public partial class ConverterTeklaStructures
 
     Point speckleStartPoint = new(startPoint.X, startPoint.Y, startPoint.Z, units);
     Point speckleEndPoint = new(endPoint.X, endPoint.Y, endPoint.Z, units);
-    speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-    speckleBeam.baseLine.length = Math.Sqrt(
-      Math.Pow((startPoint.X - endPoint.X), 2)
-        + Math.Pow((startPoint.Y - endPoint.Y), 2)
-        + Math.Pow((startPoint.Z - endPoint.Z), 2)
-    );
+    speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units)
+    {
+      length = Math.Sqrt(
+        Math.Pow((startPoint.X - endPoint.X), 2)
+          + Math.Pow((startPoint.Y - endPoint.Y), 2)
+          + Math.Pow((startPoint.Z - endPoint.Z), 2)
+      ),
+    };
     speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
     speckleBeam.material = GetMaterial(beam.Material.MaterialString);
     var beamCS = beam.GetCoordinateSystem();

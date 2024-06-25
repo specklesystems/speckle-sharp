@@ -29,7 +29,8 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 	bool isParentWall = Utility::GetElementType (parentArchicadId) == API_WallID;
 	bool isParentRoof = Utility::GetElementType (parentArchicadId) == API_RoofID;
 	bool isParentShell = Utility::GetElementType (parentArchicadId) == API_ShellID;
-	if (!(parentExists && (isParentWall || isParentRoof || isParentShell))) {
+	bool isParentSlab = Utility::GetElementType (parentArchicadId) == API_SlabID;
+	if (!(parentExists && (isParentWall || isParentRoof || isParentShell || isParentSlab))) {
 		return false;
 	}
 
@@ -45,6 +46,8 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 		Utility::SetElementType (elem.header, API_RoofID);
 	} else if (isParentShell) {
 		Utility::SetElementType (elem.header, API_ShellID);
+	} else if (isParentSlab) {
+		Utility::SetElementType (elem.header, API_SlabID);
 	}
 
 	elem.header.guid = parentArchicadId;
@@ -61,6 +64,10 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 		element.window.owner = parentArchicadId;
 	} else if (elementType == API_SkylightID) {
 		element.skylight.owner = parentArchicadId;
+	} else if (elementType == API_OpeningID) {
+		element.opening.owner = parentArchicadId;
+	} else if (elementType == API_SlabID) {
+		element.opening.owner = parentArchicadId;
 	}
 
 	return true;

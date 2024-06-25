@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Archicad.Converters;
 using Archicad.Model;
+using Objects.BuiltElements.Archicad;
+using Objects;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Utils;
@@ -392,5 +394,211 @@ public static class ModelConverter
     var angleCos = System.Numerics.Vector3.Dot(normal1, normal2);
 
     return angleCos > angleCosLimit;
+  }
+
+  public static ICurve CreateOpeningOutline(ArchicadOpening opening)
+  {
+    double halfWidth = opening.width / 2.0 ?? 0.0;
+    double halfHeight = opening.height / 2.0 ?? 0.0;
+    Vector basePoint = new(0, 0, 0);
+    Vector extrusionBasePoint = new(opening.extrusionGeometryBasePoint);
+
+    // Speckle datastructure does not handle the translation component, which we will use manually later, so its left empty.
+    System.DoubleNumerics.Matrix4x4 rotMatrix =
+      new(
+        (float)opening.extrusionGeometryXAxis.x,
+        (float)opening.extrusionGeometryXAxis.y,
+        (float)opening.extrusionGeometryXAxis.z,
+        0,
+        (float)opening.extrusionGeometryYAxis.x,
+        (float)opening.extrusionGeometryYAxis.y,
+        (float)opening.extrusionGeometryYAxis.z,
+        0,
+        (float)opening.extrusionGeometryZAxis.x,
+        (float)opening.extrusionGeometryZAxis.y,
+        (float)opening.extrusionGeometryZAxis.z,
+        0,
+        0,
+        0,
+        0,
+        1
+      );
+
+    Objects.Other.Transform transform = new(System.DoubleNumerics.Matrix4x4.Transpose(rotMatrix));
+
+    AdjustBasePoint(ref basePoint, halfWidth, halfHeight, opening.anchorIndex ?? 0);
+
+    return opening.basePolygonType == "Rectangular"
+      ? CreateRectangle(basePoint, transform, extrusionBasePoint, halfWidth, halfHeight)
+      : CreateEllipse(basePoint, transform, extrusionBasePoint, halfWidth, halfHeight, opening);
+  }
+
+  private static readonly Action<Vector, double, double>[] anchorActions = new Action<Vector, double, double>[]
+  {
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = halfWidth;
+      basePoint.y = -halfHeight;
+    }, // APIAnc_LT
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.y = -halfHeight;
+    }, // APIAnc_MT
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = -halfWidth;
+      basePoint.y = -halfHeight;
+    }, // APIAnc_RT
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = halfWidth;
+    }, // APIAnc_LM
+    (Vector basePoint, double halfWidth, double halfHeight) => { }, // APIAnc_MM
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = -halfWidth;
+    }, // APIAnc_RM
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = halfWidth;
+      basePoint.y = halfHeight;
+    }, // APIAnc_LB
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.y = halfHeight;
+    }, // APIAnc_MB
+    (Vector basePoint, double halfWidth, double halfHeight) =>
+    {
+      basePoint.x = -halfWidth;
+      basePoint.y = halfHeight;
+    } // APIAnc_RB
+  };
+
+  private static void AdjustBasePoint(ref Vector basePoint, double halfWidth, double halfHeight, int anchor)
+  {
+    if (anchor >= 0 && anchor < anchorActions.Length)
+    {
+      anchorActions[anchor](basePoint, halfWidth, halfHeight);
+    }
+  }
+
+  private static Polyline CreateRectangle(
+    Vector basePoint,
+    Objects.Other.Transform transform,
+    Vector extrusionBasePoint,
+    double halfWidth,
+    double halfHeight
+  )
+  {
+    var poly = new Objects.Geometry.Polyline
+    {
+      value = new List<double>(),
+      closed = true,
+      units = Units.Meters
+    };
+
+    // Coordinates of the four corners of the rectangle
+    Vector[] points =
+    {
+      new(-halfWidth, -halfHeight, 0),
+      new(halfWidth, -halfHeight, 0),
+      new(halfWidth, halfHeight, 0),
+      new(-halfWidth, halfHeight, 0)
+    };
+
+    // Transform the points to the correct position
+    foreach (var point in points)
+    {
+      Vector transformedPoint = point + basePoint;
+      transformedPoint.TransformTo(transform, out transformedPoint);
+      transformedPoint += extrusionBasePoint;
+      poly.value.AddRange(transformedPoint.ToList());
+    }
+
+    // Close the polyline
+    poly.value.AddRange(poly.value.Take(3));
+
+    return poly;
+  }
+
+  private static Ellipse CreateEllipse(
+    Vector basePoint,
+    Objects.Other.Transform transform,
+    Vector extrusionBasePoint,
+    double halfWidth,
+    double halfHeight,
+    ArchicadOpening opening
+  )
+  {
+    Vector centerPoint = new(basePoint.x, basePoint.y, basePoint.z);
+    centerPoint.TransformTo(transform, out centerPoint);
+    centerPoint += extrusionBasePoint;
+
+    Point center = new(centerPoint.x, centerPoint.y, centerPoint.z);
+
+    Objects.Geometry.Plane plane =
+      new(center, opening.extrusionGeometryZAxis, opening.extrusionGeometryXAxis, opening.extrusionGeometryYAxis);
+
+    return new Ellipse(plane, halfWidth, halfHeight, Units.Meters);
+  }
+
+  public static void GetExtrusionParametersFromOutline(
+    ICurve outline,
+    out Vector extrusionBasePoint,
+    out Vector extrusionXAxis,
+    out Vector extrusionYAxis,
+    out Vector extrusionZAxis,
+    out double width,
+    out double height
+  )
+  {
+    // Assign default values to out parameters
+    extrusionBasePoint = new Vector();
+    extrusionXAxis = new Vector();
+    extrusionYAxis = new Vector();
+    extrusionZAxis = new Vector();
+    width = 0;
+    height = 0;
+
+    if (outline is not Polyline polyline)
+    {
+      extrusionBasePoint = null;
+      extrusionXAxis = null;
+      extrusionYAxis = null;
+      extrusionZAxis = null;
+      return;
+    }
+
+    // Form the 4 points of the rectangle from the polyline
+    List<Vector> points = Enumerable
+      .Range(0, polyline.value.Count / 3)
+      .Select(
+        i => new Vector(polyline.value[i * 3], polyline.value[i * 3 + 1], polyline.value[i * 3 + 2], polyline.units)
+      )
+      .ToList();
+
+    Vector bottomLeft = Utils.ScaleToNative(points[0]);
+    Vector topLeft = Utils.ScaleToNative(points[1]);
+    Vector topRight = Utils.ScaleToNative(points[2]);
+    Vector bottomRight = Utils.ScaleToNative(points[3]);
+
+    // We set the anchor point to Middle-Middle, so we can calculate the extrusion base point more easily like so.
+    extrusionBasePoint = (bottomLeft + bottomRight + topRight + topLeft) * 0.25;
+
+    Vector verticalDiff = topRight - bottomRight;
+    height = verticalDiff.Length;
+
+    extrusionYAxis = verticalDiff / height;
+
+    Vector horizontalDiff = bottomRight - bottomLeft;
+    width = horizontalDiff.Length;
+
+    // Calculate the extrusion X axis
+    extrusionXAxis = horizontalDiff / width;
+
+    // The last extrusion axis will be the cross product of the other two
+    extrusionZAxis = Vector.CrossProduct(extrusionXAxis, extrusionYAxis);
+
+    extrusionZAxis.Normalize();
   }
 }

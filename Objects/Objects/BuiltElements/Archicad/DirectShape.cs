@@ -16,7 +16,10 @@ public class DirectShape : Base
 
   // Element base
   public string elementType { get; set; }
+
   public List<Classification> classifications { get; set; }
+  public Base? elementProperties { get; set; }
+  public Base? componentProperties { get; set; }
 
   public ArchicadLevel level { get; set; }
 
