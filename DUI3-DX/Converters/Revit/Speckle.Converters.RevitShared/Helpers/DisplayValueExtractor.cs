@@ -22,7 +22,9 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   public DisplayValueExtractor(
     ITypedConverter<Dictionary<IRevitElementId, List<IRevitMesh>>, List<SOG.Mesh>> meshByMaterialConverter,
     IRevitOptionsFactory revitOptionsFactory,
-    IRevitSolidUtils revitSolidUtils, ILogger<DisplayValueExtractor> logger)
+    IRevitSolidUtils revitSolidUtils,
+    ILogger<DisplayValueExtractor> logger
+  )
   {
     _meshByMaterialConverter = meshByMaterialConverter;
     _revitOptionsFactory = revitOptionsFactory;
@@ -252,7 +254,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   }
 
   // POC: should be hoovered up with the new reporting, logging, exception philosophy
-  private  void LogInstanceMeshRetrievalWarnings(
+  private void LogInstanceMeshRetrievalWarnings(
     IRevitElement element,
     int topLevelSolidsCount,
     int topLevelMeshesCount,
@@ -277,7 +279,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
       if (topLevelGeomElementCount > 0)
       {
         _logger.LogWarning(
-         $"Element of type {element.GetType()} with uniqueId {element.UniqueId} has valid symbol geometry and {topLevelGeomElementCount} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen"
+          $"Element of type {element.GetType()} with uniqueId {element.UniqueId} has valid symbol geometry and {topLevelGeomElementCount} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen"
         );
       }
     }

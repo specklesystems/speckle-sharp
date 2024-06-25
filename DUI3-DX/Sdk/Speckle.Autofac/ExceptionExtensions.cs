@@ -33,11 +33,11 @@ public static class ExceptionExtensions
     return ex switch
     {
       OutOfMemoryException
-        or ThreadAbortException
-        or InvalidProgramException
-        or AccessViolationException
-        or AppDomainUnloadedException
-        or BadImageFormatException
+      or ThreadAbortException
+      or InvalidProgramException
+      or AccessViolationException
+      or AppDomainUnloadedException
+      or BadImageFormatException
         => true,
       _ => false,
     };
