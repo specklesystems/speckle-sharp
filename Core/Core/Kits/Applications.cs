@@ -64,6 +64,7 @@ public static class HostApplications
     Unity = new("Unity", "unity"),
     GSA = new("GSA", "gsa"),
     Civil = new("Civil 3D", "civil3d"),
+    Civil3D = new("Civil 3D", "civil3d"),
     AutoCAD = new("AutoCAD", "autocad"),
     MicroStation = new("MicroStation", "microstation"),
     OpenRoads = new("OpenRoads", "openroads"),
@@ -117,6 +118,11 @@ public static class HostApplications
     if (appname.Contains("autocad"))
     {
       return AutoCAD;
+    }
+
+    if (appname.Contains("civil3d"))
+    {
+      return Civil3D;
     }
 
     if (appname.Contains("civil"))
