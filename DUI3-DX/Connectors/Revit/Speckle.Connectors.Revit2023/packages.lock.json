@@ -544,8 +544,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[3.0.1-alpha.10, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Objects": "[3.0.1-alpha.10, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
