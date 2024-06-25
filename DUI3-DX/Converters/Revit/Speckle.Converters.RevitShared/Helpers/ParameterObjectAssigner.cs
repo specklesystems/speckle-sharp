@@ -1,6 +1,6 @@
-﻿using Speckle.Converters.Common;
+﻿using Microsoft.Extensions.Logging;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
@@ -15,16 +15,17 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
   private readonly ITypedConverter<IRevitParameter, SOBR.Parameter> _paramConverter;
   private readonly IParameterValueExtractor _parameterValueExtractor;
   private readonly IRevitElementIdUtils _revitElementIdUtils;
+  private readonly ILogger<ParameterObjectAssigner> _logger;
 
   public ParameterObjectAssigner(
     ITypedConverter<IRevitParameter, SOBR.Parameter> paramConverter,
     IParameterValueExtractor parameterValueExtractor,
-    IRevitElementIdUtils revitElementIdUtils
-  )
+    IRevitElementIdUtils revitElementIdUtils, ILogger<ParameterObjectAssigner> logger)
   {
     _paramConverter = paramConverter;
     _parameterValueExtractor = parameterValueExtractor;
     _revitElementIdUtils = revitElementIdUtils;
+    _logger = logger;
   }
 
   public void AssignParametersToBase(IRevitElement target, Base @base)
@@ -75,7 +76,7 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
       // maybe hoover these into one exception or into our reporting strategy
       catch (SpeckleConversionException ex)
       {
-        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
+        _logger.LogWarning(ex, $"Error thrown when trying to set property named {kv.Key}");
       }
     }
   }

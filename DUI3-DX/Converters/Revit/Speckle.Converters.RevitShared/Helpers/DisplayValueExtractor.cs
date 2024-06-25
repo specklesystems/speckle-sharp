@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Logging;
 using Speckle.InterfaceGenerator;
 using Speckle.Revit.Interfaces;
 
@@ -17,16 +17,17 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   > _meshByMaterialConverter;
   private readonly IRevitOptionsFactory _revitOptionsFactory;
   private readonly IRevitSolidUtils _revitSolidUtils;
+  private readonly ILogger<DisplayValueExtractor> _logger;
 
   public DisplayValueExtractor(
     ITypedConverter<Dictionary<IRevitElementId, List<IRevitMesh>>, List<SOG.Mesh>> meshByMaterialConverter,
     IRevitOptionsFactory revitOptionsFactory,
-    IRevitSolidUtils revitSolidUtils
-  )
+    IRevitSolidUtils revitSolidUtils, ILogger<DisplayValueExtractor> logger)
   {
     _meshByMaterialConverter = meshByMaterialConverter;
     _revitOptionsFactory = revitOptionsFactory;
     _revitSolidUtils = revitSolidUtils;
+    _logger = logger;
   }
 
   public List<SOG.Mesh> GetDisplayValue(
@@ -251,7 +252,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
   }
 
   // POC: should be hoovered up with the new reporting, logging, exception philosophy
-  private static void LogInstanceMeshRetrievalWarnings(
+  private  void LogInstanceMeshRetrievalWarnings(
     IRevitElement element,
     int topLevelSolidsCount,
     int topLevelMeshesCount,
@@ -263,29 +264,20 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
     {
       if (topLevelSolidsCount > 0)
       {
-        SpeckleLog.Logger.Warning(
-          "Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level solids. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen",
-          element.GetType(),
-          element.UniqueId,
-          topLevelSolidsCount
+        _logger.LogWarning(
+          $"Element of type {element.GetType()} with uniqueId {element.UniqueId} has valid symbol geometry and {topLevelSolidsCount} top level solids. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen"
         );
       }
       if (topLevelMeshesCount > 0)
       {
-        SpeckleLog.Logger.Warning(
-          "Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numMeshes} top level meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen",
-          element.GetType(),
-          element.UniqueId,
-          topLevelMeshesCount
+        _logger.LogWarning(
+          $"Element of type {element.GetType()} with uniqueId {element.UniqueId} has valid symbol geometry and {topLevelMeshesCount} top level meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen"
         );
       }
       if (topLevelGeomElementCount > 0)
       {
-        SpeckleLog.Logger.Warning(
-          "Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numGeomElements} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen",
-          element.GetType(),
-          element.UniqueId,
-          topLevelGeomElementCount
+        _logger.LogWarning(
+         $"Element of type {element.GetType()} with uniqueId {element.UniqueId} has valid symbol geometry and {topLevelGeomElementCount} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen"
         );
       }
     }

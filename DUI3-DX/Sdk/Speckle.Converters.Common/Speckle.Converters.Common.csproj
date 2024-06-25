@@ -3,13 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
-    <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.24" />
+    <PackageReference Include="Speckle.Objects" Version="3.0.1-alpha.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 
 </Project>
