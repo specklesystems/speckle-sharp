@@ -1,0 +1,165 @@
+using Autodesk.Revit.DB;
+using Speckle.Converters.Common;
+using Speckle.Revit.Api;
+using Speckle.Revit.Interfaces;
+
+namespace Speckle.Connectors.Revit.Operations.Receive;
+
+/// <summary>
+/// Is responsible for all functionality regarding subtransactions, transactions, and transaction groups.
+/// This includes starting, pausing, committing, and rolling back transactions
+/// </summary>
+public sealed class TransactionManager : IDisposable
+{
+  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private Document Document => ((DocumentProxy)_contextStack.Current.Document)._Instance;
+
+  public TransactionManager(IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack)
+  {
+    _contextStack = contextStack;
+  }
+
+  // poc : these are being disposed. I'm not sure why I need to supress this warning
+#pragma warning disable CA2213 // Disposable fields should be disposed
+  private TransactionGroup? _transactionGroup;
+  private Transaction? _transaction;
+  private SubTransaction? _subTransaction;
+#pragma warning restore CA2213 // Disposable fields should be disposed
+
+  public void StartTransactionGroup(string transactionName)
+  {
+    if (_transactionGroup == null)
+    {
+      _transactionGroup = new TransactionGroup(Document, transactionName);
+      _transactionGroup.Start();
+    }
+    StartTransaction();
+  }
+
+  public void CommitTransactionGroup()
+  {
+    try
+    {
+      CommitTransaction();
+    }
+    finally
+    {
+      if (_transactionGroup?.GetStatus() == TransactionStatus.Started)
+      {
+        _transactionGroup.Assimilate();
+      }
+    }
+  }
+
+  public void RollbackTransactionGroup()
+  {
+    RollbackTransaction();
+    if (
+      _transactionGroup != null
+      && _transactionGroup.IsValidObject
+      && _transactionGroup.GetStatus() == TransactionStatus.Started
+    )
+    {
+      _transactionGroup.Assimilate();
+    }
+  }
+
+  public void StartTransaction()
+  {
+    if (_transaction == null || !_transaction.IsValidObject || _transaction.GetStatus() != TransactionStatus.Started)
+    {
+      _transaction = new Transaction(Document, "Speckle Transaction");
+      var failOpts = _transaction.GetFailureHandlingOptions();
+      // POC: make sure to implement and add the failure preprocessor
+      //failOpts.SetFailuresPreprocessor(_errorPreprocessingService);
+      failOpts.SetClearAfterRollback(true);
+      _transaction.SetFailureHandlingOptions(failOpts);
+      _transaction.Start();
+    }
+  }
+
+  public TransactionStatus CommitTransaction()
+  {
+    if (
+      _subTransaction != null
+      && _subTransaction.IsValidObject
+      && _subTransaction.GetStatus() == TransactionStatus.Started
+    )
+    {
+      var status = _subTransaction.Commit();
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
+    }
+    if (_transaction != null && _transaction.IsValidObject && _transaction.GetStatus() == TransactionStatus.Started)
+    {
+      var status = _transaction.Commit();
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
+      return status;
+    }
+    return TransactionStatus.Uninitialized;
+  }
+
+  public void RollbackTransaction()
+  {
+    RollbackSubTransaction();
+    if (_transaction != null && _transaction.IsValidObject && _transaction.GetStatus() == TransactionStatus.Started)
+    {
+      _transaction.RollBack();
+    }
+  }
+
+  public void StartSubtransaction()
+  {
+    StartTransaction();
+    if (
+      _subTransaction == null
+      || !_subTransaction.IsValidObject
+      || _subTransaction.GetStatus() != TransactionStatus.Started
+    )
+    {
+      _subTransaction = new SubTransaction(Document);
+      _subTransaction.Start();
+    }
+  }
+
+  public TransactionStatus CommitSubtransaction()
+  {
+    if (_subTransaction != null && _subTransaction.IsValidObject)
+    {
+      var status = _subTransaction.Commit();
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
+      return status;
+    }
+    return TransactionStatus.Uninitialized;
+  }
+
+  public void RollbackSubTransaction()
+  {
+    if (
+      _subTransaction != null
+      && _subTransaction.IsValidObject
+      && _subTransaction.GetStatus() == TransactionStatus.Started
+    )
+    {
+      _subTransaction.RollBack();
+    }
+  }
+
+  public void Dispose()
+  {
+    _subTransaction?.Dispose();
+    _transaction?.Dispose();
+    _transactionGroup?.Dispose();
+  }
+}

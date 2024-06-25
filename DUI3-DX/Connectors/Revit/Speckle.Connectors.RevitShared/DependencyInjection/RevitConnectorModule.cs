@@ -4,10 +4,10 @@ using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Operations.Receive;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.RevitShared.Helpers;
@@ -16,6 +16,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Revit.Api;
 using Speckle.Revit.Interfaces;
 
@@ -35,7 +36,7 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddScoped<IConversionContextStack<IRevitDocument, IRevitForgeTypeId>, RevitConversionContextStack>();
     builder.ScanAssemblyOfType<RevitUnitUtils>();
 
-    builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
+    builder.AddSingletonInstance<ISyncToThread, RevitContextAccessor>();
 
     // POC: different versons for different versions of CEF
     builder.AddSingleton(BindingOptions.DefaultBinder);
@@ -63,14 +64,18 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddSingleton<IBasicConnectorBinding, BasicConnectorBindingRevit>();
     builder.AddSingleton<IBinding, SelectionBinding>();
     builder.AddSingleton<IBinding, RevitSendBinding>();
-    //no receive?
+    builder.AddSingleton<IBinding, RevitReceiveBinding>();
     builder.AddSingleton<IRevitIdleManager, RevitIdleManager>();
 
     // send operation and dependencies
     builder.AddScoped<SendOperation<ElementId>>();
     builder.AddScoped<IRootObjectBuilder<ElementId>, RevitRootObjectBuilder>();
-
-    // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
+
+    // receive operation and dependencies
+    builder.AddScoped<ReceiveOperation>();
+    builder.AddScoped<IHostObjectBuilder, RevitHostObjectBuilder>();
+    builder.AddScoped<TransactionManager>();
+    builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
   }
 }
