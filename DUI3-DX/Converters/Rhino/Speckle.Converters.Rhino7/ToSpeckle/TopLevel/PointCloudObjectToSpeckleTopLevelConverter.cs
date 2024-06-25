@@ -1,15 +1,15 @@
-﻿using Rhino.DocObjects;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-[NameAndRankValue(nameof(PointCloudObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(IRhinoPointCloudObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointCloudObjectToSpeckleTopLevelConverter
-  : RhinoObjectToSpeckleTopLevelConverter<PointCloudObject, RG.PointCloud, SOG.Pointcloud>
+  : RhinoObjectToSpeckleTopLevelConverter<IRhinoPointCloudObject, IRhinoPointCloud, SOG.Pointcloud>
 {
-  public PointCloudObjectToSpeckleTopLevelConverter(ITypedConverter<RG.PointCloud, SOG.Pointcloud> conversion)
+  public PointCloudObjectToSpeckleTopLevelConverter(ITypedConverter<IRhinoPointCloud, SOG.Pointcloud> conversion)
     : base(conversion) { }
 
-  protected override RG.PointCloud GetTypedGeometry(PointCloudObject input) => input.PointCloudGeometry;
+  protected override IRhinoPointCloud GetTypedGeometry(IRhinoPointCloudObject input) => input.PointCloudGeometry;
 }

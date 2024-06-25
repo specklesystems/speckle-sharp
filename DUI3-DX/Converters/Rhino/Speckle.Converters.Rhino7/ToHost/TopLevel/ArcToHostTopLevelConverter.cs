@@ -1,15 +1,16 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Arc, RG.ArcCurve>
+public class ArcToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Arc, IRhinoArcCurve>
 {
   public ArcToHostTopLevelConverter(
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
-    ITypedConverter<SOG.Arc, RG.ArcCurve> geometryBaseConverter
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    ITypedConverter<SOG.Arc, IRhinoArcCurve> geometryBaseConverter,
+    IRhinoTransformFactory rhinoTransformFactory
   )
-    : base(contextStack, geometryBaseConverter) { }
+    : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
 }

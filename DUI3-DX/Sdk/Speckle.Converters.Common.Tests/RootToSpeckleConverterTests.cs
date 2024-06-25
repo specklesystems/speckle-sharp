@@ -1,8 +1,7 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using Speckle.Core.Models;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Common.Tests;
 
