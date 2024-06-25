@@ -22,12 +22,12 @@ public sealed class SubscriptionResource
   //   remove => _userProjectsAdded.Callback -= value;
   // }
   //
-  // private GraphQLSubscription<UserStreamAddedResult> UserProjectAddedSubscription()
-  // {
-  //   const string UserProjectsAddedQuery = """
-  //
-  //                                         """;
-  //   GraphQLRequest request = new(UserProjectsAddedQuery);
-  //   return new GraphQLSubscription<UserStreamAddedResult>(request, _client);
-  // }
+  private GraphQLSubscription<UserStreamAddedResult> UserProjectAddedSubscription()
+  {
+    const string UserProjectsAddedQuery = """
+  
+                                          """;
+    GraphQLRequest request = new(UserProjectsAddedQuery);
+    return new GraphQLSubscription<UserStreamAddedResult>(request, _client);
+  }
 }

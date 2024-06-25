@@ -6,28 +6,23 @@ using Speckle.Core.Api.GraphQL.Resources;
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
 [TestOf(typeof(ProjectResource))]
-public class ProjectInviteResourceTests : ResourcesTests
+public class ProjectInviteResourceTests
 {
-  private ProjectInviteResource Sut => FirstUser.ProjectInvite;
-  private Project _project;
+  private ProjectInviteResource Sut => ResourcesTestsFixture.FirstUser.ProjectInvite;
+  private UserInfo TargetUser => ResourcesTestsFixture.SecondUser.Account.userInfo;
+  private Project Project => ResourcesTestsFixture.Project;
 
   private PendingStreamCollaborator _createdInvite;
-
-  protected override async Task OneTimeSetup()
-  {
-    await base.OneTimeSetup();
-    _project = await FirstUser.Project.Create(new("test", null, null));
-  }
 
   [Test]
   public async Task ProjectInviteCreate_By_Email()
   {
-    ProjectInviteCreateInput input = new(SecondUser.Account.userInfo.email, null, null, null);
-    var res = await Sut.Create(_project.id, input);
+    ProjectInviteCreateInput input = new(TargetUser.email, null, null, null);
+    var res = await Sut.Create(Project.id, input);
 
-    Assert.That(res, Has.Property(nameof(Project.id)).EqualTo(_project.id));
+    Assert.That(res, Has.Property(nameof(Core.Api.GraphQL.Models.Project.id)).EqualTo(Project.id));
     Assert.That(res.invitedTeam, Has.Count.EqualTo(1));
-    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(SecondUser.Account.userInfo.id));
+    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(TargetUser.id));
 
     _createdInvite = res.invitedTeam[0];
   }
@@ -35,13 +30,12 @@ public class ProjectInviteResourceTests : ResourcesTests
   [Test]
   public async Task ProjectInviteCreate_By_UserId()
   {
-    UserInfo invitee = SecondUser.Account.userInfo;
-    ProjectInviteCreateInput input = new(null, null, null, invitee.id);
-    var res = await Sut.Create(_project.id, input);
+    ProjectInviteCreateInput input = new(null, null, null, TargetUser.id);
+    var res = await Sut.Create(Project.id, input);
 
-    Assert.That(res, Has.Property(nameof(Project.id)).EqualTo(_project.id));
+    Assert.That(res, Has.Property(nameof(Core.Api.GraphQL.Models.Project.id)).EqualTo(Project.id));
     Assert.That(res.invitedTeam, Has.Count.EqualTo(1));
-    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(invitee.id));
+    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(TargetUser.id));
   }
 
   [Test]
@@ -50,13 +44,13 @@ public class ProjectInviteResourceTests : ResourcesTests
     Assert.CatchAsync<SpeckleGraphQLException>(async () =>
     {
       var input = new ProjectInviteCreateInput(null, null, null, null);
-      await Sut.Create(_project.id, input);
+      await Sut.Create(Project.id, input);
     });
 
     Assert.CatchAsync<SpeckleGraphQLException>(async () =>
     {
       var input = new ProjectInviteCreateInput(null, "something", "something", null);
-      await Sut.Create(_project.id, input);
+      await Sut.Create(Project.id, input);
     });
   }
 
@@ -64,7 +58,7 @@ public class ProjectInviteResourceTests : ResourcesTests
   public async Task ProjectInviteGet()
   {
     await ProjectInviteCreate_By_Email();
-    PendingStreamCollaborator collaborator = await Sut.Get(_project.id, _createdInvite.token);
+    PendingStreamCollaborator collaborator = await Sut.Get(Project.id, _createdInvite.token);
 
     Assert.That(collaborator, Has.Property(nameof(PendingStreamCollaborator.id)).EqualTo(_createdInvite.id));
     Assert.That(

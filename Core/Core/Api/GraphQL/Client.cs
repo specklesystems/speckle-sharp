@@ -115,10 +115,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
-  /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
-  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
-  /// <exception cref="ObjectDisposedException">This <see cref="Client"/> already been disposed</exception>
+  /// <inheritdoc/>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));

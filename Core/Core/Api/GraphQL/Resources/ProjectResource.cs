@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -16,6 +17,10 @@ public sealed class ProjectResource
     _client = client;
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> Get(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -42,6 +47,11 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="modelsLimit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> GetWithModels(
     string projectId,
     int modelsLimit,
@@ -85,7 +95,11 @@ public sealed class ProjectResource
     return response.project;
   }
 
-  //TODO: Double check that this covers both seealso tagged functions
+  /// <param name="projectId"></param>
+  /// <param name="modelsLimit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> GetWithTeam(
     string projectId,
     int modelsLimit,
@@ -159,6 +173,10 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> Create(ProjectCreateInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -187,6 +205,10 @@ public sealed class ProjectResource
     return response.projectMutations.create;
   }
 
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> Update(ProjectUpdateInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -214,6 +236,10 @@ public sealed class ProjectResource
     return response.projectMutations.update;
   }
 
+  /// <param name="deleteId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Delete(string deleteId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -232,6 +258,12 @@ public sealed class ProjectResource
     return response.projectMutations.delete;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> UpdateRole(ProjectUpdateRoleInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -298,8 +330,8 @@ public sealed class ProjectResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, dynamic>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["projectMutations"];
+    return response.projectMutations.updateRole;
   }
 }

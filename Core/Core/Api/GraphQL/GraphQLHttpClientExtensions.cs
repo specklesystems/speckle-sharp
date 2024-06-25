@@ -4,6 +4,7 @@ using System.Threading;
 using GraphQL.Client.Http;
 using System.Linq;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 
 namespace Speckle.Core.Api.GraphQL;
 

@@ -1,14 +1,15 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
 [TestOf(typeof(OtherUserResource))]
-public class OtherUserResourceTests : ResourcesTests
+public class OtherUserResourceTests
 {
-  private OtherUserResource Sut => FirstUser.OtherUser;
-  private UserInfo TestData => SecondUser.Account.userInfo;
+  private OtherUserResource Sut => ResourcesTestsFixture.FirstUser.OtherUser;
+  private UserInfo TestData => ResourcesTestsFixture.SecondUser.Account.userInfo;
 
   [Test]
   public async Task OtherUserGet()

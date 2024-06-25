@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -15,7 +16,12 @@ public sealed class ProjectInviteResource
   {
     _client = client;
   }
-
+  
+  /// <param name="projectId"></param>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> Create(
     string projectId,
     ProjectInviteCreateInput input,
@@ -94,6 +100,13 @@ public sealed class ProjectInviteResource
   }
 
   //TODO: what is this return...
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Use(ProjectInviteUseInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -112,6 +125,11 @@ public sealed class ProjectInviteResource
     return response["use"]; //TODO: check if this is correct
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="token"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<PendingStreamCollaborator?> Get(
     string projectId,
     string? token,
@@ -159,10 +177,15 @@ public sealed class ProjectInviteResource
     var response = await _client
       .ExecuteGraphQLRequest<Dictionary<string, PendingStreamCollaborator?>>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["projectInvite"];
+    return response["projectInvite"]
   }
 
   //TODO: again, what to return...
+  /// <param name="projectId"></param>
+  /// <param name="inviteId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Cancel(string projectId, string inviteId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -236,6 +259,11 @@ public sealed class ProjectInviteResource
     return response["cancel"];
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> BatchCreate(
     string projectId,
     IReadOnlyList<ProjectInviteCreateInput> input,
@@ -308,8 +336,8 @@ public sealed class ProjectInviteResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Project>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["batchCreate"];
+    return response.projectMutations.invites.batchCreate;
   }
 }

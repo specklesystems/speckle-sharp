@@ -2,88 +2,78 @@
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
 [TestOf(typeof(ProjectResource))]
-public class ProjectResourceTests : ResourcesTests
+public class ProjectResourceTests
 {
-  private ProjectResource Sut => FirstUser.Project;
-  private Project _project;
+  private ProjectResource Sut => ResourcesTestsFixture.FirstUser.Project;
+  private Project TestProject => ResourcesTestsFixture.Project;
+  private Client TestOtherUser => ResourcesTestsFixture.SecondUser;
 
-  [Test, Order(10)]
-  public async Task ProjectCreate()
+  [TestCase("Very private project", "My secret project", ProjectVisibility.Private)]
+  [TestCase("Very public project", null, ProjectVisibility.Public)]
+  public async Task ProjectCreate(string name, string desc, ProjectVisibility visibility)
   {
-    ProjectCreateInput input =
-      new("The best project", "The best description for the best project", ProjectVisibility.Private);
+    ProjectCreateInput input = new(name, desc, visibility);
     Project result = await Sut.Create(input);
-
     Assert.That(result, Is.Not.Null);
     Assert.That(result, Has.Property(nameof(Project.id)).Not.Null);
     Assert.That(result, Has.Property(nameof(Project.name)).EqualTo(input.name));
     Assert.That(result, Has.Property(nameof(Project.description)).EqualTo(input.description));
     Assert.That(result, Has.Property(nameof(Project.visibility)).EqualTo(input.visibility));
-
-    _project = result;
   }
 
-  [Test, Order(20)]
+  [Test]
   public async Task ProjectGet()
   {
-    await ProjectCreate();
-    Project result = await Sut.Get(_project.id);
+    Project result = await Sut.Get(TestProject.id);
 
-    Assert.That(result.id, Is.EqualTo(_project.id));
-    Assert.That(result.name, Is.EqualTo(_project.name));
-    Assert.That(result.description, Is.EqualTo(_project.description));
-    Assert.That(result.visibility, Is.EqualTo(_project.visibility));
-    Assert.That(result.createdAt, Is.EqualTo(_project.createdAt));
+    Assert.That(result.id, Is.EqualTo(TestProject.id));
+    Assert.That(result.name, Is.EqualTo(TestProject.name));
+    Assert.That(result.description, Is.EqualTo(TestProject.description));
+    Assert.That(result.visibility, Is.EqualTo(TestProject.visibility));
+    Assert.That(result.createdAt, Is.EqualTo(TestProject.createdAt));
   }
 
-  [Test, Order(30)]
+  [Test]
   public async Task ProjectUpdate()
   {
-    await ProjectCreate();
-
     const string NEW_NAME = "MY new name";
     const string NEW_DESCRIPTION = "MY new name";
     const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Public;
 
-    Project newProject = await Sut.Update(new(_project.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));
+    Project newProject = await Sut.Update(new(TestProject.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));
 
-    Assert.That(newProject.id, Is.EqualTo(_project.id));
+    Assert.That(newProject.id, Is.EqualTo(TestProject.id));
     Assert.That(newProject.name, Is.EqualTo(NEW_NAME));
     Assert.That(newProject.description, Is.EqualTo(NEW_DESCRIPTION));
     Assert.That(newProject.visibility, Is.EqualTo(NEW_VISIBILITY));
-
-    _project = newProject;
   }
 
-  [Test, Order(40)]
+  [Test]
   [TestCase("stream:owner")]
   [TestCase("stream:reviewer")] //TODO: be exhaustive
   [TestCase(null)] //Revoke access
   public async Task ProjectUpdateRole(string newRole)
   {
-    await ProjectCreate();
-
     //TODO: figure out if this test could work, we may need to invite the user first...
-    ProjectUpdateRoleInput input = new(SecondUser.Account.userInfo.id, _project.id, newRole);
+    ProjectUpdateRoleInput input = new(TestOtherUser.Account.userInfo.id, TestProject.id, newRole);
     _ = await Sut.UpdateRole(input);
 
-    Project finalProject = await SecondUser.Project.Get(_project.id);
+    Project finalProject = await TestOtherUser.Project.Get(TestProject.id);
     Assert.That(finalProject.role, Is.EqualTo(newRole));
   }
 
-  [Test, Order(100)]
+  [Test]
   public async Task ProjectDelete()
   {
-    await ProjectCreate();
-
-    bool response = await Sut.Delete(_project.id);
+    bool response = await Sut.Delete(TestProject.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
+    Assert.ThrowsAsync<SpeckleGraphQLException<ProjectResponse>>(async () => _ = await Sut.Get(TestProject.id)); //TODO: Exception types
   }
 }

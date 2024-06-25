@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -16,6 +17,11 @@ public sealed class ModelResource
     _client = client;
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="modelId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Model> Get(string projectId, string modelId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -53,7 +59,12 @@ public sealed class ModelResource
     return response.project.model;
   }
 
-  //TODO: can we do this smarter with Skip/Include directives?
+  /// <param name="projectId"></param>
+  /// <param name="modelId"></param>
+  /// <param name="versionsLimit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Model> GetWithVersions(
     string projectId,
     string modelId,
@@ -118,6 +129,13 @@ public sealed class ModelResource
     return response.project.model;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Model> Create(CreateModelInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -149,11 +167,18 @@ public sealed class ModelResource
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
     var res = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Model>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return res["created"];
+    return res.modelMutations.create;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Delete(DeleteModelInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -167,11 +192,15 @@ public sealed class ModelResource
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
     var res = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return res["delete"];
+    return res.modelMutations.delete;
   }
 
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Model> Update(UpdateModelInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -203,8 +232,8 @@ public sealed class ModelResource
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
     var res = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Model>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return res["update"];
+    return res.modelMutations.update;
   }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Version = Speckle.Core.Api.GraphQL.Models.Version;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
@@ -18,7 +19,12 @@ public sealed class VersionResource
     _client = client;
   }
 
-  //TODO: Check, it looks like we need the model id here... but this doesn't feel right
+  /// <param name="projectId"></param>
+  /// <param name="modelId"></param>
+  /// <param name="versionId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Version> Get(
     string projectId,
     string modelId,
@@ -71,7 +77,11 @@ public sealed class VersionResource
     return response.project.model.version;
   }
 
-  //TODO: Would we prefer to expose pagination here? cursor input, and return ResourceCollection<Version> instead?
+  /// <param name="projectId"></param>
+  /// <param name="modelId"></param>
+  /// <param name="limit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<Version>> GetVersions(
     string projectId,
     string modelId,
@@ -130,6 +140,9 @@ public sealed class VersionResource
   }
 
   //TODO: Implement on server
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Version> Create(CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException("Not Implemented on Server");
@@ -142,6 +155,9 @@ public sealed class VersionResource
     var response = await _client.ExecuteGraphQLRequest<object>(request, cancellationToken).ConfigureAwait(false);
   }
 
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Version> Update(UpdateVersionInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -178,6 +194,10 @@ public sealed class VersionResource
   }
 
   //TODO: Would we rather return the full model here? with or with out versions?
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<string> MoveToModel(MoveVersionsInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -198,6 +218,9 @@ public sealed class VersionResource
     return response["moveToModel"].id;
   }
 
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Delete(CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -217,6 +240,11 @@ public sealed class VersionResource
   }
 
   //TODO: Implement on server
+
+  /// <param name="commitReceivedInput"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<bool> Received(
     CommitReceivedInput commitReceivedInput,
     CancellationToken cancellationToken = default

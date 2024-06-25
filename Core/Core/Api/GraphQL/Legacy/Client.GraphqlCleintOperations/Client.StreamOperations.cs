@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Logging;
 

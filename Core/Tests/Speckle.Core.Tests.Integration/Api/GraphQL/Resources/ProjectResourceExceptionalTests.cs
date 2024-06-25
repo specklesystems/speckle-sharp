@@ -2,15 +2,18 @@
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
 [TestOf(typeof(ProjectResource))]
-public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
+public class ProjectResourceExceptionalTests
 {
-  private ProjectResource Sut => FirstUser.Project;
-  private Project _project;
+  private ProjectResource Sut => ResourcesTestsFixture.FirstUser.Project;
+  private Client UnauthedUser => ResourcesTestsFixture.UnauthedUser;
+  private Client SecondUser => ResourcesTestsFixture.SecondUser;
+  private Project testProject => ResourcesTestsFixture.Project;
 
   //TODO: There's got to be a smarter way to parametrise this.
   //We want to check the following cases
@@ -25,7 +28,7 @@ public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
     ProjectCreateInput input =
       new("The best project", "The best description for the best project", ProjectVisibility.Private);
 
-    Assert.ThrowsAsync<Exception>(async () => await Unauthed.Project.Create(input));
+    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.Create(input));
   }
 
   [Test, Order(10)]
@@ -35,8 +38,7 @@ public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
 
     Project privateStream = await Sut.Create(input);
 
-    Assert.ThrowsAsync<Exception>(async () => await Unauthed.Project.Get(privateStream.id));
-    _project = privateStream;
+    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.Get(privateStream.id));
   }
 
   [Test]
@@ -54,7 +56,9 @@ public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
   [Test, Order(20)]
   public void ProjectUpdate_NoAuth()
   {
-    Assert.ThrowsAsync<Exception>(async () => _ = await Unauthed.Project.Update(new(_project.id, "My new name")));
+    Assert.ThrowsAsync<Exception>(
+      async () => _ = await UnauthedUser.Project.Update(new(testProject.id, "My new name"))
+    );
   }
 
   [Test]
@@ -76,15 +80,15 @@ public class ProjectResourceExceptionalTests : ResourcesExceptionalTests
   {
     ProjectUpdateRoleInput input = new(SecondUser.Account.id, "NonExistentProject", newRole);
 
-    Assert.ThrowsAsync<Exception>(async () => await Unauthed.Project.UpdateRole(input));
+    Assert.ThrowsAsync<Exception>(async () => await UnauthedUser.Project.UpdateRole(input));
   }
 
   [Test, Order(100)]
   public async Task ProjectDelete_NonExistentProject()
   {
-    bool response = await Sut.Delete(_project.id);
+    bool response = await Sut.Delete(testProject.id);
     Assert.That(response, Is.True);
 
-    Assert.ThrowsAsync<Exception>(async () => _ = await Sut.Get(_project.id)); //TODO: Exception types
+    Assert.ThrowsAsync<Exception>(async () => _ = await Sut.Get(testProject.id)); //TODO: Exception types
   }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Credentials;
 using UserInfo = Speckle.Core.Api.GraphQL.Models.UserInfo;
 
@@ -23,6 +24,7 @@ public sealed class ActiveUserResource
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<UserInfo> Get(CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -50,6 +52,10 @@ public sealed class ActiveUserResource
     return response.ActiveUserInfo;
   }
 
+  /// <param name="projectsLimit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<Project>> GetProjects(
     int projectsLimit = 10,
     CancellationToken cancellationToken = default
@@ -85,6 +91,11 @@ public sealed class ActiveUserResource
     return response.ActiveUserInfo.projects;
   }
 
+  /// <param name="filter"></param>
+  /// <param name="limit"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<Project>> FilterProjects(
     UserProjectsFilter filter,
     int limit = 10,
@@ -121,6 +132,9 @@ public sealed class ActiveUserResource
     return response.ActiveUserInfo.projects.items;
   }
 
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<Project>> PendingInvites(CancellationToken cancellationToken = default)
   {
     //language=graphql

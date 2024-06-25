@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 
 namespace Speckle.Core.Api.GraphQL.Resources;
 
@@ -15,6 +16,13 @@ public sealed class OtherUserResource
     _client = client;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="id"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<LimitedUser> Get(string id, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -46,6 +54,7 @@ public sealed class OtherUserResource
   /// <param name="query">String to search for. Must be at least 3 characters</param>
   /// <param name="limit">Max number of users to return</param>
   /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<LimitedUser>> UserSearch(
     string query,
     int limit = 10,

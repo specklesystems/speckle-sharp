@@ -66,11 +66,11 @@ public class SpeckleGraphQLException : SpeckleException
 /// https://www.apollographql.com/docs/apollo-server/v2/data/errors/#unauthenticated
 /// https://www.apollographql.com/docs/apollo-server/v2/data/errors/#forbidden
 /// </summary>
-public class SpeckleGraphQLForbiddenException<T> : SpeckleGraphQLException<T>
+public class SpeckleGraphQLForbiddenException : SpeckleGraphQLException
 {
   public SpeckleGraphQLForbiddenException(
     GraphQLRequest request,
-    GraphQLResponse<T> response,
+    IGraphQLResponse response,
     Exception? innerException = null
   )
     : base("Your request was forbidden", request, response, innerException) { }
