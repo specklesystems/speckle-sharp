@@ -120,14 +120,14 @@ public static class HostApplications
       return AutoCAD;
     }
 
-    if (appname.Contains("civil"))
-    {
-      return Civil;
-    }
-
     if (appname.Contains("civil3d"))
     {
       return Civil3D;
+    }
+
+    if (appname.Contains("civil"))
+    {
+      return Civil;
     }
 
     if (appname.Contains("rhino"))
