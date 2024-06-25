@@ -128,7 +128,7 @@ public sealed class ProjectInviteResource
   /// <param name="projectId"></param>
   /// <param name="token"></param>
   /// <param name="cancellationToken"></param>
-  /// <returns></returns>
+  /// <returns>The invite, or null if no invite exists</returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<PendingStreamCollaborator?> Get(
     string projectId,
@@ -174,11 +174,12 @@ public sealed class ProjectInviteResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, token } };
 
+    var asdf = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, PendingStreamCollaborator?>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectInviteResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    //TODO: FIGURE OUT THIS RETURN
-    return response["projectInvite"];
+
+    return response.projectInvite;
   }
 
   //TODO: again, what to return...

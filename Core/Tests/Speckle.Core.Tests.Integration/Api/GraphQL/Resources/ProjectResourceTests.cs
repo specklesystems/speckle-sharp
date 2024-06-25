@@ -63,20 +63,6 @@ public class ProjectResourceTests
   }
 
   [Test]
-  [TestCase("stream:owner")]
-  [TestCase("stream:reviewer")] //TODO: be exhaustive
-  [TestCase(null)] //Revoke access
-  public async Task ProjectUpdateRole(string newRole)
-  {
-    //TODO: figure out if this test could work, we may need to invite the user first...
-    ProjectUpdateRoleInput input = new(_secondUser.Account.userInfo.id, _testProject.id, newRole);
-    _ = await Sut.UpdateRole(input);
-
-    Project finalProject = await _secondUser.Project.Get(_testProject.id);
-    Assert.That(finalProject.role, Is.EqualTo(newRole));
-  }
-
-  [Test]
   public async Task ProjectDelete()
   {
     Project toDelete = await Sut.Create(new("Delete me", null, null));

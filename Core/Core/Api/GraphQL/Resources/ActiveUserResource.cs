@@ -134,7 +134,7 @@ public sealed class ActiveUserResource
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<List<Project>> PendingInvites(CancellationToken cancellationToken = default)
+  public async Task<List<Project>> ProjectInvites(CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """

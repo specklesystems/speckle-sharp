@@ -186,20 +186,6 @@ public class StreamInvitesResponse
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
-public class PendingStreamCollaborator
-{
-  public string id { get; set; }
-  public string inviteId { get; set; }
-  public string streamId { get; set; }
-  public string streamName { get; set; }
-  public string title { get; set; }
-  public string role { get; set; }
-  public LimitedUser invitedBy { get; set; }
-  public LimitedUser user { get; set; }
-  public string token { get; set; }
-}
-
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Branches
 {
   public int totalCount { get; set; }

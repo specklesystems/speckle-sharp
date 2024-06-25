@@ -1,4 +1,5 @@
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
@@ -177,7 +178,7 @@ public class Legacy : IDisposable
     var res = await _myClient.StreamUpdatePermission(
       new StreamPermissionInput
       {
-        role = "stream:reviewer",
+        role = ServerRoles.STREAM_REVIEWER,
         streamId = _streamId,
         userId = _secondUserAccount.userInfo.id
       }

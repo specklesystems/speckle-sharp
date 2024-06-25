@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using GraphQL;
+﻿using GraphQL;
 using Speckle.Core.Api.SubscriptionModels;
 
 namespace Speckle.Core.Api.GraphQL.Resources;

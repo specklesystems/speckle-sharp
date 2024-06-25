@@ -19,3 +19,5 @@ internal record ServerInfoResponse([property: JsonRequired] ServerInfo serverInf
 internal record ProjectMutationResponse([property: JsonRequired] ProjectMutation projectMutations);
 
 internal record ModelMutationResponse([property: JsonRequired] ModelMutation modelMutations);
+
+internal record ProjectInviteResponse(PendingStreamCollaborator? projectInvite);

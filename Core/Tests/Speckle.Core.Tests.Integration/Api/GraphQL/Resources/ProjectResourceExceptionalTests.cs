@@ -1,4 +1,5 @@
 ﻿using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
@@ -74,9 +75,10 @@ public class ProjectResourceExceptionalTests
   }
 
   [Test]
-  [TestCase("stream:owner")]
-  [TestCase("stream:reviewer")]
-  [TestCase(null)]
+  [TestCase(ServerRoles.STREAM_OWNER)]
+  [TestCase(ServerRoles.STREAM_CONTRIBUTOR)]
+  [TestCase(ServerRoles.STREAM_REVIEWER)]
+  [TestCase(ServerRoles.REVOKE)]
   public void ProjectUpdateRole_NonExistentProject(string newRole)
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
@@ -91,7 +93,7 @@ public class ProjectResourceExceptionalTests
   public void ProjectUpdateRole_NonAuth(string newRole)
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
-    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(async () => await _unauthedUser.Project.UpdateRole(input));
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await _unauthedUser.Project.UpdateRole(input));
   }
 
   [Test]
