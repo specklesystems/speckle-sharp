@@ -29,6 +29,24 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
+      "Speckle.Rhino7.Api": {
+        "type": "Direct",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "AE+1lMl+lzwEdNn6kvEWuCy6wRSFAIYP0KXeGI8fECNsCBj023c4IE/wSVn7wIHD+nM2ZHcST/62dmZXNqUt5A==",
+        "dependencies": {
+          "Mapster": "7.3.0",
+          "RhinoCommon": "7.13.21348.13001",
+          "RhinoWindows": "7.13.21348.13001",
+          "Speckle.Rhino7.Interfaces": "0.1.1-preview.0.28"
+        }
+      },
+      "Speckle.Rhino7.Interfaces": {
+        "type": "Direct",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "TcbfXlRMnQRat1JodgW+YW5FflTYem1GGo9DtKA+6iAuVaYagN5dxsrM5LE6M3pCnEV9rkEQOjFo7sgnnbo4mw=="
+      },
       "System.Resources.Extensions": {
         "type": "Direct",
         "requested": "[7.0.0, )",
@@ -69,6 +87,21 @@
         "type": "Transitive",
         "resolved": "6.0.0",
         "contentHash": "yg72rrYDapfsIUrul7aF6wwNnTJBOFvuA9VdDTQpPa8AlAriHbufeXYLBcodKjfUdkCnaiggX1U/nEP08Zb5GA=="
+      },
+      "Mapster": {
+        "type": "Transitive",
+        "resolved": "7.3.0",
+        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
+        "dependencies": {
+          "Mapster.Core": "1.2.0",
+          "Microsoft.CSharp": "4.3.0",
+          "System.Reflection.Emit": "4.3.0"
+        }
+      },
+      "Mapster.Core": {
+        "type": "Transitive",
+        "resolved": "1.2.0",
+        "contentHash": "TNdqZk2zAuBYfJF88D/3clQTOyOdqr1crU81yZQtlGa+e7FYWhJdK/buBWT+TpM3qQko9UzmzfOT4iq3JCs/ZA=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -416,6 +449,11 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
+      "System.Reflection.Emit": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -525,7 +563,7 @@
       "speckle.converters.rhino7.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "RhinoCommon": "[7.13.21348.13001, )"
+          "Speckle.Rhino7.Interfaces": "[0.1.1-preview.0.28, )"
         }
       }
     }

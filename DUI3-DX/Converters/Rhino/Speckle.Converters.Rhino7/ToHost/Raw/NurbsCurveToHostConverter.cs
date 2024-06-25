@@ -1,15 +1,24 @@
 ﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurve>
+public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, IRhinoNurbsCurve>
 {
-  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
+  private readonly IRhinoPointFactory _rhinoPointFactory;
+  private readonly IRhinoCurveFactory _rhinoCurveFactory;
+  private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
 
-  public NurbsCurveToHostConverter(ITypedConverter<SOP.Interval, RG.Interval> intervalConverter)
+  public NurbsCurveToHostConverter(
+    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
+    IRhinoCurveFactory rhinoCurveFactory,
+    IRhinoPointFactory rhinoPointFactory
+  )
   {
     _intervalConverter = intervalConverter;
+    _rhinoCurveFactory = rhinoCurveFactory;
+    _rhinoPointFactory = rhinoPointFactory;
   }
 
   /// <summary>
@@ -19,14 +28,14 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurv
   /// <returns>The converted Rhino NurbsCurve object.</returns>
   /// <exception cref="SpeckleConversionException">Thrown when the conversion fails.</exception>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.NurbsCurve Convert(SOG.Curve target)
+  public IRhinoNurbsCurve Convert(SOG.Curve target)
   {
-    RG.NurbsCurve nurbsCurve = new(target.degree, target.points.Count / 3);
+    IRhinoNurbsCurve nurbsCurve = _rhinoCurveFactory.Create(target.degree, target.points.Count / 3);
 
     // Hyper optimised curve control point conversion
     for (int i = 2, j = 0; i < target.points.Count; i += 3, j++)
     {
-      var pt = new RG.Point3d(target.points[i - 2], target.points[i - 1], target.points[i]); // Skip the point converter for performance
+      var pt = _rhinoPointFactory.Create(target.points[i - 2], target.points[i - 1], target.points[i]); // Skip the point converter for performance
       nurbsCurve.Points.SetPoint(j, pt, target.weights[j]);
     }
 
@@ -37,11 +46,11 @@ public class NurbsCurveToHostConverter : ITypedConverter<SOG.Curve, RG.NurbsCurv
     {
       if (extraKnots == 2)
       {
-        nurbsCurve.Knots[j] = target.knots[j + 1];
+        nurbsCurve.Knots.SetKnot(j, target.knots[j + 1]);
       }
       else
       {
-        nurbsCurve.Knots[j] = target.knots[j];
+        nurbsCurve.Knots.SetKnot(j, target.knots[j]);
       }
     }
 

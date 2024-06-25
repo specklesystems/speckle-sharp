@@ -16,13 +16,13 @@
       },
       "Speckle.Revit2023.Api": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.24, )",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "hPRXbyvgmealdPPWTxjHbpBRTsyt67DddoIs09M0n319eHh/eONnPC+SgBzJmmB834TtzzayMVk06S1cMT0Iow==",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "ejwYS/HI8yy0rJE4vgTr5aj8Fkg/E9JnMGjwyVS2fLtI4f7+FmwAY6inTUT2p/RAoRc2nQw+TerDpUtOhddzag==",
         "dependencies": {
           "Mapster": "7.3.0",
           "Speckle.Revit.API": "2023.0.0",
-          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.24"
+          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.28"
         }
       },
       "GraphQL.Client": {
@@ -263,8 +263,8 @@
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Transitive",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
@@ -434,7 +434,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.28, )"
         }
       }
     }
