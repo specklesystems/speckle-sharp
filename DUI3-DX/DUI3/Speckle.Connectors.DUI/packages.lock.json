@@ -29,9 +29,9 @@
       },
       "Speckle.Core": {
         "type": "Direct",
-        "requested": "[3.0.1-alpha.10, )",
-        "resolved": "3.0.1-alpha.10",
-        "contentHash": "zaKAWE+/vq/t2t62SBZj3Q0lPgjlQuY+BjQeS0EUpmiONhFakSxBB3cxMLFwQHh3aq1Sb+T6VKffk5eT5KsIJQ==",
+        "requested": "[3.0.1-alpha.11, )",
+        "resolved": "3.0.1-alpha.11",
+        "contentHash": "Zt2dBJLlfziEACYCHThbhKypSjhoA01rTw9BzNI72c/BDyftXIz70Tetq/8ZMEqQnKqfmRyYADsAdWKxpdV0Hg==",
         "dependencies": {
           "GraphQL.Client": "6.0.0",
           "Microsoft.CSharp": "4.7.0",
@@ -527,7 +527,7 @@
         "dependencies": {
           "Serilog.Extensions.Logging": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.10, )"
+          "Speckle.Core": "[3.0.1-alpha.11, )"
         }
       }
     }
