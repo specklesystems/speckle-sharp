@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
@@ -18,11 +19,17 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly IHostToSpeckleUnitConverter<Unit> _unitConverter;
 
-  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
+  public ArcGISRootObjectBuilder(
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache sendConversionCache,
+    IHostToSpeckleUnitConverter<Unit> unitConverter
+  )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
+    _unitConverter = unitConverter;
   }
 
   public RootObjectBuilderResult Build(
@@ -34,6 +41,14 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
   {
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
+
+    // ADD MAP UNITS CHECK
+    try
+    {
+      _unitConverter.ConvertOrThrow(MapView.Active.Map.SpatialReference.Unit);
+    }
+    catch (SpeckleException ex) { }
+
     using var uow = _unitOfWorkFactory.Resolve<IRootToSpeckleConverter>();
     var converter = uow.Service;
 
