@@ -10,6 +10,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Instances;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
@@ -19,7 +20,7 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// </summary>
 public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, List<string>>
 {
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
   private readonly Dictionary<string, InstanceProxy> _instanceProxies = new();
   private readonly Dictionary<string, List<InstanceProxy>> _instanceProxiesByDefinitionId = new();
   private readonly Dictionary<string, InstanceDefinitionProxy> _definitionProxies = new();
@@ -27,7 +28,7 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
   private readonly RhinoLayerManager _layerManager;
 
   public RhinoInstanceObjectsManager(
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
     RhinoLayerManager layerManager
   )
   {
@@ -52,6 +53,7 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
   {
     var instanceId = instance.Id.ToString();
     var instanceDefinitionId = instance.InstanceDefinition.Id.ToString();
+    var currentDoc = RhinoDoc.ActiveDoc; // POC: too much right now to interface around
 
     _instanceProxies[instanceId] = new InstanceProxy()
     {
@@ -59,7 +61,7 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
       DefinitionId = instance.InstanceDefinition.Id.ToString(),
       Transform = XFormToMatrix(instance.InstanceXform),
       MaxDepth = depth,
-      Units = _contextStack.Current.Document.ModelUnitSystem.ToSpeckleString()
+      Units = currentDoc.ModelUnitSystem.ToSpeckleString()
     };
 
     // For each block instance that has the same definition, we need to keep track of the "maximum depth" at which is found.
@@ -125,7 +127,9 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
     Action<string, double?>? onOperationProgressed
   )
   {
-    var doc = _contextStack.Current.Document;
+    // var doc = _contextStack.Current.Document;
+    var doc = RhinoDoc.ActiveDoc; // POC: too much right now to interface around
+
     var sortedInstanceComponents = instanceComponents
       .OrderByDescending(x => x.obj.MaxDepth) // Sort by max depth, so we start baking from the deepest element first
       .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
@@ -214,11 +218,12 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
 
   public void PurgeInstances(string namePrefix)
   {
-    foreach (var definition in _contextStack.Current.Document.InstanceDefinitions)
+    var currentDoc = RhinoDoc.ActiveDoc; // POC: too much right now to interface around
+    foreach (var definition in currentDoc.InstanceDefinitions)
     {
       if (!definition.IsDeleted && definition.Name.Contains(namePrefix))
       {
-        _contextStack.Current.Document.InstanceDefinitions.Delete(definition.Index, true, false);
+        currentDoc.InstanceDefinitions.Delete(definition.Index, true, false);
       }
     }
   }
@@ -228,10 +233,8 @@ public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, 
 
   private Transform MatrixToTransform(Matrix4x4 matrix, string units)
   {
-    var conversionFactor = Units.GetConversionFactor(
-      units,
-      _contextStack.Current.Document.ModelUnitSystem.ToSpeckleString()
-    );
+    var currentDoc = RhinoDoc.ActiveDoc; // POC: too much right now to interface around
+    var conversionFactor = Units.GetConversionFactor(units, currentDoc.ModelUnitSystem.ToSpeckleString());
 
     var t = Transform.Identity;
     t.M00 = matrix.M11;

@@ -103,7 +103,7 @@ public sealed class DisplayValueExtractor : IDisplayValueExtractor
     //options = ViewSpecificOptions ?? options ?? new Options() { DetailLevel = DetailLevelSetting };
     options ??= _revitOptionsFactory.Create(RevitViewDetailLevel.Fine);
 
-    IRevitGeometryElement geom;
+    IRevitGeometryElement? geom;
     try
     {
       geom = element.GetGeometry(options);

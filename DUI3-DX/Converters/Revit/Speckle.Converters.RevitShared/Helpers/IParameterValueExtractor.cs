@@ -8,7 +8,11 @@ public interface IParameterValueExtractor
 {
   object? GetValue(IRevitParameter parameter);
   double GetValueAsDouble(IRevitElement element, RevitBuiltInParameter builtInParameter);
-  bool TryGetValueAsDouble(IRevitElement element, RevitBuiltInParameter builtInParameter, out double? value);
+  bool TryGetValueAsDouble(
+    IRevitElement element,
+    RevitBuiltInParameter builtInParameter,
+    [NotNullWhen(true)] out double? value
+  );
   int GetValueAsInt(IRevitElement element, RevitBuiltInParameter builtInParameter);
   bool? GetValueAsBool(IRevitElement element, RevitBuiltInParameter builtInParameter);
   string? GetValueAsString(IRevitElement element, RevitBuiltInParameter builtInParameter);

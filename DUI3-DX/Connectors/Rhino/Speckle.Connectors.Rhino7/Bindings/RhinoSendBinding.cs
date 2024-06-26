@@ -24,10 +24,9 @@ public sealed class RhinoSendBinding : ISendBinding
   public IBridge Parent { get; }
 
   private readonly DocumentModelStore _store;
-  private readonly RhinoIdleManager _idleManager;
+  private readonly IRhinoIdleManager _idleManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly List<ISendFilter> _sendFilters;
-  private readonly SendOperation<RhinoObject> _sendOperation;
   private readonly CancellationManager _cancellationManager;
   private readonly RhinoSettings _rhinoSettings;
 
@@ -37,27 +36,28 @@ public sealed class RhinoSendBinding : ISendBinding
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
   public RhinoSendBinding(
     DocumentModelStore store,
-    RhinoIdleManager idleManager,
+    IRhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
-    SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,
-    ISendConversionCache sendConversionCache
+    ISendConversionCache sendConversionCache,
+    ITopLevelExceptionHandler topLevelExceptionHandler
   )
   {
     _store = store;
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
-    _sendOperation = sendOperation;
     _sendFilters = sendFilters.ToList();
     _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
     _sendConversionCache = sendConversionCache;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
     SubscribeToRhinoEvents();
@@ -65,7 +65,6 @@ public sealed class RhinoSendBinding : ISendBinding
 
   private void SubscribeToRhinoEvents()
   {
-    // POC: It is unclear to me why is the binding keeping track of ChangedObjectIds. Change tracking should be moved to a separate type.
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       Commands.RefreshSendFilters();
@@ -81,41 +80,44 @@ public sealed class RhinoSendBinding : ISendBinding
     };
 
     RhinoDoc.AddRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.ObjectId.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.ObjectId.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
 
     RhinoDoc.DeleteRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.ObjectId.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.ObjectId.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
 
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
-    {
-      // NOTE: This does not work if rhino starts and opens a blank doc;
-      if (!_store.IsDocumentInit)
+      _topLevelExceptionHandler.CatchUnhandled(() =>
       {
-        return;
-      }
+        // NOTE: This does not work if rhino starts and opens a blank doc;
+        if (!_store.IsDocumentInit)
+        {
+          return;
+        }
 
-      ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
-      ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
-      _idleManager.SubscribeToIdle(RunExpirationChecks);
-    };
+        ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
+        ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
+        _idleManager.SubscribeToIdle(RunExpirationChecks);
+      });
   }
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;

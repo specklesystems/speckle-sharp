@@ -1,24 +1,27 @@
-﻿using Rhino;
-using Speckle.Converters.Common;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class LineToSpeckleConverter : ITypedConverter<RG.Line, SOG.Line>, ITypedConverter<RG.LineCurve, SOG.Line>
+public class LineToSpeckleConverter : ITypedConverter<IRhinoLine, SOG.Line>, ITypedConverter<IRhinoLineCurve, SOG.Line>
 {
-  private readonly ITypedConverter<RG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<IRhinoPoint3d, SOG.Point> _pointConverter;
+  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IRhinoBoxFactory _rhinoBoxFactory;
 
   public LineToSpeckleConverter(
-    ITypedConverter<RG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<RG.Box, SOG.Box> boxConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    ITypedConverter<IRhinoPoint3d, SOG.Point> pointConverter,
+    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
+    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IRhinoBoxFactory rhinoBoxFactory
   )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
+    _rhinoBoxFactory = rhinoBoxFactory;
   }
 
   /// <summary>
@@ -29,13 +32,13 @@ public class LineToSpeckleConverter : ITypedConverter<RG.Line, SOG.Line>, ITyped
   /// <remarks>
   /// ⚠️ This conversion assumes the domain of a line is (0, LENGTH), as Rhino Lines do not have domain. If you want the domain preserved use LineCurve conversions instead.
   /// </remarks>
-  public SOG.Line Convert(RG.Line target) =>
+  public SOG.Line Convert(IRhinoLine target) =>
     new(_pointConverter.Convert(target.From), _pointConverter.Convert(target.To), _contextStack.Current.SpeckleUnits)
     {
       length = target.Length,
       domain = new SOP.Interval(0, target.Length),
-      bbox = _boxConverter.Convert(new RG.Box(target.BoundingBox))
+      bbox = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.BoundingBox))
     };
 
-  public SOG.Line Convert(RG.LineCurve target) => Convert(target.Line);
+  public SOG.Line Convert(IRhinoLineCurve target) => Convert(target.Line);
 }

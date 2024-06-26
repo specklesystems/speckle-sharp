@@ -1,48 +1,46 @@
-using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.InterfaceGenerator;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Common;
 
 [GenerateAutoInterface]
 public class RootToSpeckleConverter : IRootToSpeckleConverter
 {
-  private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
+  private readonly IRootConvertManager _rootConvertManager;
   private readonly IProxyMapper _proxyMapper;
+  private readonly IRootElementProvider _rootElementProvider;
 
-  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle, IProxyMapper proxyMapper)
+  private readonly Type _revitElementType;
+
+  public RootToSpeckleConverter(
+    IProxyMapper proxyMapper,
+    IRootConvertManager rootConvertManager,
+    IRootElementProvider rootElementProvider
+  )
   {
-    _toSpeckle = toSpeckle;
     _proxyMapper = proxyMapper;
+    _rootConvertManager = rootConvertManager;
+    _rootElementProvider = rootElementProvider;
+    _revitElementType = _proxyMapper.GetHostTypeFromMappedType(_rootElementProvider.GetRootType()).NotNull();
   }
 
   public Base Convert(object target)
   {
-    Type revitType = target.GetType();
+    Type revitType = _rootConvertManager.GetTargetType(target);
     var wrapper = _proxyMapper.WrapIfExists(revitType, target);
     if (wrapper == null)
     {
+      //try to fallback to element type
+      if (_rootConvertManager.IsSubClass(_revitElementType, revitType))
+      {
+        return _rootConvertManager.Convert(
+          _rootElementProvider.GetRootType(),
+          _proxyMapper.CreateProxy(_rootElementProvider.GetRootType(), target)
+        );
+      }
       throw new NotSupportedException($"No wrapper found for Revit type: {revitType.Name}");
     }
-    var (wrappedType, wrappedObject) = wrapper.Value;
-    try
-    {
-      var objectConverter = _toSpeckle.ResolveInstance(wrappedType.Name); //poc: would be nice to have supertypes resolve
-
-      if (objectConverter == null)
-      {
-        throw new NotSupportedException($"No conversion found for {wrappedType.Name}");
-      }
-      var convertedObject = objectConverter.Convert(wrappedObject);
-
-      return convertedObject;
-    }
-    catch (SpeckleConversionException e)
-    {
-      Console.WriteLine(e);
-      throw; // Just rethrowing for now, Logs may be needed here.
-    }
+    var (wrappedType, wrappedObject) = wrapper;
+    return _rootConvertManager.Convert(wrappedType, wrappedObject);
   }
 }

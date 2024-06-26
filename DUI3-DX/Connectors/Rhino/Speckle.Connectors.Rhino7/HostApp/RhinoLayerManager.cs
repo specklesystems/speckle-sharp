@@ -4,6 +4,7 @@ using Rhino.DocObjects;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
@@ -12,11 +13,11 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// </summary>
 public class RhinoLayerManager
 {
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
   private readonly Dictionary<string, int> _hostLayerCache;
   private readonly Dictionary<int, Collection> _layerCollectionCache;
 
-  public RhinoLayerManager(IConversionContextStack<RhinoDoc, UnitSystem> contextStack)
+  public RhinoLayerManager(IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack)
   {
     _contextStack = contextStack;
     _hostLayerCache = new();
@@ -29,7 +30,8 @@ public class RhinoLayerManager
   /// <param name="baseLayerName"></param>
   public void CreateBaseLayer(string baseLayerName)
   {
-    var index = _contextStack.Current.Document.Layers.Add(new Layer { Name = baseLayerName });
+    var index = RhinoDoc.ActiveDoc.Layers.Add(new Layer { Name = baseLayerName }); // POC: too much effort right now to wrap around the interfaced layers and doc
+    // var index = _contextStack.Current.Document.Layers.Add(new Layer { Name = baseLayerName });
     _hostLayerCache.Add(baseLayerName, index);
   }
 
@@ -48,7 +50,7 @@ public class RhinoLayerManager
     }
 
     var currentLayerName = baseLayerName;
-    RhinoDoc currentDocument = _contextStack.Current.Document;
+    var currentDocument = RhinoDoc.ActiveDoc; // POC: too much effort right now to wrap around the interfaced layers
 
     var previousLayer = currentDocument.Layers.FindName(currentLayerName);
     foreach (var layerName in path)
@@ -77,7 +79,7 @@ public class RhinoLayerManager
   /// <param name="layer">The layer you want the equivalent collection for.</param>
   /// <param name="rootObjectCollection">The root object that will be sent to Speckle, and will host all collections.</param>
   /// <returns></returns>
-  public Collection GetHostObjectCollection(Layer layer, Collection rootObjectCollection)
+  public Collection GetHostObjectCollection(IRhinoLayer layer, Collection rootObjectCollection)
   {
     if (_layerCollectionCache.TryGetValue(layer.Index, out Collection value))
     {

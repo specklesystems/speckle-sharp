@@ -1,3 +1,4 @@
+#if AUTOCAD
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
@@ -39,6 +40,9 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddSingleton<AutocadContext>();
     builder.AddSingleton<AutocadIdleManager>();
 
+    SharedConnectorModule.LoadShared(builder);
+
+
     builder.AddScoped<AutocadLayerManager>();
 
     // Operations
@@ -50,13 +54,7 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddScoped<IRootObjectBuilder<AutocadRootObject>, AutocadRootObjectBuilder>();
 
     // Register bindings
-
-    builder.AddSingleton<IBinding, TestBinding>();
     builder.AddSingleton<IBinding, ConfigBinding>("connectorName", "Autocad"); // POC: Easier like this for now, should be cleaned up later
-    builder.AddSingleton<IBinding, AccountBinding>();
-    builder.AddSingleton<IBinding, AutocadBasicConnectorBinding>();
-    builder.AddSingleton<IBasicConnectorBinding, AutocadBasicConnectorBinding>();
-    builder.AddSingleton<IBinding, AutocadSelectionBinding>();
     builder.AddSingleton<IBinding, AutocadSendBinding>();
     builder.AddSingleton<IBinding, AutocadReceiveBinding>();
 
@@ -68,3 +66,4 @@ public class AutocadConnectorModule : ISpeckleModule
     builder.AddScoped<IInstanceObjectsManager<AutocadRootObject, List<Entity>>, AutocadInstanceObjectManager>();
   }
 }
+#endif

@@ -3,12 +3,11 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
     </PropertyGroup>
-  
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.Rhino7.Interfaces" Version="0.1.1-preview.0.29" />
   </ItemGroup>
+  
     <ItemGroup>
       <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj"/>
     </ItemGroup>
-
 </Project>

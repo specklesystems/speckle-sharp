@@ -3,6 +3,7 @@ using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Utils;
 
@@ -14,11 +15,8 @@ public static class ContainerRegistration
     builder.AddSingleton<CancellationManager>();
     builder.AddScoped<ReceiveOperation>();
 
-    // POC: will likely need refactoring with our reporting pattern.
-    var serilogLogger = new LoggerConfiguration().MinimumLevel
-      .Debug()
-      .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
-      .CreateLogger();
+    //TODO: Logger will likely be removed from Core, we'll plan to figure out the config later...
+    var serilogLogger = SpeckleLog.Logger;
 
     ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
     builder.AddSingleton(loggerFactory);
