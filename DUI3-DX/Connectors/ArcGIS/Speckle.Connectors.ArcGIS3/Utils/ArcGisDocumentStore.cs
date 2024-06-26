@@ -37,7 +37,7 @@ public class ArcGISDocumentStore : DocumentModelStore
     );
 
     // in case plugin was loaded into already opened Map, read metadata from the current Map
-    if (IsDocumentInit == false)
+    if (IsDocumentInit == false && MapView.Active != null)
     {
       IsDocumentInit = true;
       ReadFromFile();
