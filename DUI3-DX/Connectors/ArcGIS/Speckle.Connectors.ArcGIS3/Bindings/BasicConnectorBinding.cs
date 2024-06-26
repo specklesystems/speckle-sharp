@@ -71,20 +71,22 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     var objectIds = new List<string>();
 
-    if (model is SenderModelCard senderModelCard)
+    try
     {
-      objectIds = senderModelCard.SendFilter.NotNull().GetObjectIds();
+      if (model is SenderModelCard senderModelCard)
+      {
+        objectIds = senderModelCard.SendFilter.NotNull().GetObjectIds();
+      }
+      else if (model is ReceiverModelCard receiverModelCard)
+      {
+        objectIds = receiverModelCard.BakedObjectIds.NotNull();
+      }
     }
-
-    if (model is ReceiverModelCard receiverModelCard)
-    {
-      objectIds = receiverModelCard.BakedObjectIds.NotNull();
-    }
-
-    if (objectIds is null)
+    catch (ArgumentNullException)
     {
       return;
     }
+
     HighlightObjectsOnView(objectIds);
   }
 
