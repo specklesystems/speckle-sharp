@@ -8,8 +8,5 @@
     <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.24" />
-  </ItemGroup>
 
 </Project>

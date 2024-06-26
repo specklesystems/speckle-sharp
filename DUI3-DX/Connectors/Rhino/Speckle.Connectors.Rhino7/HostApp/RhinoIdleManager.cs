@@ -1,12 +1,14 @@
 using System.Collections.Concurrent;
 using Rhino;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
 /// <summary>
 /// Rhino Idle Manager is a helper util to manage deferred actions.
 /// </summary>
-public class RhinoIdleManager
+[GenerateAutoInterface]
+public class RhinoIdleManager : IRhinoIdleManager
 {
   // NOTE: ConcurrentDictionary possibly removing the collection has been modified errors in here
   private readonly ConcurrentDictionary<string, Action> _sCalls = new();
