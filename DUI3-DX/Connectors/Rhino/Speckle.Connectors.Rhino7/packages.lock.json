@@ -516,7 +516,10 @@
         }
       },
       "speckle.converters.rhino7.dependencyinjection": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "Speckle.Rhino7.Interfaces": "[0.1.1-preview.0.28, )"
+        }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "CentralTransitive",

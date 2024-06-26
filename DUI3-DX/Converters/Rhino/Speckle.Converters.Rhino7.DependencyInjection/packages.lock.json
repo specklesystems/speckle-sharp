@@ -24,6 +24,12 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
+      "Speckle.Rhino7.Interfaces": {
+        "type": "Direct",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "TcbfXlRMnQRat1JodgW+YW5FflTYem1GGo9DtKA+6iAuVaYagN5dxsrM5LE6M3pCnEV9rkEQOjFo7sgnnbo4mw=="
+      },
       "GraphQL.Client": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -417,12 +423,6 @@
         "dependencies": {
           "Speckle.Core": "3.0.1-alpha.11"
         }
-      },
-      "Speckle.Rhino7.Interfaces": {
-        "type": "CentralTransitive",
-        "requested": "[0.1.1-preview.0.28, )",
-        "resolved": "0.1.1-preview.0.28",
-        "contentHash": "TcbfXlRMnQRat1JodgW+YW5FflTYem1GGo9DtKA+6iAuVaYagN5dxsrM5LE6M3pCnEV9rkEQOjFo7sgnnbo4mw=="
       }
     }
   }
