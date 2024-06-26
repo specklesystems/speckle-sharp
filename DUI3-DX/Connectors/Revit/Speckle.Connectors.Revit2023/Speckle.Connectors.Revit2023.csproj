@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf" Version="92.0.260" IncludeAssets="compile"  NoWarn="NU1903"/>
-    <PackageReference Include="Revit.Async" Version="2.0.1" />
+    <PackageReference Include="CefSharp.Wpf" IncludeAssets="compile"  NoWarn="NU1903"/>
+    <PackageReference Include="Revit.Async" />
   </ItemGroup>
 
   <Target AfterTargets="Clean" Name="CleanAddinFolder">

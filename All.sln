@@ -459,6 +459,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DUI3-DX", "DUI3-DX", "{9DB74760-01DE-4AC1-A81B-BC7784351D22}"
 	ProjectSection(SolutionItems) = preProject
 		DUI3-DX\Directory.Build.props = DUI3-DX\Directory.Build.props
+		DUI3-DX\Directory.Packages.props = DUI3-DX\Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{4838C66E-8677-4FBD-9609-25376042E981}"

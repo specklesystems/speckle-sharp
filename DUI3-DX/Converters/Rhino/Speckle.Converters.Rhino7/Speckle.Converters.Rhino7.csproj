@@ -4,7 +4,7 @@
         <TargetFramework>net48</TargetFramework>
     </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Speckle.Rhino7.Interfaces" Version="0.1.1-preview.0.28" />
+    <PackageReference Include="Speckle.Rhino7.Interfaces" />
   </ItemGroup>
   
     <ItemGroup>
