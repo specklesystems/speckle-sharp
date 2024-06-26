@@ -122,7 +122,7 @@ public class FeatureClassUtils : IFeatureClassUtils
       GISLayerGeometryType.POLYLINE => ACG.GeometryType.Polyline,
       GISLayerGeometryType.MULTIPATCH => ACG.GeometryType.Multipatch,
       GISLayerGeometryType.POLYGON3D => ACG.GeometryType.Multipatch,
-      _ => throw new ArgumentOutOfRangeException(nameof(target)),
+      _ => throw new ArgumentOutOfRangeException($"{originalGeomType}"),
     };
   }
 }
