@@ -16,9 +16,9 @@
       },
       "Speckle.Revit2023.Interfaces": {
         "type": "Direct",
-        "requested": "[0.1.1-preview.0.24, )",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "GraphQL.Client": {
         "type": "Transitive",
@@ -354,8 +354,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[2.0.999-local, )",
-          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.24, )"
+          "Speckle.Objects": "[2.0.999-local, )"
         }
       },
       "Speckle.Core": {

@@ -1,16 +1,21 @@
 ﻿using System.Drawing;
-using Rhino.Collections;
 using Speckle.Converters.Common.Objects;
+using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class PointCloudToHostConverter : ITypedConverter<SOG.Pointcloud, RG.PointCloud>
+public class PointCloudToHostConverter : ITypedConverter<SOG.Pointcloud, IRhinoPointCloud>
 {
-  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
+  private readonly ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> _pointListConverter;
+  private readonly IRhinoPointCloudFactory _rhinoPointCloudFactory;
 
-  public PointCloudToHostConverter(ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter)
+  public PointCloudToHostConverter(
+    ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
+    IRhinoPointCloudFactory rhinoPointCloudFactory
+  )
   {
     _pointListConverter = pointListConverter;
+    _rhinoPointCloudFactory = rhinoPointCloudFactory;
   }
 
   /// <summary>
@@ -19,10 +24,10 @@ public class PointCloudToHostConverter : ITypedConverter<SOG.Pointcloud, RG.Poin
   /// <param name="target">The raw Speckle Pointcloud object to convert.</param>
   /// <returns>The converted Rhino PointCloud object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public RG.PointCloud Convert(SOG.Pointcloud target)
+  public IRhinoPointCloud Convert(SOG.Pointcloud target)
   {
     var rhinoPoints = _pointListConverter.Convert(target.points);
-    var rhinoPointCloud = new RG.PointCloud(rhinoPoints);
+    var rhinoPointCloud = _rhinoPointCloudFactory.Create(rhinoPoints);
 
     if (target.colors.Count == rhinoPoints.Count)
     {

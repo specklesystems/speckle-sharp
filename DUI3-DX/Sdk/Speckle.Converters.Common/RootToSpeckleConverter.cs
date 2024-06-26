@@ -1,6 +1,5 @@
 using Speckle.Core.Models;
 using Speckle.InterfaceGenerator;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.Common;
 
