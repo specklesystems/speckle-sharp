@@ -3,6 +3,7 @@ using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
+using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils;
 using Speckle.Newtonsoft.Json;
@@ -11,34 +12,55 @@ namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGISDocumentStore : DocumentModelStore
 {
-  public ArcGISDocumentStore(JsonSerializerSettings serializerOption)
+  public ArcGISDocumentStore(
+    JsonSerializerSettings serializerOption,
+    ITopLevelExceptionHandler topLevelExceptionHandler
+  )
     : base(serializerOption, true)
   {
-    ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
-    ProjectSavingEvent.Subscribe(OnProjectSaving);
-    ProjectClosingEvent.Subscribe(OnProjectClosing);
+    ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)), true);
+    ProjectSavingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
+        return Task.CompletedTask;
+      },
+      true
+    );
+    ProjectClosingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
+        return Task.CompletedTask;
+      },
+      true
+    );
+
+    // in case plugin was loaded into already opened Map, read metadata from the current Map
+    if (IsDocumentInit == false && MapView.Active != null)
+    {
+      IsDocumentInit = true;
+      ReadFromFile();
+      OnDocumentChanged();
+    }
   }
 
-  private Task OnProjectClosing(ProjectClosingEventArgs arg)
+  private void OnProjectClosing()
   {
     if (MapView.Active is null)
     {
-      return Task.CompletedTask;
+      return;
     }
 
     WriteToFile();
-    return Task.CompletedTask;
   }
 
-  private Task OnProjectSaving(ProjectEventArgs arg)
+  private void OnProjectSaving()
   {
-    if (MapView.Active is null)
+    if (MapView.Active is not null)
     {
-      return Task.CompletedTask;
+      WriteToFile();
     }
-
-    WriteToFile();
-    return Task.CompletedTask;
   }
 
   /// <summary>

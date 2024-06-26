@@ -2,18 +2,23 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Bridge;
 
 namespace Speckle.Connectors.DUI.WebView;
 
 public sealed partial class DUI3ControlWebView : UserControl
 {
   private readonly IEnumerable<Lazy<IBinding>> _bindings;
+  private readonly ITopLevelExceptionHandler _topLevelExceptionHandler;
 
-  public DUI3ControlWebView(IEnumerable<Lazy<IBinding>> bindings)
+  public DUI3ControlWebView(IEnumerable<Lazy<IBinding>> bindings, ITopLevelExceptionHandler topLevelExceptionHandler)
   {
     _bindings = bindings;
+    _topLevelExceptionHandler = topLevelExceptionHandler;
     InitializeComponent();
-    Browser.CoreWebView2InitializationCompleted += OnInitialized;
+
+    Browser.CoreWebView2InitializationCompleted += (sender, args) =>
+      _topLevelExceptionHandler.CatchUnhandled(() => OnInitialized(sender, args));
   }
 
   private void ShowDevToolsMethod() => Browser.CoreWebView2.OpenDevToolsWindow();
@@ -30,9 +35,9 @@ public sealed partial class DUI3ControlWebView : UserControl
 
   private void OnInitialized(object? sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    if (e.IsSuccess == false)
+    if (!e.IsSuccess)
     {
-      //POC: avoid silently accepting webview failures handle...
+      throw new InvalidOperationException("Webview Failed to initialize", e.InitializationException);
     }
 
     // We use Lazy here to delay creating the binding until after the Browser is fully initialized.

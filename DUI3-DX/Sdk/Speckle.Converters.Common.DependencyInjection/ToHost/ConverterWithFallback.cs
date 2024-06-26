@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common.Objects;
+using System.Collections;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
@@ -49,6 +50,10 @@ public sealed class ConverterWithFallback : IRootToHostConverter
     var displayValue = target.TryGetDisplayValue<Base>();
     if (displayValue != null)
     {
+      if (displayValue is IList && !displayValue.Any())
+      {
+        throw new NotSupportedException($"No display value found for {type}");
+      }
       return FallbackToDisplayValue(displayValue);
     }
 
