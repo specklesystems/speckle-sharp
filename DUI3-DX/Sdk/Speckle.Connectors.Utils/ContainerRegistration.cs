@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Autofac;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Cancellation;
@@ -19,6 +20,14 @@ public static class ContainerRegistration
     var serilogLogger = SpeckleLog.Logger;
 
     ILoggerFactory loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
+    builder.ContainerBuilder.Register(_ =>loggerFactory)
+      .As<ILoggerFactory>()
+      .SingleInstance()
+      .AutoActivate();
+
+    builder.ContainerBuilder.RegisterGeneric(typeof(Logger<>))
+      .As(typeof(ILogger<>))
+      .SingleInstance();
     builder.AddSingleton(loggerFactory);
   }
 }
