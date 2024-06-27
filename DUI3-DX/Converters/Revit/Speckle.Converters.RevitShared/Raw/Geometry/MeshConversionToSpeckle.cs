@@ -1,20 +1,19 @@
 ﻿using Objects.Other;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Revit.Interfaces;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
+public class MeshConversionToSpeckle : ITypedConverter<DB.Mesh, SOG.Mesh>
 {
-  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ITypedConverter<IRevitMaterial, RenderMaterial> _materialConverter;
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Material, RenderMaterial> _materialConverter;
+  private readonly IRevitConversionContextStack _contextStack;
 
   public MeshConversionToSpeckle(
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
-    ITypedConverter<IRevitMaterial, RenderMaterial> materialConverter
+    IRevitConversionContextStack contextStack,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.Material, RenderMaterial> materialConverter
   )
   {
     _contextStack = contextStack;
@@ -22,17 +21,15 @@ public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
     _materialConverter = materialConverter;
   }
 
-  public SOG.Mesh Convert(IRevitMesh target)
+  public SOG.Mesh Convert(DB.Mesh target)
   {
     var doc = _contextStack.Current.Document;
 
     List<double> vertices = GetSpeckleMeshVertexData(target);
     List<int> faces = GetSpeckleMeshFaceData(target);
 
-    var element = doc.GetElement(target.MaterialElementId);
-    var revitMaterial = element?.ToMaterial();
     RenderMaterial? speckleMaterial = null;
-    if (revitMaterial is not null)
+    if (doc.GetElement(target.MaterialElementId) is DB.Material revitMaterial)
     {
       speckleMaterial = _materialConverter.Convert(revitMaterial);
     }
@@ -43,7 +40,7 @@ public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
     };
   }
 
-  private List<double> GetSpeckleMeshVertexData(IRevitMesh target)
+  private List<double> GetSpeckleMeshVertexData(DB.Mesh target)
   {
     var vertices = new List<double>(target.Vertices.Count * 3);
 
@@ -55,12 +52,12 @@ public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
     return vertices;
   }
 
-  private List<int> GetSpeckleMeshFaceData(IRevitMesh target)
+  private List<int> GetSpeckleMeshFaceData(DB.Mesh target)
   {
     var faces = new List<int>(target.NumTriangles * 4);
     for (int i = 0; i < target.NumTriangles; i++)
     {
-      var triangle = target.GetTriangle(i);
+      var triangle = target.get_Triangle(i);
       faces.AddRange(GetMeshTriangleData(triangle));
     }
 
@@ -76,12 +73,12 @@ public class MeshConversionToSpeckle : ITypedConverter<IRevitMesh, SOG.Mesh>
   /// Output format is a 4 item list with format [3, v1, v2, v3]; where the first item is the triangle flag (for speckle)
   /// and the 3 following numbers are the indices of each vertex in the vertex list.
   /// </remarks>
-  private IReadOnlyList<int> GetMeshTriangleData(IRevitMeshTriangle triangle) =>
+  private IReadOnlyList<int> GetMeshTriangleData(DB.MeshTriangle triangle) =>
     new[]
     {
       3, // The TRIANGLE flag in speckle
-      (int)triangle.GetIndex(0),
-      (int)triangle.GetIndex(1),
-      (int)triangle.GetIndex(2)
+      (int)triangle.get_Index(0),
+      (int)triangle.get_Index(1),
+      (int)triangle.get_Index(2)
     };
 }

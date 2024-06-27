@@ -1,35 +1,30 @@
-﻿using Speckle.Converters.Common.Objects;
+using Autodesk.Revit.DB;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class ParameterConversionToSpeckle : ITypedConverter<IRevitParameter, SOBR.Parameter>
+public class ParameterConversionToSpeckle : ITypedConverter<Parameter, SOBR.Parameter>
 {
-  private readonly IParameterValueExtractor _valueExtractor;
-  private readonly IRevitFormatOptionsUtils _revitFormatOptionsUtils;
+  private readonly ParameterValueExtractor _valueExtractor;
 
-  public ParameterConversionToSpeckle(
-    IParameterValueExtractor valueExtractor,
-    IRevitFormatOptionsUtils revitFormatOptionsUtils
-  )
+  public ParameterConversionToSpeckle(ParameterValueExtractor valueExtractor)
   {
     _valueExtractor = valueExtractor;
-    _revitFormatOptionsUtils = revitFormatOptionsUtils;
   }
 
-  public SOBR.Parameter Convert(IRevitParameter target)
+  public SOBR.Parameter Convert(Parameter target)
   {
     string internalName = target.GetInternalName();
-    IRevitForgeTypeId? unitTypeId = null;
-    if (target.StorageType is RevitStorageType.Double)
+    ForgeTypeId? unitTypeId = null;
+    if (target.StorageType is StorageType.Double)
     {
       // according to the api documentation, this method will throw if the storage type is not a VALUE type
       // however, I've found that it will still throw if StorageType == StorageType.Integer
       unitTypeId = target.GetUnitTypeId();
     }
-    IRevitDefinition definition = target.Definition;
+    Definition definition = target.Definition;
 
     return new SOBR.Parameter()
     {
@@ -38,7 +33,7 @@ public class ParameterConversionToSpeckle : ITypedConverter<IRevitParameter, SOB
       isShared = target.IsShared,
       isReadOnly = target.IsReadOnly,
       name = definition.Name,
-      units = unitTypeId?.GetSymbol(_revitFormatOptionsUtils) ?? "None",
+      units = unitTypeId?.GetSymbol() ?? "None",
       value = _valueExtractor.GetValue(target)
     };
   }

@@ -1,46 +1,42 @@
-﻿using Objects.Primitive;
-using Speckle.Converters.Common;
+using Objects.Primitive;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class ArcToSpeckleConverter : ITypedConverter<IRevitArc, SOG.Arc>
+public class ArcToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Arc>
 {
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
-  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ITypedConverter<IRevitPlane, SOG.Plane> _planeConverter;
-  private readonly IScalingServiceToSpeckle _scalingService;
-  private readonly IRevitPlaneUtils _revitPlaneUtils;
+  private readonly IRevitConversionContextStack _contextStack;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.Plane, SOG.Plane> _planeConverter;
+  private readonly ScalingServiceToSpeckle _scalingService;
 
   public ArcToSpeckleConverter(
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
-    ITypedConverter<IRevitPlane, SOG.Plane> planeConverter,
-    IScalingServiceToSpeckle scalingService,
-    IRevitPlaneUtils revitPlaneUtils
+    IRevitConversionContextStack contextStack,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.Plane, SOG.Plane> planeConverter,
+    ScalingServiceToSpeckle scalingService
   )
   {
     _contextStack = contextStack;
     _xyzToPointConverter = xyzToPointConverter;
     _planeConverter = planeConverter;
     _scalingService = scalingService;
-    _revitPlaneUtils = revitPlaneUtils;
   }
 
-  public SOG.Arc Convert(IRevitArc target)
+  public SOG.Arc Convert(DB.Arc target)
   {
     // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
-    var arcPlane = _revitPlaneUtils.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection);
-    IRevitXYZ center = target.Center;
+    var arcPlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection);
+    DB.XYZ center = target.Center;
 
-    IRevitXYZ dir0 = (target.GetEndPoint(0).Subtract(center)).Normalize();
-    IRevitXYZ dir1 = (target.GetEndPoint(1).Subtract(center)).Normalize();
+    DB.XYZ dir0 = (target.GetEndPoint(0) - center).Normalize();
+    DB.XYZ dir1 = (target.GetEndPoint(1) - center).Normalize();
 
-    IRevitXYZ start = target.Evaluate(0, true);
-    IRevitXYZ end = target.Evaluate(1, true);
-    IRevitXYZ mid = target.Evaluate(0.5, true);
+    DB.XYZ start = target.Evaluate(0, true);
+    DB.XYZ end = target.Evaluate(1, true);
+    DB.XYZ mid = target.Evaluate(0.5, true);
 
     double startAngle = target.XDirection.AngleOnPlaneTo(dir0, target.Normal);
     double endAngle = target.XDirection.AngleOnPlaneTo(dir1, target.Normal);

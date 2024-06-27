@@ -30,7 +30,7 @@ public static class ContainerRegistration
 
     builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 
-    builder.RegisterConverters();
+    builder.RegisterRawConversions();
     builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();
     builder.InjectNamedTypes<IToHostTopLevelConverter>();
   }
