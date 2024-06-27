@@ -487,6 +487,22 @@
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
       },
+      "speckle.converters.civil3d2024": {
+        "type": "Project",
+        "dependencies": {
+          "Speckle.AutoCAD.API": "[2024.0.0, )",
+          "Speckle.Civil3D.API": "[2024.0.0, )",
+          "Speckle.Converters.Common": "[2.0.999-local, )"
+        }
+      },
+      "speckle.converters.civil3d2024.dependencyinjection": {
+        "type": "Project",
+        "dependencies": {
+          "Autofac": "[5.2.0, )",
+          "Speckle.Converters.Civil3d2024": "[2.0.999-local, )",
+          "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
+        }
+      },
       "speckle.converters.common": {
         "type": "Project",
         "dependencies": {
