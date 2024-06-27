@@ -426,7 +426,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.11, )",
+          "Speckle.Core": "[3.0.1-alpha.14, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
@@ -435,7 +435,7 @@
         "dependencies": {
           "Serilog.Extensions.Logging": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.11, )"
+          "Speckle.Core": "[3.0.1-alpha.14, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
@@ -460,9 +460,9 @@
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
-        "requested": "[3.0.1-alpha.11, )",
-        "resolved": "3.0.1-alpha.11",
-        "contentHash": "Zt2dBJLlfziEACYCHThbhKypSjhoA01rTw9BzNI72c/BDyftXIz70Tetq/8ZMEqQnKqfmRyYADsAdWKxpdV0Hg==",
+        "requested": "[3.0.1-alpha.14, )",
+        "resolved": "3.0.1-alpha.14",
+        "contentHash": "RzQPVIGFFkKvG56YLr8ACtiwdWJE6IJ9vCQ4qHa0PIsUEpfzAIAi59jnzqtByOFC0FiFrFPow9bkfzylaZorAA==",
         "dependencies": {
           "GraphQL.Client": "6.0.0",
           "Microsoft.CSharp": "4.7.0",
@@ -865,7 +865,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.11, )",
+          "Speckle.Core": "[3.0.1-alpha.14, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
@@ -874,7 +874,7 @@
         "dependencies": {
           "Serilog.Extensions.Logging": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.11, )"
+          "Speckle.Core": "[3.0.1-alpha.14, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
@@ -895,9 +895,9 @@
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
-        "requested": "[3.0.1-alpha.11, )",
-        "resolved": "3.0.1-alpha.11",
-        "contentHash": "Zt2dBJLlfziEACYCHThbhKypSjhoA01rTw9BzNI72c/BDyftXIz70Tetq/8ZMEqQnKqfmRyYADsAdWKxpdV0Hg==",
+        "requested": "[3.0.1-alpha.14, )",
+        "resolved": "3.0.1-alpha.14",
+        "contentHash": "RzQPVIGFFkKvG56YLr8ACtiwdWJE6IJ9vCQ4qHa0PIsUEpfzAIAi59jnzqtByOFC0FiFrFPow9bkfzylaZorAA==",
         "dependencies": {
           "GraphQL.Client": "6.0.0",
           "Microsoft.CSharp": "4.7.0",
