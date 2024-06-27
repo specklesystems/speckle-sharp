@@ -39,24 +39,6 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
-      "Speckle.Rhino7.Api": {
-        "type": "Direct",
-        "requested": "[0.1.1-preview.0.29, )",
-        "resolved": "0.1.1-preview.0.29",
-        "contentHash": "tmDprI1IAq9/CAes/vFTYiQGHpGWnAe7FZnoteiSA4CWF5aqWCKVQjJG0c746qynRbJq/0mAJ7FQ7ADGDRNP3w==",
-        "dependencies": {
-          "Mapster": "7.3.0",
-          "RhinoCommon": "7.13.21348.13001",
-          "RhinoWindows": "7.13.21348.13001",
-          "Speckle.Rhino7.Interfaces": "0.1.1-preview.0.29"
-        }
-      },
-      "Speckle.Rhino7.Interfaces": {
-        "type": "Direct",
-        "requested": "[0.1.1-preview.0.29, )",
-        "resolved": "0.1.1-preview.0.29",
-        "contentHash": "hDpFhNp3+Jidh+vJQM+nyJXo2pE6Mt9EgLv533xHnQ2u6z5ab2iCVuDlDgwS9G76tSYzl/GEvKmiMJQOiqb2vA=="
-      },
       "System.Resources.Extensions": {
         "type": "Direct",
         "requested": "[7.0.0, )",
@@ -303,11 +285,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit2023.Interfaces": {
-        "type": "Transitive",
-        "resolved": "0.1.1-preview.0.24",
-        "contentHash": "BSVpOUJc9g6ISrw8GxvtkglTlITpHEDYNOhxv1ZPbckBsI0yO36JiphhQV4q57ERqD9PpCozUJkVhlCaxWeS6A=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -503,7 +480,7 @@
       "speckle.converters.rhino7.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "Speckle.Rhino7.Interfaces": "[0.1.1-preview.0.29, )"
+          "RhinoCommon": "[7.13.21348.13001, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
