@@ -36,7 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\Geometry\PolylineConverterToHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\Geometry\VectorConverterToHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\TopLevel\BaseTopLevelConverterToHost.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ToHost\TopLevel\ModelCurveToHostTopLevelConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\TopLevel\ModelCurveToSpeckleTopLevelConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BeamConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BoundarySegmentConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BraceToSpeckleConverter.cs" />
@@ -88,6 +88,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ToSpeckleConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\SendSelection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\RevitToSpeckleUnitConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RevitRootToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitRootToSpeckleConverter.cs" />
   </ItemGroup>
 </Project>

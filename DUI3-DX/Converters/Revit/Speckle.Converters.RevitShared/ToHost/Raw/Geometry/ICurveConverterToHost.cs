@@ -11,7 +11,7 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
   private readonly ITypedConverter<SOG.Arc, DB.Arc> _arcConverter;
   private readonly ITypedConverter<SOG.Line, DB.Line> _lineConverter;
   private readonly ITypedConverter<SOG.Circle, DB.Arc> _circleConverter;
-  private readonly ITypedConverter<SOG.Ellipse, DB.Ellipse> _ellipseConverter;
+  private readonly ITypedConverter<SOG.Ellipse, DB.Curve> _ellipseConverter;
   private readonly ITypedConverter<SOG.Polyline, DB.CurveArray> _polylineConverter;
   private readonly ITypedConverter<SOG.Curve, DB.Curve> _curveConverter;
 
@@ -21,7 +21,7 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
     ITypedConverter<SOG.Arc, DB.Arc> arcConverter,
     ITypedConverter<SOG.Line, DB.Line> lineConverter,
     ITypedConverter<SOG.Circle, DB.Arc> circleConverter,
-    ITypedConverter<SOG.Ellipse, DB.Ellipse> ellipseConverter,
+    ITypedConverter<SOG.Ellipse, DB.Curve> ellipseConverter,
     ITypedConverter<SOG.Polyline, DB.CurveArray> polylineConverter,
     ITypedConverter<SOG.Curve, DB.Curve> curveConverter
   )
