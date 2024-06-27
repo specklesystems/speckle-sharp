@@ -58,7 +58,7 @@ public class AccountServerMigrationTests
     _accountsToCleanUp.Clear();
   }
 
-  private static Account CreateTestAccount(string url, Uri movedFrom, Uri movedTo, string? id = null)
+  private static Account CreateTestAccount(string url, Uri movedFrom, Uri movedTo, string id = null)
   {
     id ??= Guid.NewGuid().ToString();
     return new Account

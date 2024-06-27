@@ -34,7 +34,7 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         query VersionsGet($projectId: String!, $modelId: String!, $versionId: String!) {
+                         query VersionGet($projectId: String!, $modelId: String!, $versionId: String!) {
                            project(id: $projectId) {
                              model(id: $modelId) {
                                version(id: $versionId) {
@@ -79,22 +79,26 @@ public sealed class VersionResource
 
   /// <param name="projectId"></param>
   /// <param name="modelId"></param>
-  /// <param name="limit"></param>
+  /// <param name="limit">Max number of versions to fetch</param>
+  /// <param name="cursor">Optional cursor for pagination</param>
+  /// <param name="filter">Optional filter</param>
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<Version>> GetVersions(
     string projectId,
     string modelId,
-    int limit = 25,
+    int limit,
+    string? cursor = null,
+    ModelVersionsFilter? filter = null,
     CancellationToken cancellationToken = default
   )
   {
     //language=graphql
     const string QUERY = """
-                         query VersionGetVersions($projectId: String!, $modelId: String!, $limit: Int!) {
+                         query VersionGetVersions($projectId: String!, $modelId: String!, $limit: Int!, $cursor: String, $filter: ModelVersionsFilter) {
                            project(id: $projectId) {
                              model(id: $modelId) {
-                               versions(limit: $limit) {
+                               versions(limit: $limit, cursor: $cursor, filter: $filter) {
                                  items {
                                    id
                                    referencedObject
@@ -129,7 +133,9 @@ public sealed class VersionResource
         {
           projectId,
           modelId,
-          limit
+          limit,
+          cursor,
+          filter,
         }
       };
 
@@ -239,8 +245,6 @@ public sealed class VersionResource
     return response["delete"];
   }
 
-  //TODO: Implement on server
-
   /// <param name="commitReceivedInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -250,13 +254,7 @@ public sealed class VersionResource
     CancellationToken cancellationToken = default
   )
   {
-    throw new NotImplementedException("Not implemented on server");
-    //language=graphql
-    const string QUERY = """
-                         
-                         """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { } };
-
-    var response = await _client.ExecuteGraphQLRequest<object>(request, cancellationToken).ConfigureAwait(false);
+    //TODO: Implement on server
+    return await ((Client)_client).CommitReceived(commitReceivedInput, cancellationToken).ConfigureAwait(false);
   }
 }

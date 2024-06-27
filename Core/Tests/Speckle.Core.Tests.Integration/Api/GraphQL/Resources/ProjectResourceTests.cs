@@ -9,8 +9,7 @@ namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 [TestOf(typeof(ProjectResource))]
 public class ProjectResourceTests
 {
-  private Client _testUser,
-    _secondUser;
+  private Client _testUser;
   private Project _testProject;
   private ProjectResource Sut => _testUser.Project;
 
@@ -18,7 +17,6 @@ public class ProjectResourceTests
   public async Task Setup()
   {
     _testUser = await Fixtures.SeedUserWithClient();
-    _secondUser = await Fixtures.SeedUserWithClient();
     _testProject = await _testUser.Project.Create(new("test project123", "desc", null));
   }
 

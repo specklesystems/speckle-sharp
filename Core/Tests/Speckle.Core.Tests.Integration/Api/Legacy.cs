@@ -178,7 +178,7 @@ public class Legacy : IDisposable
     var res = await _myClient.StreamUpdatePermission(
       new StreamPermissionInput
       {
-        role = ServerRoles.STREAM_REVIEWER,
+        role = StreamRoles.STREAM_REVIEWER,
         streamId = _streamId,
         userId = _secondUserAccount.userInfo.id
       }

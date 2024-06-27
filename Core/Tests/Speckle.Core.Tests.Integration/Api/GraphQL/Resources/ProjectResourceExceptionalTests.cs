@@ -3,7 +3,6 @@ using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
-using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
@@ -45,7 +44,7 @@ public class ProjectResourceExceptionalTests
   [Test]
   public async Task ProjectGet_WithoutAuth()
   {
-    ProjectCreateInput input = new("Private STream", "A very private stream", ProjectVisibility.Private);
+    ProjectCreateInput input = new("Private Stream", "A very private stream", ProjectVisibility.Private);
 
     Project privateStream = await Sut.Create(input);
 
@@ -75,10 +74,10 @@ public class ProjectResourceExceptionalTests
   }
 
   [Test]
-  [TestCase(ServerRoles.STREAM_OWNER)]
-  [TestCase(ServerRoles.STREAM_CONTRIBUTOR)]
-  [TestCase(ServerRoles.STREAM_REVIEWER)]
-  [TestCase(ServerRoles.REVOKE)]
+  [TestCase(StreamRoles.STREAM_OWNER)]
+  [TestCase(StreamRoles.STREAM_CONTRIBUTOR)]
+  [TestCase(StreamRoles.STREAM_REVIEWER)]
+  [TestCase(StreamRoles.REVOKE)]
   public void ProjectUpdateRole_NonExistentProject(string newRole)
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
@@ -87,9 +86,10 @@ public class ProjectResourceExceptionalTests
   }
 
   [Test]
-  [TestCase("stream:owner")]
-  [TestCase("stream:reviewer")]
-  [TestCase(null)]
+  [TestCase(StreamRoles.STREAM_OWNER)]
+  [TestCase(StreamRoles.STREAM_CONTRIBUTOR)]
+  [TestCase(StreamRoles.STREAM_REVIEWER)]
+  [TestCase(StreamRoles.REVOKE)]
   public void ProjectUpdateRole_NonAuth(string newRole)
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);

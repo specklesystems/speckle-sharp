@@ -21,3 +21,5 @@ internal record ProjectMutationResponse([property: JsonRequired] ProjectMutation
 internal record ModelMutationResponse([property: JsonRequired] ModelMutation modelMutations);
 
 internal record ProjectInviteResponse(PendingStreamCollaborator? projectInvite);
+
+internal record UserSearchResponse([property: JsonRequired] ResourceCollection<LimitedUser> userSearch);

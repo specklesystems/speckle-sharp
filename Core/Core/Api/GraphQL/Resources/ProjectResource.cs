@@ -48,18 +48,22 @@ public sealed class ProjectResource
 
   /// <param name="projectId"></param>
   /// <param name="modelsLimit"></param>
+  /// <param name="modelsCursor"></param>
+  /// <param name="modelsFilter"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Project> GetWithModels(
     string projectId,
     int modelsLimit,
+    string? modelsCursor = null,
+    ProjectModelsFilter? modelsFilter = null,
     CancellationToken cancellationToken = default
   )
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!) {
+                         query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
                            project(id: $projectId) {
                              id
                              name
@@ -70,7 +74,7 @@ public sealed class ProjectResource
                              createdAt
                              updatedAt
                              sourceApps
-                             models(limit: $modelsLimit) {
+                             models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
                                items {
                                  id
                                  name
@@ -86,7 +90,18 @@ public sealed class ProjectResource
                            }
                          }
                          """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, modelsLimit } };
+    GraphQLRequest request =
+      new()
+      {
+        Query = QUERY,
+        Variables = new
+        {
+          projectId,
+          modelsLimit,
+          modelsCursor,
+          modelsFilter
+        }
+      };
 
     var response = await _client
       .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
@@ -95,15 +110,10 @@ public sealed class ProjectResource
   }
 
   /// <param name="projectId"></param>
-  /// <param name="modelsLimit"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<Project> GetWithTeam(
-    string projectId,
-    int modelsLimit,
-    CancellationToken cancellationToken = default
-  )
+  public async Task<Project> GetWithTeam(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -164,7 +174,7 @@ public sealed class ProjectResource
                            }
                          }
                          """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, modelsLimit } };
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
     var response = await _client
       .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
@@ -257,9 +267,6 @@ public sealed class ProjectResource
     return response.projectMutations.delete;
   }
 
-  /// <summary>
-  ///
-  /// </summary>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
@@ -328,7 +335,9 @@ public sealed class ProjectResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
-    var response = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
     return response.projectMutations.updateRole;
   }
 }

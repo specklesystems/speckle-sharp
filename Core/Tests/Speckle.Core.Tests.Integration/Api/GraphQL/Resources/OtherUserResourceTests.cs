@@ -1,5 +1,4 @@
 ﻿using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Credentials;
 
@@ -36,15 +35,15 @@ public class OtherUserResourceTests
   [Test]
   public async Task UserSearch()
   {
-    var res = await Sut.UserSearch(_testData.userInfo.email);
-    Assert.That(res, Has.Count.EqualTo(1));
-    Assert.That(res[0].id, Is.EqualTo(_testData.userInfo.id));
+    var res = await Sut.UserSearch(_testData.userInfo.email, 25);
+    Assert.That(res.items, Has.Count.EqualTo(1));
+    Assert.That(res.items[0].id, Is.EqualTo(_testData.userInfo.id));
   }
 
   [Test]
   public async Task UserSearch_NonExistentUser()
   {
-    var res = await Sut.UserSearch("idontexist@example.com");
-    Assert.That(res, Has.Count.EqualTo(0));
+    var res = await Sut.UserSearch("idontexist@example.com", 25);
+    Assert.That(res.items, Has.Count.EqualTo(0));
   }
 }

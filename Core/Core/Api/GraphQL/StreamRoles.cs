@@ -3,7 +3,7 @@
 /// <summary>
 /// These are the default roles used by the server
 /// </summary>
-public static class ServerRoles
+public static class StreamRoles
 {
   public const string STREAM_OWNER = "stream:owner";
   public const string STREAM_CONTRIBUTOR = "stream:contributor";

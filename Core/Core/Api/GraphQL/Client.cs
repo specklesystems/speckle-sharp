@@ -34,7 +34,6 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
   public ActiveUserResource ActiveUser { get; }
   public OtherUserResource OtherUser { get; }
   public ProjectInviteResource ProjectInvite { get; }
-  public SubscriptionResource Subscription { get; }
 
   public string ServerUrl => Account.serverInfo.url;
 
@@ -48,9 +47,11 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
 
   public GraphQLHttpClient GQLClient { get; }
 
+  /// <param name="account"></param>
+  /// <exception cref="ArgumentException"><paramref name="account"/> was null</exception>
   public Client(Account account)
   {
-    Account = account ?? throw new SpeckleException("Provided account is null.");
+    Account = account ?? throw new ArgumentException("Provided account is null.");
 
     Project = new(this);
     Model = new(this);
@@ -58,7 +59,6 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
     ActiveUser = new(this);
     OtherUser = new(this);
     ProjectInvite = new(this);
-    Subscription = new(this);
 
     HttpClient = CreateHttpClient(account);
 
@@ -100,9 +100,9 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
       .Handle<SpeckleGraphQLInternalErrorException>()
       .WaitAndRetryAsync(
         delay,
-        (ex, timeout, context) =>
+        (ex, timeout, _) =>
         {
-          SpeckleLog.Logger.Information(
+          SpeckleLog.Logger.Debug(
             ex,
             "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}",
             typeof(T).Name,
@@ -240,59 +240,6 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
       new PropertyEnricher("graphqlVariables", variables),
       new PropertyEnricher("resultType", typeof(T).Name)
     };
-  }
-
-  public IDisposable __SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
-  {
-    using IDisposable requestContext = LogContext.Push(CreateEnrichers<T>(request));
-    try
-    {
-      var res = GQLClient.CreateSubscriptionStream<T>(request);
-      return res.Subscribe(
-        response =>
-        {
-          try
-          {
-            MaybeThrowFromGraphQLErrors(request, response);
-
-            callback.Invoke(this, response.Data);
-          }
-          // anything else related to graphql gets logged
-          catch (SpeckleGraphQLException<T> gqlException)
-          {
-            SpeckleLog.Logger
-              .ForContext("graphqlResponse", gqlException.Response)
-              .ForContext("graphqlExtensions", gqlException.Extensions)
-              .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
-              .Information(gqlException, "Execution of the graphql request to get {resultType} failed", typeof(T).Name);
-            throw; //TODO: where are we throwing to?
-          }
-        },
-        ex =>
-        {
-          // we're logging this as an error for now, to keep track of failures
-          // so far we've swallowed these errors
-          SpeckleLog.Logger.Error(
-            ex,
-            "Subscription for {resultType} terminated unexpectedly with {exceptionMessage}",
-            typeof(T).Name,
-            ex.Message
-          );
-          // we could be throwing like this:
-          // throw ex;
-        }
-      );
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      SpeckleLog.Logger.Warning(
-        ex,
-        "Subscribing to graphql {resultType} failed without a graphql response. Cause {exceptionMessage}",
-        typeof(T).Name,
-        ex.Message
-      );
-      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", request, null, ex);
-    }
   }
 
   public IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)

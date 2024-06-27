@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
@@ -69,19 +68,21 @@ public sealed class ModelResource
     string projectId,
     string modelId,
     int versionsLimit,
+    string? versionsCursor = null,
+    ModelVersionsFilter? versionsFilter = null,
     CancellationToken cancellationToken = default
   )
   {
     //language=graphql
     const string QUERY = """
-                         query ModelGetWithVersions($modelId: String!, $projectId: String!, $versionsLimit: Int!) {
+                         query ModelGetWithVersions($modelId: String!, $projectId: String!, $versionsLimit: Int!, $versionsCursor: String, $versionsFilter: ModelVersionsFilter) {
                            project(id: $projectId) {
                              model(id: $modelId) {
                                id
                                name
                                previewUrl
                                updatedAt
-                               versions(limit: $versionsLimit) {
+                               versions(limit: $versionsLimit, cursor: $versionsCursor, filter: $versionsFilter) {
                                  items {
                                    id
                                    message
@@ -118,7 +119,9 @@ public sealed class ModelResource
       {
         projectId,
         modelId,
-        versionsLimit
+        versionsLimit,
+        versionsCursor,
+        versionsFilter,
       }
     };
 
@@ -166,9 +169,11 @@ public sealed class ModelResource
                          """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
     var res = await _client
       .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
+
     return res.modelMutations.create;
   }
 
@@ -191,9 +196,11 @@ public sealed class ModelResource
                          """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
     var res = await _client
       .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
+
     return res.modelMutations.delete;
   }
 
@@ -231,9 +238,11 @@ public sealed class ModelResource
                          """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
     var res = await _client
       .ExecuteGraphQLRequest<ModelMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
+
     return res.modelMutations.update;
   }
 }

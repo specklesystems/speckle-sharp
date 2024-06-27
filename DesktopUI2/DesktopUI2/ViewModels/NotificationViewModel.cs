@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 
 namespace DesktopUI2.ViewModels;
 

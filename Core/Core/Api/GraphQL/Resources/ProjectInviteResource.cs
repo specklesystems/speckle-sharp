@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
@@ -96,13 +95,10 @@ public sealed class ProjectInviteResource
     var response = await _client
       .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
+
     return response.projectMutations.invites.create;
   }
 
-  //TODO: what is this return...
-  /// <summary>
-  ///
-  /// </summary>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -121,8 +117,10 @@ public sealed class ProjectInviteResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
-    var response = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
-    return response["use"]; //TODO: check if this is correct
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.projectMutations.invites.use;
   }
 
   /// <param name="projectId"></param>
@@ -174,7 +172,6 @@ public sealed class ProjectInviteResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, token } };
 
-    var asdf = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
     var response = await _client
       .ExecuteGraphQLRequest<ProjectInviteResponse>(request, cancellationToken)
       .ConfigureAwait(false);
@@ -182,13 +179,12 @@ public sealed class ProjectInviteResource
     return response.projectInvite;
   }
 
-  //TODO: again, what to return...
   /// <param name="projectId"></param>
   /// <param name="inviteId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<bool> Cancel(string projectId, string inviteId, CancellationToken cancellationToken = default)
+  public async Task<Project> Cancel(string projectId, string inviteId, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -256,8 +252,9 @@ public sealed class ProjectInviteResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, inviteId } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["cancel"];
+
+    return response.projectMutations.invites.cancel;
   }
 }

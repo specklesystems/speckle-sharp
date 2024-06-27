@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api;
@@ -301,15 +302,6 @@ public class Resource
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
-public enum ResourceType
-{
-  commit,
-  stream,
-  @object,
-  comment
-}
-
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Location
 {
   public double x { get; set; }
@@ -349,17 +341,6 @@ public class Comments
   public int totalCount { get; set; }
   public DateTime? cursor { get; set; }
   public List<CommentItem> items { get; set; }
-}
-
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
-public class CommentData
-{
-  public Comments comments { get; set; }
-  public List<double> camPos { get; set; }
-  public object filters { get; set; }
-  public Location location { get; set; }
-  public object selection { get; set; }
-  public object sectionBox { get; set; }
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]

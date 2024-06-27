@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api.GraphQL.Inputs;
 

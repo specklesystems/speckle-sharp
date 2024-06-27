@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Models;
@@ -42,29 +41,37 @@ public sealed class OtherUserResource
 
     var request = new GraphQLRequest { Query = QUERY, Variables = new { id } };
 
-    var respose = await _client
+    var response = await _client
       .ExecuteGraphQLRequest<LimitedUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return respose.otherUser;
+
+    return response.otherUser;
   }
 
   /// <summary>
   /// Searches for a user on the server.
   /// </summary>
   /// <param name="query">String to search for. Must be at least 3 characters</param>
-  /// <param name="limit">Max number of users to return</param>
+  /// <param name="limit">Max number of users to fetch</param>
+  /// <param name="cursor">Optional cursor for pagination</param>
+  /// <param name="archived"></param>
+  /// <param name="emailOnly"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<List<LimitedUser>> UserSearch(
+  public async Task<ResourceCollection<LimitedUser>> UserSearch(
     string query,
-    int limit = 10,
+    int limit,
+    string? cursor = null,
+    bool archived = false,
+    bool emailOnly = false,
     CancellationToken cancellationToken = default
   )
   {
     //language=graphql
     const string QUERY = """
-                             query UserSearch($query: String!, $limit: Int!) {
-                               userSearch(query: $query, limit: $limit) {
+                             query UserSearch($query: String!, $limit: Int!, $cursor: String, $archived: Boolean, $emailOnly: Boolean) {
+                               userSearch(query: $query, limit: $limit, cursor: $cursor, archived: $archived, emailOnly: $emailOnly) {
                                  cursor,
                                  items {
                                   id
@@ -78,9 +85,24 @@ public sealed class OtherUserResource
                               }
                              }
                              """;
-    var request = new GraphQLRequest { Query = QUERY, Variables = new { query, limit } };
-    return (await _client.ExecuteGraphQLRequest<UserSearchData>(request, cancellationToken).ConfigureAwait(false))
-      .userSearch
-      .items;
+
+    var request = new GraphQLRequest
+    {
+      Query = QUERY,
+      Variables = new
+      {
+        query,
+        limit,
+        cursor,
+        archived,
+        emailOnly
+      }
+    };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<UserSearchResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
+
+    return response.userSearch;
   }
 }

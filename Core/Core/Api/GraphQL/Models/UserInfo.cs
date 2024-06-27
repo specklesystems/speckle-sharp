@@ -49,7 +49,6 @@ public sealed class UserInfo : UserBase
   public bool? hasPendingVerification { get; init; }
   public bool? isOnboardingFinished { get; init; }
   public List<PendingStreamCollaborator> projectInvites { get; init; }
-  public PendingStreamCollaborator projectInvite { get; init; } //TODO: this is not in schema, but DOES exist as return...
   public ResourceCollection<Project> projects { get; init; }
 
   [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]

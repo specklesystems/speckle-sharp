@@ -51,20 +51,24 @@ public sealed class ActiveUserResource
     return response.activeUser;
   }
 
-  /// <param name="projectsLimit"></param>
+  /// <param name="limit"></param>
+  /// <param name="cursor">Optional cursor for pagination</param>
+  /// <param name="filter">Optional filter</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<Project>> GetProjects(
-    int projectsLimit = 10,
+    int limit,
+    string? cursor = null,
+    UserProjectsFilter? filter = null,
     CancellationToken cancellationToken = default
   )
   {
     //language=graphql
     const string QUERY = """
-                          query User($projectsLimit : Int!) {
+                          query User($limit : Int!, $cursor: String, $filter: UserProjectsFilter) {
                            activeUser {
-                             projects(limit: $projectsLimit) {
+                             projects(limit: $limit, cursor: $cursor, filter: $filter) {
                                 totalCount
                                 items {
                                    id
@@ -81,60 +85,33 @@ public sealed class ActiveUserResource
                            }
                          }
                          """;
-    var request = new GraphQLRequest { Query = QUERY, Variables = new { projectsLimit } };
+    var request = new GraphQLRequest
+    {
+      Query = QUERY,
+      Variables = new
+      {
+        limit,
+        cursor,
+        filter
+      }
+    };
 
     var response = await _client
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
+
+    if (response.activeUser is null)
+    {
+      throw new SpeckleGraphQLException("GraphQL response indicated that the ActiveUser could not be found");
+    }
 
     return response.activeUser.projects;
   }
 
-  /// <param name="filter"></param>
-  /// <param name="limit"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<List<Project>> FilterProjects(
-    UserProjectsFilter filter,
-    int limit = 10,
-    CancellationToken cancellationToken = default
-  )
-  {
-    //language=graphql
-    const string QUERY = """
-                         query ProjectsFilter($filter: UserProjectsFilter!, $limit: Int!) {
-                           activeUser {
-                             projects(filter: $filter, limit: $limit) {
-                                totalCount
-                                items {
-                                   id
-                                   name
-                                   description
-                                   visibility
-                                   allowPublicComments
-                                   role
-                                   createdAt
-                                   updatedAt
-                                   sourceApps
-                                }
-                             }
-                           }
-                         }
-                         """;
-
-    var request = new GraphQLRequest { Query = QUERY, Variables = new { filter, limit } };
-
-    var response = await _client
-      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return response.activeUser.projects.items;
-  }
-
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<List<Project>> ProjectInvites(CancellationToken cancellationToken = default)
+  public async Task<List<PendingStreamCollaborator>> ProjectInvites(CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -159,6 +136,14 @@ public sealed class ActiveUserResource
                                streamName
                                title
                                token
+                               user {
+                                 id,
+                                 name,
+                                 bio,
+                                 company,
+                                 verified,
+                                 role,
+                               }
                              }
                            }
                          }
@@ -169,6 +154,12 @@ public sealed class ActiveUserResource
     var response = await _client
       .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response.activeUser.projects.items;
+
+    if (response.activeUser is null)
+    {
+      throw new SpeckleGraphQLException("GraphQL response indicated that the ActiveUser could not be found");
+    }
+
+    return response.activeUser.projectInvites;
   }
 }

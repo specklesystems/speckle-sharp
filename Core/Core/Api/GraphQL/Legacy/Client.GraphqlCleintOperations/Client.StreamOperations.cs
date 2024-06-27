@@ -514,6 +514,8 @@ public partial class Client
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
+  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.ProjectInvites)}")]
   public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

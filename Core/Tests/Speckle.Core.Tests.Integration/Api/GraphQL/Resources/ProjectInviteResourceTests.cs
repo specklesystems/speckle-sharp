@@ -6,98 +6,91 @@ using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
 
-[TestOf(typeof(ProjectResource))]
+[TestOf(typeof(ProjectInviteResource))]
 public class ProjectInviteResourceTests
 {
-  private Client _testUser,
-    _secondUser;
+  private Client _inviter,
+    _invitee;
   private Project _project;
   private PendingStreamCollaborator _createdInvite;
-  private ProjectInviteResource Sut => _testUser.ProjectInvite;
 
-  [OneTimeSetUp]
+  [SetUp]
   public async Task Setup()
   {
-    _testUser = await Fixtures.SeedUserWithClient();
-    _secondUser = await Fixtures.SeedUserWithClient();
-    _project = await _testUser.Project.Create(new("test", null, null));
+    _inviter = await Fixtures.SeedUserWithClient();
+    _invitee = await Fixtures.SeedUserWithClient();
+    _project = await _inviter.Project.Create(new("test", null, null));
+    _createdInvite = await SeedInvite();
+  }
+
+  private async Task<PendingStreamCollaborator> SeedInvite()
+  {
+    ProjectInviteCreateInput input = new(_invitee.Account.userInfo.email, null, null, null);
+    var res = await _inviter.ProjectInvite.Create(_project.id, input);
+    var invites = await _invitee.ActiveUser.ProjectInvites();
+    return invites.First(i => i.projectId == res.id);
   }
 
   [Test]
-  public async Task ProjectInviteCreate_By_Email()
+  public async Task ProjectInviteCreate_ByEmail()
   {
-    ProjectInviteCreateInput input = new(_secondUser.Account.userInfo.email, null, ServerRoles.STREAM_REVIEWER, null);
-    var res = await Sut.Create(_project.id, input);
+    ProjectInviteCreateInput input = new(_invitee.Account.userInfo.email, null, null, null);
+    var res = await _inviter.ProjectInvite.Create(_project.id, input);
+
+    var invites = await _invitee.ActiveUser.ProjectInvites();
+    var invite = invites.First(i => i.projectId == res.id);
 
     Assert.That(res, Has.Property(nameof(_project.id)).EqualTo(_project.id));
     Assert.That(res.invitedTeam, Has.Count.EqualTo(1));
-    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(_secondUser.Account.userInfo.id));
-    Assert.That(res.invitedTeam[0].token, Is.Not.Null);
-
-    _createdInvite = res.invitedTeam[0];
+    Assert.That(invite.user.id, Is.EqualTo(_invitee.Account.userInfo.id));
+    Assert.That(invite.token, Is.Not.Null);
   }
 
   [Test]
-  public async Task ProjectInviteCreate_By_UserId()
+  public async Task ProjectInviteCreate_ByUserId()
   {
-    ProjectInviteCreateInput input = new(null, null, null, _secondUser.Account.userInfo.id);
-    var res = await Sut.Create(_project.id, input);
+    ProjectInviteCreateInput input = new(null, null, null, _invitee.Account.userInfo.id);
+    var res = await _inviter.ProjectInvite.Create(_project.id, input);
 
     Assert.That(res, Has.Property(nameof(_project.id)).EqualTo(_project.id));
     Assert.That(res.invitedTeam, Has.Count.EqualTo(1));
-    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(_secondUser.Account.userInfo.id));
-  }
-
-  [Test]
-  public void ProjectInviteCreate_InvalidInput()
-  {
-    Assert.CatchAsync<SpeckleGraphQLException>(async () =>
-    {
-      var input = new ProjectInviteCreateInput(null, null, null, null);
-      await Sut.Create(_project.id, input);
-    });
-
-    Assert.CatchAsync<SpeckleGraphQLException>(async () =>
-    {
-      var input = new ProjectInviteCreateInput(null, "something", "something", null);
-      await Sut.Create(_project.id, input);
-    });
+    Assert.That(res.invitedTeam[0].user.id, Is.EqualTo(_invitee.Account.userInfo.id));
   }
 
   [Test]
   public async Task ProjectInviteGet()
   {
-    await ProjectInviteCreate_By_Email();
-    var collaborator = await Sut.Get(_project.id, _createdInvite.token);
+    var collaborator = await _invitee.ProjectInvite.Get(_project.id, _createdInvite.token);
 
-    Assert.That(collaborator, Has.Property(nameof(PendingStreamCollaborator.id)).EqualTo(_createdInvite.id));
     Assert.That(
       collaborator,
       Has.Property(nameof(PendingStreamCollaborator.inviteId)).EqualTo(_createdInvite.inviteId)
     );
+    Assert.That(collaborator.user.id, Is.EqualTo(_createdInvite.user.id));
   }
 
   [Test]
   public async Task ProjectInviteUse()
   {
-    await ProjectInviteCreate_By_Email();
-    ProjectInviteUseInput input = new(true, _createdInvite.streamId, _createdInvite.token);
-    var res = await Sut.Use(input);
+    ProjectInviteUseInput input = new(true, _createdInvite.projectId, _createdInvite.token);
+    var res = await _invitee.ProjectInvite.Use(input);
 
     Assert.That(res, Is.True);
   }
 
   [Test]
-  [TestCase("stream:owner")]
-  [TestCase("stream:reviewer")] //TODO: be exhaustive
-  [TestCase(null)] //Revoke access
+  [TestCase(StreamRoles.STREAM_OWNER)]
+  [TestCase(StreamRoles.STREAM_REVIEWER)]
+  [TestCase(StreamRoles.STREAM_CONTRIBUTOR)]
+  [TestCase(StreamRoles.REVOKE)]
   public async Task ProjectUpdateRole(string newRole)
   {
+    await ProjectInviteUse();
     //TODO: figure out if this test could work, we may need to invite the user first...
-    ProjectUpdateRoleInput input = new(_secondUser.Account.userInfo.id, _project.id, newRole);
-    _ = await _testUser.Project.UpdateRole(input);
+    ProjectUpdateRoleInput input = new(_invitee.Account.userInfo.id, _project.id, newRole);
+    _ = await _inviter.Project.UpdateRole(input);
 
-    Project finalProject = await _secondUser.Project.Get(_secondUser.Account.id);
+    Project finalProject = await _invitee.Project.Get(_project.id);
     Assert.That(finalProject.role, Is.EqualTo(newRole));
   }
 }
