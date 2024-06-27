@@ -1,21 +1,22 @@
-﻿using Objects;
-using Speckle.Converters.Common;
+using Autodesk.Revit.DB;
+using Objects;
+using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public sealed class CurveArrayConversionToSpeckle : ITypedConverter<IRevitCurveArray, SOG.Polycurve>
+public sealed class CurveArrayConversionToSpeckle : ITypedConverter<DB.CurveArray, SOG.Polycurve>
 {
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
-  private readonly IScalingServiceToSpeckle _scalingService;
-  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
+  private readonly IRevitConversionContextStack _contextStack;
+  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
 
   public CurveArrayConversionToSpeckle(
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    IScalingServiceToSpeckle scalingService,
-    ITypedConverter<IRevitCurve, ICurve> curveConverter
+    IRevitConversionContextStack contextStack,
+    ScalingServiceToSpeckle scalingService,
+    ITypedConverter<DB.Curve, ICurve> curveConverter
   )
   {
     _contextStack = contextStack;
@@ -23,14 +24,15 @@ public sealed class CurveArrayConversionToSpeckle : ITypedConverter<IRevitCurveA
     _curveConverter = curveConverter;
   }
 
-  public SOG.Polycurve Convert(IRevitCurveArray target)
+  public Polycurve Convert(CurveArray target)
   {
-    List<IRevitCurve> curves = target.Cast<IRevitCurve>().ToList();
+    List<DB.Curve> curves = target.Cast<DB.Curve>().ToList();
 
-    return new SOG.Polycurve()
+    return new Polycurve()
     {
       units = _contextStack.Current.SpeckleUnits,
-      closed = curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConstants.TOLERANCE,
+      closed =
+        curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConversionContextStack.TOLERANCE,
       length = _scalingService.ScaleLength(curves.Sum(x => x.Length)),
       segments = curves.Select(x => _curveConverter.Convert(x)).ToList()
     };

@@ -1,17 +1,16 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Pointcloud), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointCloudToHostTopLevelConverter
-  : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Pointcloud, IRhinoPointCloud>
+  : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Pointcloud, RG.PointCloud>
 {
   public PointCloudToHostTopLevelConverter(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<SOG.Pointcloud, IRhinoPointCloud> geometryBaseConverter,
-    IRhinoTransformFactory rhinoTransformFactory
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    ITypedConverter<SOG.Pointcloud, RG.PointCloud> geometryBaseConverter
   )
-    : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
+    : base(contextStack, geometryBaseConverter) { }
 }

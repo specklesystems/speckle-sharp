@@ -16,7 +16,28 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitSendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\DocumentModelStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\IdStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\IStorageSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\RevitConnectorModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RevitRootObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
+      <DependentUpon>CefSharpPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml">

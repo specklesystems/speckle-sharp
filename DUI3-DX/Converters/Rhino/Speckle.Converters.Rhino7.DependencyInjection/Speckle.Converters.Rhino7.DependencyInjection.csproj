@@ -11,6 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Rhino7.Interfaces" />
+    <PackageReference Include="RhinoCommon" />
   </ItemGroup>
 </Project>
