@@ -1,14 +1,16 @@
-﻿using Speckle.Autofac.DependencyInjection;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.InterfaceGenerator;
 
 namespace Speckle.Converters.Common;
 
-public class LegacyRootToSpeckleConverter : IRootToSpeckleConverter
+[GenerateAutoInterface]
+public class RootToSpeckleConverter : IRootToSpeckleConverter
 {
   private readonly IFactory<IToSpeckleTopLevelConverter> _toSpeckle;
 
-  public LegacyRootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
+  public RootToSpeckleConverter(IFactory<IToSpeckleTopLevelConverter> toSpeckle)
   {
     _toSpeckle = toSpeckle;
   }
