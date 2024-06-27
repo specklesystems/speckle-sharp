@@ -7,10 +7,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageVersionOverrideEnabled>true</CentralPackageVersionOverrideEnabled>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="All"/>
-    <PackageReference Include="Speckle.InterfaceGenerator" Version="0.9.5" PrivateAssets="All"/>
-  </ItemGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
 </Project>
