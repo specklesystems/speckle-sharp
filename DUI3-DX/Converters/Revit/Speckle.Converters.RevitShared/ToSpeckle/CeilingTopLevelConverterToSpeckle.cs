@@ -1,31 +1,30 @@
+using Autodesk.Revit.DB;
 using Objects;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(IRevitCeiling), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-internal sealed class CeilingTopLevelConverterToSpeckle
-  : BaseTopLevelConverterToSpeckle<IRevitCeiling, SOBR.RevitCeiling>
+[NameAndRankValue(nameof(DB.Ceiling), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+internal sealed class CeilingTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Ceiling, SOBR.RevitCeiling>
 {
-  private readonly ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
-  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
-  private readonly IParameterValueExtractor _parameterValueExtractor;
-  private readonly IParameterObjectAssigner _parameterObjectAssigner;
-  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly DisplayValueExtractor _displayValueExtractor;
 
   //private readonly HostedElementConversionToSpeckle _hostedElementConverter;
 
   public CeilingTopLevelConverterToSpeckle(
-    ITypedConverter<IRevitCurveArrArray, List<Polycurve>> curveArrArrayConverter,
-    ITypedConverter<IRevitLevel, RevitLevel> levelConverter,
-    IParameterValueExtractor parameterValueExtractor,
-    IParameterObjectAssigner parameterObjectAssigner,
-    IDisplayValueExtractor displayValueExtractor
+    ITypedConverter<CurveArrArray, List<Polycurve>> curveArrArrayConverter,
+    ITypedConverter<DB.Level, RevitLevel> levelConverter,
+    ParameterValueExtractor parameterValueExtractor,
+    ParameterObjectAssigner parameterObjectAssigner,
+    DisplayValueExtractor displayValueExtractor
   )
   {
     _curveArrArrayConverter = curveArrArrayConverter;
@@ -35,14 +34,14 @@ internal sealed class CeilingTopLevelConverterToSpeckle
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override RevitCeiling Convert(IRevitCeiling target)
+  public override RevitCeiling Convert(DB.Ceiling target)
   {
-    var sketch = target.Document.GetElement(target.SketchId).NotNull().ToSketch().NotNull();
+    var sketch = (Sketch)target.Document.GetElement(target.SketchId);
     List<SOG.Polycurve> profiles = _curveArrArrayConverter.Convert(sketch.Profile);
 
     var speckleCeiling = new RevitCeiling();
 
-    var elementType = target.Document.GetElement(target.GetTypeId()).NotNull().ToType().NotNull();
+    var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());
     speckleCeiling.type = elementType.Name;
     speckleCeiling.family = elementType.FamilyName;
 
@@ -59,7 +58,7 @@ internal sealed class CeilingTopLevelConverterToSpeckle
     // POC: our existing receive operation is checking the "slopeDirection" prop,
     // but it is never being set. We should be setting it
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.LEVEL_PARAM);
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
     speckleCeiling.level = _levelConverter.Convert(level);
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleCeiling);

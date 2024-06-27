@@ -18,17 +18,31 @@ public class ArcGISDocumentStore : DocumentModelStore
   )
     : base(serializerOption, true)
   {
-    ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)));
-    ProjectSavingEvent.Subscribe(_ =>
+    ActiveMapViewChangedEvent.Subscribe(a => topLevelExceptionHandler.CatchUnhandled(() => OnMapViewChanged(a)), true);
+    ProjectSavingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
+        return Task.CompletedTask;
+      },
+      true
+    );
+    ProjectClosingEvent.Subscribe(
+      _ =>
+      {
+        topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
+        return Task.CompletedTask;
+      },
+      true
+    );
+
+    // in case plugin was loaded into already opened Map, read metadata from the current Map
+    if (IsDocumentInit == false && MapView.Active != null)
     {
-      topLevelExceptionHandler.CatchUnhandled(OnProjectSaving);
-      return Task.CompletedTask;
-    });
-    ProjectClosingEvent.Subscribe(_ =>
-    {
-      topLevelExceptionHandler.CatchUnhandled(OnProjectClosing);
-      return Task.CompletedTask;
-    });
+      IsDocumentInit = true;
+      ReadFromFile();
+      OnDocumentChanged();
+    }
   }
 
   private void OnProjectClosing()

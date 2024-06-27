@@ -128,8 +128,8 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
             speckleParent,
             edge.EdgeCurveIndex,
             edge.TrimIndices(),
-            edge.StartVertex?.VertexIndex ?? -1,
-            edge.EndVertex?.VertexIndex ?? -1,
+            edge.StartVertex.VertexIndex,
+            edge.EndVertex.VertexIndex,
             edge.ProxyCurveIsReversed,
             _intervalConverter.Convert(edge.Domain)
           )
@@ -142,7 +142,7 @@ public class BrepToSpeckleConverter : ITypedConverter<RG.Brep, SOG.Brep>
       {
         var t = new SOG.BrepTrim(
           speckleParent,
-          trim.Edge?.EdgeIndex ?? -1,
+          trim.Edge.EdgeIndex,
           trim.Face.FaceIndex,
           trim.Loop.LoopIndex,
           trim.TrimCurveIndex,

@@ -10,7 +10,6 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Rhino7.Bindings;
 using Speckle.Connectors.Rhino7.Filters;
 using Speckle.Connectors.Rhino7.HostApp;
-using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
@@ -44,7 +43,7 @@ public class RhinoConnectorModule : ISpeckleModule
     // Register other connector specific types
     builder.AddSingleton<IRhinoPlugin, RhinoPlugin>();
     builder.AddSingleton<DocumentModelStore, RhinoDocumentStore>();
-    builder.AddSingleton<RhinoIdleManager>();
+    builder.AddSingleton<IRhinoIdleManager, RhinoIdleManager>();
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();

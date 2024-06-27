@@ -6,35 +6,32 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Converters.RevitShared.Extensions;
 using Objects.BuiltElements.Revit;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
-[NameAndRankValue(nameof(IRevitWall), 0)]
-public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitWall, SOBR.RevitWall>
+[NameAndRankValue(nameof(DB.Wall), 0)]
+public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.Wall, SOBR.RevitWall>
 {
-  private readonly ITypedConverter<IRevitCurve, ICurve> _curveConverter;
-  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
-  private readonly ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
-  private readonly IParameterValueExtractor _parameterValueExtractor;
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
-  private readonly IDisplayValueExtractor _displayValueExtractor;
-  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly ITypedConverter<DB.Curve, ICurve> _curveConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly IRevitConversionContextStack _contextStack;
+  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly IRootToSpeckleConverter _converter;
-  private readonly IRevitFilterFactory _revitFilterFactory;
 
   public WallTopLevelConverterToSpeckle(
-    ITypedConverter<IRevitCurve, ICurve> curveConverter,
-    ITypedConverter<IRevitLevel, SOBR.RevitLevel> levelConverter,
-    ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    IParameterValueExtractor parameterValueExtractor,
-    IDisplayValueExtractor displayValueExtractor,
-    IParameterObjectAssigner parameterObjectAssigner,
-    IRootToSpeckleConverter converter,
-    IRevitFilterFactory revitFilterFactory
+    ITypedConverter<DB.Curve, ICurve> curveConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    IRevitConversionContextStack contextStack,
+    ParameterValueExtractor parameterValueExtractor,
+    DisplayValueExtractor displayValueExtractor,
+    ParameterObjectAssigner parameterObjectAssigner,
+    IRootToSpeckleConverter converter
   )
   {
     _curveConverter = curveConverter;
@@ -45,10 +42,9 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     _displayValueExtractor = displayValueExtractor;
     _parameterObjectAssigner = parameterObjectAssigner;
     _converter = converter;
-    _revitFilterFactory = revitFilterFactory;
   }
 
-  public override SOBR.RevitWall Convert(IRevitWall target)
+  public override SOBR.RevitWall Convert(DB.Wall target)
   {
     SOBR.RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
 
@@ -61,10 +57,9 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     return speckleWall;
   }
 
-  private void AssignSpecificParameters(IRevitWall target, RevitWall speckleWall)
+  private void AssignSpecificParameters(DB.Wall target, RevitWall speckleWall)
   {
-    var locationCurve = target.GetLocationAsLocationCurve();
-    if (locationCurve is null)
+    if (target.Location is not DB.LocationCurve locationCurve)
     {
       throw new SpeckleConversionException(
         "Incorrect assumption was made that all Revit Wall location properties would be of type \"LocationCurve\""
@@ -73,41 +68,46 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
 
     speckleWall.baseLine = _curveConverter.Convert(locationCurve.Curve);
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.WALL_BASE_CONSTRAINT);
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
+      target,
+      DB.BuiltInParameter.WALL_BASE_CONSTRAINT
+    );
     speckleWall.level = _levelConverter.Convert(level);
 
-    var topLevel = _parameterValueExtractor.GetValueAsRevitLevel(target, RevitBuiltInParameter.WALL_BASE_CONSTRAINT);
+    var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
+      target,
+      DB.BuiltInParameter.WALL_BASE_CONSTRAINT
+    );
     speckleWall.topLevel = _levelConverter.Convert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
     _ = _parameterValueExtractor.TryGetValueAsDouble(
       target,
-      RevitBuiltInParameter.WALL_USER_HEIGHT_PARAM,
+      DB.BuiltInParameter.WALL_USER_HEIGHT_PARAM,
       out double? height
     );
     speckleWall.height = height ?? 0;
     _ = _parameterValueExtractor.TryGetValueAsDouble(
       target,
-      RevitBuiltInParameter.WALL_BASE_OFFSET,
+      DB.BuiltInParameter.WALL_BASE_OFFSET,
       out double? baseOffset
     );
     speckleWall.baseOffset = baseOffset ?? 0;
     _ = _parameterValueExtractor.TryGetValueAsDouble(
       target,
-      RevitBuiltInParameter.WALL_TOP_OFFSET,
+      DB.BuiltInParameter.WALL_TOP_OFFSET,
       out double? topOffset
     );
     speckleWall.topOffset = topOffset ?? 0;
     speckleWall.structural =
-      _parameterValueExtractor.GetValueAsBool(target, RevitBuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
+      _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;
   }
 
-  private List<Base> GetChildElements(IRevitWall target)
+  private List<Base> GetChildElements(DB.Wall target)
   {
     List<Base> wallChildren = new();
-    var grid = target.CurtainGrid;
-    if (grid is not null)
+    if (target.CurtainGrid is DB.CurtainGrid grid)
     {
       wallChildren.AddRange(ConvertElements(grid.GetMullionIds()));
       wallChildren.AddRange(ConvertElements(grid.GetPanelIds()));
@@ -116,19 +116,19 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     {
       wallChildren.AddRange(ConvertElements(target.GetStackedWallMemberIds()));
     }
-    wallChildren.AddRange(ConvertElements(target.GetHostedElementIds(_revitFilterFactory)));
+    wallChildren.AddRange(ConvertElements(target.GetHostedElementIds()));
     return wallChildren;
   }
 
-  private IEnumerable<Base> ConvertElements(IEnumerable<IRevitElementId> elementIds)
+  private IEnumerable<Base> ConvertElements(IEnumerable<DB.ElementId> elementIds)
   {
-    foreach (IRevitElementId elementId in elementIds)
+    foreach (DB.ElementId elementId in elementIds)
     {
-      yield return _converter.Convert(_contextStack.Current.Document.GetElement(elementId).NotNull());
+      yield return _converter.Convert(_contextStack.Current.Document.GetElement(elementId));
     }
   }
 
-  private void AssignDisplayValue(IRevitWall target, RevitWall speckleWall)
+  private void AssignDisplayValue(DB.Wall target, RevitWall speckleWall)
   {
     if (target.CurtainGrid is null)
     {
@@ -159,9 +159,9 @@ public class WallTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRe
     }
   }
 
-  private void AssignVoids(IRevitWall target, SOBR.RevitWall speckleWall)
+  private void AssignVoids(DB.Wall target, SOBR.RevitWall speckleWall)
   {
-    IRevitCurveArrArray? profile = target.Document.GetElement(target.SketchId)?.ToSketch()?.Profile;
+    DB.CurveArrArray? profile = ((DB.Sketch)target.Document.GetElement(target.SketchId))?.Profile;
     if (profile is null)
     {
       return;

@@ -1,26 +1,24 @@
-﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit.Interfaces;
 
-#pragma warning disable IDE0130
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class XyzConversionToPoint : ITypedConverter<IRevitXYZ, SOG.Point>
+public class XyzConversionToPoint : ITypedConverter<DB.XYZ, SOG.Point>
 {
-  private readonly IScalingServiceToSpeckle _toSpeckleScalingService;
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
+  private readonly ScalingServiceToSpeckle _toSpeckleScalingService;
+  private readonly IRevitConversionContextStack _contextStack;
 
   public XyzConversionToPoint(
-    IScalingServiceToSpeckle toSpeckleScalingService,
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack
+    ScalingServiceToSpeckle toSpeckleScalingService,
+    IRevitConversionContextStack contextStack
   )
   {
     _toSpeckleScalingService = toSpeckleScalingService;
     _contextStack = contextStack;
   }
 
-  public SOG.Point Convert(IRevitXYZ target)
+  public SOG.Point Convert(DB.XYZ target)
   {
     var pointToSpeckle = new SOG.Point(
       _toSpeckleScalingService.ScaleLength(target.X),

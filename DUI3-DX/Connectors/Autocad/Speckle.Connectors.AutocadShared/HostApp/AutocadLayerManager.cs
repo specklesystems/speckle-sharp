@@ -10,7 +10,7 @@ public class AutocadLayerManager
   private readonly string _layerFilterName = "Speckle";
 
   // POC: Will be addressed to move it into AutocadContext!
-  private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+  private Document Doc => Application.DocumentManager.MdiActiveDocument;
 
   public AutocadLayerManager(AutocadContext autocadContext)
   {
