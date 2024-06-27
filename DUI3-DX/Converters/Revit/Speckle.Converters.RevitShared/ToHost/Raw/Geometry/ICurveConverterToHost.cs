@@ -36,13 +36,6 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
     _curveConverter = curveConverter;
   }
 
-  public DB.Plane Convert(SOG.Plane target) =>
-    DB.Plane.CreateByOriginAndBasis(
-      _pointConverter.Convert(target.origin),
-      _vectorConverter.Convert(target.xdir).Normalize(),
-      _vectorConverter.Convert(target.ydir).Normalize()
-    );
-
   public DB.CurveArray Convert(ICurve target)
   {
     DB.CurveArray curveArray = new();
