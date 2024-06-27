@@ -3,7 +3,6 @@ using Speckle.Autofac.DependencyInjection;
 using System.Reflection;
 using Speckle.Autofac;
 using Speckle.Connectors.Utils;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

@@ -2,7 +2,6 @@
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
-using Speckle.Core.Logging;
 using Module = Autofac.Module;
 
 namespace Speckle.Autofac.DependencyInjection;
