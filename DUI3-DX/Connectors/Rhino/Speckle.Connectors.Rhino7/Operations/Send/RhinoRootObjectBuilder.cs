@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
@@ -11,7 +12,6 @@ using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
@@ -23,13 +23,13 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
   private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly RhinoLayerManager _layerManager;
 
   public RhinoRootObjectBuilder(
     IUnitOfWorkFactory unitOfWorkFactory,
     ISendConversionCache sendConversionCache,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     RhinoLayerManager layerManager,
     IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
   )

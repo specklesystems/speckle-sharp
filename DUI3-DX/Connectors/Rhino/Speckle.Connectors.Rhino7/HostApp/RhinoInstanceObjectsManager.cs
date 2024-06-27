@@ -5,12 +5,10 @@ using Rhino.Geometry;
 using Speckle.Connectors.Rhino7.Extensions;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Instances;
-using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Instances;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
@@ -20,19 +18,14 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// </summary>
 public class RhinoInstanceObjectsManager : IInstanceObjectsManager<RhinoObject, List<string>>
 {
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
   private readonly Dictionary<string, InstanceProxy> _instanceProxies = new();
   private readonly Dictionary<string, List<InstanceProxy>> _instanceProxiesByDefinitionId = new();
   private readonly Dictionary<string, InstanceDefinitionProxy> _definitionProxies = new();
   private readonly Dictionary<string, RhinoObject> _flatAtomicObjects = new();
   private readonly RhinoLayerManager _layerManager;
 
-  public RhinoInstanceObjectsManager(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    RhinoLayerManager layerManager
-  )
+  public RhinoInstanceObjectsManager(RhinoLayerManager layerManager)
   {
-    _contextStack = contextStack;
     _layerManager = layerManager;
   }
 

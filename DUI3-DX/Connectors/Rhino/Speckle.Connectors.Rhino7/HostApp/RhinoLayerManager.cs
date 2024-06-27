@@ -1,10 +1,8 @@
 using System.Diagnostics.Contracts;
 using Rhino;
 using Rhino.DocObjects;
-using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
 
@@ -13,16 +11,8 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 /// </summary>
 public class RhinoLayerManager
 {
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
-  private readonly Dictionary<string, int> _hostLayerCache;
-  private readonly Dictionary<int, Collection> _layerCollectionCache;
-
-  public RhinoLayerManager(IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack)
-  {
-    _contextStack = contextStack;
-    _hostLayerCache = new();
-    _layerCollectionCache = new();
-  }
+  private readonly Dictionary<string, int> _hostLayerCache = new();
+  private readonly Dictionary<int, Collection> _layerCollectionCache = new();
 
   /// <summary>
   /// Creates the base layer and adds it to the cache.
@@ -79,7 +69,7 @@ public class RhinoLayerManager
   /// <param name="layer">The layer you want the equivalent collection for.</param>
   /// <param name="rootObjectCollection">The root object that will be sent to Speckle, and will host all collections.</param>
   /// <returns></returns>
-  public Collection GetHostObjectCollection(IRhinoLayer layer, Collection rootObjectCollection)
+  public Collection GetHostObjectCollection(Layer layer, Collection rootObjectCollection)
   {
     if (_layerCollectionCache.TryGetValue(layer.Index, out Collection value))
     {

@@ -1,4 +1,6 @@
+using Rhino;
 using Rhino.DocObjects;
+using Rhino.Geometry;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
@@ -8,7 +10,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Models.Instances;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
@@ -23,15 +24,13 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
   private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
   private readonly RhinoLayerManager _layerManager;
-  private readonly IRhinoDocFactory _rhinoDocFactory;
 
   public RhinoHostObjectBuilder(
     IRootToHostConverter converter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     GraphTraversal traverseFunction,
     RhinoLayerManager layerManager,
-    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager,
-    IRhinoDocFactory rhinoDocFactory
+    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
   )
   {
     _converter = converter;
@@ -39,7 +38,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     _traverseFunction = traverseFunction;
     _layerManager = layerManager;
     _instanceObjectsManager = instanceObjectsManager;
-    _rhinoDocFactory = rhinoDocFactory;
   }
 
   public HostObjectBuilderResult Build(
@@ -168,7 +166,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var doc = _contextStack.Current.Document;
     // Cleans up any previously received objects
-    if (rootLayerIndex != _rhinoDocFactory.UnsetIntIndex)
+    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
     {
       var documentLayer = doc.Layers[rootLayerIndex];
       var childLayers = documentLayer.GetChildren();
