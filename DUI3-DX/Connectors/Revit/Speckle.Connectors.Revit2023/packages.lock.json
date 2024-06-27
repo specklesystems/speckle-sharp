@@ -90,6 +90,21 @@
         "resolved": "6.0.0",
         "contentHash": "yg72rrYDapfsIUrul7aF6wwNnTJBOFvuA9VdDTQpPa8AlAriHbufeXYLBcodKjfUdkCnaiggX1U/nEP08Zb5GA=="
       },
+      "Mapster": {
+        "type": "Transitive",
+        "resolved": "7.3.0",
+        "contentHash": "NrCUX/rJa5PTyo6iW4AL5dZLU9PDNlYnrJOVjgdpo5OQM9EtWH2CMHnC5sSuJWC0d0b0SnmeRrIviEem6WxtuQ==",
+        "dependencies": {
+          "Mapster.Core": "1.2.0",
+          "Microsoft.CSharp": "4.3.0",
+          "System.Reflection.Emit": "4.3.0"
+        }
+      },
+      "Mapster.Core": {
+        "type": "Transitive",
+        "resolved": "1.2.0",
+        "contentHash": "TNdqZk2zAuBYfJF88D/3clQTOyOdqr1crU81yZQtlGa+e7FYWhJdK/buBWT+TpM3qQko9UzmzfOT4iq3JCs/ZA=="
+      },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
         "resolved": "7.0.0",
@@ -392,6 +407,11 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
+      "System.Reflection.Emit": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -489,7 +509,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
-          "Speckle.Revit.API": "[2023.0.0, )"
+          "Speckle.Revit2023.Interfaces": "[0.1.1-preview.0.28, )"
         }
       },
       "speckle.converters.revit2023.dependencyinjection": {
@@ -497,7 +517,8 @@
         "dependencies": {
           "Speckle.Converters.Common": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )",
-          "Speckle.Converters.Revit2023": "[2.0.999-local, )"
+          "Speckle.Converters.Revit2023": "[2.0.999-local, )",
+          "Speckle.Revit2023.Api": "[0.1.1-preview.0.28, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
@@ -552,6 +573,23 @@
         "dependencies": {
           "Speckle.Core": "3.0.1-alpha.11"
         }
+      },
+      "Speckle.Revit2023.Api": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "ejwYS/HI8yy0rJE4vgTr5aj8Fkg/E9JnMGjwyVS2fLtI4f7+FmwAY6inTUT2p/RAoRc2nQw+TerDpUtOhddzag==",
+        "dependencies": {
+          "Mapster": "7.3.0",
+          "Speckle.Revit.API": "2023.0.0",
+          "Speckle.Revit2023.Interfaces": "0.1.1-preview.0.28"
+        }
+      },
+      "Speckle.Revit2023.Interfaces": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "System.Threading.Tasks.Dataflow": {
         "type": "CentralTransitive",

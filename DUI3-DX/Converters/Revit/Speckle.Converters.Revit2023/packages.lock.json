@@ -24,11 +24,11 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
-      "Speckle.Revit.API": {
+      "Speckle.Revit2023.Interfaces": {
         "type": "Direct",
-        "requested": "[2023.0.0, )",
-        "resolved": "2023.0.0",
-        "contentHash": "tq40eD7psgTbV+epNouYyqfo6+hEi7FmXZqcxEOsAV7zfYyWhL6Rt3vmojkWGNuerGbH6oRI6KIIxrnlCNb8Hw=="
+        "requested": "[0.1.1-preview.0.28, )",
+        "resolved": "0.1.1-preview.0.28",
+        "contentHash": "7szXg/vRvP3Wdrn2ZGriVOfsw+bddlpVorBkCIhSHHs5qVTTG8IAIrI1l9dO0/aullaTMF+Xgxm9x3w1aXPiuA=="
       },
       "GraphQL.Client": {
         "type": "Transitive",
