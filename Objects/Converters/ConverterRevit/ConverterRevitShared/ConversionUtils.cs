@@ -153,9 +153,11 @@ public partial class ConverterRevit
     double area_transformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
 #endif
             Base parameters = (Base)obj["parameters"];
-            Objects.BuiltElements.Revit.Parameter mmmm = new Parameter("Cutout Area", area_transformed, "m²");
-            parameters["Cutout Area"] = mmmm;
-
+            if (parameters != null)
+            {
+              Objects.BuiltElements.Revit.Parameter hostedAreaParameter = new Parameter("Cutout Area", area_transformed, "m²");
+              parameters["Cutout Area"] = hostedAreaParameter;
+            }
             convertedHostedElements.Add(obj);
             ConvertedObjects.Add(obj.applicationId);
           }
