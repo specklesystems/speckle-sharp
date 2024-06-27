@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Threading.Tasks;
-using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Helpers;
 

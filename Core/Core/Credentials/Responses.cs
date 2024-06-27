@@ -1,5 +1,4 @@
 #nullable disable
-using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Credentials;

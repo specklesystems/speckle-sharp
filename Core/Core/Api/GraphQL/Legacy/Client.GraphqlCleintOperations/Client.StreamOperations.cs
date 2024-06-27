@@ -223,7 +223,7 @@ public partial class Client
   /// <param name="limit">Max number of streams to return</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  /// <seealso cref="GraphQL.Resources.ActiveUserResource.FilterProjects"/>
+  /// <seealso cref="GraphQL.Resources.ActiveUserResource.GetProjects"/>
   [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.GetProjects)}")]
   public async Task<List<Stream>> StreamSearch(
     string query,
