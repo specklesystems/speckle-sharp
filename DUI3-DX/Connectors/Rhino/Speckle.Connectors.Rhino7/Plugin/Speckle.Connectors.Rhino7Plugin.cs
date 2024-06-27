@@ -2,8 +2,8 @@
 using Rhino.PlugIns;
 using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models.Extensions;
 

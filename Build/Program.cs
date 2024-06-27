@@ -127,7 +127,7 @@ Target(
 
     foreach (var file in GetFiles($"**/{t}.csproj"))
     {
-      Run("dotnet", $"test {file} -c Release --no-build --no-restore --verbosity=normal");
+      Run("dotnet", $"test {file} -c Release --no-restore --verbosity=normal");
     }
   }
 );

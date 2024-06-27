@@ -1,17 +1,21 @@
 using Rhino;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;
-using Speckle.InterfaceGenerator;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
-[GenerateAutoInterface]
 public class RhinoPlugin : IRhinoPlugin
 {
-  private readonly IRhinoIdleManager _idleManager;
+  private readonly RhinoIdleManager _idleManager;
+  private readonly DUI3ControlWebView _panel;
+  private readonly RhinoSettings _settings;
 
-  public RhinoPlugin(IRhinoIdleManager idleManager)
+  public RhinoPlugin(DUI3ControlWebView panel, RhinoSettings settings, RhinoIdleManager idleManager)
   {
+    _panel = panel;
+    _settings = settings;
     _idleManager = idleManager;
   }
 

@@ -10,6 +10,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Rhino7.Bindings;
 using Speckle.Connectors.Rhino7.Filters;
 using Speckle.Connectors.Rhino7.HostApp;
+using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
@@ -20,9 +21,7 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Rhino7.Api;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -38,7 +37,6 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();
-    builder.ScanAssemblyOfType<RhinoArcFactory>();
 
     // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for Rhino!
     builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
@@ -46,8 +44,7 @@ public class RhinoConnectorModule : ISpeckleModule
     // Register other connector specific types
     builder.AddSingleton<IRhinoPlugin, RhinoPlugin>();
     builder.AddSingleton<DocumentModelStore, RhinoDocumentStore>();
-    builder.AddSingleton<IRhinoIdleManager, RhinoIdleManager>();
-    builder.AddSingleton<IProxyMapper, ProxyMapper>();
+    builder.AddSingleton<RhinoIdleManager>();
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();

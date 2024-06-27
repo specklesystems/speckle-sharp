@@ -12,7 +12,6 @@ public static class ContainerRegistration
     where TRootToSpeckleConverter : class, IRootToSpeckleConverter
     where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
   {
-    builder.ScanAssemblyOfType<RootConvertManager>();
     builder.AddScoped<IRootToSpeckleConverter, TRootToSpeckleConverter>();
     builder.AddScoped<IHostToSpeckleUnitConverter<THostUnit>, THostToSpeckleUnitConverter>();
     /*

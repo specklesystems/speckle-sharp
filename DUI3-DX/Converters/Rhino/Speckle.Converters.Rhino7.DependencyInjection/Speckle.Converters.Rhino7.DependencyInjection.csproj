@@ -11,6 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Rhino7.Interfaces" />
+    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001"/>
   </ItemGroup>
 </Project>
