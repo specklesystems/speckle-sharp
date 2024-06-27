@@ -3,10 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
-    <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
+    <PackageReference Include="Speckle.Objects" Version="3.0.1-alpha.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
+  </ItemGroup>
 
 </Project>
