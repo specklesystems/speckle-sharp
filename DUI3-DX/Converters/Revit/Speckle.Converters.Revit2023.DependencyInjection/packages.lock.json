@@ -210,11 +210,6 @@
         "resolved": "13.0.2",
         "contentHash": "g1BejUZwax5PRfL6xHgLEK23sqHWOgOj9hE7RvfRRlN00AGt8GnPYt8HedSK7UB3HiRW8zCA9Pn0iiYxCK24BA=="
       },
-      "Speckle.Revit.API": {
-        "type": "Transitive",
-        "resolved": "2023.0.0",
-        "contentHash": "tq40eD7psgTbV+epNouYyqfo6+hEi7FmXZqcxEOsAV7zfYyWhL6Rt3vmojkWGNuerGbH6oRI6KIIxrnlCNb8Hw=="
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -422,6 +417,12 @@
         "dependencies": {
           "Speckle.Core": "3.0.1-alpha.11"
         }
+      },
+      "Speckle.Revit.API": {
+        "type": "CentralTransitive",
+        "requested": "[2023.0.0, )",
+        "resolved": "2023.0.0",
+        "contentHash": "tq40eD7psgTbV+epNouYyqfo6+hEi7FmXZqcxEOsAV7zfYyWhL6Rt3vmojkWGNuerGbH6oRI6KIIxrnlCNb8Hw=="
       }
     }
   }
