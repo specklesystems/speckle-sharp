@@ -11,17 +11,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // CNX-9414 Re-evaluate hosted element conversions
 public class HostedElementConversionToSpeckle
 {
-  private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly IRootToSpeckleConverter _converter;
   private readonly IRevitConversionContextStack _contextStack;
 
-  public HostedElementConversionToSpeckle(
-    ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    IRootToSpeckleConverter converter,
-    IRevitConversionContextStack contextStack
-  )
+  public HostedElementConversionToSpeckle(IRootToSpeckleConverter converter, IRevitConversionContextStack contextStack)
   {
-    _convertedObjectsCache = convertedObjectsCache;
     _converter = converter;
     _contextStack = contextStack;
   }
