@@ -62,13 +62,6 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
       {
         YieldToUiThread();
         var result = _converter.Convert(tc.Current);
-
-        //var conversionIds = HandleConversionResult(result, tc.Current, layerIndex);
-        //foreach (var r in conversionIds)
-        //{
-        //  conversionResults.Add(new(Status.SUCCESS, tc.Current, r, result.GetType().ToString()));
-        //  bakedObjectIds.Add(r);
-        //}
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
