@@ -18,7 +18,7 @@ namespace Speckle.Connectors.Rhino7.Operations.Receive;
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
 
   private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
@@ -80,12 +80,8 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     Action<string, double?>? onOperationProgressed
   )
   {
-    var doc = _contextStack.Current.Document;
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(
-      Guid.Empty,
-      baseLayerName,
-      _rhinoDocFactory.UnsetIntIndex
-    );
+    RhinoDoc doc = _contextStack.Current.Document;
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
 
     PreReceiveDeepClean(baseLayerName, rootLayerIndex);
     _layerManager.CreateBaseLayer(baseLayerName);
@@ -197,31 +193,31 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     List<string> newObjectIds = new();
     switch (conversionResult)
     {
-      case IEnumerable<IRhinoGeometryBase> list:
+      case IEnumerable<GeometryBase> list:
       {
-        var group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
+        Group group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
         newObjectIds.Add(group.Id.ToString());
         break;
       }
-      case IRhinoGeometryBase newObject:
+      case GeometryBase newObject:
       {
-        var newObjectGuid = doc.Objects.Add(newObject, _rhinoDocFactory.CreateAttributes(layerIndex));
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
         newObjectIds.Add(newObjectGuid.ToString());
         break;
       }
       default:
         throw new SpeckleConversionException(
-          $"Unexpected result from conversion: Expected {nameof(IRhinoGeometryBase)} but instead got {conversionResult.GetType().Name}"
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {conversionResult.GetType().Name}"
         );
     }
 
     return newObjectIds;
   }
 
-  private IRhinoGroup BakeObjectsAsGroup(string groupName, IEnumerable<IRhinoGeometryBase> list, int layerIndex)
+  private Group BakeObjectsAsGroup(string groupName, IEnumerable<GeometryBase> list, int layerIndex)
   {
     var doc = _contextStack.Current.Document;
-    var objectIds = list.Select(obj => doc.Objects.Add(obj, _rhinoDocFactory.CreateAttributes(layerIndex)));
+    var objectIds = list.Select(obj => doc.Objects.Add(obj, new ObjectAttributes { LayerIndex = layerIndex }));
     var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
     var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
     return group;

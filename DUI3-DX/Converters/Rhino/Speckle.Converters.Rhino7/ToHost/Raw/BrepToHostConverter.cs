@@ -1,26 +1,24 @@
 using Objects;
+using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
+public class BrepToHostConverter : ITypedConverter<SOG.Brep, RG.Brep>
 {
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
-  private readonly ITypedConverter<ICurve, IRhinoCurve> _curveConverter;
-  private readonly ITypedConverter<SOG.Surface, IRhinoNurbsSurface> _surfaceConverter;
-  private readonly ITypedConverter<SOG.Point, IRhinoPoint3d> _pointConverter;
-  private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
-  private readonly IRhinoBrepFactory _rhinoBrepFactory;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly ITypedConverter<ICurve, RG.Curve> _curveConverter;
+  private readonly ITypedConverter<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
+  private readonly ITypedConverter<SOG.Point, RG.Point3d> _pointConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public BrepToHostConverter(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<ICurve, IRhinoCurve> curveConverter,
-    ITypedConverter<SOG.Surface, IRhinoNurbsSurface> surfaceConverter,
-    ITypedConverter<SOG.Point, IRhinoPoint3d> pointConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
-    IRhinoBrepFactory rhinoBrepFactory
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    ITypedConverter<ICurve, RG.Curve> curveConverter,
+    ITypedConverter<SOG.Surface, RG.NurbsSurface> surfaceConverter,
+    ITypedConverter<SOG.Point, RG.Point3d> pointConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _contextStack = contextStack;
@@ -28,11 +26,10 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
     _surfaceConverter = surfaceConverter;
     _pointConverter = pointConverter;
     _intervalConverter = intervalConverter;
-    _rhinoBrepFactory = rhinoBrepFactory;
   }
 
   /// <summary>
-  /// Converts a Speckle <see cref="SOG.Brep"/> to a Rhino <see cref="IRhinoBrep"/>.
+  /// Converts a Speckle <see cref="SOG.Brep"/> to a Rhino <see cref="RG.Brep"/>.
   /// </summary>
   /// <remarks>
   /// This method converts a Speckle Brep object to its equivalent Rhino Brep representation.
@@ -43,11 +40,11 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
   /// <param name="target">The Speckle Brep object to be converted.</param>
   /// <returns>The equivalent Rhino Brep object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public IRhinoBrep Convert(SOG.Brep target)
+  public RG.Brep Convert(SOG.Brep target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
 
-    var rhinoBrep = _rhinoBrepFactory.Create();
+    var rhinoBrep = new RG.Brep();
 
     // Geometry goes in first, always. Order doesn't matter.
     target.Curve3D.ForEach(curve => rhinoBrep.AddEdgeCurve(_curveConverter.Convert(curve)));
@@ -73,21 +70,21 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
   }
 
   /// <summary>
-  /// Converts a Speckle <see cref="SOG.BrepLoop"/> to a Rhino <see cref="IRhinoBrepLoop"/> and adds it to the provided <see cref="IRhinoBrep"/>.
+  /// Converts a Speckle <see cref="SOG.BrepLoop"/> to a Rhino <see cref="RG.BrepLoop"/> and adds it to the provided <see cref="RG.Brep"/>.
   /// </summary>
   /// <remarks>
   /// A <see cref="SOG.BrepLoop"/> consists of individual trims. There are special cases for singular trims and trims with defined edge indices.
   /// Note that edge cases in Brep structures are not fully covered by this method and should be reviewed for robustness improvement.
-  /// This operation alters the state of the provided <see cref="IRhinoBrep"/> by adding a new loop.
+  /// This operation alters the state of the provided <see cref="RG.Brep"/> by adding a new loop.
   /// </remarks>
-  /// <param name="rhinoBrep">The <see cref="IRhinoBrep"/> where the new loop will be added.</param>
+  /// <param name="rhinoBrep">The <see cref="RG.Brep"/> where the new loop will be added.</param>
   /// <param name="speckleLoop">The <see cref="SOG.BrepLoop"/> to be converted and added to <paramref name="rhinoBrep"/>.</param>
   /// <param name="tol">The tolerance factor used when adding trims and setting their tolerances.</param>
-  private void ConvertSpeckleBrepLoop(IRhinoBrep rhinoBrep, SOG.BrepLoop speckleLoop, double tol)
+  private void ConvertSpeckleBrepLoop(RG.Brep rhinoBrep, SOG.BrepLoop speckleLoop, double tol)
   {
     var f = rhinoBrep.Faces[speckleLoop.FaceIndex];
 
-    rhinoBrep.Loops.Add((RhinoBrepLoopType)speckleLoop.Type, f);
+    rhinoBrep.Loops.Add((RG.BrepLoopType)speckleLoop.Type, f);
 
     // POC: This works but it doesn't fully cover all Brep edge cases and could be the cause of some of our failed Rhino->Rhino breps.
     // We should check Rhino.Inside as they have similar code structure.
@@ -95,7 +92,7 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
       .ToList()
       .ForEach(trim =>
       {
-        IRhinoBrepTrim rhTrim;
+        RG.BrepTrim rhTrim;
         if (trim.EdgeIndex != -1)
         {
           rhTrim = rhinoBrep.Trims.Add(
@@ -110,7 +107,7 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
           rhTrim = rhinoBrep.Trims.AddSingularTrim(
             rhinoBrep.Vertices[trim.EndIndex],
             rhinoBrep.Loops[trim.LoopIndex],
-            (RhinoIsoStatus)trim.IsoStatus,
+            (RG.IsoStatus)trim.IsoStatus,
             trim.CurveIndex
           );
         }
@@ -119,8 +116,8 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
           rhTrim = rhinoBrep.Trims.Add(trim.IsReversed, rhinoBrep.Loops[trim.LoopIndex], trim.CurveIndex);
         }
 
-        rhTrim.IsoStatus = (RhinoIsoStatus)trim.IsoStatus;
-        rhTrim.TrimType = (RhinoBrepTrimType)trim.TrimType;
+        rhTrim.IsoStatus = (RG.IsoStatus)trim.IsoStatus;
+        rhTrim.TrimType = (RG.BrepTrimType)trim.TrimType;
         rhTrim.SetTolerances(tol, tol);
       });
   }
@@ -136,7 +133,7 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
   /// is untrimmed, and hence added directly as a reference to the curve it points to.
   /// If the edge is trimmed, it is added based on vertices and subdomain using the supplied tolerance
   /// </remarks>
-  private void ConvertSpeckleBrepEdge(IRhinoBrep rhinoBrep, SOG.BrepEdge speckleEdge, double tolerance)
+  private void ConvertSpeckleBrepEdge(RG.Brep rhinoBrep, SOG.BrepEdge speckleEdge, double tolerance)
   {
     if (
       speckleEdge.Domain == null
@@ -161,11 +158,11 @@ public class BrepToHostConverter : ITypedConverter<SOG.Brep, IRhinoBrep>
   }
 
   /// <summary>
-  /// Converts a <see cref="SOG.BrepFace"/> into a <see cref="IRhinoBrepFace"/> and adds it to the provided <see cref="IRhinoBrep"/>.
+  /// Converts a <see cref="SOG.BrepFace"/> into a <see cref="RG.BrepFace"/> and adds it to the provided <see cref="RG.Brep"/>.
   /// </summary>
   /// <param name="rhinoBrep">The Rhinoceros brep geometry to which the converted face is added.</param>
   /// <param name="speckleFace">The Speckle brep face to be converted and added.</param>
-  private void ConvertSpeckleBrepFace(IRhinoBrep rhinoBrep, SOG.BrepFace speckleFace)
+  private void ConvertSpeckleBrepFace(RG.Brep rhinoBrep, SOG.BrepFace speckleFace)
   {
     var f = rhinoBrep.Faces.Add(speckleFace.SurfaceIndex);
     f.OrientationIsReversed = speckleFace.OrientationReversed;

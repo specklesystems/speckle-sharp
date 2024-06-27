@@ -1,28 +1,17 @@
 ﻿using System.Drawing;
 using Objects.Utils;
+using Rhino.Collections;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
+public class MeshToHostConverter : ITypedConverter<SOG.Mesh, RG.Mesh>
 {
-  private readonly ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> _pointListConverter;
-  private readonly IRhinoMeshFactory _rhinoMeshFactory;
-  private readonly IRhinoNgonFactory _rhinoNgonFactory;
-  private readonly IRhinoPointFactory _rhinoPointFactory;
+  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
 
-  public MeshToHostConverter(
-    ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
-    IRhinoMeshFactory rhinoMeshFactory,
-    IRhinoNgonFactory rhinoNgonFactory,
-    IRhinoPointFactory rhinoPointFactory
-  )
+  public MeshToHostConverter(ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
-    _rhinoMeshFactory = rhinoMeshFactory;
-    _rhinoNgonFactory = rhinoNgonFactory;
-    _rhinoPointFactory = rhinoPointFactory;
   }
 
   /// <summary>
@@ -31,11 +20,11 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
   /// <param name="target">The Speckle mesh object to convert.</param>
   /// <returns>A Rhino mesh object converted from the Speckle mesh.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public IRhinoMesh Convert(SOG.Mesh target)
+  public RG.Mesh Convert(SOG.Mesh target)
   {
     target.AlignVerticesWithTexCoordsByIndex();
 
-    IRhinoMesh m = _rhinoMeshFactory.Create();
+    RG.Mesh m = new();
 
     var vertices = _pointListConverter.Convert(target.vertices);
     var colors = target.colors.Select(Color.FromArgb).ToArray();
@@ -54,7 +43,7 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
   // POC: CNX-9274 We should abstract this into the `Mesh` class, or some utility class adjacent to it
   //      All converters need to do this so it's going to be a source of repetition
   //      and it is directly tied to how we serialise the data in the mesh.
-  private void AssignMeshFaces(SOG.Mesh target, IRhinoMesh m)
+  private void AssignMeshFaces(SOG.Mesh target, RG.Mesh m)
   {
     int i = 0;
     while (i < target.faces.Count)
@@ -70,12 +59,14 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
       if (n == 3)
       {
         // triangle
-        m.Faces.AddFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3]);
+        m.Faces.AddFace(new RG.MeshFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3]));
       }
       else if (n == 4)
       {
         // quad
-        m.Faces.AddFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3], target.faces[i + 4]);
+        m.Faces.AddFace(
+          new RG.MeshFace(target.faces[i + 1], target.faces[i + 2], target.faces[i + 3], target.faces[i + 4])
+        );
       }
       else
       {
@@ -85,10 +76,11 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
         var faceIndices = new List<int>(triangles.Count);
         for (int t = 0; t < triangles.Count; t += 3)
         {
-          faceIndices.Add(m.Faces.AddFace(triangles[t], triangles[t + 1], triangles[t + 2]));
+          var face = new RG.MeshFace(triangles[t], triangles[t + 1], triangles[t + 2]);
+          faceIndices.Add(m.Faces.AddFace(face));
         }
 
-        IRhinoMeshNgon ngon = _rhinoNgonFactory.Create(target.faces.GetRange(i + 1, n), faceIndices);
+        RG.MeshNgon ngon = RG.MeshNgon.Create(target.faces.GetRange(i + 1, n), faceIndices);
         m.Ngons.AddNgon(ngon);
       }
 
@@ -97,13 +89,13 @@ public class MeshToHostConverter : ITypedConverter<SOG.Mesh, IRhinoMesh>
     m.Faces.CullDegenerateFaces();
   }
 
-  private void AssignTextureCoordinates(SOG.Mesh target, IRhinoMesh m)
+  private void AssignTextureCoordinates(SOG.Mesh target, RG.Mesh m)
   {
-    var textureCoordinates = new IRhinoPoint2f[target.TextureCoordinatesCount];
+    var textureCoordinates = new RG.Point2f[target.TextureCoordinatesCount];
     for (int ti = 0; ti < target.TextureCoordinatesCount; ti++)
     {
       var (u, v) = target.GetTextureCoordinate(ti);
-      textureCoordinates[ti] = _rhinoPointFactory.Create(u, v);
+      textureCoordinates[ti] = new RG.Point2f(u, v);
     }
     m.TextureCoordinates.SetTextureCoordinates(textureCoordinates);
   }
