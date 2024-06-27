@@ -8,10 +8,6 @@
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="NUnit" Version="4.1.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.2.0"/>
-    <PackageVersion Include="Speckle.Revit2023.Api" Version="0.1.1-preview.0.28" />
-    <PackageVersion Include="Speckle.Revit2023.Interfaces" Version="0.1.1-preview.0.28" />
-    <PackageVersion Include="Speckle.Rhino7.Api" Version="0.1.1-preview.0.28"/>
-    <PackageVersion Include="Speckle.Rhino7.Interfaces" Version="0.1.1-preview.0.28"/>
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.1823.32"/>
     <PackageVersion Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />

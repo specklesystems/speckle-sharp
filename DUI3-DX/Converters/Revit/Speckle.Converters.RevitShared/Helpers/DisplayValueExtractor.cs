@@ -10,7 +10,9 @@ public sealed class DisplayValueExtractor
   private readonly ILogger<DisplayValueExtractor> _logger;
 
   public DisplayValueExtractor(
-    ITypedConverter<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> meshByMaterialConverter, ILogger<DisplayValueExtractor> logger)
+    ITypedConverter<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> meshByMaterialConverter,
+    ILogger<DisplayValueExtractor> logger
+  )
   {
     _meshByMaterialConverter = meshByMaterialConverter;
     _logger = logger;
@@ -264,7 +266,7 @@ public sealed class DisplayValueExtractor
   /// <param name="doc"></param>
   /// <returns></returns>
   private bool IsSkippableGraphicStyle(DB.ElementId id, DB.Document doc)
-  { 
+  {
     _graphicStyleCache.Add(id.ToString(), (DB.GraphicsStyle)doc.GetElement(id));
 
     var graphicStyle = _graphicStyleCache[id.ToString()];

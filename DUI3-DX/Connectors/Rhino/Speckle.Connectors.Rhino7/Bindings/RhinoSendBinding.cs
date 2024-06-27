@@ -42,7 +42,6 @@ public sealed class RhinoSendBinding : ISendBinding
     IRhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
-    SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,

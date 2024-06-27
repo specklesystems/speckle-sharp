@@ -107,12 +107,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
 
       return new SOG.Line(
         basePoint,
-        new SOG.Point(
-          basePoint.x,
-          basePoint.y,
-          topLevelElevation + topLevelOffset,
-          _contextStack.Current.SpeckleUnits
-        ),
+        new SOG.Point(basePoint.x, basePoint.y, topLevelElevation + topLevelOffset, _contextStack.Current.SpeckleUnits),
         _contextStack.Current.SpeckleUnits
       );
     }

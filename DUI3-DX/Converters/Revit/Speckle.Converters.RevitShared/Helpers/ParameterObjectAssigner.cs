@@ -16,7 +16,9 @@ public sealed class ParameterObjectAssigner
 
   public ParameterObjectAssigner(
     ITypedConverter<Parameter, SOBR.Parameter> paramConverter,
-    ParameterValueExtractor parameterValueExtractor, ILogger<ParameterObjectAssigner> logger)
+    ParameterValueExtractor parameterValueExtractor,
+    ILogger<ParameterObjectAssigner> logger
+  )
   {
     _paramConverter = paramConverter;
     _parameterValueExtractor = parameterValueExtractor;
