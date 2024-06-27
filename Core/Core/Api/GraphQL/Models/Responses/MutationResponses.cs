@@ -24,3 +24,10 @@ internal sealed class ModelMutation
   public Model update { get; init; }
   public bool delete { get; init; }
 }
+
+internal sealed class VersionMutation
+{
+  public bool delete { get; init; }
+  public Model moveToModel { get; init; }
+  public Version update { get; init; }
+}

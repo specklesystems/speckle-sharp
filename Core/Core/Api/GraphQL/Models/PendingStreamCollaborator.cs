@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 

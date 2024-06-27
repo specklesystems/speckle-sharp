@@ -36,7 +36,7 @@ public class ActiveUserResourceTests
     var p1 = await _testUser.Project.Create(new("Project 1", null, null));
     var p2 = await _testUser.Project.Create(new("Project 2", null, null));
 
-    var res = await Sut.GetProjects();
+    var res = await Sut.GetProjects(25);
 
     Assert.That(res.items, Has.Exactly(1).Items.With.Property(nameof(Project.id)).EqualTo(p1.id));
     Assert.That(res.items, Has.Exactly(1).Items.With.Property(nameof(Project.id)).EqualTo(p2.id));

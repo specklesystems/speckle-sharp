@@ -224,7 +224,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ActiveUserResource.FilterProjects"/>
-  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.FilterProjects)}")]
+  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.GetProjects)}")]
   public async Task<List<Stream>> StreamSearch(
     string query,
     int limit = 10,

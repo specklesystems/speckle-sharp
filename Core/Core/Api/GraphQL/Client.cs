@@ -34,6 +34,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
   public ActiveUserResource ActiveUser { get; }
   public OtherUserResource OtherUser { get; }
   public ProjectInviteResource ProjectInvite { get; }
+  public CommentResource Comment { get; }
 
   public string ServerUrl => Account.serverInfo.url;
 
@@ -59,6 +60,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
     ActiveUser = new(this);
     OtherUser = new(this);
     ProjectInvite = new(this);
+    Comment = new(this);
 
     HttpClient = CreateHttpClient(account);
 

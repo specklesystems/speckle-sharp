@@ -224,7 +224,6 @@ public class Commit
   }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Activity
 {
   public int totalCount { get; set; }
@@ -232,7 +231,6 @@ public class Activity
   public List<ActivityItem> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class ActivityItem
 {
   public string actionType { get; set; }
@@ -245,7 +243,6 @@ public class ActivityItem
   public string message { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Info
 {
   public string message { get; set; }
@@ -254,7 +251,6 @@ public class Info
   public InfoCommit commit { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class InfoCommit
 {
   public string message { get; set; }
@@ -358,6 +354,17 @@ public class CommentItem
   public object reactions { get; set; }
   public Comments replies { get; set; }
   public List<Resource> resources { get; set; }
+}
+
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+public sealed class CommentData
+{
+  public Comments comments { get; init; }
+  public List<double> camPos { get; init; }
+  public object filters { get; init; }
+  public Location location { get; init; }
+  public object selection { get; init; }
+  public object sectionBox { get; init; }
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]

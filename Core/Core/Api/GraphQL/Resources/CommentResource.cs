@@ -16,9 +16,6 @@ public sealed class CommentResource
     _client = client;
   }
 
-  /// <summary>
-  ///
-  /// </summary>
   /// <param name="projectId"></param>
   /// <param name="limit">Max number of comments to fetch</param>
   /// <param name="cursor">Optional cursor for pagination</param>

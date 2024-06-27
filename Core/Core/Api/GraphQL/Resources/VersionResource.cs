@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
-using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Models.Responses;
 using Version = Speckle.Core.Api.GraphQL.Models.Version;
 
@@ -26,9 +24,9 @@ public sealed class VersionResource
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<Version> Get(
-    string projectId,
-    string modelId,
     string versionId,
+    string modelId,
+    string projectId,
     CancellationToken cancellationToken = default
   )
   {
@@ -85,8 +83,8 @@ public sealed class VersionResource
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<List<Version>> GetVersions(
-    string projectId,
     string modelId,
+    string projectId,
     int limit,
     string? cursor = null,
     ModelVersionsFilter? filter = null,
@@ -145,20 +143,13 @@ public sealed class VersionResource
     return response.project.model.versions.items;
   }
 
-  //TODO: Implement on server
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<Version> Create(CancellationToken cancellationToken = default)
+  public async Task<string> Create(CommitCreateInput input, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException("Not Implemented on Server");
-    //language=graphql
-    const string QUERY = """
-
-                         """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { } };
-
-    var response = await _client.ExecuteGraphQLRequest<object>(request, cancellationToken).ConfigureAwait(false);
+    //TODO: Implement on server
+    return await ((Client)_client).CommitCreate(input, cancellationToken).ConfigureAwait(false);
   }
 
   /// <param name="input"></param>
@@ -194,9 +185,9 @@ public sealed class VersionResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input, } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Version>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<VersionMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["Update"];
+    return response.versionMutations.update;
   }
 
   //TODO: Would we rather return the full model here? with or with out versions?
@@ -219,15 +210,15 @@ public sealed class VersionResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input, } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Model>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<VersionMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["moveToModel"].id;
+    return response.versionMutations.moveToModel.id;
   }
 
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<bool> Delete(CancellationToken cancellationToken = default)
+  public async Task<bool> Delete(DeleteVersionsInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -237,12 +228,13 @@ public sealed class VersionResource
                            }
                          }
                          """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { } };
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<VersionMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["delete"];
+
+    return response.versionMutations.delete;
   }
 
   /// <param name="commitReceivedInput"></param>

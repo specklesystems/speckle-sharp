@@ -95,6 +95,7 @@ public partial class Client
   /// <param name="commitInput"></param>
   /// <returns>The commit id.</returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.Create"/>
+  [Obsolete($"Use client.{nameof(VersionResource)}.{nameof(VersionResource.Create)}")]
   public async Task<string> CommitCreate(CommitCreateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -114,6 +115,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.Update"/>
+  [Obsolete($"Use client.{nameof(VersionResource)}.{nameof(VersionResource.Update)}")]
   public async Task<bool> CommitUpdate(CommitUpdateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -133,6 +135,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.Delete"/>
+  [Obsolete($"Use client.{nameof(VersionResource)}.{nameof(VersionResource.Delete)}")]
   public async Task<bool> CommitDelete(CommitDeleteInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -153,6 +156,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.VersionResource.Received"/>
+  [Obsolete($"Use client.{nameof(VersionResource)}.{nameof(VersionResource.Received)}")]
   public async Task<bool> CommitReceived(
     CommitReceivedInput commitReceivedInput,
     CancellationToken cancellationToken = default

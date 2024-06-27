@@ -48,6 +48,7 @@ public partial class Client
     CancellationToken cancellationToken = default
   )
   {
-    return await OtherUser.UserSearch(query, limit, cancellationToken).ConfigureAwait(false);
+    var res = await OtherUser.UserSearch(query, limit, cancellationToken: cancellationToken).ConfigureAwait(false);
+    return res.items;
   }
 }
