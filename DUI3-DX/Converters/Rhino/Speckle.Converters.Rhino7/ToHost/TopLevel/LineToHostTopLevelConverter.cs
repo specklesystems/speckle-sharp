@@ -1,16 +1,15 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class LineToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Line, IRhinoLineCurve>
+public class LineToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Line, RG.LineCurve>
 {
   public LineToHostTopLevelConverter(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<SOG.Line, IRhinoLineCurve> geometryBaseConverter,
-    IRhinoTransformFactory rhinoTransformFactory
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    ITypedConverter<SOG.Line, RG.LineCurve> geometryBaseConverter
   )
-    : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
+    : base(contextStack, geometryBaseConverter) { }
 }

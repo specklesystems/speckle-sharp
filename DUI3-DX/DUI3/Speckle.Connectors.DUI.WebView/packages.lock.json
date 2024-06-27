@@ -262,29 +262,6 @@
           "Serilog": "2.10.0"
         }
       },
-      "Speckle.Core": {
-        "type": "Transitive",
-        "resolved": "3.0.1-alpha.11",
-        "contentHash": "Zt2dBJLlfziEACYCHThbhKypSjhoA01rTw9BzNI72c/BDyftXIz70Tetq/8ZMEqQnKqfmRyYADsAdWKxpdV0Hg==",
-        "dependencies": {
-          "GraphQL.Client": "6.0.0",
-          "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Data.Sqlite": "7.0.5",
-          "Polly": "7.2.3",
-          "Polly.Contrib.WaitAndRetry": "1.1.1",
-          "Polly.Extensions.Http": "3.0.0",
-          "Sentry": "3.33.0",
-          "Sentry.Serilog": "3.33.0",
-          "Serilog": "2.12.0",
-          "Serilog.Enrichers.ClientInfo": "1.3.0",
-          "Serilog.Exceptions": "8.4.0",
-          "Serilog.Sinks.Console": "4.1.0",
-          "Serilog.Sinks.Seq": "5.2.2",
-          "SerilogTimings": "3.0.1",
-          "Speckle.Newtonsoft.Json": "13.0.2",
-          "System.DoubleNumerics": "3.1.3"
-        }
-      },
       "Speckle.Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.2",
@@ -801,29 +778,6 @@
         "contentHash": "Zs28eTgszAMwpIrbBnWHBI50yuxL50p/dmAUWmy75+axdZYK/Sjm5/5m1N/CisR8acJUhTVcjPZrsB1P5iv0Uw==",
         "dependencies": {
           "Serilog": "2.10.0"
-        }
-      },
-      "Speckle.Core": {
-        "type": "Transitive",
-        "resolved": "3.0.1-alpha.11",
-        "contentHash": "Zt2dBJLlfziEACYCHThbhKypSjhoA01rTw9BzNI72c/BDyftXIz70Tetq/8ZMEqQnKqfmRyYADsAdWKxpdV0Hg==",
-        "dependencies": {
-          "GraphQL.Client": "6.0.0",
-          "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Data.Sqlite": "7.0.5",
-          "Polly": "7.2.3",
-          "Polly.Contrib.WaitAndRetry": "1.1.1",
-          "Polly.Extensions.Http": "3.0.0",
-          "Sentry": "3.33.0",
-          "Sentry.Serilog": "3.33.0",
-          "Serilog": "2.12.0",
-          "Serilog.Enrichers.ClientInfo": "1.3.0",
-          "Serilog.Exceptions": "8.4.0",
-          "Serilog.Sinks.Console": "4.1.0",
-          "Serilog.Sinks.Seq": "5.2.2",
-          "SerilogTimings": "3.0.1",
-          "Speckle.Newtonsoft.Json": "13.0.2",
-          "System.DoubleNumerics": "3.1.3"
         }
       },
       "Speckle.Newtonsoft.Json": {

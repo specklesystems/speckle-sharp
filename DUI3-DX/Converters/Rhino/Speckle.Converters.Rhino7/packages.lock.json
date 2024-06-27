@@ -18,17 +18,17 @@
         "resolved": "1.14.1",
         "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
+      "RhinoCommon": {
+        "type": "Direct",
+        "requested": "[7.13.21348.13001, )",
+        "resolved": "7.13.21348.13001",
+        "contentHash": "JQdaNw61ddBqIe08E9O4N/grwrN1hjDHcYW7tWylwCZyFR7SepoCD4NS+6LN6+oSQhNbhLi9Bf+hQOFYFdRAEA=="
+      },
       "Speckle.InterfaceGenerator": {
         "type": "Direct",
         "requested": "[0.9.5, )",
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
-      },
-      "Speckle.Rhino7.Interfaces": {
-        "type": "Direct",
-        "requested": "[0.1.1-preview.0.28, )",
-        "resolved": "0.1.1-preview.0.28",
-        "contentHash": "TcbfXlRMnQRat1JodgW+YW5FflTYem1GGo9DtKA+6iAuVaYagN5dxsrM5LE6M3pCnEV9rkEQOjFo7sgnnbo4mw=="
       },
       "GraphQL.Client": {
         "type": "Transitive",

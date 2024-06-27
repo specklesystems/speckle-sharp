@@ -1,16 +1,15 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino.DocObjects;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-[NameAndRankValue(nameof(IRhinoCurveObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CurveObjectToSpeckleTopLevelConverter
-  : RhinoObjectToSpeckleTopLevelConverter<IRhinoCurveObject, IRhinoCurve, Base>
+[NameAndRankValue(nameof(CurveObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class CurveObjectToSpeckleTopLevelConverter : RhinoObjectToSpeckleTopLevelConverter<CurveObject, RG.Curve, Base>
 {
-  public CurveObjectToSpeckleTopLevelConverter(ITypedConverter<IRhinoCurve, Base> conversion)
+  public CurveObjectToSpeckleTopLevelConverter(ITypedConverter<RG.Curve, Base> conversion)
     : base(conversion) { }
 
-  protected override IRhinoCurve GetTypedGeometry(IRhinoCurveObject input) => input.CurveGeometry;
+  protected override RG.Curve GetTypedGeometry(CurveObject input) => input.CurveGeometry;
 }

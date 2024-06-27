@@ -1,49 +1,44 @@
-﻿using Microsoft.Extensions.Logging;
+using Autodesk.Revit.DB;
+using Microsoft.Extensions.Logging;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Speckle.InterfaceGenerator;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
 // POC: rationalise whether this and ParameterObjectBuilder are sufficiently different??
 // did it go away?
-[GenerateAutoInterface]
-public sealed class ParameterObjectAssigner : IParameterObjectAssigner
+public sealed class ParameterObjectAssigner
 {
-  private readonly ITypedConverter<IRevitParameter, SOBR.Parameter> _paramConverter;
-  private readonly IParameterValueExtractor _parameterValueExtractor;
-  private readonly IRevitElementIdUtils _revitElementIdUtils;
+  private readonly ITypedConverter<Parameter, SOBR.Parameter> _paramConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly ILogger<ParameterObjectAssigner> _logger;
 
   public ParameterObjectAssigner(
-    ITypedConverter<IRevitParameter, SOBR.Parameter> paramConverter,
-    IParameterValueExtractor parameterValueExtractor,
-    IRevitElementIdUtils revitElementIdUtils,
+    ITypedConverter<Parameter, SOBR.Parameter> paramConverter,
+    ParameterValueExtractor parameterValueExtractor,
     ILogger<ParameterObjectAssigner> logger
   )
   {
     _paramConverter = paramConverter;
     _parameterValueExtractor = parameterValueExtractor;
-    _revitElementIdUtils = revitElementIdUtils;
     _logger = logger;
   }
 
-  public void AssignParametersToBase(IRevitElement target, Base @base)
+  public void AssignParametersToBase(Element target, Base @base)
   {
-    var instanceParameters = _parameterValueExtractor.GetAllRemainingParams(target);
-    IRevitElementId elementId = target.GetTypeId();
+    Dictionary<string, Parameter> instanceParameters = _parameterValueExtractor.GetAllRemainingParams(target);
+    ElementId elementId = target.GetTypeId();
 
     Base paramBase = new();
     AssignSpeckleParamToBaseObject(instanceParameters, paramBase);
 
     // POC: Some elements can have an invalid element type ID, I don't think we want to continue here.
-    if (elementId.IntegerValue != _revitElementIdUtils.InvalidElementId.IntegerValue && target is not SOBE.Level) //ignore type props of levels..!
+    if (elementId != ElementId.InvalidElementId && target is not Level) //ignore type props of levels..!
     {
-      var elementType = target.Document.GetElement(elementId).NotNull();
+      var elementType = target.Document.GetElement(elementId);
       // I don't think we should be adding the type parameters to the object like this
-      var typeParameters = _parameterValueExtractor.GetAllRemainingParams(elementType);
+      Dictionary<string, Parameter> typeParameters = _parameterValueExtractor.GetAllRemainingParams(elementType);
       AssignSpeckleParamToBaseObject(typeParameters, paramBase, true);
     }
 
@@ -54,7 +49,7 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
   }
 
   private void AssignSpeckleParamToBaseObject(
-    IEnumerable<KeyValuePair<string, IRevitParameter>> parameters,
+    IEnumerable<KeyValuePair<string, Parameter>> parameters,
     Base paramBase,
     bool isTypeParameter = false
   )
@@ -64,7 +59,7 @@ public sealed class ParameterObjectAssigner : IParameterObjectAssigner
     {
       try
       {
-        var speckleParam = _paramConverter.Convert(kv.Value);
+        SOBR.Parameter speckleParam = _paramConverter.Convert(kv.Value);
         speckleParam.isTypeParameter = isTypeParameter;
         paramBase[kv.Key] = speckleParam;
       }

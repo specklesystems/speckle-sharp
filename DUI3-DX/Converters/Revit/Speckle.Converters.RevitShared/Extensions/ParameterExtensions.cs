@@ -1,5 +1,4 @@
-﻿using Speckle.Converters.Common;
-using Speckle.Revit.Interfaces;
+using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Extensions;
 
@@ -11,7 +10,7 @@ public static class ParameterExtensions
   /// </summary>
   /// <param name="rp"></param>
   /// <returns></returns>
-  public static string GetInternalName(this IRevitParameter rp)
+  public static string GetInternalName(this DB.Parameter rp)
   {
     if (rp.IsShared)
     {
@@ -19,8 +18,8 @@ public static class ParameterExtensions
     }
     else
     {
-      var def = rp.Definition.ToInternal().NotNull();
-      if (def.BuiltInParameter == RevitBuiltInParameter.INVALID)
+      var def = (InternalDefinition)rp.Definition;
+      if (def.BuiltInParameter == BuiltInParameter.INVALID)
       {
         return def.Name;
       }
@@ -29,9 +28,9 @@ public static class ParameterExtensions
     }
   }
 
-  public static RevitBuiltInParameter? GetBuiltInParameter(this IRevitParameter rp)
+  public static BuiltInParameter? GetBuiltInParameter(this Parameter rp)
   {
-    var def = rp.Definition.ToInternal();
+    var def = rp.Definition as InternalDefinition;
     return def?.BuiltInParameter;
   }
 }

@@ -1,30 +1,29 @@
 using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Services;
 
-public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<IRevitForgeTypeId>
+public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<DB.ForgeTypeId>
 {
-  private readonly Dictionary<string, string> _unitMapping = new();
+  private readonly Dictionary<DB.ForgeTypeId, string> _unitMapping = new();
 
-  public RevitToSpeckleUnitConverter(IRevitUnitUtils revitUnitUtils)
+  public RevitToSpeckleUnitConverter()
   {
-    _unitMapping[revitUnitUtils.Millimeters.TypeId] = Units.Millimeters;
-    _unitMapping[revitUnitUtils.Centimeters.TypeId] = Units.Centimeters;
-    _unitMapping[revitUnitUtils.Meters.TypeId] = Units.Meters;
-    _unitMapping[revitUnitUtils.MetersCentimeters.TypeId] = Units.Meters;
-    _unitMapping[revitUnitUtils.Inches.TypeId] = Units.Inches;
-    _unitMapping[revitUnitUtils.FractionalInches.TypeId] = Units.Inches;
-    _unitMapping[revitUnitUtils.Feet.TypeId] = Units.Feet;
-    _unitMapping[revitUnitUtils.FeetFractionalInches.TypeId] = Units.Feet;
+    _unitMapping[DB.UnitTypeId.Millimeters] = Units.Millimeters;
+    _unitMapping[DB.UnitTypeId.Centimeters] = Units.Centimeters;
+    _unitMapping[DB.UnitTypeId.Meters] = Units.Meters;
+    _unitMapping[DB.UnitTypeId.MetersCentimeters] = Units.Meters;
+    _unitMapping[DB.UnitTypeId.Inches] = Units.Inches;
+    _unitMapping[DB.UnitTypeId.FractionalInches] = Units.Inches;
+    _unitMapping[DB.UnitTypeId.Feet] = Units.Feet;
+    _unitMapping[DB.UnitTypeId.FeetFractionalInches] = Units.Feet;
   }
 
   // POC: maybe just convert, it's not a Try method
-  public string ConvertOrThrow(IRevitForgeTypeId hostUnit)
+  public string ConvertOrThrow(DB.ForgeTypeId hostUnit)
   {
-    if (_unitMapping.TryGetValue(hostUnit.TypeId, out string value))
+    if (_unitMapping.TryGetValue(hostUnit, out string value))
     {
       return value;
     }

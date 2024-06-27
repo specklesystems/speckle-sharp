@@ -1,25 +1,19 @@
-﻿using Speckle.Converters.Common.Objects;
-using Speckle.Revit.Interfaces;
+using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class HermiteSplineToSpeckleConverter : ITypedConverter<IRevitHermiteSpline, SOG.Curve>
+public class HerminteSplitToSpeckleConverter : ITypedConverter<DB.HermiteSpline, SOG.Curve>
 {
-  private readonly ITypedConverter<IRevitNurbSpline, SOG.Curve> _splineConverter;
-  private readonly IRevitNurbSplineUtils _revitNurbSplineUtils;
+  private readonly ITypedConverter<DB.NurbSpline, SOG.Curve> _splineConverter;
 
-  public HermiteSplineToSpeckleConverter(
-    ITypedConverter<IRevitNurbSpline, SOG.Curve> splineConverter,
-    IRevitNurbSplineUtils revitNurbSplineUtils
-  )
+  public HerminteSplitToSpeckleConverter(ITypedConverter<DB.NurbSpline, SOG.Curve> splineConverter)
   {
     _splineConverter = splineConverter;
-    _revitNurbSplineUtils = revitNurbSplineUtils;
   }
 
-  public SOG.Curve Convert(IRevitHermiteSpline target)
+  public SOG.Curve Convert(DB.HermiteSpline target)
   {
-    var nurbs = _revitNurbSplineUtils.Create(target);
+    var nurbs = DB.NurbSpline.Create(target);
     return _splineConverter.Convert(nurbs);
   }
 }
