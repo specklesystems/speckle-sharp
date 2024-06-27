@@ -167,7 +167,8 @@ public sealed class AutocadSendBinding : ISendBinding
         .Execute(
           autocadObjects,
           sendInfo,
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          (status, progress) =>
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token),
           cts.Token
         )
         .ConfigureAwait(false);
@@ -189,11 +190,6 @@ public sealed class AutocadSendBinding : ISendBinding
       // renable document activation
       Application.DocumentManager.DocumentActivationEnabled = true;
     }
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);

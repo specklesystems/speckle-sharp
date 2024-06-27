@@ -159,7 +159,8 @@ public sealed class RhinoSendBinding : ISendBinding
         .Execute(
           rhinoObjects,
           sendInfo,
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          (status, progress) =>
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token),
           cts.Token
         )
         .ConfigureAwait(false);
@@ -176,11 +177,6 @@ public sealed class RhinoSendBinding : ISendBinding
       // SWALLOW -> UI handles it immediately, so we do not need to handle anything
       return;
     }
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);

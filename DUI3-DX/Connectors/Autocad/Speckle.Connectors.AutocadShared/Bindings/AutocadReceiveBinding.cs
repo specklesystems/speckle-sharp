@@ -65,7 +65,8 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
           modelCard.ModelName.NotNull(),
           modelCard.SelectedVersionId.NotNull(),
           cts.Token,
-          onOperationProgressed: (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
+          (status, progress) =>
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token)
         )
         .ConfigureAwait(false);
 
@@ -82,10 +83,5 @@ public sealed class AutocadReceiveBinding : IReceiveBinding
       // renable document activation
       Application.DocumentManager.DocumentActivationEnabled = true;
     }
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 }
