@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IRevitVersionConversionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConversionSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\Geometry\ArcConverterToHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\Geometry\CircleConverterToHost.cs" />
