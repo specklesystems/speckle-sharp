@@ -43,26 +43,48 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
     RevitColumn speckleColumn =
       new() { family = symbol.FamilyName, type = target.Document.GetElement(target.GetTypeId()).Name };
 
-    Level level = _parameterValueExtractor.GetValueAsDocumentObject<Level>(
-      target,
-      BuiltInParameter.FAMILY_BASE_LEVEL_PARAM
-    );
-    speckleColumn.level = _levelConverter.Convert(level);
+    if (
+      _parameterValueExtractor.TryGetValueAsDocumentObject<Level>(
+        target,
+        BuiltInParameter.FAMILY_BASE_LEVEL_PARAM,
+        out var level
+      )
+    )
+    {
+      speckleColumn.level = _levelConverter.Convert(level.NotNull());
+    }
+    if (
+      _parameterValueExtractor.TryGetValueAsDocumentObject<Level>(
+        target,
+        BuiltInParameter.FAMILY_TOP_LEVEL_PARAM,
+        out var topLevel
+      )
+    )
+    {
+      speckleColumn.topLevel = _levelConverter.Convert(topLevel.NotNull());
+    }
 
-    Level topLevel = _parameterValueExtractor.GetValueAsDocumentObject<Level>(
-      target,
-      BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
-    );
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM,
+        out var baseOffset
+      )
+    )
+    {
+      speckleColumn.baseOffset = baseOffset.NotNull();
+    }
 
-    speckleColumn.topLevel = _levelConverter.Convert(topLevel);
-    speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(
-      target,
-      DB.BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
-    );
-    speckleColumn.topOffset = _parameterValueExtractor.GetValueAsDouble(
-      target,
-      DB.BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM
-    );
+    if (
+      _parameterValueExtractor.TryGetValueAsDouble(
+        target,
+        BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM,
+        out var topOffset
+      )
+    )
+    {
+      speckleColumn.topOffset = topOffset.NotNull();
+    }
 
     speckleColumn.facingFlipped = target.FacingFlipped;
     speckleColumn.handFlipped = target.HandFlipped;
@@ -74,7 +96,7 @@ public class ColumnConversionToSpeckle : ITypedConverter<DB.FamilyInstance, Revi
     }
 
     speckleColumn.baseLine =
-      GetBaseCurve(target, speckleColumn.topLevel.elevation, speckleColumn.topOffset)
+      GetBaseCurve(target, speckleColumn.topLevel?.elevation ?? -1, speckleColumn.topOffset)
       ?? throw new SpeckleConversionException("Unable to find a valid baseCurve for column");
 
     speckleColumn.displayValue = _displayValueExtractor.GetDisplayValue(target);
