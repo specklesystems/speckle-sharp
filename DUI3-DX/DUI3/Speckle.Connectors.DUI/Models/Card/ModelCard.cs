@@ -22,5 +22,10 @@ public class ModelCard : DiscriminatedObject
   public string? ProjectId { get; set; }
   public string? AccountId { get; set; }
 
+  /// <summary>
+  /// Information to store for later check any matching server.
+  /// </summary>
+  public string? ServerUrl { get; set; }
+
   public List<CardSetting>? Settings { get; set; }
 }
