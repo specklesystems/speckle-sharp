@@ -267,9 +267,12 @@ public sealed class DisplayValueExtractor
   /// <returns></returns>
   private bool IsSkippableGraphicStyle(DB.ElementId id, DB.Document doc)
   {
-    _graphicStyleCache.Add(id.ToString(), (DB.GraphicsStyle)doc.GetElement(id));
-
-    var graphicStyle = _graphicStyleCache[id.ToString()];
+    var key = id.ToString();
+    if (_graphicStyleCache.TryGetValue(key, out var graphicStyle))
+    {
+      graphicStyle = (DB.GraphicsStyle)doc.GetElement(id);
+      _graphicStyleCache.Add(key, graphicStyle);
+    }
 
     if (
       graphicStyle != null
