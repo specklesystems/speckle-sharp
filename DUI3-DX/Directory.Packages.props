@@ -16,8 +16,8 @@
     <PackageVersion Include="Revit.Async" Version="2.0.1" />   
     <PackageVersion Include="RhinoCommon" Version="7.13.21348.13001" />
     <PackageVersion Include="RhinoWindows" Version="7.13.21348.13001"  />
-    <PackageVersion Include="Speckle.Core" Version="3.0.1-alpha.11" />
-    <PackageVersion Include="Speckle.Objects" Version="3.0.1-alpha.11" />
+    <PackageVersion Include="Speckle.Core" Version="3.0.1-alpha.14" />
+    <PackageVersion Include="Speckle.Objects" Version="3.0.1-alpha.14" />
     <PackageVersion Include="Speckle.Revit.API" Version="2023.0.0" />
     <PackageVersion Include="System.Resources.Extensions" Version="7.0.0"/>
     <GlobalPackageReference Include="PolySharp" Version="1.14.1" />
