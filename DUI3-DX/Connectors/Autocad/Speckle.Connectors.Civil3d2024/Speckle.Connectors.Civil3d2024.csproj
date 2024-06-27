@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Speckle.Connectors.Civil3d</RootNamespace>
     <TargetFramework>net48</TargetFramework>
