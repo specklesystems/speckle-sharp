@@ -17,6 +17,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using DB = Autodesk.Revit.DB;
+using IFC = Autodesk.Revit.DB.IFC;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
@@ -144,6 +145,23 @@ public partial class ConverterRevit
               status: ApplicationObject.State.Created,
               logItem: $"Attached as hosted element to {host.UniqueId}"
             );
+
+            double area = GetAreaOfHostedElement(element as DB.FamilyInstance, host as DB.Wall);
+#if REVIT2020
+            double area_transformed = UnitUtils.ConvertFromInternalUnits(area, DisplayUnitType.DUT_SQUARE_METERS);
+#else
+    double area_transformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
+#endif
+            var paramObject = obj["parameters"];
+            if( paramObject != null )
+            {
+              Base parameters = (Base)paramObject;
+              if (parameters != null)
+              {
+                Objects.BuiltElements.Revit.Parameter hostedAreaParameter = new Parameter("Cutout Area", area_transformed, "m²");
+                parameters["Cutout Area"] = hostedAreaParameter;
+              }
+            }
             convertedHostedElements.Add(obj);
             ConvertedObjects.Add(obj.applicationId);
           }
@@ -1093,6 +1111,23 @@ public partial class ConverterRevit
         return WallLocationLine.FinishFaceInterior;
     }
   }
+
+  /// <summary>
+  /// Computes the area of an object in a Host element
+  /// </summary>
+  /// <param name="hostedElement"></param>
+  /// <param name="host"></param>
+  /// <returns></returns>
+  public double GetAreaOfHostedElement(DB.FamilyInstance hostedElement, Wall host)
+  {
+    XYZ basisY = XYZ.BasisY;
+    CurveLoop curveLoop = IFC.ExporterIFCUtils.GetInstanceCutoutFromWall(host.Document, host, hostedElement, out basisY);
+    IList<CurveLoop> loops = new List<CurveLoop>(1);
+    loops.Add(curveLoop);
+    double area_sqft = IFC.ExporterIFCUtils.ComputeAreaOfCurveLoops(loops);
+    return area_sqft;
+  }
+
 
   #region materials
   public RenderMaterial? GetElementRenderMaterial(DB.Element? element)
