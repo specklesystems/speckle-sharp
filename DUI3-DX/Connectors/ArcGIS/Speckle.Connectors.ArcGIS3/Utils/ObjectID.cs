@@ -1,10 +1,11 @@
 namespace Speckle.Connectors.ArcGIS.Utils;
 
+// this struct is needed to be able to parse single-string value into IDs of both a layer, and it's individual feature
 public struct ObjectID
 {
   private const string FEATURE_ID_SEPARATOR = "__speckleFeatureId__";
-  public string MappedLayerURI { get; }
-  public int? FeatureId { get; }
+  public string MappedLayerURI { get; } // unique ID of the layer on the map
+  public int? FeatureId { get; } // unique feature id (start from 0) of a feature in the layer
 
   public ObjectID(string encodedId)
   {

@@ -178,6 +178,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
     else
     {
+      // encode layer ID and ID of its feature in 1 object represented as string
       ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow);
       if (trackerItem.HostAppGeom != null) // individual hostAppGeometry
       {

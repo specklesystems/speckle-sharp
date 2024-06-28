@@ -110,6 +110,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   private List<MapMemberFeature> GetMapMembers(List<ObjectID> objectIds, MapView mapView)
   {
+    // find the layer on the map (from the objectID) and add the featureID is available
     List<MapMemberFeature> mapMembersFeatures = new();
 
     foreach (ObjectID objectId in objectIds)
@@ -161,6 +162,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
         {
           // query features by ID
           var objectIDfield = layer.GetFeatureClass().GetDefinition().GetObjectIDField();
+          
+          // FeatureID range starts from 0, but auto-assigned IDs in the layer start from 1
           QueryFilter anotherQueryFilter = new() { WhereClause = $"{objectIDfield} = {mapMemberFeat.FeatureId + 1}" };
           using (Selection onlyOneSelection = layer.Select(anotherQueryFilter, SelectionCombinationMethod.New)) { }
         }
