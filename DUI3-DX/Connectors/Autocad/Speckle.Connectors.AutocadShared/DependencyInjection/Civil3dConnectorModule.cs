@@ -15,7 +15,7 @@ public class Civil3dConnectorModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    SharedConnectorModule.LoadShared(builder);
+    SharedRegistration.Load(builder);
 
     // Operations
     builder.AddScoped<SendOperation<AutocadRootObject>>();

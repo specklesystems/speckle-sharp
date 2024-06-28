@@ -12,9 +12,9 @@ using Speckle.Connectors.Utils;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
-public static class SharedConnectorModule
+public static class SharedRegistration
 {
-  public static void LoadShared(SpeckleContainerBuilder builder)
+  public static void Load(SpeckleContainerBuilder builder)
   {
     builder.AddAutofac();
     builder.AddConnectorUtils();

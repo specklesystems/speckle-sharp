@@ -1,4 +1,4 @@
-﻿using Speckle.Autofac.DependencyInjection;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
 
@@ -6,15 +6,11 @@ namespace Speckle.Converters.Common.DependencyInjection;
 
 public static class ContainerRegistration
 {
-  public static void AddConverterCommon<TRootToSpeckleConverter, THostToSpeckleUnitConverter, THostUnit>(
-    this SpeckleContainerBuilder builder
-  )
+  public static void AddRootCommon<TRootToSpeckleConverter>(this SpeckleContainerBuilder builder)
     where TRootToSpeckleConverter : class, IRootToSpeckleConverter
-    where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
   {
     builder.ScanAssemblyOfType<RootConvertManager>();
     builder.AddScoped<IRootToSpeckleConverter, TRootToSpeckleConverter>();
-    builder.AddScoped<IHostToSpeckleUnitConverter<THostUnit>, THostToSpeckleUnitConverter>();
     /*
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
@@ -30,8 +26,16 @@ public static class ContainerRegistration
 
     builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 
-    builder.RegisterConverters();
     builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();
     builder.InjectNamedTypes<IToHostTopLevelConverter>();
+  }
+
+  public static void AddApplicationConverters<THostToSpeckleUnitConverter, THostUnits>(
+    this SpeckleContainerBuilder builder
+  )
+    where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnits>
+  {
+    builder.AddScoped<IHostToSpeckleUnitConverter<THostUnits>, THostToSpeckleUnitConverter>();
+    builder.RegisterConverters();
   }
 }

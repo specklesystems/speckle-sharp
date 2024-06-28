@@ -14,11 +14,11 @@ public class Civil3dConverterModule : ISpeckleModule
   {
     // POC: Currently we can only register one IRootToHostConverter, and the below will overrid Autocad with Civil3d
     // This needs to be resolved to allow for multiple registrations of IRootToHost
-    builder.AddConverterCommon<AutocadRootToHostConverter, AutocadToSpeckleUnitConverter, UnitsValue>();
-    builder.AddConverterCommon<Civil3dRootToHostConverter, Civil3dToSpeckleUnitConverter, Autodesk.Aec.BuiltInUnit>();
+    builder.AddRootCommon<Civil3dRootToHostConverter>();
+
+    builder.AddApplicationConverters<AutocadToSpeckleUnitConverter, UnitsValue>();
 
     // single stack per conversion
-    builder.AddScoped<IConversionContextStack<Document, UnitsValue>, AutocadConversionContextStack>();
     builder.AddScoped<IConversionContextStack<Document, Autodesk.Aec.BuiltInUnit>, Civil3dConversionContextStack>();
   }
 }

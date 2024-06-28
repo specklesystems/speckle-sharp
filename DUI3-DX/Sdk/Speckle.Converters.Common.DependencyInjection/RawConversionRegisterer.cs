@@ -13,22 +13,15 @@ public static class ConverterRegistration
     // POC: hard-coding speckle... :/
     foreach (Type speckleType in containerBuilder.SpeckleTypes)
     {
-      foreach (var conversionInterface in RegisterConversionsForType(speckleType))
-      {
-        containerBuilder.ContainerBuilder
-          .RegisterType(speckleType)
-          .As(conversionInterface)
-          .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
-          .InstancePerLifetimeScope();
-      }
+      RegisterRawConversionsForType(containerBuilder.ContainerBuilder, speckleType);
     }
   }
 
-  private static IEnumerable<Type> RegisterConversionsForType(Type type)
+  private static void RegisterRawConversionsForType(ContainerBuilder containerBuilder, Type type)
   {
     if (!type.IsClass || type.IsAbstract)
     {
-      yield break;
+      return;
     }
 
     var rawConversionInterfaces = type.GetInterfaces()
@@ -36,7 +29,11 @@ public static class ConverterRegistration
 
     foreach (var conversionInterface in rawConversionInterfaces)
     {
-      yield return conversionInterface.NotNull();
+      containerBuilder
+        .RegisterType(type)
+        .As(conversionInterface)
+        .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+        .InstancePerLifetimeScope();
     }
   }
 }
