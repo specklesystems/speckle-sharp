@@ -14,6 +14,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Connectors.DUI.Settings;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -165,6 +166,7 @@ public sealed class RhinoSendBinding : ISendBinding
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),
+        new Uri(modelCard.ServerUrl.NotNull()),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
         _rhinoSettings.HostAppInfo.Name
@@ -185,6 +187,10 @@ public sealed class RhinoSendBinding : ISendBinding
     catch (SpeckleSendFilterException e)
     {
       Commands.SetModelError(modelCardId, e);
+    }
+    catch (TransportException e)
+    {
+      Commands.SetModelError(modelCardId, e.InnerException);
     }
     catch (OperationCanceledException)
     {

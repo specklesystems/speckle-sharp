@@ -35,7 +35,7 @@ public sealed class RootObjectSender : IRootObjectSender
 
     onOperationProgressed?.Invoke("Uploading...", null);
 
-    Account account = AccountManager.GetAccount(sendInfo.AccountId);
+    Account account = GetAccount(sendInfo.AccountId, sendInfo.ServerUrl);
 
     ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
@@ -62,5 +62,25 @@ public sealed class RootObjectSender : IRootObjectSender
       .ConfigureAwait(true);
 
     return sendResult;
+  }
+
+  private Account GetAccount(string accountId, Uri serverUrl)
+  {
+    try
+    {
+      return AccountManager.GetAccount(accountId);
+    }
+    catch (SpeckleAccountManagerException)
+    {
+      var account = GetAccountFromServerUrl(serverUrl);
+      return account
+        ?? throw new SpeckleAccountManagerException($"No any account found that matches with server {serverUrl}");
+    }
+  }
+
+  private Account? GetAccountFromServerUrl(Uri serverUrl)
+  {
+    var accounts = AccountManager.GetAccounts();
+    return accounts.FirstOrDefault(acc => new Uri(acc.serverInfo.url) == serverUrl);
   }
 }

@@ -103,6 +103,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
 
       var sendInfo = new SendInfo(
         modelCard.AccountId.NotNull(),
+        new Uri(modelCard.ServerUrl.NotNull()),
         modelCard.ProjectId.NotNull(),
         modelCard.ModelId.NotNull(),
         _revitSettings.HostSlug.NotNull()
