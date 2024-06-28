@@ -65,7 +65,6 @@ public class RevitConnectorModule : ISpeckleModule
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
 
     // receive operation and dependencies
-    builder.AddScoped<ReceiveOperation>();
     builder.AddScoped<IHostObjectBuilder, RevitHostObjectBuilder>();
     builder.AddScoped<TransactionManager>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());

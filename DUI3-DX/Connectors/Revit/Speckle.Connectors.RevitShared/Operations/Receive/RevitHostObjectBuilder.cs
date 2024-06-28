@@ -60,7 +60,6 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
     {
       try
       {
-        YieldToUiThread();
         var result = _converter.Convert(tc.Current);
       }
       catch (Exception ex) when (!ex.IsFatal())
@@ -70,24 +69,5 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
     }
 
     return new(bakedObjectIds, conversionResults);
-  }
-
-  private DateTime _timerStarted = DateTime.MinValue;
-
-  private void YieldToUiThread()
-  {
-    var currentTime = DateTime.UtcNow;
-
-    if (currentTime.Subtract(_timerStarted) < TimeSpan.FromSeconds(.15))
-    {
-      return;
-    }
-
-    System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(
-      () => { },
-      System.Windows.Threading.DispatcherPriority.Background
-    );
-
-    _timerStarted = currentTime;
   }
 }
