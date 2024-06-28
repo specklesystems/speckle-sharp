@@ -59,7 +59,7 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding
           modelCard.SelectedVersionId.NotNull(),
           cts.Token,
           (status, progress) =>
-            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token)
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts)
         )
         .ConfigureAwait(false);
 

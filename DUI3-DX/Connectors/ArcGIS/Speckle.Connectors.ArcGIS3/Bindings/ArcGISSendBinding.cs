@@ -351,7 +351,7 @@ public sealed class ArcGISSendBinding : ISendBinding
               mapMembers,
               sendInfo,
               (status, progress) =>
-                Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token),
+                Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts),
               cts.Token
             )
             .ConfigureAwait(false);

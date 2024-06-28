@@ -113,7 +113,7 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
           revitObjects,
           sendInfo,
           (status, progress) =>
-            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts.Token),
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts),
           cts.Token
         )
         .ConfigureAwait(false);
