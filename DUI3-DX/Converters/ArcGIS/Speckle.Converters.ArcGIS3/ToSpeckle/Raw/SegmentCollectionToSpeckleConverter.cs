@@ -26,7 +26,7 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
     foreach (var segment in target)
     {
       len += segment.Length;
-      
+
       if (segment.SegmentType != ACG.SegmentType.Line)
       {
         // densify the segments with curves using precision value of the Map's Spatial Reference
@@ -35,7 +35,7 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
           ACG.AttributeFlags.HasZ,
           _contextStack.Current.Document.Map.SpatialReference
         ).ToGeometry();
-        
+
         double tolerance = _contextStack.Current.Document.Map.SpatialReference.XYTolerance;
         double conversionFactorToMeter = _contextStack.Current.Document.Map.SpatialReference.Unit.ConversionFactor;
         var densifiedPolyline = ACG.GeometryEngine.Instance.DensifyByDeviation(
@@ -46,7 +46,7 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
         {
           throw new ArgumentException("Segment densification failed");
         }
-        
+
         ACG.Polyline polylineToConvert = (ACG.Polyline)densifiedPolyline;
         // add points from each segment of the densified original segment
         ACG.ReadOnlyPartCollection subParts = polylineToConvert.Parts;
@@ -58,7 +58,8 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
               points,
               new List<SOG.Point>()
               {
-                _pointConverter.Convert(subSegment.StartPoint), _pointConverter.Convert(subSegment.EndPoint)
+                _pointConverter.Convert(subSegment.StartPoint),
+                _pointConverter.Convert(subSegment.EndPoint)
               }
             );
           }
@@ -70,7 +71,8 @@ public class SegmentCollectionToSpeckleConverter : ITypedConverter<ACG.ReadOnlyS
           points,
           new List<SOG.Point>()
           {
-            _pointConverter.Convert(segment.StartPoint), _pointConverter.Convert(segment.EndPoint)
+            _pointConverter.Convert(segment.StartPoint),
+            _pointConverter.Convert(segment.EndPoint)
           }
         );
       }
