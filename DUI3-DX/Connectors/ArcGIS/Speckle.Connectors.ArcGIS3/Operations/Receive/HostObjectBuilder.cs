@@ -178,7 +178,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     }
     else
     {
-      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow, null);
+      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow);
       if (trackerItem.HostAppGeom != null) // individual hostAppGeometry
       {
         results.Add(

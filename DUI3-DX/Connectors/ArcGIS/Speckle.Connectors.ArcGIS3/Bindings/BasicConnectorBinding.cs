@@ -98,19 +98,19 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     await QueuedTask
       .Run(() =>
       {
-        List<ObjectID> objectIdAndMapMembers = GetMapMembers(objectIds, mapView);
+        List<MapMemberFeature> mapMembersFeatures = GetMapMembers(objectIds, mapView);
         ClearSelectionInTOC();
         ClearSelection();
-        SelectMapMembersInTOC(objectIdAndMapMembers);
-        SelectMapMembersAndFeatures(objectIdAndMapMembers);
+        SelectMapMembersInTOC(mapMembersFeatures);
+        SelectMapMembersAndFeatures(mapMembersFeatures);
         mapView.ZoomToSelected();
       })
       .ConfigureAwait(false);
   }
 
-  private List<ObjectID> GetMapMembers(List<ObjectID> objectIds, MapView mapView)
+  private List<MapMemberFeature> GetMapMembers(List<ObjectID> objectIds, MapView mapView)
   {
-    List<ObjectID> objectIdAndMapMembers = new();
+    List<MapMemberFeature> mapMembersFeatures = new();
 
     foreach (ObjectID objectId in objectIds)
     {
@@ -119,16 +119,13 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       {
         mapMember = mapView.Map.FindStandaloneTable(objectId.MappedLayerURI);
       }
-      if (mapMember is null)
+      if (mapMember is not null)
       {
-        continue;
+        MapMemberFeature mapMembersFeat = new(mapMember, objectId.FeatureId);
+        mapMembersFeatures.Add(mapMembersFeat);
       }
-
-      ObjectID newObjectId = new(objectId.MappedLayerURI, objectId.FeatureId, mapMember);
-      objectIdAndMapMembers.Add(newObjectId);
     }
-
-    return objectIdAndMapMembers;
+    return mapMembersFeatures;
   }
 
   private void ClearSelection()
@@ -148,19 +145,14 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     MapView.Active.ClearTOCSelection();
   }
 
-  private void SelectMapMembersAndFeatures(List<ObjectID> objectIdAndMapMembers)
+  private void SelectMapMembersAndFeatures(List<MapMemberFeature> mapMembersFeatures)
   {
-    foreach (ObjectID objectId in objectIdAndMapMembers)
+    foreach (MapMemberFeature mapMemberFeat in mapMembersFeatures)
     {
-      if (objectId.MapMember == null)
-      {
-        continue;
-      }
-
-      MapMember member = objectId.MapMember;
+      MapMember member = mapMemberFeat.MapMember;
       if (member is FeatureLayer layer)
       {
-        if (objectId.FeatureId == null)
+        if (mapMemberFeat.FeatureId == null)
         {
           // select full layer if featureID not specified
           layer.Select();
@@ -169,26 +161,21 @@ public class BasicConnectorBinding : IBasicConnectorBinding
         {
           // query features by ID
           var objectIDfield = layer.GetFeatureClass().GetDefinition().GetObjectIDField();
-          QueryFilter anotherQueryFilter = new() { WhereClause = $"{objectIDfield} = {objectId.FeatureId + 1}" };
+          QueryFilter anotherQueryFilter = new() { WhereClause = $"{objectIDfield} = {mapMemberFeat.FeatureId + 1}" };
           using (Selection onlyOneSelection = layer.Select(anotherQueryFilter, SelectionCombinationMethod.New)) { }
         }
       }
     }
   }
 
-  private void SelectMapMembersInTOC(List<ObjectID> objectIdAndMapMembers)
+  private void SelectMapMembersInTOC(List<MapMemberFeature> mapMembersFeatures)
   {
     List<Layer> layers = new();
     List<StandaloneTable> tables = new();
 
-    foreach (ObjectID objectId in objectIdAndMapMembers)
+    foreach (MapMemberFeature mapMemberFeat in mapMembersFeatures)
     {
-      if (objectId.MapMember == null)
-      {
-        continue;
-      }
-
-      MapMember member = objectId.MapMember;
+      MapMember member = mapMemberFeat.MapMember;
       if (member is Layer layer)
       {
         if (member is not GroupLayer) // group layer selection clears other layers selection

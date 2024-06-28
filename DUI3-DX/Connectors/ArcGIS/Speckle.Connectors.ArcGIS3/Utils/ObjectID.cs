@@ -1,5 +1,3 @@
-using ArcGIS.Desktop.Mapping;
-
 namespace Speckle.Connectors.ArcGIS.Utils;
 
 public struct ObjectID
@@ -7,7 +5,6 @@ public struct ObjectID
   private const string FEATURE_ID_SEPARATOR = "__speckleFeatureId__";
   public string MappedLayerURI { get; }
   public int? FeatureId { get; }
-  public MapMember? MapMember { get; set; }
 
   public ObjectID(string encodedId)
   {
@@ -20,11 +17,10 @@ public struct ObjectID
     }
   }
 
-  public ObjectID(string layerId, int? featureId, MapMember? mapMember)
+  public ObjectID(string layerId, int? featureId)
   {
     MappedLayerURI = layerId;
     FeatureId = featureId;
-    MapMember = mapMember;
   }
 
   public readonly string ObjectIdToString()
