@@ -3,10 +3,12 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Autocad.Operations.Send;
 
@@ -15,11 +17,17 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
   private readonly IRootToSpeckleConverter _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly IInstanceObjectsManager<AutocadRootObject, List<Entity>> _instanceObjectsManager;
 
-  public AutocadRootObjectBuilder(IRootToSpeckleConverter converter, ISendConversionCache sendConversionCache)
+  public AutocadRootObjectBuilder(
+    IRootToSpeckleConverter converter,
+    ISendConversionCache sendConversionCache,
+    IInstanceObjectsManager<AutocadRootObject, List<Entity>> instanceObjectManager
+  )
   {
     _converter = converter;
     _sendConversionCache = sendConversionCache;
+    _instanceObjectsManager = instanceObjectManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -43,16 +51,24 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
-    List<SendConversionResult> results = new(objects.Count);
+    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(objects);
+    // POC: until we formalise a bit more the root object
+    modelWithLayers["instanceDefinitionProxies"] = instanceDefinitionProxies;
+
+    List<SendConversionResult> results = new();
     var cacheHitCount = 0;
-    foreach (var (dbObject, applicationId) in objects)
+
+    foreach (var (dbObject, applicationId) in atomicObjects)
     {
       ct.ThrowIfCancellationRequested();
-
       try
       {
         Base converted;
-        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
+        if (dbObject is BlockReference && instanceProxies.TryGetValue(applicationId, out InstanceProxy instanceProxy))
+        {
+          converted = instanceProxy;
+        }
+        else if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;
@@ -84,7 +100,7 @@ public class AutocadRootObjectBuilder : IRootObjectBuilder<AutocadRootObject>
         // POC: add logging
       }
 
-      onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
+      onOperationProgressed?.Invoke("Converting", (double)++count / atomicObjects.Count);
     }
 
     // POC: Log would be nice, or can be removed.
