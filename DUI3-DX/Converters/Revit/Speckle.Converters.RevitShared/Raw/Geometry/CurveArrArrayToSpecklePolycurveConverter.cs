@@ -1,25 +1,34 @@
-﻿using Speckle.Converters.Common.Objects;
-using Speckle.Revit.Interfaces;
+using Autodesk.Revit.DB;
+using Objects.Geometry;
+using Speckle.Converters.Common.Objects;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.RevitShared.Raw;
 
-public sealed class CurveArrArrayToSpecklePolycurveConverter : ITypedConverter<IRevitCurveArrArray, List<SOG.Polycurve>>
+internal sealed class CurveArrArrayToSpecklePolycurveConverter : ITypedConverter<DB.CurveArrArray, List<SOG.Polycurve>>
 {
-  private readonly ITypedConverter<IRevitCurveArray, SOG.Polycurve> _curveArrayConverter;
+  private readonly ITypedConverter<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
 
-  public CurveArrArrayToSpecklePolycurveConverter(ITypedConverter<IRevitCurveArray, SOG.Polycurve> curveArrayConverter)
+  public CurveArrArrayToSpecklePolycurveConverter(ITypedConverter<CurveArray, Polycurve> curveArrayConverter)
   {
     _curveArrayConverter = curveArrayConverter;
   }
 
-  public List<SOG.Polycurve> Convert(IRevitCurveArrArray target)
+  public List<SOG.Polycurve> Convert(CurveArrArray target)
   {
-    List<SOG.Polycurve> polycurves = new(target.Count);
-    foreach (var curveArray in target)
+    List<SOG.Polycurve> polycurves = new();
+    foreach (var curveArray in GetCurveArrays(target))
     {
       polycurves.Add(_curveArrayConverter.Convert(curveArray));
     }
 
     return polycurves;
+  }
+
+  private IEnumerable<DB.CurveArray> GetCurveArrays(DB.CurveArrArray curveArrArray)
+  {
+    for (var i = 0; i < curveArrArray.Size; i++)
+    {
+      yield return curveArrArray.get_Item(i);
+    }
   }
 }

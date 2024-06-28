@@ -1,8 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
+using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
@@ -10,18 +9,17 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // really if we have to edit a switch statement...
 // maybe also better as an extension method, but maybe is fine?
 // POC: there are a lot of public methods here. Maybe consider consolodating
-
-public class ParameterValueExtractor : IParameterValueExtractor
+public class ParameterValueExtractor
 {
-  private readonly IScalingServiceToSpeckle _scalingService;
-  private readonly Dictionary<string, HashSet<RevitBuiltInParameter>> _uniqueIdToUsedParameterSetMap = new();
+  private readonly ScalingServiceToSpeckle _scalingService;
+  private readonly Dictionary<string, HashSet<BuiltInParameter>> _uniqueIdToUsedParameterSetMap = new();
 
-  public ParameterValueExtractor(IScalingServiceToSpeckle scalingService)
+  public ParameterValueExtractor(ScalingServiceToSpeckle scalingService)
   {
     _scalingService = scalingService;
   }
 
-  public object? GetValue(IRevitParameter parameter)
+  public object? GetValue(Parameter parameter)
   {
     if (!parameter.HasValue)
     {
@@ -30,36 +28,32 @@ public class ParameterValueExtractor : IParameterValueExtractor
 
     return parameter.StorageType switch
     {
-      RevitStorageType.Double => GetValueAsDouble(parameter),
-      RevitStorageType.Integer => GetValueAsInt(parameter),
-      RevitStorageType.String => GetValueAsString(parameter),
-      RevitStorageType.ElementId => GetValueAsElementId(parameter)?.ToString(),
-      RevitStorageType.None
+      StorageType.Double => GetValueAsDouble(parameter),
+      StorageType.Integer => GetValueAsInt(parameter),
+      StorageType.String => GetValueAsString(parameter),
+      StorageType.ElementId => GetValueAsElementId(parameter)?.ToString(),
+      StorageType.None
       or _
         => throw new SpeckleConversionException($"Unsupported parameter storage type {parameter.StorageType}")
     };
   }
 
-  public double GetValueAsDouble(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public double GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
   {
     if (!TryGetValueAsDouble(element, builtInParameter, out double? value))
     {
       throw new SpeckleConversionException($"Failed to get {builtInParameter} as double.");
     }
 
-    return value.Value; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
+    return value!.Value; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
   }
 
-  public bool TryGetValueAsDouble(
-    IRevitElement element,
-    RevitBuiltInParameter builtInParameter,
-    [NotNullWhen(true)] out double? value
-  )
+  public bool TryGetValueAsDouble(Element element, BuiltInParameter builtInParameter, out double? value)
   {
     var number = GetValueGeneric<double?>(
       element,
       builtInParameter,
-      RevitStorageType.Double,
+      StorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
     if (number.HasValue)
@@ -72,81 +66,69 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return false;
   }
 
-  private double? GetValueAsDouble(IRevitParameter parameter)
+  private double? GetValueAsDouble(Parameter parameter)
   {
     return GetValueGeneric<double?>(
       parameter,
-      RevitStorageType.Double,
+      StorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
   }
 
-  public int GetValueAsInt(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public int GetValueAsInt(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric<int?>(
-        element,
-        builtInParameter,
-        RevitStorageType.Integer,
-        (parameter) => parameter.AsInteger()
-      )
+    return GetValueGeneric<int?>(element, builtInParameter, StorageType.Integer, (parameter) => parameter.AsInteger())
       ?? throw new SpeckleConversionException(
         $"Expected int but got null for property {builtInParameter} on element of type {element.GetType()}"
       );
   }
 
-  private int? GetValueAsInt(IRevitParameter parameter)
+  private int? GetValueAsInt(Parameter parameter)
   {
-    return GetValueGeneric<int?>(parameter, RevitStorageType.Integer, (parameter) => parameter.AsInteger());
+    return GetValueGeneric<int?>(parameter, StorageType.Integer, (parameter) => parameter.AsInteger());
   }
 
-  public bool? GetValueAsBool(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public bool? GetValueAsBool(Element element, BuiltInParameter builtInParameter)
   {
     var intVal = GetValueGeneric<int?>(
       element,
       builtInParameter,
-      RevitStorageType.Integer,
+      StorageType.Integer,
       (parameter) => parameter.AsInteger()
     );
 
     return intVal.HasValue ? Convert.ToBoolean(intVal.Value) : null;
   }
 
-  public string? GetValueAsString(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public string? GetValueAsString(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric(element, builtInParameter, RevitStorageType.String, (parameter) => parameter.AsString());
+    return GetValueGeneric(element, builtInParameter, StorageType.String, (parameter) => parameter.AsString());
   }
 
-  private string? GetValueAsString(IRevitParameter parameter)
+  private string? GetValueAsString(Parameter parameter)
   {
-    return GetValueGeneric(parameter, RevitStorageType.String, (parameter) => parameter.AsString());
+    return GetValueGeneric(parameter, StorageType.String, (parameter) => parameter.AsString());
   }
 
-  public IRevitElementId GetValueAsElementId(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public ElementId GetValueAsElementId(Element element, BuiltInParameter builtInParameter)
   {
     if (TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      return elementId;
+      return elementId!;
     }
     throw new SpeckleConversionException(
       $"Failed to get {builtInParameter} on element of type {element.GetType()} as ElementId"
     );
   }
 
-  public bool TryGetValueAsElementId(
-    IRevitElement element,
-    RevitBuiltInParameter builtInParameter,
-    [NotNullWhen(true)] out IRevitElementId? elementId
-  )
+  public bool TryGetValueAsElementId(Element element, BuiltInParameter builtInParameter, out ElementId? elementId)
   {
-    var generic = GetValueGeneric(
-      element,
-      builtInParameter,
-      RevitStorageType.ElementId,
-      (parameter) => parameter.AsElementId()
-    );
-    if (generic is not null)
+    if (
+      GetValueGeneric(element, builtInParameter, StorageType.ElementId, (parameter) => parameter.AsElementId())
+      is ElementId elementIdNotNull
+    )
     {
-      elementId = generic;
+      elementId = elementIdNotNull;
       return true;
     }
 
@@ -154,66 +136,62 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return false;
   }
 
-  public IRevitElementId? GetValueAsElementId(IRevitParameter parameter)
+  public ElementId? GetValueAsElementId(Parameter parameter)
   {
-    return GetValueGeneric(parameter, RevitStorageType.ElementId, (p) => p.AsElementId());
+    return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
-  public IRevitLevel GetValueAsRevitLevel(IRevitElement element, RevitBuiltInParameter builtInParameter)
+  public bool TryGetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter, out T? value)
   {
     if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
     {
-      throw new SpeckleConversionException();
-    }
-
-    var paramElement = element.Document.GetElement(elementId);
-    return (paramElement?.ToLevel()).NotNull();
-  }
-
-  public bool TryGetValueAsRevitLevel(
-    IRevitElement element,
-    RevitBuiltInParameter builtInParameter,
-    [NotNullWhen(true)] out IRevitLevel? revitLevel
-  )
-  {
-    if (!TryGetValueAsElementId(element, builtInParameter, out var elementId))
-    {
-      revitLevel = null;
+      value = default;
       return false;
     }
 
-    var paramElement = element.Document.GetElement(elementId);
-    revitLevel = paramElement?.ToLevel();
-    return revitLevel is not null;
+    Element paramElement = element.Document.GetElement(elementId);
+    if (paramElement is not T typedElement)
+    {
+      value = default;
+      return false;
+    }
+
+    value = typedElement;
+    return true;
+  }
+
+  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+    where T : class
+  {
+    if (!TryGetValueAsDocumentObject<T>(element, builtInParameter, out var value))
+    {
+      throw new SpeckleConversionException($"Failed to get {builtInParameter} as an element of type {typeof(T)}");
+    }
+
+    return value!; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
   }
 
   private TResult? GetValueGeneric<TResult>(
-    IRevitElement element,
-    RevitBuiltInParameter builtInParameter,
-    RevitStorageType expectedStorageType,
-    Func<IRevitParameter, TResult> getParamValue
+    Element element,
+    BuiltInParameter builtInParameter,
+    StorageType expectedStorageType,
+    Func<DB.Parameter, TResult> getParamValue
   )
   {
-    if (
-      !_uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<RevitBuiltInParameter> usedParameters)
-    )
+    if (!_uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter> usedParameters))
     {
       usedParameters = new();
       _uniqueIdToUsedParameterSetMap[element.UniqueId] = usedParameters;
     }
     usedParameters.Add(builtInParameter);
-    var parameter = element.GetParameter(builtInParameter);
-    if (parameter is null)
-    {
-      return default;
-    }
+    var parameter = element.get_Parameter(builtInParameter);
     return GetValueGeneric(parameter, expectedStorageType, getParamValue);
   }
 
   private TResult? GetValueGeneric<TResult>(
-    IRevitParameter parameter,
-    RevitStorageType expectedStorageType,
-    Func<IRevitParameter, TResult> getParamValue
+    Parameter parameter,
+    StorageType expectedStorageType,
+    Func<DB.Parameter, TResult> getParamValue
   )
   {
     if (parameter == null || !parameter.HasValue)
@@ -231,20 +209,20 @@ public class ParameterValueExtractor : IParameterValueExtractor
     return getParamValue(parameter);
   }
 
-  public Dictionary<string, IRevitParameter> GetAllRemainingParams(IRevitElement revitElement)
+  public Dictionary<string, Parameter> GetAllRemainingParams(DB.Element revitElement)
   {
-    var allParams = new Dictionary<string, IRevitParameter>();
+    var allParams = new Dictionary<string, Parameter>();
     AddElementParamsToDict(revitElement, allParams);
 
     return allParams;
   }
 
-  private void AddElementParamsToDict(IRevitElement element, Dictionary<string, IRevitParameter> paramDict)
+  private void AddElementParamsToDict(DB.Element element, Dictionary<string, Parameter> paramDict)
   {
-    _uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<RevitBuiltInParameter>? usedParameters);
+    _uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter>? usedParameters);
 
     using var parameters = element.Parameters;
-    foreach (IRevitParameter param in parameters)
+    foreach (DB.Parameter param in parameters)
     {
       var internalName = param.GetInternalName();
       if (paramDict.ContainsKey(internalName))
@@ -252,8 +230,7 @@ public class ParameterValueExtractor : IParameterValueExtractor
         continue;
       }
 
-      var bip = param.GetBuiltInParameter();
-      if (bip is not null && (usedParameters?.Contains(bip.Value) ?? false))
+      if (param.GetBuiltInParameter() is BuiltInParameter bip && (usedParameters?.Contains(bip) ?? false))
       {
         continue;
       }

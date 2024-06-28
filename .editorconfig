@@ -242,6 +242,8 @@ dotnet_diagnostic.ca1506.severity = warning # Avoid excessive class coupling
 dotnet_diagnostic.ca1507.severity = warning # Use nameof in place of string
 dotnet_diagnostic.ca1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics configuration file
+dotnet_diagnostic.CA2254.severity = none # Template should be a static expression
+
 
 
 # Performance rules

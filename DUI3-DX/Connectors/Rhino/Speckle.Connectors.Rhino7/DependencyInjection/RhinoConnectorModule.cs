@@ -19,10 +19,9 @@ using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Converters.Common;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Rhino7.Api;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -38,7 +37,6 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddConnectorUtils();
     builder.AddDUI();
     builder.AddDUIView();
-    builder.ScanAssemblyOfType<RhinoArcFactory>();
 
     // POC: Overwriting the SyncToMainThread to SyncToCurrentThread for Rhino!
     builder.AddSingletonInstance<ISyncToThread, SyncToCurrentThread>();
@@ -47,7 +45,6 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddSingleton<IRhinoPlugin, RhinoPlugin>();
     builder.AddSingleton<DocumentModelStore, RhinoDocumentStore>();
     builder.AddSingleton<IRhinoIdleManager, RhinoIdleManager>();
-    builder.AddSingleton<IProxyMapper, ProxyMapper>();
 
     // Register bindings
     builder.AddSingleton<IBinding, TestBinding>();
@@ -74,5 +71,7 @@ public class RhinoConnectorModule : ISpeckleModule
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
 
     builder.AddScoped<IRootObjectBuilder<RhinoObject>, RhinoRootObjectBuilder>();
+    builder.AddScoped<IInstanceObjectsManager<RhinoObject, List<string>>, RhinoInstanceObjectsManager>();
+    builder.AddScoped<RhinoLayerManager>();
   }
 }

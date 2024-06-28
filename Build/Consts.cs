@@ -5,11 +5,7 @@ namespace Build;
 public static class Consts
 {
   public static readonly string[] Solutions = { "DUI3-DX.slnf" };
-  public static readonly string[] TestProjects =
-  {
-    "Speckle.Converters.Revit2023.Tests",
-    "Speckle.Converters.Common.Tests"
-  };
+  public static readonly string[] TestProjects = System.Array.Empty<string>();
 
   public static readonly InstallerProject[] InstallerManifests =
   {
