@@ -23,9 +23,7 @@ public class ArcToHostConverter : IToHostTopLevelConverter, ITypedConverter<SOG.
 
   public ACG.Polyline Convert(SOG.Arc target)
   {
-    if (
-      target.startPoint.z != target.midPoint.z || target.startPoint.z != target.endPoint.z 
-    )
+    if (target.startPoint.z != target.midPoint.z || target.startPoint.z != target.endPoint.z)
     {
       throw new ArgumentException("Only Arc in XY plane are supported");
     }
