@@ -75,8 +75,16 @@ public class BasicConnectorBindingCommands
       }
     );
 
-  public void SetModelProgress(string modelCardId, ModelCardProgress progress) =>
-    Bridge.Send(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
+  public void SetModelProgress(string modelCardId, ModelCardProgress progress, CancellationTokenSource cts)
+  {
+    // NOTE: To prevent potential race condition
+    // After cancelling operation some parts could still send last progress update which was set progress on UI
+    // after it forced to be undefined. This is the safest way to prevent any case like this.
+    if (!cts.IsCancellationRequested)
+    {
+      Bridge.Send(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
+    }
+  }
 
   public void SetModelError(string modelCardId, Exception error) =>
     Bridge.Send(SET_MODEL_ERROR_UI_COMMAND_NAME, new { modelCardId, error = error.Message });
