@@ -32,7 +32,7 @@ public class CircleToHostConverter : IToHostTopLevelConverter, ITypedConverter<S
       target.plane.normal.x != 0 || target.plane.normal.y != 0 || target.plane.xdir.z != 0 || target.plane.ydir.z != 0
     )
     {
-      throw new ArgumentException("Only 2d-Circle shape is supported");
+      throw new ArgumentException("Only Circles in XY plane are supported");
     }
 
     // create a native ArcGIS circle segment
