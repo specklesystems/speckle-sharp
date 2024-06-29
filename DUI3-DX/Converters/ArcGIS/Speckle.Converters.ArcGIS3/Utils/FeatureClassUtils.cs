@@ -110,19 +110,4 @@ public class FeatureClassUtils : IFeatureClassUtils
       }
     }
   }
-
-  public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
-  {
-    string? originalGeomType = target.geomType != null ? target.geomType : target.nativeGeomType;
-    return originalGeomType switch
-    {
-      GISLayerGeometryType.NONE => ACG.GeometryType.Unknown,
-      GISLayerGeometryType.POINT => ACG.GeometryType.Multipoint,
-      GISLayerGeometryType.POLYGON => ACG.GeometryType.Polygon,
-      GISLayerGeometryType.POLYLINE => ACG.GeometryType.Polyline,
-      GISLayerGeometryType.MULTIPATCH => ACG.GeometryType.Multipatch,
-      GISLayerGeometryType.POLYGON3D => ACG.GeometryType.Multipatch,
-      _ => throw new ArgumentOutOfRangeException(nameof(target)),
-    };
-  }
 }

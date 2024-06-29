@@ -74,7 +74,7 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
 
   public FeatureClass Convert(VectorLayer target)
   {
-    ACG.GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+    ACG.GeometryType geomType = GISLayerGeometryType.GetNativeLayerGeometryType(target);
 
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath =
       new(_contextStack.Current.Document.SpeckleDatabasePath);

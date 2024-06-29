@@ -36,20 +36,6 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
     return Convert((FeatureLayer)target);
   }
 
-  private string AssignSpeckleGeometryType(esriGeometryType nativeGeometryType)
-  {
-    return nativeGeometryType switch
-    {
-      esriGeometryType.esriGeometryMultipoint => GISLayerGeometryType.POINT,
-      esriGeometryType.esriGeometryPoint => GISLayerGeometryType.POINT,
-      esriGeometryType.esriGeometryLine => GISLayerGeometryType.POLYLINE,
-      esriGeometryType.esriGeometryPolyline => GISLayerGeometryType.POLYLINE,
-      esriGeometryType.esriGeometryPolygon => GISLayerGeometryType.POLYGON,
-      esriGeometryType.esriGeometryMultiPatch => GISLayerGeometryType.MULTIPATCH,
-      _ => GISLayerGeometryType.NONE,
-    };
-  }
-
   public VectorLayer Convert(FeatureLayer target)
   {
     VectorLayer speckleLayer = new();
@@ -93,7 +79,7 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
     speckleLayer.attributes = allLayerAttributes;
 
     // get a simple geometry type
-    string spekleGeometryType = AssignSpeckleGeometryType(target.ShapeType);
+    string spekleGeometryType = GISLayerGeometryType.LayerGeometryTypeToSpeckle(target.ShapeType);
     speckleLayer.geomType = spekleGeometryType;
 
     // search the rows

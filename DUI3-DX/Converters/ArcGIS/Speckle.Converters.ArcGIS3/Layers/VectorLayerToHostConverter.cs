@@ -34,7 +34,7 @@ public class VectorLayerToHostConverter : IToHostTopLevelConverter, ITypedConver
   public string Convert(VectorLayer target)
   {
     // pointcloud layers need to be checked separately, because there is no ArcGIS Geometry type
-    // for Pointcloud. In ArcGIS it's a completely different layer class, so "GetLayerGeometryType"
+    // for Pointcloud. In ArcGIS it's a completely different layer class, so "GetNativeLayerGeometryType"
     // will return "Invalid" type
     if (target.geomType == GISLayerGeometryType.POINTCLOUD)
     {
@@ -42,7 +42,7 @@ public class VectorLayerToHostConverter : IToHostTopLevelConverter, ITypedConver
     }
 
     // check if Speckle VectorLayer should become a FeatureClass, StandaloneTable or PointcloudLayer
-    ACG.GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+    ACG.GeometryType geomType = GISLayerGeometryType.GetNativeLayerGeometryType(target);
     if (geomType != ACG.GeometryType.Unknown) // feature class
     {
       return _featureClassConverter.Convert(target).GetName();
