@@ -6,7 +6,6 @@ using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.ArcGIS3.Utils;
-using ArcGIS.Core.CIM;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -34,20 +33,6 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
   public Base Convert(object target)
   {
     return Convert((FeatureLayer)target);
-  }
-
-  private string AssignSpeckleGeometryType(esriGeometryType nativeGeometryType)
-  {
-    return nativeGeometryType switch
-    {
-      esriGeometryType.esriGeometryMultipoint => GISLayerGeometryType.POINT,
-      esriGeometryType.esriGeometryPoint => GISLayerGeometryType.POINT,
-      esriGeometryType.esriGeometryLine => GISLayerGeometryType.POLYLINE,
-      esriGeometryType.esriGeometryPolyline => GISLayerGeometryType.POLYLINE,
-      esriGeometryType.esriGeometryPolygon => GISLayerGeometryType.POLYGON,
-      esriGeometryType.esriGeometryMultiPatch => GISLayerGeometryType.MULTIPATCH,
-      _ => GISLayerGeometryType.NONE,
-    };
   }
 
   public VectorLayer Convert(FeatureLayer target)
@@ -93,7 +78,7 @@ public class VectorLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
     speckleLayer.attributes = allLayerAttributes;
 
     // get a simple geometry type
-    string spekleGeometryType = AssignSpeckleGeometryType(target.ShapeType);
+    string spekleGeometryType = GISLayerGeometryType.LayerGeometryTypeToSpeckle(target.ShapeType);
     speckleLayer.geomType = spekleGeometryType;
 
     // search the rows

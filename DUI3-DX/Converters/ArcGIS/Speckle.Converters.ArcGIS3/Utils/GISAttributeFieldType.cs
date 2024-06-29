@@ -16,6 +16,7 @@ public static class GISAttributeFieldType
   public const string DATEONLY = "DateOnly";
   public const string TIMEONLY = "TimeOnly";
   public const string TIMESTAMPOFFSET = "TimeStampOffset";
+  public const string BOOL = "Bool"; // not supported in ArcGIS, only in QGIS
 
   public static string FieldTypeToSpeckle(FieldType fieldType)
   {
@@ -55,6 +56,7 @@ public static class GISAttributeFieldType
         DATEONLY => FieldType.DateOnly,
         TIMEONLY => FieldType.TimeOnly,
         TIMESTAMPOFFSET => FieldType.String, // sending and receiving as stings
+        BOOL => FieldType.String, // not supported in ArcGIS, converting to string
         _ => throw new ArgumentOutOfRangeException(nameof(fieldType)),
       };
     }
