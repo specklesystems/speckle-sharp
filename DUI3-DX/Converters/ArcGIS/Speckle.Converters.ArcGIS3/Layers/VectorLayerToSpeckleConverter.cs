@@ -6,7 +6,6 @@ using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.ArcGIS3.Utils;
-using ArcGIS.Core.CIM;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
