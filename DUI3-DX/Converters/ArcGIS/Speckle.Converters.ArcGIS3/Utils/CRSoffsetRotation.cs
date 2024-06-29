@@ -15,11 +15,11 @@ public struct CRSoffsetRotation
   public double LonOffset { get; set; }
   public double TrueNorthRadians { get; set; }
 
-  public SOG.Point OffsetRotateOnReceive(SOG.Point point)
+  public SOG.Point OffsetRotateOnReceive(SOG.Point pointOriginal)
   {
     // scale point to match units of the SpatialReference
-    string originalUnits = point.units;
-    point = ScalePoint(point, originalUnits, SpeckleUnitString);
+    string originalUnits = pointOriginal.units;
+    SOG.Point point = ScalePoint(pointOriginal, originalUnits, SpeckleUnitString);
 
     // rotate coordinates
     NormalizeAngle();
