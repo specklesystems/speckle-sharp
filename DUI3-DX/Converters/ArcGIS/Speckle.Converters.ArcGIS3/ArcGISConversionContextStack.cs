@@ -14,13 +14,14 @@ public class ArcGISDocument
   public Project Project { get; }
   public Map Map { get; }
   public Uri SpeckleDatabasePath { get; }
-  public CRSoffsetRotation CRSoffsetRotation { get; }
+  public CRSoffsetRotation ActiveCRSoffsetRotation { get; set; }
 
   public ArcGISDocument()
   {
     Project = Project.Current;
     Map = MapView.Active.Map;
     SpeckleDatabasePath = EnsureOrAddSpeckleDatabase();
+    ActiveCRSoffsetRotation = new CRSoffsetRotation(MapView.Active.Map.SpatialReference);
   }
 
   private const string FGDB_NAME = "Speckle.gdb";

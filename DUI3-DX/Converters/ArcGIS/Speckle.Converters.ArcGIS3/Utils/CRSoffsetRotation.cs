@@ -1,4 +1,6 @@
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
@@ -71,6 +73,35 @@ public struct CRSoffsetRotation
     }
   }
 
+  public static double? RotationFromRevitData(Base rootObject)
+  {
+    // rewrite function to take into account Local reference point in Revit, and Transformation matrix
+    foreach (KeyValuePair<string, object?> prop in rootObject.GetMembers(DynamicBaseMemberType.Dynamic))
+    {
+      if (prop.Key == "info")
+      {
+        ProjectInfo? revitProjInfo = (ProjectInfo?)rootObject[prop.Key];
+        if (revitProjInfo != null)
+        {
+          try
+          {
+            if (revitProjInfo["locations"] is List<Base> locationList && locationList.Count > 0)
+            {
+              Base location = locationList[0];
+              return Convert.ToDouble(location["trueNorth"]);
+            }
+          }
+          catch (Exception ex) when (ex is FormatException || ex is InvalidCastException || ex is OverflowException)
+          {
+            // origin not found, do nothing
+          }
+          break;
+        }
+      }
+    }
+    return null;
+  }
+
   /// <summary>
   /// Initializes a new instance of <see cref="CRSoffsetRotation"/>.
   /// </summary>
@@ -82,6 +113,20 @@ public struct CRSoffsetRotation
     LatOffset = 0;
     LonOffset = 0;
     TrueNorthRadians = 0;
+  }
+
+  /// <summary>
+  /// Initializes a new instance of <see cref="CRSoffsetRotation"/>.
+  /// </summary>
+  /// <param name="spatialReference">SpatialReference to apply offsets and rotation to.</param>
+  /// <param name="trueNorthRadians">Angle to True North in radians.</param>
+  public CRSoffsetRotation(ACG.SpatialReference spatialReference, double trueNorthRadians)
+  {
+    SpatialReference = spatialReference;
+    SpeckleUnitString = GetSpeckleUnit(spatialReference);
+    LatOffset = 0;
+    LonOffset = 0;
+    TrueNorthRadians = trueNorthRadians;
   }
 
   /// <summary>

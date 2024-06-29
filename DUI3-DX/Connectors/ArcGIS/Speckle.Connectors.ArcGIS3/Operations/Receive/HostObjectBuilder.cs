@@ -44,6 +44,11 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
+    // set active CRS & offsets
+    double trueNorth = 0; // example = CRSoffsetRotation.RotationFromRevitData(rootObject);
+    CRSoffsetRotation crsOffsetRotation = new(_contextStack.Current.Document.Map.SpatialReference, trueNorth);
+    _contextStack.Current.Document.ActiveCRSoffsetRotation = crsOffsetRotation;
+
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
@@ -177,7 +182,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
   )
   {
     // get layer details
-    string? datasetId = trackerItem.DatasetId; // should not ne null here
+    string? datasetId = trackerItem.DatasetId; // should not be null here
     Uri uri = new($"{_contextStack.Current.Document.SpeckleDatabasePath.AbsolutePath.Replace('/', '\\')}\\{datasetId}");
     string nestedLayerName = trackerItem.NestedLayerName;
 

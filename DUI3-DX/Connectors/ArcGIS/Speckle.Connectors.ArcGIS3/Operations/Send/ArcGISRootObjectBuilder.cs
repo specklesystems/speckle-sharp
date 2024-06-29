@@ -1,10 +1,13 @@
 using System.Diagnostics;
+using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.ArcGIS3;
+using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -18,11 +21,17 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly IConversionContextStack<ArcGISDocument, Unit> _contextStack;
 
-  public ArcGISRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
+  public ArcGISRootObjectBuilder(
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache sendConversionCache,
+    IConversionContextStack<ArcGISDocument, Unit> contextStack
+  )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
+    _contextStack = contextStack;
   }
 
   public RootObjectBuilderResult Build(
@@ -32,6 +41,11 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
     CancellationToken ct = default
   )
   {
+    // set active CRS & offsets
+    double trueNorth = 0;
+    CRSoffsetRotation crsOffsetRotation = new(_contextStack.Current.Document.Map.SpatialReference, trueNorth);
+    _contextStack.Current.Document.ActiveCRSoffsetRotation = crsOffsetRotation;
+
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
     using var uow = _unitOfWorkFactory.Resolve<IRootToSpeckleConverter>();
