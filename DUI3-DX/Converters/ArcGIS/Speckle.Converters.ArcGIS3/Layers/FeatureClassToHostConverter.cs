@@ -88,6 +88,7 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
       wktString = target.crs.wkt.ToString();
     }
     ACG.SpatialReference spatialRef = ACG.SpatialReferenceBuilder.CreateSpatialReference(wktString);
+    _contextStack.Current.Document.ActiveCRSoffsetRotation = new CRSoffsetRotation(spatialRef);
 
     // create Fields
     List<FieldDescription> fields = _fieldsUtils.GetFieldsFromSpeckleLayer(target);

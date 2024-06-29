@@ -44,9 +44,19 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
+    // get active CRS & offsets
+    SpatialReference activeSpatialRef = _contextStack.Current.Document.Map.SpatialReference;
+    // Browse for any trace of geolocation in non-GIS apps (e.g. Revit: implemented, Blender: todo on Blender side, Civil3d: ?)
+    CRSorigin? dataOrigin = null; // e.g. CRSorigin.FromRevitData(rootObject);
+    if (dataOrigin is CRSorigin crsOrigin)
+    {
+      activeSpatialRef = crsOrigin.CreateCustomCRS();
+    }
+    double trueNorthRadians = 0; // example = CRSoffsetRotation.RotationFromRevitData(rootObject);
+    double latOffset = 0;
+    double lonOffset = 0;
+    CRSoffsetRotation crsOffsetRotation = new(activeSpatialRef, latOffset, lonOffset, trueNorthRadians);
     // set active CRS & offsets
-    double trueNorth = 0; // example = CRSoffsetRotation.RotationFromRevitData(rootObject);
-    CRSoffsetRotation crsOffsetRotation = new(_contextStack.Current.Document.Map.SpatialReference, trueNorth);
     _contextStack.Current.Document.ActiveCRSoffsetRotation = crsOffsetRotation;
 
     // Prompt the UI conversion started. Progress bar will swoosh.

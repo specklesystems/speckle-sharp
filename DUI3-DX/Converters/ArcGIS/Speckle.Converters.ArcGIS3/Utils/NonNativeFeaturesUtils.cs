@@ -118,7 +118,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     SchemaBuilder schemaBuilder = new(geodatabase);
 
     // get Spatial Reference from the document
-    ACG.SpatialReference spatialRef = _contextStack.Current.Document.Map.SpatialReference;
+    ACG.SpatialReference spatialRef = _contextStack.Current.Document.ActiveCRSoffsetRotation.SpatialReference;
 
     // create Fields
     List<(FieldDescription, Func<Base, object?>)> fieldsAndFunctions = _fieldUtils.CreateFieldsFromListOfBase(
