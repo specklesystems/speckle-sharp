@@ -54,7 +54,7 @@ public struct CRSoffsetRotation
   private readonly SOG.Point ScalePoint(SOG.Point point, string fromUnit, string toUnit)
   {
     double scaleFactor = Units.GetConversionFactor(fromUnit, toUnit);
-    return new SOG.Point(point.x * scaleFactor, point.x * scaleFactor, point.z * scaleFactor, toUnit);
+    return new SOG.Point(point.x * scaleFactor, point.y * scaleFactor, point.z * scaleFactor, toUnit);
   }
 
   private readonly string GetSpeckleUnit(ACG.SpatialReference spatialReference)
