@@ -4,6 +4,7 @@ using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
+using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3;
@@ -13,6 +14,7 @@ public class ArcGISDocument
   public Project Project { get; }
   public Map Map { get; }
   public Uri SpeckleDatabasePath { get; }
+  public CRSoffsetRotation CRSoffsetRotation { get; }
 
   public ArcGISDocument()
   {
