@@ -1,6 +1,5 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
@@ -18,11 +17,13 @@ public class PointToHostConverter : ITypedConverter<SOG.Point, ACG.MapPoint>
 
   public ACG.MapPoint Convert(SOG.Point target)
   {
-    double scaleFactor = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
+    SOG.Point scaledMovedRotatedPoint = _contextStack.Current.Document.ActiveCRSoffsetRotation.OffsetRotateOnReceive(
+      target
+    );
     return new ACG.MapPointBuilderEx(
-      target.x * scaleFactor,
-      target.y * scaleFactor,
-      target.z * scaleFactor
+      scaledMovedRotatedPoint.x,
+      scaledMovedRotatedPoint.y,
+      scaledMovedRotatedPoint.z
     ).ToGeometry();
   }
 }

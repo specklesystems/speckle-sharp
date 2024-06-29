@@ -29,7 +29,7 @@ public struct CRSoffsetRotation
     SOG.Point movedPoint = new(x2, y2, point.z, SpeckleUnitString);
 
     // scale back to original units
-    movedPoint = ScalePoint(movedPoint, SpeckleUnitString, originalUnits);
+    // movedPoint = ScalePoint(movedPoint, SpeckleUnitString, originalUnits);
 
     return movedPoint;
   }
@@ -49,7 +49,7 @@ public struct CRSoffsetRotation
     SOG.Point movedPoint = new(x2, y2, point.z, SpeckleUnitString);
 
     // scale back to original units
-    movedPoint = ScalePoint(movedPoint, SpeckleUnitString, originalUnits);
+    // movedPoint = ScalePoint(movedPoint, SpeckleUnitString, originalUnits);
 
     return movedPoint;
   }
