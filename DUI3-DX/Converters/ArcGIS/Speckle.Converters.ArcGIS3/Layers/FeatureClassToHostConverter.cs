@@ -87,6 +87,7 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
     {
       wktString = target.crs.wkt.ToString();
     }
+    // ATM, GIS commit CRS is stored per layer, but should be moved to the Root level too, and created once per Receive
     ACG.SpatialReference spatialRef = ACG.SpatialReferenceBuilder.CreateSpatialReference(wktString);
     _contextStack.Current.Document.ActiveCRSoffsetRotation = new CRSoffsetRotation(spatialRef);
 

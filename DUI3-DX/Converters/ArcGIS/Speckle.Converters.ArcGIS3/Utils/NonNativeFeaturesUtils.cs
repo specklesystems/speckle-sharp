@@ -117,7 +117,7 @@ public class NonNativeFeaturesUtils : INonNativeFeaturesUtils
     Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
     SchemaBuilder schemaBuilder = new(geodatabase);
 
-    // get Spatial Reference from the document
+    // get Spatial Reference from the Active CRS for Receive
     ACG.SpatialReference spatialRef = _contextStack.Current.Document.ActiveCRSoffsetRotation.SpatialReference;
 
     // create Fields

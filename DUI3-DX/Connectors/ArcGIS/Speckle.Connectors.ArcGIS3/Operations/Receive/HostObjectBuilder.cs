@@ -44,9 +44,10 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    // get active CRS & offsets
+    // get active CRS & offsets on Receive
     SpatialReference activeSpatialRef = _contextStack.Current.Document.Map.SpatialReference;
     // Browse for any trace of geolocation in non-GIS apps (e.g. Revit: implemented, Blender: todo on Blender side, Civil3d: ?)
+    // ATM, GIS commit CRS is stored per layer, but should be moved to the Root level too
     CRSorigin? dataOrigin = null; // e.g. CRSorigin.FromRevitData(rootObject);
     if (dataOrigin is CRSorigin crsOrigin)
     {
@@ -56,7 +57,7 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
     double latOffset = 0;
     double lonOffset = 0;
     CRSoffsetRotation crsOffsetRotation = new(activeSpatialRef, latOffset, lonOffset, trueNorthRadians);
-    // set active CRS & offsets
+    // set active CRS & offsets on Receive
     _contextStack.Current.Document.ActiveCRSoffsetRotation = crsOffsetRotation;
 
     // Prompt the UI conversion started. Progress bar will swoosh.
