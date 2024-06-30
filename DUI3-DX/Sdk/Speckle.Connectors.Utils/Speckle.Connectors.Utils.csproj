@@ -5,10 +5,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Serilog.Extensions.Logging" />
-    <PackageReference Include="Speckle.Core" />
     <PackageReference Include="Autofac" PrivateAssets="All"/>
+    <PackageReference Include="Speckle.Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\speckle-sharp-sdk\src\Speckle.Core\Speckle.Core.csproj" />
     <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 </Project>

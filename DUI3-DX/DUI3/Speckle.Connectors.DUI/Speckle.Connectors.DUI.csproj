@@ -7,10 +7,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" />
-    <PackageReference Include="Speckle.Core" />
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\speckle-sharp-sdk\src\Speckle.Objects\Speckle.Objects.csproj" />
     <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
   </ItemGroup>

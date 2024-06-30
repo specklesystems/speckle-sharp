@@ -2,6 +2,8 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "..\\speckle-sharp-sdk\\src\\Speckle.Core\\Speckle.Core.csproj",
+      "..\\speckle-sharp-sdk\\src\\Speckle.Objects\\Speckle.Objects.csproj",
       "Build\\Build.csproj",
       "DUI3-DX\\Connectors\\ArcGIS\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj",
       "DUI3-DX\\Connectors\\Autocad\\Speckle.Connectors.Autocad2023\\Speckle.Connectors.Autocad2023.csproj",

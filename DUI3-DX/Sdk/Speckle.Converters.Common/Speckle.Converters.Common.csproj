@@ -5,10 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Objects" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\speckle-sharp-sdk\src\Speckle.Core\Speckle.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\speckle-sharp-sdk\src\Speckle.Objects\Speckle.Objects.csproj" />
     <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 

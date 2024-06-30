@@ -562,6 +562,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Autocad2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Autocad2024.DependencyInjection", "DUI3-DX\Converters\Autocad\2024\Speckle.Converters.Autocad2024.DependencyInjection\Speckle.Converters.Autocad2024.DependencyInjection.csproj", "{06082BAA-98E8-49B1-9D33-252B126A0561}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core", "..\speckle-sharp-sdk\src\Speckle.Core\Speckle.Core.csproj", "{7E107BB1-33E2-488A-B00F-7697DFF44163}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Objects", "..\speckle-sharp-sdk\src\Speckle.Objects\Speckle.Objects.csproj", "{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2844,6 +2848,38 @@ Global
 		{06082BAA-98E8-49B1-9D33-252B126A0561}.Release|Any CPU.Build.0 = Release|Any CPU
 		{06082BAA-98E8-49B1-9D33-252B126A0561}.Release|x64.ActiveCfg = Release|Any CPU
 		{06082BAA-98E8-49B1-9D33-252B126A0561}.Release|x64.Build.0 = Release|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Debug|x64.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E107BB1-33E2-488A-B00F-7697DFF44163}.Release|x64.Build.0 = Release|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C8ACF55-28FB-4BA6-9838-27A9778A57AD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
