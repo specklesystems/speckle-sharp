@@ -6,6 +6,10 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 /// <summary>
 /// Container with origin offsets and rotation angle for the specified SpatialReference
+/// Offsets and rotation will modify geometry on Send, so non-GIS apps can receive it correctly
+/// Receiving GIS geometry in GIS hostApp will "undo" the geometry modifications according to the offsets&rotation applied before
+/// In the future, CAD/BIM objects will contain ProjectInfo data with CRS & offsets, so this object can be generated on Recieve
+/// TODO: consider how to generate this object to receive non-GIS data already now, without it having ProjectInfo object
 /// </summary>
 public struct CRSoffsetRotation
 {
