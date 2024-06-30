@@ -25,11 +25,11 @@ public struct CRSoffsetRotation
     string originalUnits = pointOriginal.units;
     SOG.Point point = ScalePoint(pointOriginal, originalUnits, SpeckleUnitString);
 
-    // rotate coordinates
+    // 1. rotate coordinates
     NormalizeAngle();
     double x2 = point.x * Math.Cos(TrueNorthRadians) - point.y * Math.Sin(TrueNorthRadians);
     double y2 = point.x * Math.Sin(TrueNorthRadians) + point.y * Math.Cos(TrueNorthRadians);
-    // offset coordinates
+    // 2. offset coordinates
     x2 += LonOffset;
     y2 += LatOffset;
     SOG.Point movedPoint = new(x2, y2, point.z, SpeckleUnitString);
@@ -43,11 +43,11 @@ public struct CRSoffsetRotation
     string originalUnits = point.units;
     point = ScalePoint(point, originalUnits, SpeckleUnitString);
 
-    // rotate coordinates
+    // 1. offset coordinates
     NormalizeAngle();
     double x2 = point.x - LonOffset;
     double y2 = point.y - LatOffset;
-    // offset coordinates
+    // 2. rotate coordinates
     x2 = x2 * Math.Cos(TrueNorthRadians) + y2 * Math.Sin(TrueNorthRadians);
     y2 = -x2 * Math.Sin(TrueNorthRadians) + y2 * Math.Cos(TrueNorthRadians);
     SOG.Point movedPoint = new(x2, y2, point.z, SpeckleUnitString);
