@@ -47,6 +47,8 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       var builder = SpeckleContainerBuilder.CreateInstance();
 
       // Register Settings
+      // POC: this reference to HostApplications needs some thought, it's a tight binding into a list that is not exactly open
+      // - i.e. adding a new connector should absolutely NOT require some hardcoded list to be edited... :P 
       var rhinoSettings = new RhinoSettings(HostApplications.Rhino, HostAppVersion.v7);
 
       // POC: We must load the Rhino connector module manually because we only search for DLL files when calling `LoadAutofacModules`,
