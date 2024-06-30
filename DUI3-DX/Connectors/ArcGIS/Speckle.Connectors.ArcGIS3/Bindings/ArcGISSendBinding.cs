@@ -351,7 +351,8 @@ public sealed class ArcGISSendBinding : ISendBinding
             .Execute(
               mapMembers,
               sendInfo,
-              (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+              (status, progress) =>
+                Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts),
               cts.Token
             )
             .ConfigureAwait(false);
@@ -407,10 +408,5 @@ public sealed class ArcGISSendBinding : ISendBinding
 
     Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 }
