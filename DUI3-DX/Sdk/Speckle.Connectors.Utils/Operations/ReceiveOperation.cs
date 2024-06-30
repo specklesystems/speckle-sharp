@@ -2,6 +2,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation.TypeCache;
 using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Utils.Operations;
@@ -10,11 +11,13 @@ public sealed class ReceiveOperation
 {
   private readonly IHostObjectBuilder _hostObjectBuilder;
   private readonly ISyncToThread _syncToThread;
+  private readonly ITypeCache _typeCache;
 
-  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ISyncToThread syncToThread)
+  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ITypeCache typeCache, ISyncToThread syncToThread)
   {
     _hostObjectBuilder = hostObjectBuilder;
     _syncToThread = syncToThread;
+    _typeCache = typeCache;
   }
 
   public async Task<HostObjectBuilderResult> Execute(
@@ -23,6 +26,7 @@ public sealed class ReceiveOperation
     string projectName,
     string modelName,
     string versionId,
+    ITypeCache typeCache,
     CancellationToken cancellationToken,
     Action<string, double?>? onOperationProgressed = null
   )
@@ -36,7 +40,7 @@ public sealed class ReceiveOperation
 
     using ServerTransport transport = new(account, projectId);
     Base commitObject = await Speckle.Core.Api.Operations
-      .Receive(version.referencedObject, transport, cancellationToken: cancellationToken)
+      .Receive(version.referencedObject, typeCache, transport, cancellationToken: cancellationToken)
       .ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();

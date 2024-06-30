@@ -1,6 +1,8 @@
 ﻿using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Serialisation.TypeCache;
+using Speckle.Objects;
 
 namespace Speckle.Converters.Common.DependencyInjection;
 
@@ -12,6 +14,7 @@ public static class ContainerRegistration
     where TRootToSpeckleConverter : class, IRootToSpeckleConverter
     where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnit>
   {
+    builder.AddSingleton<ITypeCache, ObjectsTypeCache>();
     builder.AddScoped<IRootToSpeckleConverter, TRootToSpeckleConverter>();
     builder.AddScoped<IHostToSpeckleUnitConverter<THostUnit>, THostToSpeckleUnitConverter>();
     /*
