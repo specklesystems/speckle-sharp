@@ -8,7 +8,7 @@ using AECPropDB = Autodesk.Aec.PropertyData.DatabaseServices;
 namespace Speckle.Converters.Civil3d.ToSpeckle.BuiltElements;
 
 [NameAndRankValue(nameof(CDB.Pipe), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PipeToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<CDB.Pipe, SOBE.Pipe>
+public class PipeToSpeckleConverter : IToSpeckleTopLevelConverter
 {
   private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
   private readonly ITypedConverter<ADB.Curve, Objects.ICurve> _curveConverter;

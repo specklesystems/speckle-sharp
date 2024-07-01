@@ -7,77 +7,17 @@ namespace Speckle.Converters.Autocad.Geometry;
 [NameAndRankValue(nameof(ADB.Solid3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class Solid3dToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
+  private readonly ITypedConverter<ADB.Solid3d, SOG.Mesh> _solidConverter;
 
-  public Solid3dToSpeckleConverter(
-    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, ADB.UnitsValue> contextStack
-  )
+  public Solid3dToSpeckleConverter(ITypedConverter<ADB.Solid3d, SOG.Mesh> solidConverter)
   {
-    _pointConverter = pointConverter;
-    _boxConverter = boxConverter;
-    _contextStack = contextStack;
+    _solidConverter = solidConverter;
   }
 
   public Base Convert(object target) => RawConvert((ADB.Solid3d)target);
 
   public SOG.Mesh RawConvert(ADB.Solid3d target)
   {
-    using ABR.Brep brep = new(target);
-    if (brep.IsNull)
-    {
-      throw new SpeckleConversionException("Could not retrieve brep from the solid3d.");
-    }
-
-    var vertices = new List<AG.Point3d>();
-    var faces = new List<int>();
-
-    // create mesh from solid with mesh filter
-    using ABR.Mesh2dControl control = new();
-    control.MaxSubdivisions = 10000; // POC: these settings may need adjusting
-    using ABR.Mesh2dFilter filter = new();
-    filter.Insert(brep, control);
-    using ABR.Mesh2d m = new(filter);
-    foreach (ABR.Element2d e in m.Element2ds)
-    {
-      // get vertices
-      List<int> faceIndices = new();
-      foreach (ABR.Node n in e.Nodes)
-      {
-        faceIndices.Add(vertices.Count);
-        vertices.Add(n.Point);
-        n.Dispose();
-      }
-
-      // get faces
-      List<int> faceList = new() { e.Nodes.Count() };
-      for (int i = 0; i < e.Nodes.Count(); i++)
-      {
-        faceList.Add(faceIndices[i]);
-      }
-
-      e.Dispose();
-    }
-
-    // mesh props
-    var convertedVertices = vertices.SelectMany(o => _pointConverter.Convert(o).ToList()).ToList();
-    double volume = target.MassProperties.Volume;
-    double area = target.Area;
-    SOG.Box bbox = _boxConverter.Convert(target.GeometricExtents);
-
-    // create speckle mesh
-    SOG.Mesh mesh =
-      new(convertedVertices, faces)
-      {
-        units = _contextStack.Current.SpeckleUnits,
-        bbox = bbox,
-        area = area,
-        volume = volume
-      };
-
-    return mesh;
+    return _solidConverter.Convert(target);
   }
 }
