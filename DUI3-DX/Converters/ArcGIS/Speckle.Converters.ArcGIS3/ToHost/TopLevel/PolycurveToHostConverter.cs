@@ -34,7 +34,15 @@ public class PolycurveToHostConverter : IToHostTopLevelConverter, ITypedConverte
       ACG.Polyline converted = (ACG.Polyline)_converter.Convert((Base)segment); //CurveConverter.NotNull().Convert(segment);
       List<ACG.MapPoint> segmentPts = converted.Points.ToList();
 
-      if (lastConvertedPt != null && segmentPts.Count > 0 && lastConvertedPt != segmentPts[0])
+      if (
+        lastConvertedPt != null
+        && segmentPts.Count > 0
+        && (
+          Math.Round(lastConvertedPt.X, 6) != Math.Round(segmentPts[0].X, 6)
+          || Math.Round(lastConvertedPt.Y, 6) != Math.Round(segmentPts[0].Y, 6)
+          || Math.Round(lastConvertedPt.Z, 6) != Math.Round(segmentPts[0].Z, 6)
+        )
+      )
       {
         throw new SpeckleConversionException("Polycurve segments are not in a correct sequence/orientation");
       }
