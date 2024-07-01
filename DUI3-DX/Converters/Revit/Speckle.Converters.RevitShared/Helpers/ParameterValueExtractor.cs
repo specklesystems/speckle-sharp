@@ -149,7 +149,7 @@ public class ParameterValueExtractor
       return false;
     }
 
-    Element paramElement = element.Document.GetElement(elementId);
+    Element paramElement = element.Document.GetElement(elementId.NotNull());
     if (paramElement is not T typedElement)
     {
       value = default;
@@ -178,7 +178,7 @@ public class ParameterValueExtractor
     Func<DB.Parameter, TResult> getParamValue
   )
   {
-    if (!_uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter> usedParameters))
+    if (!_uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter>? usedParameters))
     {
       usedParameters = new();
       _uniqueIdToUsedParameterSetMap[element.UniqueId] = usedParameters;

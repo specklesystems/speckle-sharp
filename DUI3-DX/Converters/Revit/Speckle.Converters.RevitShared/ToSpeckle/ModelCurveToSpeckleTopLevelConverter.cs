@@ -28,7 +28,7 @@ public class ModelCurveToSpeckleTopLevelConverter : BaseTopLevelConverterToSpeck
     {
       baseCurve = _curveConverter.Convert(target.GeometryCurve),
       lineStyle = target.LineStyle.Name,
-      elementId = target.Id.ToString(),
+      elementId = target.Id.ToString().NotNull(),
       units = _conversionContext.Current.SpeckleUnits
     };
 

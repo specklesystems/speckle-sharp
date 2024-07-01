@@ -36,7 +36,7 @@ public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpec
       {
         displayValue = geometries,
         units = _contextStack.Current.SpeckleUnits,
-        elementId = target.Id.ToString()
+        elementId = target.Id.ToString().NotNull()
       };
 
     _parameterObjectAssigner.AssignParametersToBase(target, result);

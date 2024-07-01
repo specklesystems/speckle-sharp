@@ -69,7 +69,7 @@ public class FootPrintRoofToSpeckleTopLevelConverter
     // POC: CNX-9403 in current connector, we are doing serious gymnastics to get the slope of the floor as defined by
     // slope arrow. The way we are doing it relies on dynamic props and only works for Revit <-> Revit
     var profiles = _modelCurveArrArrayConverter.Convert(target.GetProfiles());
-    speckleFootprintRoof.outline = profiles.FirstOrDefault();
+    speckleFootprintRoof.outline = profiles.FirstOrDefault().NotNull();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 
     var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());

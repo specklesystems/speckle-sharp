@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.Helpers;
@@ -267,7 +268,7 @@ public sealed class DisplayValueExtractor
   /// <returns></returns>
   private bool IsSkippableGraphicStyle(DB.ElementId id, DB.Document doc)
   {
-    var key = id.ToString();
+    var key = id.ToString().NotNull();
     if (_graphicStyleCache.TryGetValue(key, out var graphicStyle))
     {
       graphicStyle = (DB.GraphicsStyle)doc.GetElement(id);

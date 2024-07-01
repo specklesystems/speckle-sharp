@@ -26,7 +26,7 @@ public class TopographyTopLevelConverterToSpeckle
     var speckleTopo = new SOBR.RevitTopography
     {
       displayValue = _displayValueExtractor.GetDisplayValue(target),
-      elementId = target.Id.ToString()
+      elementId = target.Id.ToString().NotNull()
     };
 
     // POC: shouldn't we just do this in the RevitConverter ?
