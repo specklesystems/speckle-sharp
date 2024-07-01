@@ -8,7 +8,7 @@
   <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit.API" />
+    <PackageReference Include="Speckle.Revit.API" VersionOverride="2023.0.0" />
   </ItemGroup>
 
   <ItemGroup>

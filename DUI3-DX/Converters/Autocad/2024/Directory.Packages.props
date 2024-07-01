@@ -1,6 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Packages.props, $(MSBuildThisFileDirectory)..))" />
-  <ItemGroup>
-    <PackageVersion Include="Speckle.AutoCAD.API" Version="2024.0.0" />
-  </ItemGroup>
-</Project>
