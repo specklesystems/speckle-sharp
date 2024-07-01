@@ -64,6 +64,12 @@
         "resolved": "0.9.5",
         "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
+      "Speckle.Revit2023.Fakes": {
+        "type": "Direct",
+        "requested": "[0.2.1-preview.3, )",
+        "resolved": "0.2.1-preview.3",
+        "contentHash": "CFmjXwQCUBArsbaXXjEjtPHbu9kaGshYtJOyFl4zuJweTMC8taSEDpJVt7KSF6MB7xMO+y7AQ/GNLc5Rx4Hvqg=="
+      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "5.1.1",

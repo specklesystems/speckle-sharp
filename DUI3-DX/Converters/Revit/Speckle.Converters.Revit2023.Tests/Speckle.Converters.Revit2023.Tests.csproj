@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Speckle.Revit2023.Fakes">
-      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Speckle.Revit2023.Fakes\bin\Debug\net8.0\Speckle.Revit2023.Fakes.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="0.2.1-preview.3" />
   </ItemGroup>
-
-
 </Project>

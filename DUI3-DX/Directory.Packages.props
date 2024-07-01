@@ -18,6 +18,7 @@
     <PackageVersion Include="Speckle.Objects" Version="3.0.1-alpha.14" />
     <PackageVersion Include="Speckle.AutoCAD.API" Version="2023.0.0" />
     <PackageVersion Include="Speckle.Revit.API" Version="2023.0.0" />
+    <PackageVersion Include="Speckle.Revit2023.Fakes" Version="0.2.1-preview.2" />
     <PackageVersion Include="RhinoCommon" Version="7.13.21348.13001"  />
     <PackageVersion Include="RhinoWindows" Version="7.13.21348.13001"  />
     <PackageVersion Include="System.Resources.Extensions" Version="7.0.0"/>
