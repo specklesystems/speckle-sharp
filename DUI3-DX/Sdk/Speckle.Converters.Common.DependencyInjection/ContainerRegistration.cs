@@ -26,7 +26,6 @@ public static class ContainerRegistration
 
     builder.AddScoped<IRootToHostConverter, ConverterWithFallback>();
 
-    builder.RegisterRawConverters();
     builder.InjectNamedTypes<IToSpeckleTopLevelConverter>();
     builder.InjectNamedTypes<IToHostTopLevelConverter>();
   }

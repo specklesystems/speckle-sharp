@@ -19,5 +19,6 @@ public class Civil3dConverterModule : ISpeckleModule
     builder.AddApplicationConverters<Civil3dToSpeckleUnitConverter, Autodesk.Aec.BuiltInUnit>();
     builder.AddApplicationConverters<AutocadToSpeckleUnitConverter, UnitsValue>();
     builder.AddScoped<IConversionContextStack<Document, Autodesk.Aec.BuiltInUnit>, Civil3dConversionContextStack>();
+    builder.AddScoped<IConversionContextStack<Document, UnitsValue>, AutocadConversionContextStack>();
   }
 }

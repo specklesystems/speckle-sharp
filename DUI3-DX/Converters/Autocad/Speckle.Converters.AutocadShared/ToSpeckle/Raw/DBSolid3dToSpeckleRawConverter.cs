@@ -58,6 +58,8 @@ public class Solid3dToSpeckleRawConverter : ITypedConverter<ADB.Solid3d, SOG.Mes
         faceList.Add(faceIndices[i]);
       }
 
+      faces.AddRange(faceList);
+
       e.Dispose();
     }
 
