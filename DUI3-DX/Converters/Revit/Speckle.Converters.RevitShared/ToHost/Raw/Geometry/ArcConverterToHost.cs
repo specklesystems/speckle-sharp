@@ -23,8 +23,9 @@ public class ArcConverterToHost : ITypedConverter<SOG.Arc, DB.Arc>
 
   public DB.Arc Convert(SOG.Arc target)
   {
-    double startAngle,
-      endAngle;
+    double startAngle;
+    double endAngle;
+
     if (target.startAngle > target.endAngle)
     {
       startAngle = (double)target.endAngle;
@@ -35,6 +36,7 @@ public class ArcConverterToHost : ITypedConverter<SOG.Arc, DB.Arc>
       startAngle = (double)target.startAngle.NotNull();
       endAngle = (double)target.endAngle.NotNull();
     }
+
     var plane = _planeConverter.Convert(target.plane);
 
     if (SOG.Point.Distance(target.startPoint, target.endPoint) < 1E-6)

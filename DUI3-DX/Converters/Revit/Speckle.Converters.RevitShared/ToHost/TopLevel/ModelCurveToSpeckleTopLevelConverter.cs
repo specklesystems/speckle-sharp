@@ -7,7 +7,7 @@ using System.Collections;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(SOBR.Curve.ModelCurve), 0)]
-public class ModelCurveToHostTopLevelConverter : BaseTopLevelConverterToHost<SOBR.Curve.ModelCurve, DB.ModelCurve>
+public class ModelCurveToHostTopLevelConverter : BaseTopLevelConverterToHost<SOBR.Curve.ModelCurve, DB.ModelCurve[]>
 {
   private readonly ITypedConverter<ICurve, DB.CurveArray> _curveConverter;
   private readonly IRevitConversionContextStack _contextStack;
@@ -21,12 +21,11 @@ public class ModelCurveToHostTopLevelConverter : BaseTopLevelConverterToHost<SOB
     _contextStack = conversionContext;
   }
 
-  public override DB.ModelCurve Convert(SOBR.Curve.ModelCurve target) =>
-    ModelCurvesFromEnumerator(_curveConverter.Convert(target.baseCurve).GetEnumerator(), target.baseCurve);
+  public override DB.ModelCurve[] Convert(SOBR.Curve.ModelCurve target) =>
+    ModelCurvesFromEnumerator(_curveConverter.Convert(target.baseCurve).GetEnumerator(), target.baseCurve).ToArray();
 
-  private DB.ModelCurve ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
+  private IEnumerable<DB.ModelCurve> ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine)
   {
-    DB.ModelCurve? revitCurve = null;
     while (curveEnum.MoveNext() && curveEnum.Current != null)
     {
       var curve = (DB.Curve)curveEnum.Current;
@@ -38,21 +37,19 @@ public class ModelCurveToHostTopLevelConverter : BaseTopLevelConverterToHost<SOB
 
       if (_contextStack.Current.Document.IsFamilyDocument)
       {
-        revitCurve = _contextStack.Current.Document.FamilyCreate.NewModelCurve(
+        yield return _contextStack.Current.Document.FamilyCreate.NewModelCurve(
           curve,
           NewSketchPlaneFromCurve(curve, _contextStack.Current.Document)
         );
       }
       else
       {
-        revitCurve = _contextStack.Current.Document.Create.NewModelCurve(
+        yield return _contextStack.Current.Document.Create.NewModelCurve(
           curve,
           NewSketchPlaneFromCurve(curve, _contextStack.Current.Document)
         );
       }
     }
-
-    return revitCurve.NotNull();
   }
 
   /// <summary>

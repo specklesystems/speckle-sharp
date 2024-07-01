@@ -3,7 +3,6 @@ using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
-using Speckle.Core.Logging;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -29,8 +28,8 @@ public class PolylineConverterToHost : ITypedConverter<SOG.Polyline, DB.CurveArr
     var curveArray = new CurveArray();
     if (target.value.Count == 6)
     {
-      // Polyline is actually a single line
-      TryAppendLineSafely(curveArray, new SOG.Line(target.value, target.units));
+      // 6 coordinate values (two sets of 3), so polyline is actually a single line
+      curveArray.Append(_lineConverter.Convert(new SOG.Line(target.value, target.units)));
     }
     else
     {
@@ -82,15 +81,8 @@ public class PolylineConverterToHost : ITypedConverter<SOG.Polyline, DB.CurveArr
       // poc : logging "Some lines in the CurveArray where ignored due to being smaller than the allowed curve length."
       return false;
     }
-    try
-    {
-      curveArray.Append(_lineConverter.Convert(line));
-      return true;
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      // poc : logging
-      return false;
-    }
+
+    curveArray.Append(_lineConverter.Convert(line));
+    return true;
   }
 }

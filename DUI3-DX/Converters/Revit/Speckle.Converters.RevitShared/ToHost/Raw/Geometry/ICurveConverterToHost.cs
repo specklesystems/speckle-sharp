@@ -64,6 +64,7 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
         var n = _curveConverter.Convert(nurbs);
 
         // poc : in original converter, we were passing a bool into this method 'splitIfClosed'.
+        // https://spockle.atlassian.net/browse/DUI3-462
         // I'm not entirely sure why we need to split curves, but there are several occurances
         // of the method being called and overriding the bool to be true.
 

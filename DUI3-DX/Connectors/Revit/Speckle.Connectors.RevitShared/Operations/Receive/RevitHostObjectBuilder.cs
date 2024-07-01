@@ -13,13 +13,13 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
   private readonly IRootToHostConverter _converter;
   private readonly IRevitConversionContextStack _contextStack;
   private readonly GraphTraversal _traverseFunction;
-  private readonly TransactionManager _transactionManager;
+  private readonly ITransactionManager _transactionManager;
 
   public RevitHostObjectBuilder(
     IRootToHostConverter converter,
     IRevitConversionContextStack contextStack,
     GraphTraversal traverseFunction,
-    TransactionManager transactionManager
+    ITransactionManager transactionManager
   )
   {
     _converter = converter;
@@ -36,18 +36,23 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    var objectsToConvert = _traverseFunction
-      .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
-      .Where(obj => obj.Current is not Collection);
+    try
+    {
+      var objectsToConvert = _traverseFunction
+        .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
+        .Where(obj => obj.Current is not Collection);
 
-    _transactionManager.StartTransactionGroup($"Received data from {projectName}");
+      _transactionManager.StartTransactionGroup($"Received data from {projectName}");
 
-    var conversionResults = BakeObjects(objectsToConvert);
+      var conversionResults = BakeObjects(objectsToConvert);
 
-    _transactionManager.CommitTransactionGroup();
-    _transactionManager.Dispose();
-
-    return conversionResults;
+      _transactionManager.CommitTransactionGroup();
+      return conversionResults;
+    }
+    finally
+    {
+      _transactionManager.Dispose();
+    }
   }
 
   // POC: Potentially refactor out into an IObjectBaker.

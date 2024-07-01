@@ -66,7 +66,7 @@ public class RevitConnectorModule : ISpeckleModule
 
     // receive operation and dependencies
     builder.AddScoped<IHostObjectBuilder, RevitHostObjectBuilder>();
-    builder.AddScoped<TransactionManager>();
+    builder.AddScoped<ITransactionManager, TransactionManager>();
     builder.AddSingleton(DefaultTraversal.CreateTraversalFunc());
   }
 }

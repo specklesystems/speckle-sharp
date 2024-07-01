@@ -7,7 +7,7 @@ namespace Speckle.Connectors.Revit.Operations.Receive;
 /// Is responsible for all functionality regarding subtransactions, transactions, and transaction groups.
 /// This includes starting, pausing, committing, and rolling back transactions
 /// </summary>
-public sealed class TransactionManager : IDisposable
+public sealed class TransactionManager : ITransactionManager
 {
   private readonly IRevitConversionContextStack _contextStack;
   private Document Document => _contextStack.Current.Document;
@@ -69,6 +69,7 @@ public sealed class TransactionManager : IDisposable
       _transaction = new Transaction(Document, "Speckle Transaction");
       var failOpts = _transaction.GetFailureHandlingOptions();
       // POC: make sure to implement and add the failure preprocessor
+      // https://spockle.atlassian.net/browse/DUI3-461
       //failOpts.SetFailuresPreprocessor(_errorPreprocessingService);
       failOpts.SetClearAfterRollback(true);
       _transaction.SetFailureHandlingOptions(failOpts);
