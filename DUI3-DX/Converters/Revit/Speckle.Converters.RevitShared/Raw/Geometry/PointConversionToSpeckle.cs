@@ -1,16 +1,15 @@
-﻿using Speckle.Converters.Common.Objects;
-using Speckle.Revit.Interfaces;
+using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class PointConversionToSpeckle : ITypedConverter<IRevitPoint, SOG.Point>
+public class PointConversionToSpeckle : ITypedConverter<DB.Point, SOG.Point>
 {
-  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
 
-  public PointConversionToSpeckle(ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter)
+  public PointConversionToSpeckle(ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter)
   {
     _xyzToPointConverter = xyzToPointConverter;
   }
 
-  public SOG.Point Convert(IRevitPoint target) => _xyzToPointConverter.Convert(target.Coord);
+  public SOG.Point Convert(DB.Point target) => _xyzToPointConverter.Convert(target.Coord);
 }

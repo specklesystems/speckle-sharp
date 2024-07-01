@@ -3,12 +3,12 @@ using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Exceptions;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.RevitShared.Helpers;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
@@ -112,7 +112,8 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
         .Execute(
           revitObjects,
           sendInfo,
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          (status, progress) =>
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts),
           cts.Token
         )
         .ConfigureAwait(false);
@@ -128,11 +129,6 @@ internal sealed class RevitSendBinding : RevitBaseBinding, ISendBinding
     {
       return;
     }
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   /// <summary>

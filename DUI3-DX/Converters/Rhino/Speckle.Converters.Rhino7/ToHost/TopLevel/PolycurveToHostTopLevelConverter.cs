@@ -1,17 +1,15 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Polycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolycurveToHostTopLevelConverter
-  : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Polycurve, IRhinoPolyCurve>
+public class PolycurveToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Polycurve, RG.PolyCurve>
 {
   public PolycurveToHostTopLevelConverter(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<SOG.Polycurve, IRhinoPolyCurve> geometryBaseConverter,
-    IRhinoTransformFactory rhinoTransformFactory
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    ITypedConverter<SOG.Polycurve, RG.PolyCurve> geometryBaseConverter
   )
-    : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
+    : base(contextStack, geometryBaseConverter) { }
 }

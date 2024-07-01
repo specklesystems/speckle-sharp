@@ -13,11 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build" />
-    <PackageReference Include="RhinoWindows" Version="7.13.21348.13001" IncludeAssets="compile;build" />
-    <PackageReference Include="Speckle.Rhino7.Api" Version="0.1.1-preview.0.28" />
-    <PackageReference Include="Speckle.Rhino7.Interfaces" Version="0.1.1-preview.0.28" />
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
+    <PackageReference Include="RhinoCommon" IncludeAssets="compile;build" />
+    <PackageReference Include="RhinoWindows" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Resources.Extensions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,4 +41,5 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
 </Project>

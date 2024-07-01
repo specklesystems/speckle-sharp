@@ -1,32 +1,43 @@
-using System.Diagnostics.Contracts;
+using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Rhino7.Interfaces;
+using Speckle.Core.Models.Instances;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
+/// <summary>
+/// <para>Expects to be a scoped dependency per receive operation.</para>
+/// </summary>
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly GraphTraversal _traverseFunction;
-  private readonly IRhinoDocFactory _rhinoDocFactory;
+
+  private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
+  private readonly RhinoLayerManager _layerManager;
 
   public RhinoHostObjectBuilder(
     IRootToHostConverter converter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     GraphTraversal traverseFunction,
-    IRhinoDocFactory rhinoDocFactory
+    RhinoLayerManager layerManager,
+    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
   )
   {
     _converter = converter;
     _contextStack = contextStack;
     _traverseFunction = traverseFunction;
-    _rhinoDocFactory = rhinoDocFactory;
+    _layerManager = layerManager;
+    _instanceObjectsManager = instanceObjectsManager;
   }
 
   public HostObjectBuilderResult Build(
@@ -44,26 +55,118 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
       .Where(obj => obj.Current is not Collection);
 
-    var conversionResults = BakeObjects(objectsToConvert, baseLayerName);
+    var instanceDefinitionProxies = (rootObject["instanceDefinitionProxies"] as List<object>)
+      ?.Cast<InstanceDefinitionProxy>()
+      .ToList();
+
+    var conversionResults = BakeObjects(
+      objectsToConvert,
+      instanceDefinitionProxies,
+      baseLayerName,
+      onOperationProgressed
+    );
 
     _contextStack.Current.Document.Views.Redraw();
 
     return conversionResults;
   }
 
-  // POC: Potentially refactor out into an IObjectBaker.
-  private HostObjectBuilderResult BakeObjects(IEnumerable<TraversalContext> objectsGraph, string baseLayerName)
+  private HostObjectBuilderResult BakeObjects(
+    IEnumerable<TraversalContext> objectsGraph,
+    List<InstanceDefinitionProxy>? instanceDefinitionProxies,
+    string baseLayerName,
+    Action<string, double?>? onOperationProgressed
+  )
   {
-    var doc = _contextStack.Current.Document;
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(
-      Guid.Empty,
+    RhinoDoc doc = _contextStack.Current.Document;
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
+
+    PreReceiveDeepClean(baseLayerName, rootLayerIndex);
+    _layerManager.CreateBaseLayer(baseLayerName);
+
+    using var noDraw = new DisableRedrawScope(doc.Views);
+
+    var conversionResults = new List<ReceiveConversionResult>();
+    var bakedObjectIds = new List<string>();
+
+    var instanceComponents = new List<(string[] layerPath, IInstanceComponent obj)>();
+
+    // POC: these are not captured by traversal, so we need to re-add them here
+    if (instanceDefinitionProxies != null && instanceDefinitionProxies.Count > 0)
+    {
+      var transformed = instanceDefinitionProxies.Select(proxy => (Array.Empty<string>(), proxy as IInstanceComponent));
+      instanceComponents.AddRange(transformed);
+    }
+
+    var atomicObjects = new List<(string[] layerPath, Base obj)>();
+
+    // Split up the instances from the non-instances
+    foreach (TraversalContext tc in objectsGraph)
+    {
+      var path = _layerManager.GetLayerPath(tc);
+      if (tc.Current is IInstanceComponent instanceComponent)
+      {
+        instanceComponents.Add((path, instanceComponent));
+      }
+      else
+      {
+        atomicObjects.Add((path, tc.Current));
+      }
+    }
+
+    // Stage 1: Convert atomic objects
+    // Note: this can become encapsulated later in an "atomic object baker" of sorts, if needed.
+    var applicationIdMap = new Dictionary<string, List<string>>(); // used in converting blocks in stage 2. keeps track of original app id => resulting new app ids post baking
+    var count = 0;
+    foreach (var (path, obj) in atomicObjects)
+    {
+      onOperationProgressed?.Invoke("Converting objects", (double)++count / atomicObjects.Count);
+      try
+      {
+        var layerIndex = _layerManager.GetAndCreateLayerFromPath(path, baseLayerName);
+        var result = _converter.Convert(obj);
+        var conversionIds = HandleConversionResult(result, obj, layerIndex).ToList();
+        foreach (var r in conversionIds)
+        {
+          conversionResults.Add(new(Status.SUCCESS, obj, r, result.GetType().ToString()));
+          bakedObjectIds.Add(r);
+        }
+
+        if (obj.applicationId != null)
+        {
+          applicationIdMap[obj.applicationId] = conversionIds;
+        }
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        conversionResults.Add(new(Status.ERROR, obj, null, null, ex));
+      }
+    }
+
+    // Stage 2: Convert instances
+    var (createdInstanceIds, consumedObjectIds, instanceConversionResults) = _instanceObjectsManager.BakeInstances(
+      instanceComponents,
+      applicationIdMap,
       baseLayerName,
-      _rhinoDocFactory.UnsetIntIndex
+      onOperationProgressed
     );
 
-    // POC: We could move this out into a separate service for testing and re-use.
+    bakedObjectIds.RemoveAll(id => consumedObjectIds.Contains(id)); // remove all objects that have been "consumed"
+    bakedObjectIds.AddRange(createdInstanceIds); // add instance ids
+    conversionResults.RemoveAll(result => result.ResultId != null && consumedObjectIds.Contains(result.ResultId)); // remove all conversion results for atomic objects that have been consumed (POC: not that cool, but prevents problems on object highlighting)
+    conversionResults.AddRange(instanceConversionResults); // add instance conversion results to our list
+
+    // Stage 3: Return
+    return new(bakedObjectIds, conversionResults);
+  }
+
+  private void PreReceiveDeepClean(string baseLayerName, int rootLayerIndex)
+  {
+    _instanceObjectsManager.PurgeInstances(baseLayerName);
+
+    var doc = _contextStack.Current.Document;
     // Cleans up any previously received objects
-    if (rootLayerIndex != _rhinoDocFactory.UnsetIntIndex)
+    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
     {
       var documentLayer = doc.Layers[rootLayerIndex];
       var childLayers = documentLayer.GetChildren();
@@ -80,43 +183,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         }
       }
     }
-
-    var cache = new Dictionary<string, int>();
-    rootLayerIndex = doc.Layers.Add(_rhinoDocFactory.CreateLayer(baseLayerName));
-    cache.Add(baseLayerName, rootLayerIndex);
-
-    using var noDraw = new DisableRedrawScope(doc.Views);
-
-    var conversionResults = new List<ReceiveConversionResult>();
-    var bakedObjectIds = new List<string>();
-
-    foreach (TraversalContext tc in objectsGraph)
-    {
-      try
-      {
-        var path = GetLayerPath(tc);
-
-        var fullLayerName = string.Join(_rhinoDocFactory.LayerPathSeparator, path);
-        var layerIndex = cache.TryGetValue(fullLayerName, out int value)
-          ? value
-          : GetAndCreateLayerFromPath(path, baseLayerName, cache);
-
-        var result = _converter.Convert(tc.Current);
-
-        var conversionIds = HandleConversionResult(result, tc.Current, layerIndex);
-        foreach (var r in conversionIds)
-        {
-          conversionResults.Add(new(Status.SUCCESS, tc.Current, r, result.GetType().ToString()));
-          bakedObjectIds.Add(r);
-        }
-      }
-      catch (Exception ex) when (!ex.IsFatal())
-      {
-        conversionResults.Add(new(Status.ERROR, tc.Current, null, null, ex));
-      }
-    }
-
-    return new(bakedObjectIds, conversionResults);
   }
 
   private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
@@ -125,68 +191,33 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     List<string> newObjectIds = new();
     switch (conversionResult)
     {
-      case IEnumerable<IRhinoGeometryBase> list:
+      case IEnumerable<GeometryBase> list:
       {
-        var group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
+        Group group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
         newObjectIds.Add(group.Id.ToString());
         break;
       }
-      case IRhinoGeometryBase newObject:
+      case GeometryBase newObject:
       {
-        var newObjectGuid = doc.Objects.Add(newObject, _rhinoDocFactory.CreateAttributes(layerIndex));
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
         newObjectIds.Add(newObjectGuid.ToString());
         break;
       }
       default:
         throw new SpeckleConversionException(
-          $"Unexpected result from conversion: Expected {nameof(IRhinoGeometryBase)} but instead got {conversionResult.GetType().Name}"
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {conversionResult.GetType().Name}"
         );
     }
 
     return newObjectIds;
   }
 
-  private IRhinoGroup BakeObjectsAsGroup(string groupName, IEnumerable<IRhinoGeometryBase> list, int layerIndex)
+  private Group BakeObjectsAsGroup(string groupName, IEnumerable<GeometryBase> list, int layerIndex)
   {
     var doc = _contextStack.Current.Document;
-    var objectIds = list.Select(obj => doc.Objects.Add(obj, _rhinoDocFactory.CreateAttributes(layerIndex)));
+    var objectIds = list.Select(obj => doc.Objects.Add(obj, new ObjectAttributes { LayerIndex = layerIndex }));
     var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
     var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
     return group;
-  }
-
-  // POC: This is the original DUI3 function, this will grow over time as we add more conversions that are missing, so it should be refactored out into an ILayerManager or some sort of service.
-  private int GetAndCreateLayerFromPath(string[] path, string baseLayerName, Dictionary<string, int> cache)
-  {
-    var currentLayerName = baseLayerName;
-    var currentDocument = _contextStack.Current.Document;
-
-    var previousLayer = currentDocument.Layers.FindName(currentLayerName);
-    foreach (var layerName in path)
-    {
-      currentLayerName = baseLayerName + _rhinoDocFactory.LayerPathSeparator + layerName;
-      currentLayerName = currentLayerName.Replace("{", "").Replace("}", ""); // Rhino specific cleanup for gh (see RemoveInvalidRhinoChars)
-      if (cache.TryGetValue(currentLayerName, out int value))
-      {
-        previousLayer = currentDocument.Layers.FindIndex(value);
-        continue;
-      }
-
-      var cleanNewLayerName = layerName.Replace("{", "").Replace("}", "");
-      var newLayer = _rhinoDocFactory.CreateLayer(cleanNewLayerName, previousLayer.Id);
-      var index = currentDocument.Layers.Add(newLayer);
-      cache.Add(currentLayerName, index);
-      previousLayer = currentDocument.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this
-    }
-    return previousLayer.Index;
-  }
-
-  [Pure]
-  private static string[] GetLayerPath(TraversalContext context)
-  {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath =
-      collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
   }
 }

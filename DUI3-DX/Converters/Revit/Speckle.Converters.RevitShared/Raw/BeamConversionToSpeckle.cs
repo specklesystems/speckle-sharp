@@ -3,28 +3,27 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
-using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared;
+namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: There is no validation on this converter to prevent conversion from "not a Revit Beam" to a Speckle Beam.
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
 // As-is, what we are saying is that it can take "any Family Instance" and turn it into a Speckle.RevitBeam, which is far from correct.
 // CNX-9312
-public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOBR.RevitBeam>
+public class BeamConversionToSpeckle : ITypedConverter<DB.FamilyInstance, SOBR.RevitBeam>
 {
-  private readonly ITypedConverter<IRevitLocation, Base> _locationConverter;
-  private readonly ITypedConverter<IRevitLevel, SOBR.RevitLevel> _levelConverter;
-  private readonly IParameterValueExtractor _parameterValueExtractor;
-  private readonly IDisplayValueExtractor _displayValueExtractor;
-  private readonly IParameterObjectAssigner _parameterObjectAssigner;
+  private readonly ITypedConverter<DB.Location, Base> _locationConverter;
+  private readonly ITypedConverter<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public BeamConversionToSpeckle(
-    ITypedConverter<IRevitLocation, Base> locationConverter,
-    ITypedConverter<IRevitLevel, SOBR.RevitLevel> levelConverter,
-    IParameterValueExtractor parameterValueExtractor,
-    IDisplayValueExtractor displayValueExtractor,
-    IParameterObjectAssigner parameterObjectAssigner
+    ITypedConverter<DB.Location, Base> locationConverter,
+    ITypedConverter<DB.Level, SOBR.RevitLevel> levelConverter,
+    ParameterValueExtractor parameterValueExtractor,
+    DisplayValueExtractor displayValueExtractor,
+    ParameterObjectAssigner parameterObjectAssigner
   )
   {
     _locationConverter = locationConverter;
@@ -34,7 +33,7 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public SOBR.RevitBeam Convert(IRevitFamilyInstance target)
+  public SOBR.RevitBeam Convert(DB.FamilyInstance target)
   {
     var baseGeometry = _locationConverter.Convert(target.Location);
     if (baseGeometry is not ICurve baseCurve)
@@ -43,20 +42,19 @@ public class BeamConversionToSpeckle : ITypedConverter<IRevitFamilyInstance, SOB
         $"Beam location conversion did not yield an ICurve, instead it yielded an object of type {baseGeometry.GetType()}"
       );
     }
-
-    var symbol = target.Document.GetElement(target.GetTypeId()).NotNull().ToFamilySymbol().NotNull();
+    var symbol = (DB.FamilySymbol)target.Document.GetElement(target.GetTypeId());
 
     SOBR.RevitBeam speckleBeam =
       new()
       {
         family = symbol.FamilyName,
-        type = target.Document.GetElement(target.GetTypeId()).NotNull().Name,
+        type = target.Document.GetElement(target.GetTypeId()).Name,
         baseLine = baseCurve
       };
 
-    var level = _parameterValueExtractor.GetValueAsRevitLevel(
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
-      RevitBuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
+      DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM
     );
     speckleBeam.level = _levelConverter.Convert(level);
 

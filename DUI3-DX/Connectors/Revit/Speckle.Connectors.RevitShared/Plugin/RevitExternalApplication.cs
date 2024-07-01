@@ -1,9 +1,9 @@
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
+using System.IO;
 using System.Reflection;
 using Speckle.Autofac;
 using Speckle.Connectors.Utils;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -32,7 +32,7 @@ internal sealed class RevitExternalApplication : IExternalApplication
       "2023",
       "Speckle New UI",
       "Revit",
-      new[] { System.IO.Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
+      new[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
       "Revit Connector",
       "2023" //POC: app version?
     );

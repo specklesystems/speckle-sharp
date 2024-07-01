@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743"
-      IncludeAssets="compile"/>
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" IncludeAssets="compile"/>
   </ItemGroup>
 
   <ItemGroup>
