@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
@@ -13,6 +14,7 @@ public class RevitConverterModule : ISpeckleModule
   public void Load(SpeckleContainerBuilder builder)
   {
     builder.AddConverterCommon<RevitRootToSpeckleConverter, RevitToSpeckleUnitConverter, ForgeTypeId>();
+    builder.AddScoped<IRootToHostConverter, RevitRootToHostConverter>();
     builder.AddSingleton(new RevitContext());
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
