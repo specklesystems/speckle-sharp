@@ -23,7 +23,7 @@ public class PointToSpeckleConverter : ITypedConverter<MapPoint, SOG.Point>
       )
       {
         throw new SpeckleConversionException(
-          $"Conversion to Spatial Reference {_contextStack.Current.Document.Map.SpatialReference} failed"
+          $"Conversion to Spatial Reference {_contextStack.Current.Document.Map.SpatialReference.Name} failed"
         );
       }
       return new(reprojectedPt.X, reprojectedPt.Y, reprojectedPt.Z, _contextStack.Current.SpeckleUnits);
