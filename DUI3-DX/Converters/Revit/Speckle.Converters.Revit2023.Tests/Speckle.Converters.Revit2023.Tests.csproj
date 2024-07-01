@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions"  />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq"  />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers" />
+  </ItemGroup>
+  <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Speckle.Revit2023.Fakes">
+      <HintPath>..\..\..\..\..\speckle-sharp-host-apis\Speckle.Revit2023.Fakes\bin\Debug\net8.0\Speckle.Revit2023.Fakes.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+
+</Project>

@@ -1,7 +1,10 @@
-﻿namespace Speckle.Converters.Common;
+﻿using Speckle.InterfaceGenerator;
+
+namespace Speckle.Converters.Common;
 
 // POC: record?
-public class ConversionContext<TDocument>
+[GenerateAutoInterface]
+public class ConversionContext<TDocument> : IConversionContext<TDocument>
   where TDocument : class
 {
   public ConversionContext(TDocument doc, string speckleUnits)

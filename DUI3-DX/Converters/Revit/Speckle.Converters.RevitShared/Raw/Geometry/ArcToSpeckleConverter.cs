@@ -31,8 +31,8 @@ public class ArcToSpeckleConverter : ITypedConverter<DB.Arc, SOG.Arc>
     var arcPlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection);
     DB.XYZ center = target.Center;
 
-    DB.XYZ dir0 = (target.GetEndPoint(0) .Subtract( center)).Normalize();
-    DB.XYZ dir1 = (target.GetEndPoint(1) .Subtract( center)).Normalize();
+    DB.XYZ dir0 = (target.GetEndPoint(0).Subtract(center)).Normalize();
+    DB.XYZ dir1 = (target.GetEndPoint(1).Subtract(center)).Normalize();
 
     DB.XYZ start = target.Evaluate(0, true);
     DB.XYZ end = target.Evaluate(1, true);
