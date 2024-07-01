@@ -1,16 +1,15 @@
 ﻿using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpiralToHostConverter : ITypedConverter<SOG.Spiral, IRhinoPolylineCurve>
+public class SpiralToHostConverter : ITypedConverter<SOG.Spiral, RG.PolylineCurve>
 {
-  private readonly ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> _polylineConverter;
-  private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
+  private readonly ITypedConverter<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public SpiralToHostConverter(
-    ITypedConverter<SOG.Polyline, IRhinoPolylineCurve> polylineConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve> polylineConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _polylineConverter = polylineConverter;
@@ -23,7 +22,7 @@ public class SpiralToHostConverter : ITypedConverter<SOG.Spiral, IRhinoPolylineC
   /// <param name="target">The Speckle Spiral object to be converted.</param>
   /// <returns>A Rhino PolylineCurve object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  public IRhinoPolylineCurve Convert(SOG.Spiral target)
+  public RG.PolylineCurve Convert(SOG.Spiral target)
   {
     var result = _polylineConverter.Convert(target.displayValue);
     result.Domain = _intervalConverter.Convert(target.domain);

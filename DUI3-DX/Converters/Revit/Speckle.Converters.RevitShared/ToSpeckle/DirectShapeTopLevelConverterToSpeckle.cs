@@ -1,22 +1,22 @@
 ﻿using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Converters.RevitShared.ToSpeckle;
 using Speckle.Core.Models;
-using Speckle.Revit.Interfaces;
 
-namespace Speckle.Converters.RevitShared.ToSpeckle;
+namespace Speckle.Converters.Revit2023.ToSpeckle;
 
-[NameAndRankValue(nameof(IRevitDirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<IRevitDirectShape, SOBR.DirectShape>
+[NameAndRankValue(nameof(DB.DirectShape), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpeckle<DB.DirectShape, SOBR.DirectShape>
 {
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
-  private readonly IParameterObjectAssigner _parameterObjectAssigner;
-  private readonly IDisplayValueExtractor _displayValueExtractor;
+  private readonly IRevitConversionContextStack _contextStack;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly DisplayValueExtractor _displayValueExtractor;
 
   public DirectShapeTopLevelConverterToSpeckle(
-    IParameterObjectAssigner parameterObjectAssigner,
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    IDisplayValueExtractor displayValueExtractor
+    ParameterObjectAssigner parameterObjectAssigner,
+    IRevitConversionContextStack contextStack,
+    DisplayValueExtractor displayValueExtractor
   )
   {
     _parameterObjectAssigner = parameterObjectAssigner;
@@ -24,7 +24,7 @@ public class DirectShapeTopLevelConverterToSpeckle : BaseTopLevelConverterToSpec
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override SOBR.DirectShape Convert(IRevitDirectShape target)
+  public override SOBR.DirectShape Convert(DB.DirectShape target)
   {
     var category = target.Category.GetBuiltInCategory().GetSchemaBuilderCategoryFromBuiltIn();
 

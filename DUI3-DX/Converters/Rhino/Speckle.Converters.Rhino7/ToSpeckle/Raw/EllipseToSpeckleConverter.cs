@@ -1,27 +1,24 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class EllipseToSpeckleConverter : ITypedConverter<IRhinoEllipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : ITypedConverter<RG.Ellipse, SOG.Ellipse>
 {
-  private readonly ITypedConverter<IRhinoPlane, SOG.Plane> _planeConverter;
-  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
-  private readonly IRhinoBoxFactory _rhinoBoxFactory;
+  private readonly ITypedConverter<RG.Plane, SOG.Plane> _planeConverter;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public EllipseToSpeckleConverter(
-    ITypedConverter<IRhinoPlane, SOG.Plane> planeConverter,
-    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    IRhinoBoxFactory rhinoBoxFactory
+    ITypedConverter<RG.Plane, SOG.Plane> planeConverter,
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _planeConverter = planeConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
-    _rhinoBoxFactory = rhinoBoxFactory;
   }
 
   /// <summary>
@@ -32,7 +29,7 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRhinoEllipse, SOG.Elli
   /// <remarks>
   /// ⚠️ Rhino ellipses are not curves. The result is a mathematical representation of an ellipse that can be converted into NURBS for display.
   /// </remarks>
-  public SOG.Ellipse Convert(IRhinoEllipse target)
+  public SOG.Ellipse Convert(RG.Ellipse target)
   {
     var nurbsCurve = target.ToNurbsCurve();
     return new(
@@ -45,7 +42,7 @@ public class EllipseToSpeckleConverter : ITypedConverter<IRhinoEllipse, SOG.Elli
       domain = new SOP.Interval(0, 1),
       length = nurbsCurve.GetLength(),
       area = Math.PI * target.Radius1 * target.Radius2,
-      bbox = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(nurbsCurve.GetBoundingBox(true)))
+      bbox = _boxConverter.Convert(new RG.Box(nurbsCurve.GetBoundingBox(true)))
     };
   }
 }

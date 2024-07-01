@@ -1,25 +1,22 @@
-﻿using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
+﻿using Rhino.Collections;
+using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class PolylineToHostConverter
-  : ITypedConverter<SOG.Polyline, IRhinoPolyline>,
-    ITypedConverter<SOG.Polyline, IRhinoPolylineCurve>
+  : ITypedConverter<SOG.Polyline, RG.Polyline>,
+    ITypedConverter<SOG.Polyline, RG.PolylineCurve>
 {
-  private readonly ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> _pointListConverter;
-  private readonly ITypedConverter<SOP.Interval, IRhinoInterval> _intervalConverter;
-  private readonly IRhinoLineFactory _rhinoLineFactory;
+  private readonly ITypedConverter<IReadOnlyList<double>, Point3dList> _pointListConverter;
+  private readonly ITypedConverter<SOP.Interval, RG.Interval> _intervalConverter;
 
   public PolylineToHostConverter(
-    ITypedConverter<IReadOnlyList<double>, IRhinoPoint3dList> pointListConverter,
-    ITypedConverter<SOP.Interval, IRhinoInterval> intervalConverter,
-    IRhinoLineFactory rhinoLineFactory
+    ITypedConverter<IReadOnlyList<double>, Point3dList> pointListConverter,
+    ITypedConverter<SOP.Interval, RG.Interval> intervalConverter
   )
   {
     _pointListConverter = pointListConverter;
     _intervalConverter = intervalConverter;
-    _rhinoLineFactory = rhinoLineFactory;
   }
 
   /// <summary>
@@ -31,9 +28,9 @@ public class PolylineToHostConverter
   /// <remarks>
   /// <br/>⚠️ This conversion does not preserve the curve domain.
   /// If you need it preserved you must request a conversion to
-  /// <see cref="IRhinoPolylineCurve"/> conversion instead
+  /// <see cref="RG.PolylineCurve"/> conversion instead
   /// </remarks>
-  public IRhinoPolyline Convert(SOG.Polyline target)
+  public RG.Polyline Convert(SOG.Polyline target)
   {
     var points = _pointListConverter.Convert(target.value);
 
@@ -42,7 +39,7 @@ public class PolylineToHostConverter
       points.Add(points[0]);
     }
 
-    var poly = _rhinoLineFactory.Create(points);
+    var poly = new RG.Polyline(points);
 
     return poly;
   }
@@ -55,7 +52,7 @@ public class PolylineToHostConverter
   /// <param name="target">The Speckle polyline object to be converted.</param>
   /// <returns>The converted Rhino Polyline object.</returns>
   /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
-  IRhinoPolylineCurve ITypedConverter<SOG.Polyline, IRhinoPolylineCurve>.Convert(SOG.Polyline target)
+  RG.PolylineCurve ITypedConverter<SOG.Polyline, RG.PolylineCurve>.Convert(SOG.Polyline target)
   {
     var poly = Convert(target).ToPolylineCurve();
     poly.Domain = _intervalConverter.Convert(target.domain);

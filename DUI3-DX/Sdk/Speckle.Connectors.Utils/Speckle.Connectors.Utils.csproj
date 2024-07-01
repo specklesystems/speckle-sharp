@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Speckle.Core" />
+    <PackageReference Include="Autofac" PrivateAssets="All"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
-
 </Project>
