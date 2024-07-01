@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Converters\Autocad\Speckle.Converters.Autocad2023.DependencyInjection\Speckle.Converters.Autocad2023.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\..\Converters\Autocad\2023\Speckle.Converters.Autocad2023.DependencyInjection\Speckle.Converters.Autocad2023.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI.WebView\Speckle.Connectors.DUI.WebView.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
@@ -18,8 +18,9 @@
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Speckle.AutoCAD.API" OverrideVersion="2023.0.0" />
+
   </ItemGroup>
   <Import Project="..\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.projitems" Label="Shared" />
 </Project>

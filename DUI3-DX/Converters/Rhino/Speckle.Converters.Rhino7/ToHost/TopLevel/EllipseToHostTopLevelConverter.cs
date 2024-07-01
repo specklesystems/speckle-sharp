@@ -1,16 +1,15 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
 [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Ellipse, IRhinoNurbsCurve>
+public class EllipseToHostTopLevelConverter : SpeckleToHostGeometryBaseTopLevelConverter<SOG.Ellipse, RG.NurbsCurve>
 {
   public EllipseToHostTopLevelConverter(
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    ITypedConverter<SOG.Ellipse, IRhinoNurbsCurve> geometryBaseConverter,
-    IRhinoTransformFactory rhinoTransformFactory
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    ITypedConverter<SOG.Ellipse, RG.NurbsCurve> geometryBaseConverter
   )
-    : base(contextStack, geometryBaseConverter, rhinoTransformFactory) { }
+    : base(contextStack, geometryBaseConverter) { }
 }

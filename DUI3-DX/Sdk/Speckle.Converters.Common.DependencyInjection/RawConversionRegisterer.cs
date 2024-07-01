@@ -6,29 +6,22 @@ namespace Speckle.Converters.Common.DependencyInjection;
 
 // POC: review and see if it can be made more generic, related to the
 // NameAndRankAttribute work that needs doing
-public static class ConverterRegistration
+public static class RawConversionRegisterer
 {
-  public static void RegisterConverters(this SpeckleContainerBuilder containerBuilder)
+  public static void RegisterRawConversions(this SpeckleContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/
     foreach (Type speckleType in containerBuilder.SpeckleTypes)
     {
-      foreach (var conversionInterface in RegisterConversionsForType(speckleType))
-      {
-        containerBuilder.ContainerBuilder
-          .RegisterType(speckleType)
-          .As(conversionInterface)
-          .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
-          .InstancePerLifetimeScope();
-      }
+      RegisterRawConversionsForType(containerBuilder.ContainerBuilder, speckleType);
     }
   }
 
-  private static IEnumerable<Type> RegisterConversionsForType(Type type)
+  private static void RegisterRawConversionsForType(ContainerBuilder containerBuilder, Type type)
   {
     if (!type.IsClass || type.IsAbstract)
     {
-      yield break;
+      return;
     }
 
     var rawConversionInterfaces = type.GetInterfaces()
@@ -36,7 +29,11 @@ public static class ConverterRegistration
 
     foreach (var conversionInterface in rawConversionInterfaces)
     {
-      yield return conversionInterface.NotNull();
+      containerBuilder
+        .RegisterType(type)
+        .As(conversionInterface)
+        .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+        .InstancePerLifetimeScope();
     }
   }
 }

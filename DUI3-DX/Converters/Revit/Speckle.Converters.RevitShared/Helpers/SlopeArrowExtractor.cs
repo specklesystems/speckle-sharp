@@ -1,51 +1,43 @@
-﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.InterfaceGenerator;
-using Speckle.Revit.Interfaces;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
-[GenerateAutoInterface]
 public class SlopeArrowExtractor : ISlopeArrowExtractor
 {
-  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _pointConverter;
-  private readonly IParameterValueExtractor _parameterValueExtractor;
-  private readonly IRevitFilterFactory _revitFilterFactory;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _pointConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public SlopeArrowExtractor(
-    ITypedConverter<IRevitXYZ, SOG.Point> pointConverter,
-    IParameterValueExtractor parameterValueExtractor,
-    IRevitFilterFactory revitFilterFactory
+    ITypedConverter<DB.XYZ, SOG.Point> pointConverter,
+    ParameterValueExtractor parameterValueExtractor
   )
   {
     _pointConverter = pointConverter;
     _parameterValueExtractor = parameterValueExtractor;
-    _revitFilterFactory = revitFilterFactory;
   }
 
-  public IRevitModelLine? GetSlopeArrow(IRevitElement element)
+  public DB.ModelLine? GetSlopeArrow(DB.Element element)
   {
-    IList<IRevitElementId>? elementIds = null;
-    if (element is IRevitFloor floor)
+    IList<DB.ElementId>? elementIds = null;
+    if (element is DB.Floor floor)
     {
-      elementIds = (floor.Document.GetElement(floor.SketchId).NotNull().ToSketch().NotNull()).GetAllElements();
+      elementIds = ((DB.Sketch)floor.Document.GetElement(floor.SketchId)).GetAllElements();
     }
 
     if (elementIds == null)
     {
-      using var modelLineFilter = _revitFilterFactory.CreateElementCategoryFilter(RevitBuiltInCategory.OST_SketchLines);
+      using var modelLineFilter = new DB.ElementCategoryFilter(DB.BuiltInCategory.OST_SketchLines);
       elementIds = element.GetDependentElements(modelLineFilter);
     }
 
     foreach (var elementId in elementIds)
     {
-      var line = element.Document.GetElement(elementId)?.ToModelLine();
-      if (line is null)
+      if (element.Document.GetElement(elementId) is not DB.ModelLine line)
       {
         continue;
       }
 
-      var offsetAtTailParameter = line.GetParameter(RevitBuiltInParameter.SLOPE_START_HEIGHT);
+      var offsetAtTailParameter = line.get_Parameter(DB.BuiltInParameter.SLOPE_START_HEIGHT);
       if (offsetAtTailParameter != null)
       {
         return line;
@@ -54,29 +46,26 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
     return null;
   }
 
-  public SOG.Point GetSlopeArrowHead(IRevitModelLine slopeArrow)
+  public SOG.Point GetSlopeArrowHead(DB.ModelLine slopeArrow)
   {
-    return _pointConverter.Convert((slopeArrow.GetLocationAsLocationCurve().NotNull()).Curve.GetEndPoint(1));
+    return _pointConverter.Convert(((DB.LocationCurve)slopeArrow.Location).Curve.GetEndPoint(1));
   }
 
-  public SOG.Point GetSlopeArrowTail(IRevitModelLine slopeArrow)
+  public SOG.Point GetSlopeArrowTail(DB.ModelLine slopeArrow)
   {
-    return _pointConverter.Convert((slopeArrow.GetLocationAsLocationCurve().NotNull()).Curve.GetEndPoint(0));
+    return _pointConverter.Convert(((DB.LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0));
   }
 
-  public double GetSlopeArrowTailOffset(IRevitModelLine slopeArrow)
+  public double GetSlopeArrowTailOffset(DB.ModelLine slopeArrow)
   {
-    return _parameterValueExtractor.GetValueAsDouble(slopeArrow, RevitBuiltInParameter.SLOPE_START_HEIGHT);
+    return _parameterValueExtractor.GetValueAsDouble(slopeArrow, DB.BuiltInParameter.SLOPE_START_HEIGHT);
   }
 
-  public double GetSlopeArrowHeadOffset(IRevitModelLine slopeArrow, double tailOffset, out double slope)
+  public double GetSlopeArrowHeadOffset(DB.ModelLine slopeArrow, double tailOffset, out double slope)
   {
-    var specifyOffset = _parameterValueExtractor.GetValueAsInt(
-      slopeArrow,
-      RevitBuiltInParameter.SPECIFY_SLOPE_OR_OFFSET
-    );
+    var specifyOffset = _parameterValueExtractor.GetValueAsInt(slopeArrow, DB.BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
 
-    var lineLength = _parameterValueExtractor.GetValueAsDouble(slopeArrow, RevitBuiltInParameter.CURVE_ELEM_LENGTH);
+    var lineLength = _parameterValueExtractor.GetValueAsDouble(slopeArrow, DB.BuiltInParameter.CURVE_ELEM_LENGTH);
 
     slope = 0;
     double headOffset = 0;
@@ -84,12 +73,12 @@ public class SlopeArrowExtractor : ISlopeArrowExtractor
     if (specifyOffset == 1)
     {
       // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-      slope = _parameterValueExtractor.GetValueAsDouble(slopeArrow, RevitBuiltInParameter.ROOF_SLOPE) / 100d;
+      slope = _parameterValueExtractor.GetValueAsDouble(slopeArrow, DB.BuiltInParameter.ROOF_SLOPE) / 100d;
       headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
     }
     else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
     {
-      headOffset = _parameterValueExtractor.GetValueAsDouble(slopeArrow, RevitBuiltInParameter.SLOPE_END_HEIGHT);
+      headOffset = _parameterValueExtractor.GetValueAsDouble(slopeArrow, DB.BuiltInParameter.SLOPE_END_HEIGHT);
 
       slope = (headOffset - tailOffset) / lineLength;
     }
