@@ -1,4 +1,5 @@
 using Rhino;
+using Rhino.Commands;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -23,10 +24,9 @@ public sealed class RhinoSendBinding : ISendBinding
   public IBridge Parent { get; }
 
   private readonly DocumentModelStore _store;
-  private readonly RhinoIdleManager _idleManager;
+  private readonly IRhinoIdleManager _idleManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly List<ISendFilter> _sendFilters;
-  private readonly SendOperation<RhinoObject> _sendOperation;
   private readonly CancellationManager _cancellationManager;
   private readonly RhinoSettings _rhinoSettings;
 
@@ -40,10 +40,9 @@ public sealed class RhinoSendBinding : ISendBinding
 
   public RhinoSendBinding(
     DocumentModelStore store,
-    RhinoIdleManager idleManager,
+    IRhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
-    SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     RhinoSettings rhinoSettings,
     CancellationManager cancellationManager,
@@ -54,7 +53,6 @@ public sealed class RhinoSendBinding : ISendBinding
     _store = store;
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
-    _sendOperation = sendOperation;
     _sendFilters = sendFilters.ToList();
     _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
@@ -67,6 +65,20 @@ public sealed class RhinoSendBinding : ISendBinding
 
   private void SubscribeToRhinoEvents()
   {
+    RhinoDoc.LayerTableEvent += (_, _) =>
+    {
+      Commands.RefreshSendFilters();
+    };
+
+    Command.BeginCommand += (_, e) =>
+    {
+      if (e.CommandEnglishName == "BlockEdit")
+      {
+        var selectedObject = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).First();
+        ChangedObjectIds.Add(selectedObject.Id.ToString());
+      }
+    };
+
     RhinoDoc.AddRhinoObject += (_, e) =>
       _topLevelExceptionHandler.CatchUnhandled(() =>
       {
@@ -162,7 +174,8 @@ public sealed class RhinoSendBinding : ISendBinding
         .Execute(
           rhinoObjects,
           sendInfo,
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          (status, progress) =>
+            Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress), cts),
           cts.Token
         )
         .ConfigureAwait(false);
@@ -179,11 +192,6 @@ public sealed class RhinoSendBinding : ISendBinding
       // SWALLOW -> UI handles it immediately, so we do not need to handle anything
       return;
     }
-  }
-
-  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
-  {
-    Commands.SetModelProgress(modelCardId, new ModelCardProgress(modelCardId, status, progress));
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);

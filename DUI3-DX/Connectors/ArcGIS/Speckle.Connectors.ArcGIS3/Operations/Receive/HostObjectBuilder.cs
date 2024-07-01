@@ -11,6 +11,7 @@ using Speckle.Connectors.Utils.Conversion;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Converters.ArcGIS3;
 using RasterLayer = Objects.GIS.RasterLayer;
+using Speckle.Connectors.ArcGIS.Utils;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -132,21 +133,33 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
       else if (trackerItem.DatasetId == null)
       {
         results.Add(
-          new(Status.ERROR, trackerItem.Base, null, null, new ArgumentException("Unknown error: Dataset not created"))
+          new(
+            Status.ERROR,
+            trackerItem.Base,
+            null,
+            null,
+            new ArgumentException($"Unknown error: Dataset not created for {trackerItem.Base.speckle_type}")
+          )
         );
       }
       else if (bakedMapMembers.TryGetValue(trackerItem.DatasetId, out MapMember? value))
       {
+        // add layer and layer URI to tracker
+        trackerItem.AddConvertedMapMember(value);
+        trackerItem.AddLayerURI(value.URI);
+        conversionTracker[item.Key] = trackerItem; // not necessary atm, but needed if we use conversionTracker further
         // only add a report item
         AddResultsFromTracker(trackerItem, results);
       }
       else
       {
-        // add layer and layer URI to tracker
+        // add layer to Map
         MapMember mapMember = AddDatasetsToMap(trackerItem, createdLayerGroups);
+
+        // add layer and layer URI to tracker
         trackerItem.AddConvertedMapMember(mapMember);
         trackerItem.AddLayerURI(mapMember.URI);
-        conversionTracker[item.Key] = trackerItem;
+        conversionTracker[item.Key] = trackerItem; // not necessary atm, but needed if we use conversionTracker further
 
         // add layer URI to bakedIds
         bakedObjectIds.Add(trackerItem.MappedLayerURI == null ? "" : trackerItem.MappedLayerURI);
@@ -167,23 +180,44 @@ public class ArcGISHostObjectBuilder : IHostObjectBuilder
 
   private void AddResultsFromTracker(ObjectConversionTracker trackerItem, List<ReceiveConversionResult> results)
   {
-    // prioritize individual hostAppGeometry type, if available:
-    if (trackerItem.HostAppGeom != null)
+    if (trackerItem.MappedLayerURI == null) // should not happen
     {
       results.Add(
-        new(Status.SUCCESS, trackerItem.Base, trackerItem.MappedLayerURI, trackerItem.HostAppGeom.GetType().ToString())
+        new(
+          Status.ERROR,
+          trackerItem.Base,
+          null,
+          null,
+          new ArgumentException($"Created Layer URI not found for {trackerItem.Base.speckle_type}")
+        )
       );
     }
     else
     {
-      results.Add(
-        new(
-          Status.SUCCESS,
-          trackerItem.Base,
-          trackerItem.MappedLayerURI,
-          trackerItem.HostAppMapMember?.GetType().ToString()
-        )
-      );
+      // encode layer ID and ID of its feature in 1 object represented as string
+      ObjectID objectId = new(trackerItem.MappedLayerURI, trackerItem.DatasetRow);
+      if (trackerItem.HostAppGeom != null) // individual hostAppGeometry
+      {
+        results.Add(
+          new(
+            Status.SUCCESS,
+            trackerItem.Base,
+            objectId.ObjectIdToString(),
+            trackerItem.HostAppGeom.GetType().ToString()
+          )
+        );
+      }
+      else // hostApp Layers
+      {
+        results.Add(
+          new(
+            Status.SUCCESS,
+            trackerItem.Base,
+            objectId.ObjectIdToString(),
+            trackerItem.HostAppMapMember?.GetType().ToString()
+          )
+        );
+      }
     }
   }
 

@@ -1,19 +1,18 @@
-﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Revit.Interfaces;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class PlaneToSpeckleConverter : ITypedConverter<IRevitPlane, SOG.Plane>
+public class PlaneToSpeckleConverter : ITypedConverter<DB.Plane, SOG.Plane>
 {
-  private readonly IConversionContextStack<IRevitDocument, IRevitForgeTypeId> _contextStack;
-  private readonly ITypedConverter<IRevitXYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ITypedConverter<IRevitXYZ, SOG.Vector> _xyzToVectorConverter;
+  private readonly IRevitConversionContextStack _contextStack;
+  private readonly ITypedConverter<DB.XYZ, SOG.Point> _xyzToPointConverter;
+  private readonly ITypedConverter<DB.XYZ, SOG.Vector> _xyzToVectorConverter;
 
   public PlaneToSpeckleConverter(
-    IConversionContextStack<IRevitDocument, IRevitForgeTypeId> contextStack,
-    ITypedConverter<IRevitXYZ, SOG.Point> xyzToPointConverter,
-    ITypedConverter<IRevitXYZ, SOG.Vector> xyzToVectorConverter
+    IRevitConversionContextStack contextStack,
+    ITypedConverter<DB.XYZ, SOG.Point> xyzToPointConverter,
+    ITypedConverter<DB.XYZ, SOG.Vector> xyzToVectorConverter
   )
   {
     _contextStack = contextStack;
@@ -21,7 +20,7 @@ public class PlaneToSpeckleConverter : ITypedConverter<IRevitPlane, SOG.Plane>
     _xyzToVectorConverter = xyzToVectorConverter;
   }
 
-  public SOG.Plane Convert(IRevitPlane target)
+  public SOG.Plane Convert(DB.Plane target)
   {
     var origin = _xyzToPointConverter.Convert(target.Origin);
     var normal = _xyzToVectorConverter.Convert(target.Normal);

@@ -5,7 +5,7 @@
     </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
+    <PackageReference Include="RhinoCommon" VersionOverride="7.13.21348.13001"  IncludeAssets="compile;build"/>
   </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj"/>

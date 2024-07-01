@@ -1,13 +1,15 @@
 using System.Diagnostics;
-using Rhino.DocObjects;
 using Rhino;
+using Rhino.DocObjects;
 using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
 using Speckle.Connectors.Utils.Conversion;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
 
@@ -20,11 +22,23 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly IInstanceObjectsManager<RhinoObject, List<string>> _instanceObjectsManager;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly RhinoLayerManager _layerManager;
 
-  public RhinoRootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, ISendConversionCache sendConversionCache)
+  public RhinoRootObjectBuilder(
+    IUnitOfWorkFactory unitOfWorkFactory,
+    ISendConversionCache sendConversionCache,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    RhinoLayerManager layerManager,
+    IInstanceObjectsManager<RhinoObject, List<string>> instanceObjectsManager
+  )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendConversionCache = sendConversionCache;
+    _contextStack = contextStack;
+    _layerManager = layerManager;
+    _instanceObjectsManager = instanceObjectsManager;
   }
 
   public RootObjectBuilderResult Build(
@@ -46,22 +60,28 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
     using var uow = _unitOfWorkFactory.Resolve<IRootToSpeckleConverter>();
     var converter = uow.Service;
 
-    var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
+    var rootObjectCollection = new Collection { name = _contextStack.Current.Document.Name ?? "Unnamed document" };
     int count = 0;
 
     Dictionary<int, Collection> layerCollectionCache = new();
 
+    var (atomicObjects, instanceProxies, instanceDefinitionProxies) = _instanceObjectsManager.UnpackSelection(
+      rhinoObjects
+    );
+
+    // POC: we should formalise this, sooner or later - or somehow fix it a bit more
+    rootObjectCollection["instanceDefinitionProxies"] = instanceDefinitionProxies; // this won't work re traversal on receive
+
     // POC: Handle blocks.
     List<SendConversionResult> results = new(rhinoObjects.Count);
     var cacheHitCount = 0;
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+    foreach (RhinoObject rhinoObject in atomicObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
+      // RhinoDoc.ActiveDoc.Layers
+      var layer = _contextStack.Current.Document.Layers[rhinoObject.Attributes.LayerIndex];
 
-      // POC: This uses the ActiveDoc but it is bad practice to do so. A context object should be injected that would contain the Doc.
-      var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
-
-      var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
+      var collectionHost = _layerManager.GetHostObjectCollection(layer, rootObjectCollection);
       var applicationId = rhinoObject.Id.ToString();
 
       try
@@ -70,8 +90,11 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
         // What we actually do here is check if the object has been previously converted AND has not changed.
         // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
         Base converted;
-
-        if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
+        if (rhinoObject is InstanceObject)
+        {
+          converted = instanceProxies[applicationId];
+        }
+        else if (_sendConversionCache.TryGetValue(sendInfo.ProjectId, applicationId, out ObjectReference value))
         {
           converted = value;
           cacheHitCount++;
@@ -105,59 +128,5 @@ public class RhinoRootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
     // 5. profit
     return new(rootObjectCollection, results);
-  }
-
-  /// <summary>
-  /// Returns the host collection based on the provided layer. If it's not found, it will be created and hosted within the the rootObjectCollection.
-  /// </summary>
-  /// <param name="layerCollectionCache"></param>
-  /// <param name="layer"></param>
-  /// <param name="rootObjectCollection"></param>
-  /// <returns></returns>
-  private Collection GetHostObjectCollection(
-    Dictionary<int, Collection> layerCollectionCache,
-    Layer layer,
-    Collection rootObjectCollection
-  )
-  {
-    // POC: This entire implementation should be broken down and potentially injected in.
-    if (layerCollectionCache.TryGetValue(layer.Index, out Collection value))
-    {
-      return value;
-    }
-
-    var names = layer.FullPath.Split(new[] { Layer.PathSeparator }, StringSplitOptions.None);
-    var path = names[0];
-    var index = 0;
-    var previousCollection = rootObjectCollection;
-    foreach (var layerName in names)
-    {
-      var existingLayerIndex = RhinoDoc.ActiveDoc.Layers.FindByFullPath(path, -1);
-      Collection? childCollection = null;
-      if (layerCollectionCache.TryGetValue(existingLayerIndex, out Collection? collection))
-      {
-        childCollection = collection;
-      }
-      else
-      {
-        childCollection = new Collection(layerName, "layer")
-        {
-          applicationId = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Id.ToString()
-        };
-        previousCollection.elements.Add(childCollection);
-        layerCollectionCache[existingLayerIndex] = childCollection;
-      }
-
-      previousCollection = childCollection;
-
-      if (index < names.Length - 1)
-      {
-        path += Layer.PathSeparator + names[index + 1];
-      }
-      index++;
-    }
-
-    layerCollectionCache[layer.Index] = previousCollection;
-    return previousCollection;
   }
 }
