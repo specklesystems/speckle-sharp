@@ -146,7 +146,7 @@ public partial class ConverterRevit
     {
       revitZone = ConvertZoneToRevit(speckleSpace.zone, out _);
     }
-    else if (revitZone != null && revitZone.Phase.Name != targetPhase.Name)
+    else if (revitZone != null && revitZone.Phase.Name != targetPhase.Name && speckleSpace.zone != null)
     {
       Doc.Delete(revitZone.Id);
 
