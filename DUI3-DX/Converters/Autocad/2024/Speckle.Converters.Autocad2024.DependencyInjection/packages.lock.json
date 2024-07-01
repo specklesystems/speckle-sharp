@@ -214,11 +214,6 @@
           "Serilog": "2.10.0"
         }
       },
-      "Speckle.AutoCAD.API": {
-        "type": "Transitive",
-        "resolved": "2024.0.0",
-        "contentHash": "pZZ5uI+NXhZaQnsqRkgp/rywqBAjDObDJ9XNFGJvemT5k2OthDpHzlK/mKxz8QDCYie7uImQ8dv3uWj2QUFDPw=="
-      },
       "Speckle.Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.2",
@@ -398,6 +393,12 @@
           "System.Buffers": "4.5.1",
           "System.Memory": "4.5.5"
         }
+      },
+      "Speckle.AutoCAD.API": {
+        "type": "CentralTransitive",
+        "requested": "[2023.0.0, )",
+        "resolved": "2024.0.0",
+        "contentHash": "pZZ5uI+NXhZaQnsqRkgp/rywqBAjDObDJ9XNFGJvemT5k2OthDpHzlK/mKxz8QDCYie7uImQ8dv3uWj2QUFDPw=="
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
