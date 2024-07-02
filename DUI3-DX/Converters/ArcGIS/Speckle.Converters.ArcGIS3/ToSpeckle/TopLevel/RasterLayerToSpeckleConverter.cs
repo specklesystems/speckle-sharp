@@ -38,6 +38,9 @@ public class RasterLayerToSpeckleConverter : IToSpeckleTopLevelConverter, ITyped
     {
       wkt = spatialRef.Wkt,
       name = spatialRef.Name,
+      offset_y = System.Convert.ToSingle(_contextStack.Current.Document.ActiveCRSoffsetRotation.LatOffset),
+      offset_x = System.Convert.ToSingle(_contextStack.Current.Document.ActiveCRSoffsetRotation.LonOffset),
+      rotation = System.Convert.ToSingle(_contextStack.Current.Document.ActiveCRSoffsetRotation.TrueNorthRadians),
       units_native = spatialRef.Unit.ToString(),
     };
 
