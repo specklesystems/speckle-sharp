@@ -89,7 +89,22 @@ public class FeatureClassToHostConverter : ITypedConverter<VectorLayer, FeatureC
     }
     // ATM, GIS commit CRS is stored per layer, but should be moved to the Root level too, and created once per Receive
     ACG.SpatialReference spatialRef = ACG.SpatialReferenceBuilder.CreateSpatialReference(wktString);
-    _contextStack.Current.Document.ActiveCRSoffsetRotation = new CRSoffsetRotation(spatialRef);
+
+    double trueNorthRadians = System.Convert.ToDouble(
+      (target.crs == null || target.crs?.rotation == null) ? 0 : target.crs.rotation
+    );
+    double latOffset = System.Convert.ToDouble(
+      (target.crs == null || target.crs?.offset_y == null) ? 0 : target.crs.offset_y
+    );
+    double lonOffset = System.Convert.ToDouble(
+      (target.crs == null || target.crs?.offset_x == null) ? 0 : target.crs.offset_x
+    );
+    _contextStack.Current.Document.ActiveCRSoffsetRotation = new CRSoffsetRotation(
+      spatialRef,
+      latOffset,
+      lonOffset,
+      trueNorthRadians
+    );
 
     // create Fields
     List<FieldDescription> fields = _fieldsUtils.GetFieldsFromSpeckleLayer(target);
