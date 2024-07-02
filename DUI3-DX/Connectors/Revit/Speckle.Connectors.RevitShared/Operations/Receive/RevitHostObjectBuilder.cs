@@ -41,17 +41,15 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder, IDisposable
     CancellationToken cancellationToken
   )
   {
-    try
-    {
-      var objectsToConvert = _traverseFunction
-        .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
-        .Where(obj => obj.Current is not Collection);
+    var objectsToConvert = _traverseFunction
+      .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
+      .Where(obj => obj.Current is not Collection);
 
     using TransactionGroup transactionGroup = new(_contextStack.Current.Document, $"Received data from {projectName}");
     transactionGroup.Start();
     _transactionManager.StartTransaction();
 
-      var conversionResults = BakeObjects(objectsToConvert);
+    var conversionResults = BakeObjects(objectsToConvert);
 
     _transactionManager.CommitTransaction();
     transactionGroup.Assimilate();
