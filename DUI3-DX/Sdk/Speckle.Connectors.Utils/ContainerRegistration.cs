@@ -15,6 +15,7 @@ public static class ContainerRegistration
     // send operation and dependencies
     builder.AddSingleton<CancellationManager>();
     builder.AddScoped<ReceiveOperation>();
+    builder.AddScoped<AccountService>();
 
     //TODO: Logger will likely be removed from Core, we'll plan to figure out the config later...
     var serilogLogger = SpeckleLog.Logger;

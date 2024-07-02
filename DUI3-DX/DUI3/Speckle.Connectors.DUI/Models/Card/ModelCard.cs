@@ -20,10 +20,14 @@ public class ModelCard : DiscriminatedObject
   /// Project id. FKA stream id.
   /// </summary>
   public string? ProjectId { get; set; }
+
+  /// <summary>
+  /// Account id that model card created with it initially.
+  /// </summary>
   public string? AccountId { get; set; }
 
   /// <summary>
-  /// Information to store for later check any matching server.
+  /// Server that model card created on it initially.
   /// </summary>
   public string? ServerUrl { get; set; }
 

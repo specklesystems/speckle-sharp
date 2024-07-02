@@ -17,11 +17,17 @@ public sealed class RootObjectSender : IRootObjectSender
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
   private readonly ServerTransport.Factory _transportFactory;
   private readonly ISendConversionCache _sendConversionCache;
+  private readonly AccountService _accountService;
 
-  public RootObjectSender(ServerTransport.Factory transportFactory, ISendConversionCache sendConversionCache)
+  public RootObjectSender(
+    ServerTransport.Factory transportFactory,
+    ISendConversionCache sendConversionCache,
+    AccountService accountService
+  )
   {
     _transportFactory = transportFactory;
     _sendConversionCache = sendConversionCache;
+    _accountService = accountService;
   }
 
   public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
@@ -35,7 +41,7 @@ public sealed class RootObjectSender : IRootObjectSender
 
     onOperationProgressed?.Invoke("Uploading...", null);
 
-    Account account = GetAccount(sendInfo.AccountId, sendInfo.ServerUrl);
+    Account account = _accountService.GetAccountWithServerUrlFallback(sendInfo.AccountId, sendInfo.ServerUrl);
 
     ITransport transport = _transportFactory(account, sendInfo.ProjectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
@@ -62,25 +68,5 @@ public sealed class RootObjectSender : IRootObjectSender
       .ConfigureAwait(true);
 
     return sendResult;
-  }
-
-  private Account GetAccount(string accountId, Uri serverUrl)
-  {
-    try
-    {
-      return AccountManager.GetAccount(accountId);
-    }
-    catch (SpeckleAccountManagerException)
-    {
-      var account = GetAccountFromServerUrl(serverUrl);
-      return account
-        ?? throw new SpeckleAccountManagerException($"No any account found that matches with server {serverUrl}");
-    }
-  }
-
-  private Account? GetAccountFromServerUrl(Uri serverUrl)
-  {
-    var accounts = AccountManager.GetAccounts();
-    return accounts.FirstOrDefault(acc => new Uri(acc.serverInfo.url) == serverUrl);
   }
 }
