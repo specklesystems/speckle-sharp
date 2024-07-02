@@ -4,6 +4,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation.TypeCache;
 using Speckle.Core.Transports;
+using Version = System.Version;
 
 namespace Speckle.Connectors.Utils.Operations;
 
@@ -38,9 +39,12 @@ public sealed class ReceiveOperation
     using Client apiClient = new(account);
     Commit version = await apiClient.CommitGet(projectId, versionId, cancellationToken).ConfigureAwait(false);
 
+    // if there's no version, start looking at the oldest
+    var schemaVersion = new Version(version.SchemaVersion ?? "0.0.0");
+
     using ServerTransport transport = new(account, projectId);
     Base commitObject = await Speckle.Core.Api.Operations
-      .Receive(version.referencedObject, typeCache, transport, cancellationToken: cancellationToken)
+      .Receive(version.referencedObject, typeCache, schemaVersion, transport, cancellationToken: cancellationToken)
       .ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();
