@@ -8,6 +8,10 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Operations.Receive;
 
+/// <summary>
+/// Potentially consolidate all application specific IHostObjectBuilders
+/// https://spockle.atlassian.net/browse/DUI3-465
+/// </summary>
 internal class RevitHostObjectBuilder : IHostObjectBuilder
 {
   private readonly IRootToHostConverter _converter;
