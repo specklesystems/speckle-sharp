@@ -6,12 +6,12 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared;
 
 // POC: maybe possible to restrict the access so this cannot be created directly?
-public class RevitRootToHostConverter : IRootToSpeckleConverter
+public class RevitRootToSpeckleConverter : IRootToSpeckleConverter
 {
   private readonly IConverterResolver<IToSpeckleTopLevelConverter> _toSpeckle;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
-  public RevitRootToHostConverter(
+  public RevitRootToSpeckleConverter(
     IConverterResolver<IToSpeckleTopLevelConverter> toSpeckle,
     ParameterValueExtractor parameterValueExtractor
   )
