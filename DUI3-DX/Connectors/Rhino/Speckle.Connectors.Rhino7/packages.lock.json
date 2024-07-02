@@ -444,7 +444,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Connectors.Utils": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.14, )",
+          "Speckle.Core": "[3.0.1-alpha.15, )",
           "System.Threading.Tasks.Dataflow": "[6.0.0, )"
         }
       },
@@ -460,7 +460,7 @@
         "dependencies": {
           "Serilog.Extensions.Logging": "[7.0.0, )",
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Core": "[3.0.1-alpha.14, )"
+          "Speckle.Core": "[3.0.1-alpha.15, )"
         }
       },
       "speckle.converters.common": {
@@ -512,8 +512,8 @@
       "Speckle.Core": {
         "type": "CentralTransitive",
         "requested": "[3.0.1-alpha.14, )",
-        "resolved": "3.0.1-alpha.14",
-        "contentHash": "RzQPVIGFFkKvG56YLr8ACtiwdWJE6IJ9vCQ4qHa0PIsUEpfzAIAi59jnzqtByOFC0FiFrFPow9bkfzylaZorAA==",
+        "resolved": "3.0.1-alpha.15",
+        "contentHash": "khv7uLeMMZ5JKJi3NZtz2nti7YPFGQiqllIDqVuNAl8hbqJ52t6OWyOJ87n0sthvGtAO2SpaLik3f+Fh5G/7ww==",
         "dependencies": {
           "GraphQL.Client": "6.0.0",
           "Microsoft.CSharp": "4.7.0",

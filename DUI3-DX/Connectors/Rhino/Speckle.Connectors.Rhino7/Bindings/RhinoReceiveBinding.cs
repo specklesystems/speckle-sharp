@@ -55,6 +55,7 @@ public class RhinoReceiveBinding : IReceiveBinding
       HostObjectBuilderResult conversionResults = await unitOfWork.Service
         .Execute(
           modelCard.AccountId.NotNull(), // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
+          new Uri(modelCard.ServerUrl.NotNull()),
           modelCard.ProjectId.NotNull(),
           modelCard.ProjectName.NotNull(),
           modelCard.ModelName.NotNull(),
