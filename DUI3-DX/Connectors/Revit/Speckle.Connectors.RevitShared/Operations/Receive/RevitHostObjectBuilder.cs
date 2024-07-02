@@ -5,6 +5,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Models;
 using Speckle.Converters.RevitShared.Helpers;
+using Autodesk.Revit.DB;
 
 namespace Speckle.Connectors.Revit.Operations.Receive;
 
@@ -12,7 +13,7 @@ namespace Speckle.Connectors.Revit.Operations.Receive;
 /// Potentially consolidate all application specific IHostObjectBuilders
 /// https://spockle.atlassian.net/browse/DUI3-465
 /// </summary>
-internal class RevitHostObjectBuilder : IHostObjectBuilder
+internal class RevitHostObjectBuilder : IHostObjectBuilder, IDisposable
 {
   private readonly IRootToHostConverter _converter;
   private readonly IRevitConversionContextStack _contextStack;
@@ -40,23 +41,20 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    try
-    {
-      var objectsToConvert = _traverseFunction
-        .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
-        .Where(obj => obj.Current is not Collection);
+    var objectsToConvert = _traverseFunction
+      .TraverseWithProgress(rootObject, onOperationProgressed, cancellationToken)
+      .Where(obj => obj.Current is not Collection);
 
-      _transactionManager.StartTransactionGroup($"Received data from {projectName}");
+    using TransactionGroup transactionGroup = new(_contextStack.Current.Document, $"Received data from {projectName}");
+    transactionGroup.Start();
+    _transactionManager.StartTransaction();
 
-      var conversionResults = BakeObjects(objectsToConvert);
+    var conversionResults = BakeObjects(objectsToConvert);
 
-      _transactionManager.CommitTransactionGroup();
-      return conversionResults;
-    }
-    finally
-    {
-      _transactionManager.Dispose();
-    }
+    _transactionManager.CommitTransaction();
+    transactionGroup.Assimilate();
+
+    return conversionResults;
   }
 
   // POC: Potentially refactor out into an IObjectBaker.
@@ -78,5 +76,10 @@ internal class RevitHostObjectBuilder : IHostObjectBuilder
     }
 
     return new(bakedObjectIds, conversionResults);
+  }
+
+  public void Dispose()
+  {
+    _transactionManager?.Dispose();
   }
 }

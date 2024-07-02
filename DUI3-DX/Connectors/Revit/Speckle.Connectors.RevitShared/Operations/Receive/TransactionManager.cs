@@ -19,48 +19,9 @@ public sealed class TransactionManager : ITransactionManager
 
   // poc : these are being disposed. I'm not sure why I need to supress this warning
 #pragma warning disable CA2213 // Disposable fields should be disposed
-  private TransactionGroup? _transactionGroup;
   private Transaction? _transaction;
   private SubTransaction? _subTransaction;
 #pragma warning restore CA2213 // Disposable fields should be disposed
-
-  public void StartTransactionGroup(string transactionName)
-  {
-    if (_transactionGroup == null)
-    {
-      _transactionGroup = new TransactionGroup(Document, transactionName);
-      _transactionGroup.Start();
-    }
-    StartTransaction();
-  }
-
-  public void CommitTransactionGroup()
-  {
-    try
-    {
-      CommitTransaction();
-    }
-    finally
-    {
-      if (_transactionGroup?.GetStatus() == TransactionStatus.Started)
-      {
-        _transactionGroup.Assimilate();
-      }
-    }
-  }
-
-  public void RollbackTransactionGroup()
-  {
-    RollbackTransaction();
-    if (
-      _transactionGroup != null
-      && _transactionGroup.IsValidObject
-      && _transactionGroup.GetStatus() == TransactionStatus.Started
-    )
-    {
-      _transactionGroup.Assimilate();
-    }
-  }
 
   public void StartTransaction()
   {
@@ -159,6 +120,5 @@ public sealed class TransactionManager : ITransactionManager
   {
     _subTransaction?.Dispose();
     _transaction?.Dispose();
-    _transactionGroup?.Dispose();
   }
 }
