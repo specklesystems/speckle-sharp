@@ -80,7 +80,6 @@ public class BranchDeleteInput
   public string id { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitCreateInput
 {
   public string streamId { get; set; }

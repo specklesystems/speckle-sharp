@@ -60,7 +60,7 @@ public class ProjectResourceExceptionalTests
   [Test]
   public void ProjectUpdate_NonExistentProject()
   {
-    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(
       async () => _ = await Sut.Update(new("NonExistentProject", "My new name"))
     );
   }
@@ -82,7 +82,7 @@ public class ProjectResourceExceptionalTests
   {
     ProjectUpdateRoleInput input = new(_secondUser.Account.id, "NonExistentProject", newRole);
 
-    Assert.ThrowsAsync<SpeckleGraphQLInternalErrorException>(async () => await Sut.UpdateRole(input));
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await Sut.UpdateRole(input));
   }
 
   [Test]
