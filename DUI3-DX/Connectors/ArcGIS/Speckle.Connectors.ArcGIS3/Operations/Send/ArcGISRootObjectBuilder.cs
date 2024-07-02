@@ -41,7 +41,7 @@ public class ArcGISRootObjectBuilder : IRootObjectBuilder<MapMember>
     CancellationToken ct = default
   )
   {
-    // set active CRS & offsets on Send
+    // set active CRS & offsets on Send, add offsets if we find a way to set them up
     double trueNorth = 0;
     double latOffset = 0;
     double lonOffset = 0;
