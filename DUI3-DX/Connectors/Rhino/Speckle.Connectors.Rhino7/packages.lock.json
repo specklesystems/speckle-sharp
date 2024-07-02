@@ -477,10 +477,17 @@
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
+      "speckle.converters.rhino7": {
+        "type": "Project",
+        "dependencies": {
+          "RhinoCommon": "[7.13.21348.13001, )",
+          "Speckle.Converters.Common": "[2.0.999-local, )"
+        }
+      },
       "speckle.converters.rhino7.dependencyinjection": {
         "type": "Project",
         "dependencies": {
-          "RhinoCommon": "[7.13.21348.13001, )"
+          "Speckle.Converters.Rhino7": "[2.0.999-local, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {

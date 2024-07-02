@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Core.Common;
 
 namespace Speckle.Converters.RevitShared;
 
@@ -45,8 +46,8 @@ public class ReferencePointConverter : IReferencePointConverter
     if (!_docTransforms.TryGetValue(id, out DB.Transform? transform))
     {
       // get from settings
-      var referencePointSetting = _revitSettings.TryGetSettingString("reference-point", out string value)
-        ? value
+      var referencePointSetting = _revitSettings.TryGetSettingString("reference-point", out string? value)
+        ? value.NotNull()
         : string.Empty;
       transform = GetReferencePointTransform(referencePointSetting);
       _docTransforms[id] = transform;
@@ -67,8 +68,8 @@ public class ReferencePointConverter : IReferencePointConverter
       .Cast<DB.BasePoint>()
       .ToList();
 
-    var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
-    var surveyPoint = points.FirstOrDefault(o => o.IsShared);
+    var projectPoint = points.FirstOrDefault(o => o.IsShared == false).NotNull();
+    var surveyPoint = points.FirstOrDefault(o => o.IsShared).NotNull();
 
     // POC: it's not clear what support is needed for this
     switch (referencePointSetting)

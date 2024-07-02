@@ -5,7 +5,7 @@ public class ContextWrapper<TDocument, THostUnit> : IDisposable
 {
   private IConversionContextStack<TDocument, THostUnit>? _stack;
 
-  public ConversionContext<TDocument>? Context { get; private set; }
+  public IConversionContext<TDocument>? Context { get; private set; }
 
   public ContextWrapper(IConversionContextStack<TDocument, THostUnit> stack)
   {

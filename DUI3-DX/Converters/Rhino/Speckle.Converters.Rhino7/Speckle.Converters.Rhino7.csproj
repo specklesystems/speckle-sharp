@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
     </PropertyGroup>
+
+  <Import Project="..\Speckle.Converters.RhinoShared\Speckle.Converters.RhinoShared.projitems" Label="Shared" />
   
   <ItemGroup>
     <PackageReference Include="RhinoCommon" VersionOverride="7.13.21348.13001"  IncludeAssets="compile;build"/>

@@ -22,7 +22,7 @@ public class PointCloudToSpeckleConverter : ITypedConverter<DB.PointCloudInstanc
 
   public SOG.Pointcloud Convert(DB.PointCloudInstance target)
   {
-    var boundingBox = target.get_BoundingBox(null);
+    var boundingBox = target.get_BoundingBox(null!);
     using DB.Transform transform = target.GetTransform();
     {
       var minPlane = DB.Plane.CreateByNormalAndOrigin(DB.XYZ.BasisZ, transform.OfPoint(boundingBox.Min));

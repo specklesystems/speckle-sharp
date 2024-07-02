@@ -23,7 +23,7 @@ public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<DB
   // POC: maybe just convert, it's not a Try method
   public string ConvertOrThrow(DB.ForgeTypeId hostUnit)
   {
-    if (_unitMapping.TryGetValue(hostUnit, out string value))
+    if (_unitMapping.TryGetValue(hostUnit, out string? value))
     {
       return value;
     }

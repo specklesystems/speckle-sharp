@@ -9,7 +9,7 @@ public class RevitConversionSettings
 {
   private Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
 
-  public bool TryGetSettingString(string key, out string value) => Settings.TryGetValue(key, out value);
+  public bool TryGetSettingString(string key, out string? value) => Settings.TryGetValue(key, out value);
 
   public string this[string key]
   {

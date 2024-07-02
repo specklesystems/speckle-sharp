@@ -25,7 +25,7 @@ public class RhinoToSpeckleUnitConverter : IHostToSpeckleUnitConverter<UnitSyste
 
   public string ConvertOrThrow(UnitSystem hostUnit)
   {
-    if (_unitMapping.TryGetValue(hostUnit, out string value))
+    if (_unitMapping.TryGetValue(hostUnit, out string? value))
     {
       return value;
     }

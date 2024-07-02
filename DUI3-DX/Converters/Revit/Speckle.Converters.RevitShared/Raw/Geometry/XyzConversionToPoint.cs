@@ -6,11 +6,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class XyzConversionToPoint : ITypedConverter<DB.XYZ, SOG.Point>
 {
-  private readonly ScalingServiceToSpeckle _toSpeckleScalingService;
+  private readonly IScalingServiceToSpeckle _toSpeckleScalingService;
   private readonly IRevitConversionContextStack _contextStack;
 
   public XyzConversionToPoint(
-    ScalingServiceToSpeckle toSpeckleScalingService,
+    IScalingServiceToSpeckle toSpeckleScalingService,
     IRevitConversionContextStack contextStack
   )
   {
