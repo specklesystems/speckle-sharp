@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf" IncludeAssets="compile"  NoWarn="NU1903"/>
+    <PackageReference Include="CefSharp.Wpf" IncludeAssets="compile" NoWarn="NU1903" />
     <PackageReference Include="Revit.Async" />
   </ItemGroup>
 
