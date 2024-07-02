@@ -66,9 +66,12 @@
       },
       "Speckle.Revit2023.Fakes": {
         "type": "Direct",
-        "requested": "[0.2.1-preview.4, )",
-        "resolved": "1.0.0",
-        "contentHash": "IJ1DWoH3KxTMLkPGYre2n5HSMTrjHqL6daI6wVkj3D8pTLRbV+i69Wh2cLz3+myNuPRlnhIGzk1t7TNq3DCP+w=="
+        "requested": "[0.2.1-preview.4, 1.0.0)",
+        "resolved": "0.2.1-preview.4",
+        "contentHash": "ZyPgvJ5BfC/lF+40bb24OSE8k5taszGU1fLs21dEI5GDsVRfPgeMIXFXDdpjjqtEZQbeteCWfkY3ef5OpHgW2g==",
+        "dependencies": {
+          "System.Drawing.Common": "8.0.6"
+        }
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -238,6 +241,11 @@
           "Microsoft.TestPlatform.ObjectModel": "17.10.0",
           "Newtonsoft.Json": "13.0.1"
         }
+      },
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
@@ -414,6 +422,14 @@
         "contentHash": "KRKEM/L3KBodjA9VOg3EifFVWUY6EOqaMB05UvPEDm7Zeby/kZW+4kdWUEPzW6xtkwf46p661L9NrbeeQhtLzw==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
+        }
+      },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.6",
+        "contentHash": "aSwRnJzz6fZ73JvWMMG0KvBwOnXsBTFtfHLriQyAPrDIZ+NrDfl15GWbO/A35k0dtH77D7jfxzEcFF7RONtU/w==",
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
         }
       },
       "System.Memory": {

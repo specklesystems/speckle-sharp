@@ -18,12 +18,6 @@
         "resolved": "1.14.1",
         "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
-      "RhinoCommon": {
-        "type": "Direct",
-        "requested": "[7.13.21348.13001, )",
-        "resolved": "7.13.21348.13001",
-        "contentHash": "JQdaNw61ddBqIe08E9O4N/grwrN1hjDHcYW7tWylwCZyFR7SepoCD4NS+6LN6+oSQhNbhLi9Bf+hQOFYFdRAEA=="
-      },
       "Speckle.InterfaceGenerator": {
         "type": "Direct",
         "requested": "[0.9.5, )",
@@ -390,6 +384,12 @@
           "System.Buffers": "4.5.1",
           "System.Memory": "4.5.5"
         }
+      },
+      "RhinoCommon": {
+        "type": "CentralTransitive",
+        "requested": "[7.13.21348.13001, )",
+        "resolved": "7.13.21348.13001",
+        "contentHash": "JQdaNw61ddBqIe08E9O4N/grwrN1hjDHcYW7tWylwCZyFR7SepoCD4NS+6LN6+oSQhNbhLi9Bf+hQOFYFdRAEA=="
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
