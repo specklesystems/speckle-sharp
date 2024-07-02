@@ -12,12 +12,13 @@ public class XyzConversionToPointTests
 {
   private MockRepository _repository;
 
-  private  Mock<IRevitConversionContextStack> _revitConversionContextStack;
-  private  Mock<IScalingServiceToSpeckle> _scalingServiceToSpeckle;
+  private Mock<IRevitConversionContextStack> _revitConversionContextStack;
+  private Mock<IScalingServiceToSpeckle> _scalingServiceToSpeckle;
 
   [SetUp]
   public void Setup()
-  {_repository = new(MockBehavior.Strict);
+  {
+    _repository = new(MockBehavior.Strict);
     _revitConversionContextStack = _repository.Create<IRevitConversionContextStack>();
     _scalingServiceToSpeckle = _repository.Create<IScalingServiceToSpeckle>();
   }
