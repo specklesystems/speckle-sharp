@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphQL;
 using Sentry;
+using Speckle.Core.Api;
 
 namespace Speckle.Core.Logging;
 
@@ -21,7 +22,7 @@ public class SpeckleException : Exception
   public SpeckleException(string? message, Exception? inner, bool log = true, SentryLevel level = SentryLevel.Info)
     : base(message, inner) { }
 
-  [Obsolete("Use any other constructor")]
+  [Obsolete($"Use {nameof(SpeckleGraphQLException)} instead", true)]
   public SpeckleException(string? message, GraphQLError[] errors, bool log = true, SentryLevel level = SentryLevel.Info)
     : base(message)
   {
@@ -32,7 +33,7 @@ public class SpeckleException : Exception
   public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info)
     : base(message) { }
 
-  [Obsolete("Use any other constructor", true)]
+  [Obsolete($"Use {nameof(SpeckleGraphQLException)} instead", true)]
   public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
   #endregion
 }

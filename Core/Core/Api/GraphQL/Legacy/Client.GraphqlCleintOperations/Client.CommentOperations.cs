@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
+using Speckle.Core.Api.GraphQL.Resources;
 
 namespace Speckle.Core.Api;
 
@@ -14,6 +16,8 @@ public partial class Client
   /// <param name="cursor">Time to filter the comments with</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="CommentResource.GetProjectComments"/>
+  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}")]
   public async Task<Comments> StreamGetComments(
     string streamId,
     int limit = 25,
@@ -78,6 +82,8 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the comment from</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="CommentResource.GetProjectComments"/>
+  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}")]
   public async Task<string> StreamGetCommentScreenshot(
     string id,
     string streamId,

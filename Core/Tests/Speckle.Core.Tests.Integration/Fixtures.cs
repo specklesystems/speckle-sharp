@@ -4,6 +4,7 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -23,7 +24,14 @@ public class SetUp
 
 public static class Fixtures
 {
-  private static readonly ServerInfo s_server = new() { url = "http://localhost:3000", name = "Docker Server" };
+  public static readonly ServerInfo Server = new() { url = "http://localhost:3000", name = "Docker Server" };
+
+  public static Client Unauthed => new Client(new Account { serverInfo = Server, userInfo = new UserInfo() });
+
+  public static async Task<Client> SeedUserWithClient()
+  {
+    return new Client(await SeedUser());
+  }
 
   public static async Task<Account> SeedUser()
   {
@@ -31,7 +39,7 @@ public static class Fixtures
     Dictionary<string, string> user =
       new()
       {
-        ["email"] = $"{seed.Substring(0, 7)}@acme.com",
+        ["email"] = $"{seed.Substring(0, 7)}@example.com",
         ["password"] = "12ABC3456789DEF0GHO",
         ["name"] = $"{seed.Substring(0, 5)} Name"
       };
@@ -40,7 +48,7 @@ public static class Fixtures
       new HttpClientHandler { AllowAutoRedirect = false, CheckCertificateRevocationList = true }
     );
 
-    httpClient.BaseAddress = new Uri(s_server.url);
+    httpClient.BaseAddress = new Uri(Server.url);
 
     string redirectUrl;
     try
@@ -54,7 +62,7 @@ public static class Fixtures
     }
     catch (Exception e)
     {
-      throw new Exception($"Cannot seed user on the server {s_server.url}", e);
+      throw new Exception($"Cannot seed user on the server {Server.url}", e);
     }
 
     Uri uri = new(redirectUrl);
@@ -87,12 +95,12 @@ public static class Fixtures
         email = user["email"],
         name = user["name"]
       },
-      serverInfo = s_server
+      serverInfo = Server
     };
     using var client = new Client(acc);
 
     var user1 = await client.ActiveUserGet();
-    acc.userInfo.id = user1.id;
+    acc.userInfo = user1;
     return acc;
   }
 

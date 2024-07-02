@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace Speckle.Core.Api.SubscriptionModels;
 
 #region streams
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamInfo
 {
   public string id { get; set; }
@@ -13,16 +14,19 @@ public class StreamInfo
   public string sharedBy { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class UserStreamAddedResult
 {
   public StreamInfo userStreamAdded { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class StreamUpdatedResult
 {
   public StreamInfo streamUpdated { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class UserStreamRemovedResult
 {
   public StreamInfo userStreamRemoved { get; set; }
@@ -31,6 +35,7 @@ public class UserStreamRemovedResult
 
 #region branches
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchInfo
 {
   public string id { get; set; }
@@ -40,16 +45,19 @@ public class BranchInfo
   public string authorId { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchCreatedResult
 {
   public BranchInfo branchCreated { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchUpdatedResult
 {
   public BranchInfo branchUpdated { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class BranchDeletedResult
 {
   public BranchInfo branchDeleted { get; set; }
@@ -58,6 +66,7 @@ public class BranchDeletedResult
 
 #region commits
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitInfo
 {
   public string id { get; set; }
@@ -74,16 +83,19 @@ public class CommitInfo
   public IList<string> previousCommitIds { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitCreatedResult
 {
   public CommitInfo commitCreated { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitUpdatedResult
 {
   public CommitInfo commitUpdated { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommitDeletedResult
 {
   public CommitInfo commitDeleted { get; set; }

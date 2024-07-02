@@ -46,6 +46,7 @@ public class ServerTransportTests : IDisposable
 
   private void CleanData()
   {
+    _transport?.Dispose();
     if (Directory.Exists(_basePath))
     {
       Directory.Delete(_basePath, true);
@@ -73,7 +74,7 @@ public class ServerTransportTests : IDisposable
     // NOTE: used to debug diffing
     // await Operations.Send(myObject, new List<ITransport> { transport });
 
-    var receivedObject = await Operations.Receive(sentObjectId, _transport);
+    var receivedObject = await Operations.Receive(sentObjectId, _transport, new MemoryTransport());
 
     var allFiles = Directory
       .GetFiles(_transport.BlobStorageFolder)
@@ -104,7 +105,7 @@ public class ServerTransportTests : IDisposable
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations.Send(myObject, new List<ITransport> { _transport, memTransport });
 
-    var receivedObject = await Operations.Receive(sentObjectId, _transport);
+    var receivedObject = await Operations.Receive(sentObjectId, _transport, new MemoryTransport());
 
     var allFiles = Directory
       .GetFiles(_transport.BlobStorageFolder)

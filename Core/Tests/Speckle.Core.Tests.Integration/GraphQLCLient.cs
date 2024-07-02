@@ -19,7 +19,7 @@ public class GraphQLClientTests : IDisposable
   [Test]
   public void ThrowsForbiddenException()
   {
-    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException<Dictionary<string, object>>>(
+    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(
       async () =>
         await _client.ExecuteGraphQLRequest<Dictionary<string, object>>(
           new GraphQLRequest

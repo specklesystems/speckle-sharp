@@ -1,12 +1,13 @@
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
 using Speckle.Core.Transports;
 
-namespace Speckle.Core.Tests.Integration;
+namespace Speckle.Core.Tests.Integration.Api;
 
-public class Api : IDisposable
+public class Legacy : IDisposable
 {
   private string _branchId = "";
   private string _branchName = "";
@@ -177,7 +178,7 @@ public class Api : IDisposable
     var res = await _myClient.StreamUpdatePermission(
       new StreamPermissionInput
       {
-        role = "stream:reviewer",
+        role = StreamRoles.STREAM_REVIEWER,
         streamId = _streamId,
         userId = _secondUserAccount.userInfo.id
       }
