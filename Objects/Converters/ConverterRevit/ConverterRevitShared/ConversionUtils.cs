@@ -390,39 +390,46 @@ public partial class ConverterRevit
 #else
     ForgeTypeId unitTypeId = null;
 #endif
+    ParameterToSpeckleData paramData;
+
+    // Local function to create ParameterToSpeckleData
+    ParameterToSpeckleData CreateParamData()
+    {
+      var definition = rp.Definition;
+      var newParamData = new ParameterToSpeckleData()
+      {
+        Definition = definition,
+        InternalName = paramInternalName,
+        IsReadOnly = rp.IsReadOnly,
+        IsShared = rp.IsShared,
+        IsTypeParameter = isTypeParameter,
+        Name = definition.Name,
+        UnitType = definition.GetUnityTypeString(),
+      };
+      if (rp.StorageType == StorageType.Double)
+      {
+        unitTypeId = rp.GetUnitTypeId();
+        newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
+        newParamData.ApplicationUnits =
+          unitsOverride != null ? UnitsToNative(unitsOverride).ToUniqueString() : unitTypeId.ToUniqueString();
+      }
+      return newParamData;
+    }
 
     // The parameter definitions are cached using the ParameterToSpeckleData struct
     // This is done because in the case of type and instance parameter there is lots of redundant data that needs to be extracted from the Revit DB
     // Caching noticeably speeds up the send process
     // TODO : could add some generic getOrAdd overloads to avoid creating closures
-    var paramData = revitDocumentAggregateCache
-      .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
-      .GetOrAdd(
-        paramInternalName,
-        () =>
-        {
-          var definition = rp.Definition;
-          var newParamData = new ParameterToSpeckleData()
-          {
-            Definition = definition,
-            InternalName = paramInternalName,
-            IsReadOnly = rp.IsReadOnly,
-            IsShared = rp.IsShared,
-            IsTypeParameter = isTypeParameter,
-            Name = definition.Name,
-            UnitType = definition.GetUnityTypeString(),
-          };
-          if (rp.StorageType == StorageType.Double)
-          {
-            unitTypeId = rp.GetUnitTypeId();
-            newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
-            newParamData.ApplicationUnits =
-              unitsOverride != null ? UnitsToNative(unitsOverride).ToUniqueString() : unitTypeId.ToUniqueString();
-          }
-          return newParamData;
-        },
-        out _
-      );
+    if (revitDocumentAggregateCache is null)
+    {
+      paramData = CreateParamData();
+    }
+    else
+    {
+      paramData = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
+        .GetOrAdd(paramInternalName, CreateParamData, out _);
+    }
 
     return paramData.GetParameterObjectWithValue(rp.GetValue(paramData.Definition, unitTypeId));
   }
@@ -450,9 +457,16 @@ public partial class ConverterRevit
       return null;
     }
 
-    return revitDocumentAggregateCache
-      .GetOrInitializeEmptyCacheOfType<string>(out _)
-      .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeId.GetSymbol(), out _);
+    if (revitDocumentAggregateCache is null)
+    {
+      return unitTypeId.GetSymbol();
+    }
+    else
+    {
+      return revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<string>(out _)
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeId.GetSymbol(), out _);
+    }
   }
 
   /// <summary>
