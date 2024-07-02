@@ -12,13 +12,13 @@
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
   </ItemGroup>
-  <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
+  <Import Project="..\Speckle.Converters.RhinoShared\Speckle.Converters.RhinoShared.projitems" Label="Shared" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="0.2.1-preview.4" />
+    <PackageReference Include="Speckle.Rhino7.Fakes" VersionOverride="0.2.1-preview.4" />
   </ItemGroup>
 </Project>
