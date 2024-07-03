@@ -3191,6 +3191,7 @@ Global
 		ConnectorBentley\ConnectorBentleyShared\ConnectorBentleyShared.projitems*{a3a0ee09-6055-4009-ab8e-13fbc1a403a9}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{a517a609-cab1-4b33-b83c-1b13b34e4560}*SharedItemsImports = 13
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
+		DUI3-DX\Converters\Autocad\Speckle.Converters.AutocadShared\Speckle.Converters.AutocadShared.projitems*{a6baa749-0dbe-49a9-9a9d-fca0f06ee096}*SharedItemsImports = 5
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{a8607330-1b23-43cc-8b9b-25818d9c1d64}*SharedItemsImports = 5
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{aaa05c3d-856d-4f22-971e-5e3f066d0eae}*SharedItemsImports = 5
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{aaa05c3d-856d-4f22-971e-5e3f066d0eae}*SharedItemsImports = 5
@@ -3209,6 +3210,7 @@ Global
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{c21a6553-b4ec-4ec3-b82a-c7a83cffb809}*SharedItemsImports = 5
 		ConnectorRevit\RevitSharedResources\RevitSharedResources.projitems*{c2ba8b6b-72bd-4dab-865f-90c66083bdb2}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{c3232ef3-2000-44c6-a330-b94531c9cc83}*SharedItemsImports = 13
+		DUI3-DX\Converters\Autocad\Speckle.Converters.AutocadShared\Speckle.Converters.AutocadShared.projitems*{c9f084af-fb70-4f5f-aceb-db6818bbecaf}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{cafd4eac-75a8-4fc8-94e5-91cadc39f5b3}*SharedItemsImports = 5
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{cc790553-8088-41a9-83cd-b29f7141f408}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{cd334556-ba2b-4272-a1eb-628e8152204a}*SharedItemsImports = 5

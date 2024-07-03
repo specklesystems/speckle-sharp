@@ -4,14 +4,14 @@
         <TargetFramework>net48</TargetFramework>
         <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
-      <ProjectReference Include="..\Speckle.Converters.Autocad2023\Speckle.Converters.Autocad2023.csproj" />
-    </ItemGroup>
   
     <ItemGroup>
         <PackageReference Include="Autofac" />
+    </ItemGroup>
+  
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
+      <ProjectReference Include="..\Speckle.Converters.Autocad2023\Speckle.Converters.Autocad2023.csproj" />
     </ItemGroup>
 
 </Project>

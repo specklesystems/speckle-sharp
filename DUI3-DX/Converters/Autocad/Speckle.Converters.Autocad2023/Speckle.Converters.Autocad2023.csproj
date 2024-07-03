@@ -13,6 +13,6 @@
     <ProjectReference Include="..\..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\Speckle.Converters.AutocadShared\Speckle.Converters.AutocadShared.projitems" Label="Shared" />
+  <Import Project="..\Speckle.Converters.AutocadShared\Speckle.Converters.AutocadShared.projitems" Label="Shared" />
 
 </Project>

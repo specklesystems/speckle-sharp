@@ -28,6 +28,12 @@
         "resolved": "1.14.1",
         "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
+      "Speckle.AutoCAD.API": {
+        "type": "Direct",
+        "requested": "[2024.0.0, )",
+        "resolved": "2024.0.0",
+        "contentHash": "pZZ5uI+NXhZaQnsqRkgp/rywqBAjDObDJ9XNFGJvemT5k2OthDpHzlK/mKxz8QDCYie7uImQ8dv3uWj2QUFDPw=="
+      },
       "Speckle.Civil3D.API": {
         "type": "Direct",
         "requested": "[2024.0.0, )",
@@ -458,21 +464,6 @@
           "Speckle.Core": "[3.0.1-alpha.14, )"
         }
       },
-      "speckle.converters.autocad2024": {
-        "type": "Project",
-        "dependencies": {
-          "Speckle.AutoCAD.API": "[2024.0.0, )",
-          "Speckle.Converters.Common": "[2.0.999-local, )"
-        }
-      },
-      "speckle.converters.autocad2024.dependencyinjection": {
-        "type": "Project",
-        "dependencies": {
-          "Autofac": "[5.2.0, )",
-          "Speckle.Converters.Autocad2024": "[2.0.999-local, )",
-          "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
-        }
-      },
       "speckle.converters.civil3d2024": {
         "type": "Project",
         "dependencies": {
@@ -527,12 +518,6 @@
           "Microsoft.Extensions.Logging": "7.0.0",
           "Serilog": "2.12.0"
         }
-      },
-      "Speckle.AutoCAD.API": {
-        "type": "CentralTransitive",
-        "requested": "[2024.0.0, )",
-        "resolved": "2024.0.0",
-        "contentHash": "pZZ5uI+NXhZaQnsqRkgp/rywqBAjDObDJ9XNFGJvemT5k2OthDpHzlK/mKxz8QDCYie7uImQ8dv3uWj2QUFDPw=="
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
