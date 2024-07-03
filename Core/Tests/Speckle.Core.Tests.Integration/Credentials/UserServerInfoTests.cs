@@ -1,5 +1,4 @@
 ﻿using GraphQL.Client.Http;
-using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 
