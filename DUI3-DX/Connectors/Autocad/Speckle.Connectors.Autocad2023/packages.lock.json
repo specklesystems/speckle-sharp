@@ -458,7 +458,6 @@
       "speckle.converters.autocad2023": {
         "type": "Project",
         "dependencies": {
-          "C:\\Users\\Claire\\GitHub\\speckle-sharp\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj": "[1.0.0, )",
           "Speckle.AutoCAD.API": "[2023.0.0, )"
         }
       },

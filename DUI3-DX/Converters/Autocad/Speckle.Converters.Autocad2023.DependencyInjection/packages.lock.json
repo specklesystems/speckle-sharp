@@ -366,8 +366,7 @@
       "speckle.converters.autocad2023": {
         "type": "Project",
         "dependencies": {
-          "Speckle.AutoCAD.API": "[2023.0.0, )",
-          "Speckle.Converters.Common": "[2.0.999-local, )"
+          "Speckle.AutoCAD.API": "[2023.0.0, )"
         }
       },
       "speckle.converters.common": {
