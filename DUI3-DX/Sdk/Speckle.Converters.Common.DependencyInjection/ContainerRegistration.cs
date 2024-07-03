@@ -35,6 +35,6 @@ public static class ContainerRegistration
     where THostToSpeckleUnitConverter : class, IHostToSpeckleUnitConverter<THostUnits>
   {
     builder.AddScoped<IHostToSpeckleUnitConverter<THostUnits>, THostToSpeckleUnitConverter>();
-    builder.RegisterRawConverters();
+    builder.RegisterRawConversions();
   }
 }
