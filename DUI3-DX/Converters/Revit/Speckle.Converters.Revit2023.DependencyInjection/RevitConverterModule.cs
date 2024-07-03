@@ -13,7 +13,12 @@ public class RevitConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon<RevitRootToSpeckleConverter, RevitToSpeckleUnitConverter, ForgeTypeId>();
+    // Register single root
+    builder.AddRootCommon<RevitRootToSpeckleConverter>();
+
+    // register all application converters
+    builder.AddApplicationConverters<RevitToSpeckleUnitConverter, ForgeTypeId>();
+
     builder.AddScoped<IRootToHostConverter, RevitRootToHostConverter>();
     builder.AddSingleton(new RevitContext());
 
