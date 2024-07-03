@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -15,10 +15,11 @@
   <Import Project="..\Speckle.Converters.RhinoShared\Speckle.Converters.RhinoShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" /> 
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Testing\Speckle.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Rhino7.Fakes" VersionOverride="0.2.1-preview.4" />
+    <PackageReference Include="Speckle.Rhino7.Fakes" VersionOverride="0.2.1-preview.5" />
   </ItemGroup>
 </Project>

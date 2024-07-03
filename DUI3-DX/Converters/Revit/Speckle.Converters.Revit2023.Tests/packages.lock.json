@@ -66,9 +66,9 @@
       },
       "Speckle.Revit2023.Fakes": {
         "type": "Direct",
-        "requested": "[0.2.1-preview.4, 1.0.0)",
-        "resolved": "0.2.1-preview.4",
-        "contentHash": "ZyPgvJ5BfC/lF+40bb24OSE8k5taszGU1fLs21dEI5GDsVRfPgeMIXFXDdpjjqtEZQbeteCWfkY3ef5OpHgW2g==",
+        "requested": "[0.2.1-preview.5, 1.0.0)",
+        "resolved": "0.2.1-preview.5",
+        "contentHash": "J5IWMCdG+ENVlxFrGc6blG2skWU0f9RXyjsNVGTokmAgELXDKJjggkQhBsU+9hVJPjpyGM38uNgJ1NKWEaur2w==",
         "dependencies": {
           "System.Drawing.Common": "8.0.6"
         }
@@ -478,6 +478,13 @@
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
           "Speckle.Objects": "[3.0.1-alpha.14, )"
+        }
+      },
+      "speckle.testing": {
+        "type": "Project",
+        "dependencies": {
+          "Moq": "[4.20.70, )",
+          "NUnit": "[4.1.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {

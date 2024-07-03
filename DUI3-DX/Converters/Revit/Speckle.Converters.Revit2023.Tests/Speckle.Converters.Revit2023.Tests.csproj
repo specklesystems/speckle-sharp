@@ -16,9 +16,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Testing\Speckle.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="[0.2.1-preview.4, 1.0.0)" />
+    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="[0.2.1-preview.5, 1.0.0)" />
   </ItemGroup>
 </Project>
