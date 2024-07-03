@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2024.0.0" />
-    <PackageReference Include="Speckle.Civil3D.API" Version="2024.0.0" />
+    <PackageReference Include="Speckle.AutoCAD.API" />
+    <PackageReference Include="Speckle.Civil3D.API" />
   </ItemGroup>
 
   <ItemGroup>

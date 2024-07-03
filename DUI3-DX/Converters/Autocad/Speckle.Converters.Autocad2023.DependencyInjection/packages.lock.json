@@ -396,7 +396,7 @@
       },
       "Speckle.AutoCAD.API": {
         "type": "CentralTransitive",
-        "requested": "[2023.0.0, )",
+        "requested": "[2024.0.0, )",
         "resolved": "2023.0.0",
         "contentHash": "aNfiNw9zRW8pCl8AAQK7afEJuea4bJ4sFNsGVSDrdq1egaonZrwALU01dSyFNCE8tne86eVjlprpOGG6r0+G/A=="
       },

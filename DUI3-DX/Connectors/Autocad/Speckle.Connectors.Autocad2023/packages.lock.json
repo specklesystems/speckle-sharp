@@ -455,18 +455,10 @@
           "Speckle.Core": "[3.0.1-alpha.14, )"
         }
       },
-      "speckle.converters.autocad2023": {
-        "type": "Project",
-        "dependencies": {
-          "Speckle.AutoCAD.API": "[2023.0.0, )",
-          "Speckle.Converters.Common": "[2.0.999-local, )"
-        }
-      },
       "speckle.converters.autocad2023.dependencyinjection": {
         "type": "Project",
         "dependencies": {
           "Autofac": "[5.2.0, )",
-          "Speckle.Converters.Autocad2023": "[2.0.999-local, )",
           "Speckle.Converters.Common.DependencyInjection": "[2.0.999-local, )"
         }
       },
