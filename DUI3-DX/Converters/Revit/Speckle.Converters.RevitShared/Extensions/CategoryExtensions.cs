@@ -1,10 +1,10 @@
-﻿using Speckle.Revit.Interfaces;
+using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Extensions;
 
 public static class CategoryExtensions
 {
-  public static SOBR.RevitCategory GetSchemaBuilderCategoryFromBuiltIn(this RevitBuiltInCategory builtInCategory)
+  public static SOBR.RevitCategory GetSchemaBuilderCategoryFromBuiltIn(this DB.BuiltInCategory builtInCategory)
   {
     // Clean up built-in name "OST_Walls" to be just "WALLS"
     var cleanName = builtInCategory
@@ -23,9 +23,9 @@ public static class CategoryExtensions
     return cat;
   }
 
-  public static RevitBuiltInCategory GetBuiltInCategory(this IRevitCategory category)
+  public static BuiltInCategory GetBuiltInCategory(this Category category)
   {
-    return (RevitBuiltInCategory)category.Id.IntegerValue;
+    return (BuiltInCategory)category.Id.IntegerValue;
   }
 
   public static string GetBuiltInFromSchemaBuilderCategory(this SOBR.RevitCategory c)

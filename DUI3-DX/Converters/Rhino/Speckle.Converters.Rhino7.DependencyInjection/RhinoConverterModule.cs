@@ -1,7 +1,7 @@
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Rhino;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.DependencyInjection;
 
@@ -9,9 +9,11 @@ public class RhinoConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon<RootToSpeckleConverter, RhinoToSpeckleUnitConverter, RhinoUnitSystem>();
-    // single stack per conversion
-    builder.AddScoped<IConversionContextStack<IRhinoDoc, RhinoUnitSystem>, RhinoConversionContextStack>();
-    builder.AddScoped<IRootElementProvider, RhinoRootElementProvider>();
+    // Register single root
+    builder.AddRootCommon<RootToSpeckleConverter>();
+
+    // register all application converters and context stacks
+    builder.AddApplicationConverters<RhinoToSpeckleUnitConverter, UnitSystem>();
+    builder.AddScoped<IConversionContextStack<RhinoDoc, UnitSystem>, RhinoConversionContextStack>();
   }
 }

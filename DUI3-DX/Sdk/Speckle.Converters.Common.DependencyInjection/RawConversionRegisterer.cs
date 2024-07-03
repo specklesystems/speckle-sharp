@@ -6,9 +6,9 @@ namespace Speckle.Converters.Common.DependencyInjection;
 
 // POC: review and see if it can be made more generic, related to the
 // NameAndRankAttribute work that needs doing
-public static class ConverterRegistration
+public static class RawConversionRegisterer
 {
-  public static void RegisterRawConverters(this SpeckleContainerBuilder containerBuilder)
+  public static void RegisterRawConversions(this SpeckleContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/
     foreach (Type speckleType in containerBuilder.SpeckleTypes)

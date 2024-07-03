@@ -1,34 +1,37 @@
 {
-  "version": 1,
+  "version": 2,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
       "Autofac": {
         "type": "Direct",
-        "requested": "(, )",
-        "resolved": "2.2.4.900",
-        "contentHash": "erfIUmId+CQ/QmWTXeHPjILb62aNeuX9Hsp6T3IUtdDPG+PxkWHH6J9MxHlGrexUlS6lQ4iP+WuaVoI06HWE5g=="
+        "requested": "[5.2.0, )",
+        "resolved": "5.2.0",
+        "contentHash": "V8dBH0dsv75uDzl7Sw+HkhKDPUw2eXnlMjcSVMH+tLo2s67MpTKGyDj1pDcpR+IF2u4YRs0s3/x7R88YJzIWvg==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "1.1.0"
+        }
       },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
-        "requested": "(, )",
-        "resolved": "1.0.0",
-        "contentHash": "aZyGyGg2nFSxix+xMkPmlmZSsnGQ3w+mIG23LTxJZHN+GPwTQ5FpPgDo7RMOq+Kcf5D4hFWfXkGhoGstawX13Q==",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
         "dependencies": {
-          "Microsoft.Build.Tasks.Git": "1.0.0",
-          "Microsoft.SourceLink.Common": "1.0.0"
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
         }
       },
       "PolySharp": {
         "type": "Direct",
-        "requested": "(, )",
-        "resolved": "1.0.0",
-        "contentHash": "LPQg9B6gQYSomX/Z1CQLHVti+uC6PcesF71/FqCg9NcvcS94u/bu5WzpJQoAlJSDA+RfNoMTqq/ebPr7YA81vg=="
+        "requested": "[1.14.1, )",
+        "resolved": "1.14.1",
+        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
       "Speckle.InterfaceGenerator": {
         "type": "Direct",
-        "requested": "(, )",
-        "resolved": "0.9.0",
-        "contentHash": "cS4l87S547F2ghdDK+rtI/9GpkY0PqJjafz7kM2CXBZhSORu6A7vjSlx0llP73x2rCVlxeke7XcQwE8TubW3SA=="
+        "requested": "[0.9.5, )",
+        "resolved": "0.9.5",
+        "contentHash": "oU/L7pN1R7q8KkbrpQ3WJnHirPHqn+9DEA7asOcUiggV5dzVg1A/VYs7GOSusD24njxXh03tE3a2oTLOjt3cVg=="
       },
       "GraphQL.Client": {
         "type": "Transitive",
@@ -72,8 +75,8 @@
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "z2fpmmt+1Jfl+ZnBki9nSP08S1/tbEOxFdsK1rSR+LBehIJz1Xv9/6qOOoGNqlwnAGGVGis1Oj6S8Kt9COEYlQ=="
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -97,19 +100,10 @@
           "SQLitePCLRaw.core": "2.1.4"
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw==",
-        "dependencies": {
-          "System.Buffers": "4.5.1",
-          "System.Memory": "4.5.5"
-        }
-      },
       "Microsoft.SourceLink.Common": {
         "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "G8DuQY8/DK5NN+3jm5wcMcd9QYD90UV7MiLmdljSJixi3U/vNaeBKmmXUqI4DJCOeWizIUEh4ALhSt58mR+5eg=="
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "Polly": {
         "type": "Transitive",
@@ -219,11 +213,6 @@
         "dependencies": {
           "Serilog": "2.10.0"
         }
-      },
-      "Speckle.AutoCAD.API": {
-        "type": "Transitive",
-        "resolved": "2021.0.0.3",
-        "contentHash": "hTTxz6NTgaa682WDpZBQQ+svjxlRC959TH3XZuOWh4fyqvpGa7mzDM7L0UiCjwoXLZrolGN49uM2vhv8D99AnA=="
       },
       "Speckle.Newtonsoft.Json": {
         "type": "Transitive",
@@ -371,14 +360,13 @@
       "speckle.autofac": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )",
-          "Speckle.Core": "[2.0.999-local, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[7.0.0, )"
         }
       },
       "speckle.converters.autocad2023": {
         "type": "Project",
         "dependencies": {
-          "Speckle.AutoCAD.API": "(, )",
+          "Speckle.AutoCAD.API": "[2023.0.0, )",
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
@@ -386,7 +374,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[2.0.999-local, )"
+          "Speckle.Objects": "[3.0.1-alpha.14, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
@@ -396,31 +384,53 @@
           "Speckle.Converters.Common": "[2.0.999-local, )"
         }
       },
-      "Speckle.Core": {
-        "type": "Project",
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw==",
         "dependencies": {
-          "GraphQL.Client": "[6.0.0, )",
-          "Microsoft.CSharp": "[4.7.0, )",
-          "Microsoft.Data.Sqlite": "[7.0.5, )",
-          "Polly": "[7.2.3, )",
-          "Polly.Contrib.WaitAndRetry": "[1.1.1, )",
-          "Polly.Extensions.Http": "[3.0.0, )",
-          "Sentry": "[3.33.0, )",
-          "Sentry.Serilog": "[3.33.0, )",
-          "Serilog": "[2.12.0, )",
-          "Serilog.Enrichers.ClientInfo": "[1.3.0, )",
-          "Serilog.Exceptions": "[8.4.0, )",
-          "Serilog.Sinks.Console": "[4.1.0, )",
-          "Serilog.Sinks.Seq": "[5.2.2, )",
-          "SerilogTimings": "[3.0.1, )",
-          "Speckle.Newtonsoft.Json": "[13.0.2, )",
-          "System.DoubleNumerics": "[3.1.3, )"
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5"
+        }
+      },
+      "Speckle.AutoCAD.API": {
+        "type": "CentralTransitive",
+        "requested": "[2023.0.0, )",
+        "resolved": "2023.0.0",
+        "contentHash": "aNfiNw9zRW8pCl8AAQK7afEJuea4bJ4sFNsGVSDrdq1egaonZrwALU01dSyFNCE8tne86eVjlprpOGG6r0+G/A=="
+      },
+      "Speckle.Core": {
+        "type": "CentralTransitive",
+        "requested": "[3.0.1-alpha.14, )",
+        "resolved": "3.0.1-alpha.14",
+        "contentHash": "RzQPVIGFFkKvG56YLr8ACtiwdWJE6IJ9vCQ4qHa0PIsUEpfzAIAi59jnzqtByOFC0FiFrFPow9bkfzylaZorAA==",
+        "dependencies": {
+          "GraphQL.Client": "6.0.0",
+          "Microsoft.CSharp": "4.7.0",
+          "Microsoft.Data.Sqlite": "7.0.5",
+          "Polly": "7.2.3",
+          "Polly.Contrib.WaitAndRetry": "1.1.1",
+          "Polly.Extensions.Http": "3.0.0",
+          "Sentry": "3.33.0",
+          "Sentry.Serilog": "3.33.0",
+          "Serilog": "2.12.0",
+          "Serilog.Enrichers.ClientInfo": "1.3.0",
+          "Serilog.Exceptions": "8.4.0",
+          "Serilog.Sinks.Console": "4.1.0",
+          "Serilog.Sinks.Seq": "5.2.2",
+          "SerilogTimings": "3.0.1",
+          "Speckle.Newtonsoft.Json": "13.0.2",
+          "System.DoubleNumerics": "3.1.3"
         }
       },
       "Speckle.Objects": {
-        "type": "Project",
+        "type": "CentralTransitive",
+        "requested": "[3.0.1-alpha.14, )",
+        "resolved": "3.0.1-alpha.14",
+        "contentHash": "z38LGryMvh7iU1uBW+4uo5DwsB3CwRgLt2uFexWFx3mPSid+A0l5XcJzOgLwgFhNl6B42Ryz4ezBsddTp1Uc/g==",
         "dependencies": {
-          "Speckle.Core": "[2.0.999-local, )"
+          "Speckle.Core": "3.0.1-alpha.14"
         }
       }
     }

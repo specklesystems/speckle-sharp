@@ -1,30 +1,28 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Rhino.Geometry.Collections;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Rhino7.Interfaces;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class NurbsSurfaceToSpeckleConverter : ITypedConverter<IRhinoNurbsSurface, SOG.Surface>
+public class NurbsSurfaceToSpeckleConverter : ITypedConverter<RG.NurbsSurface, SOG.Surface>
 {
-  private readonly ITypedConverter<IRhinoBox, SOG.Box> _boxConverter;
-  private readonly ITypedConverter<IRhinoInterval, SOP.Interval> _intervalConverter;
-  private readonly ITypedConverter<IRhinoControlPoint, SOG.ControlPoint> _controlPointConverter;
-  private readonly IConversionContextStack<IRhinoDoc, RhinoUnitSystem> _contextStack;
-  private readonly IRhinoBoxFactory _rhinoBoxFactory;
+  private readonly ITypedConverter<RG.Box, SOG.Box> _boxConverter;
+  private readonly ITypedConverter<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly ITypedConverter<RG.ControlPoint, SOG.ControlPoint> _controlPointConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsSurfaceToSpeckleConverter(
-    ITypedConverter<IRhinoBox, SOG.Box> boxConverter,
-    ITypedConverter<IRhinoInterval, SOP.Interval> intervalConverter,
-    ITypedConverter<IRhinoControlPoint, SOG.ControlPoint> controlPointConverter,
-    IConversionContextStack<IRhinoDoc, RhinoUnitSystem> contextStack,
-    IRhinoBoxFactory rhinoBoxFactory
+    ITypedConverter<RG.Box, SOG.Box> boxConverter,
+    ITypedConverter<RG.Interval, SOP.Interval> intervalConverter,
+    ITypedConverter<RG.ControlPoint, SOG.ControlPoint> controlPointConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _boxConverter = boxConverter;
     _intervalConverter = intervalConverter;
     _controlPointConverter = controlPointConverter;
     _contextStack = contextStack;
-    _rhinoBoxFactory = rhinoBoxFactory;
   }
 
   /// <summary>
@@ -32,7 +30,7 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<IRhinoNurbsSurface
   /// </summary>
   /// <param name="target">The NurbsSurface object to convert.</param>
   /// <returns>A Surface object representing the converted NurbsSurface.</returns>
-  public SOG.Surface Convert(IRhinoNurbsSurface target)
+  public SOG.Surface Convert(RG.NurbsSurface target)
   {
     var result = new SOG.Surface
     {
@@ -46,7 +44,7 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<IRhinoNurbsSurface
       knotsU = target.KnotsU.ToList(),
       knotsV = target.KnotsV.ToList(),
       units = _contextStack.Current.SpeckleUnits,
-      bbox = _boxConverter.Convert(_rhinoBoxFactory.CreateBox(target.GetBoundingBox(true)))
+      bbox = _boxConverter.Convert(new RG.Box(target.GetBoundingBox(true)))
     };
 
     result.SetControlPoints(ControlPointsToSpeckle(target.Points));
@@ -54,7 +52,7 @@ public class NurbsSurfaceToSpeckleConverter : ITypedConverter<IRhinoNurbsSurface
     return result;
   }
 
-  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(IRhinoNurbsSurfacePointList controlPoints)
+  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(NurbsSurfacePointList controlPoints)
   {
     var points = new List<List<SOG.ControlPoint>>();
     for (var i = 0; i < controlPoints.CountU; i++)

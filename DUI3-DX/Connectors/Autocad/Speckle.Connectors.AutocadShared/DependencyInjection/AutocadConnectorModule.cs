@@ -1,13 +1,23 @@
 #if AUTOCAD
+using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.Bindings;
 using Speckle.Connectors.Autocad.Filters;
+using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Autocad.Operations.Receive;
 using Speckle.Connectors.Autocad.Operations.Send;
+using Speckle.Connectors.Autocad.Plugin;
+using Speckle.Connectors.DUI;
 using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
+using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Connectors.Utils.Instances;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -18,6 +28,9 @@ public class AutocadConnectorModule : ISpeckleModule
   public void Load(SpeckleContainerBuilder builder)
   {
     SharedRegistration.Load(builder);
+
+
+    builder.AddScoped<AutocadLayerManager>();
 
     // Operations
     builder.AddScoped<SendOperation<AutocadRootObject>>();
@@ -37,6 +50,7 @@ public class AutocadConnectorModule : ISpeckleModule
 
     // register send conversion cache
     builder.AddSingleton<ISendConversionCache, SendConversionCache>();
+    builder.AddScoped<IInstanceObjectsManager<AutocadRootObject, List<Entity>>, AutocadInstanceObjectManager>();
   }
 }
 #endif

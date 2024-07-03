@@ -1,9 +1,14 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.LayerManager;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 
+/// <summary>
+/// Expects to be a scoped dependency for a given operation and helps with layer creation and cleanup.
+/// </summary>
 public class AutocadLayerManager
 {
   private readonly AutocadContext _autocadContext;
@@ -11,6 +16,7 @@ public class AutocadLayerManager
 
   // POC: Will be addressed to move it into AutocadContext!
   private Document Doc => Application.DocumentManager.MdiActiveDocument;
+  private readonly HashSet<string> _uniqueLayerNames = new();
 
   public AutocadLayerManager(AutocadContext autocadContext)
   {
@@ -18,31 +24,22 @@ public class AutocadLayerManager
   }
 
   /// <summary>
-  /// Constructs layer name with prefix and valid characters.
-  /// </summary>
-  /// <param name="baseLayerPrefix"> Prefix to add layer name.</param>
-  /// <param name="path"> list of entries to concat with hyphen.</param>
-  /// <returns>Full layer name with provided prefix and path.</returns>
-  public string LayerFullName(string baseLayerPrefix, string path)
-  {
-    var layerFullName = baseLayerPrefix + string.Join("-", path);
-    return _autocadContext.RemoveInvalidChars(layerFullName);
-  }
-
-  /// <summary>
   /// Will create a layer with the provided name, or, if it finds an existing one, will "purge" all objects from it.
   /// This ensures we're creating the new objects we've just received rather than overlaying them.
   /// </summary>
   /// <param name="layerName">Name to search layer for purge and create.</param>
-  public void CreateLayerOrPurge(string layerName)
+  public void CreateLayerForReceive(string layerName)
   {
-    // POC: Will be addressed to move it into AutocadContext!
-    Document doc = Application.DocumentManager.MdiActiveDocument;
-    doc.LockDocument();
-    using Transaction transaction = doc.TransactionManager.StartTransaction();
+    if (!_uniqueLayerNames.Add(layerName))
+    {
+      return;
+    }
+
+    Doc.LockDocument();
+    using Transaction transaction = Doc.TransactionManager.StartTransaction();
 
     LayerTable? layerTable =
-      transaction.TransactionManager.GetObject(doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+      transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
     LayerTableRecord layerTableRecord = new() { Name = layerName };
 
     bool hasLayer = layerTable != null && layerTable.Has(layerName);
@@ -50,7 +47,7 @@ public class AutocadLayerManager
     {
       TypedValue[] tvs = { new((int)DxfCode.LayerName, layerName) };
       SelectionFilter selectionFilter = new(tvs);
-      SelectionSet selectionResult = doc.Editor.SelectAll(selectionFilter).Value;
+      SelectionSet selectionResult = Doc.Editor.SelectAll(selectionFilter).Value;
       if (selectionResult == null)
       {
         return;
@@ -69,7 +66,38 @@ public class AutocadLayerManager
     transaction.Commit();
   }
 
-  // POC: Consider to extract somehow in factory or service!
+  public void DeleteAllLayersByPrefix(string prefix)
+  {
+    Doc.LockDocument();
+    using Transaction transaction = Doc.TransactionManager.StartTransaction();
+
+    var layerTable = (LayerTable)transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead);
+    foreach (var layerId in layerTable)
+    {
+      var layer = (LayerTableRecord)transaction.GetObject(layerId, OpenMode.ForRead);
+      var layerName = layer.Name;
+      if (layer.Name.Contains(prefix))
+      {
+        // Delete objects from this layer
+        TypedValue[] tvs = { new((int)DxfCode.LayerName, layerName) };
+        SelectionFilter selectionFilter = new(tvs);
+        SelectionSet selectionResult = Doc.Editor.SelectAll(selectionFilter).Value;
+        if (selectionResult == null)
+        {
+          return;
+        }
+        foreach (SelectedObject selectedObject in selectionResult)
+        {
+          transaction.GetObject(selectedObject.ObjectId, OpenMode.ForWrite).Erase();
+        }
+        // Delete layer
+        layer.UpgradeOpen();
+        layer.Erase();
+      }
+    }
+    transaction.Commit();
+  }
+
   /// <summary>
   /// Creates a layer filter for the just received model, grouped under a top level filter "Speckle". Note: manual close and open of the layer properties panel required (it's an acad thing).
   /// This comes in handy to quickly access the layers created for this specific model.
@@ -113,5 +141,20 @@ public class AutocadLayerManager
     var layerFilter = new LayerFilter() { Name = filterName, FilterExpression = layerFilterExpression };
     groupFilter.NestedFilters.Add(layerFilter);
     Doc.Database.LayerFilters = layerFilterTree;
+  }
+
+  /// <summary>
+  /// Gets a valid layer name for a given context.
+  /// </summary>
+  /// <param name="context"></param>
+  /// <param name="baseLayerPrefix"></param>
+  /// <returns></returns>
+  public string GetLayerPath(TraversalContext context, string baseLayerPrefix)
+  {
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).Reverse().ToArray();
+    string[] path = collectionBasedPath.Length != 0 ? collectionBasedPath : context.GetPropertyPath().ToArray();
+
+    var name = baseLayerPrefix + string.Join("-", path);
+    return _autocadContext.RemoveInvalidChars(name);
   }
 }
