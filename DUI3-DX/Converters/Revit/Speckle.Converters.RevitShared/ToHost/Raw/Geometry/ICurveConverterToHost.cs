@@ -89,10 +89,10 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
         {
           // Enumerate all curves in the array to ensure polylines get fully converted.
           using var subCurves = Convert(seg);
-          var crvEnumerator = subCurves.GetEnumerator();
-          while (crvEnumerator.MoveNext() && crvEnumerator.Current != null)
+          foreach (DB.Curve curve in subCurves)
           {
-            curveArray.Append(crvEnumerator.Current as DB.Curve);
+            curveArray.Append(curve);
+            
           }
         }
         return curveArray;
