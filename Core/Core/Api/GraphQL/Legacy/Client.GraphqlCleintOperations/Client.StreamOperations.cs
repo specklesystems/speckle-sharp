@@ -152,7 +152,7 @@ public partial class Client
 
     var res = await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
 
-    if (res.activeUser == null)
+    if (res?.activeUser == null)
     {
       throw new SpeckleException(
         "User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again."

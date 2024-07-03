@@ -3,11 +3,7 @@ using Speckle.Core.Api.GraphQL.Enums;
 
 namespace Speckle.Core.Api.GraphQL.Inputs;
 
-public sealed record ProjectCommentsFilter(
-  bool? includeArchived, //TODO: check sensible nullability + which ones should default null (same goes for all the inputs below)
-  bool? loadedVersionsOnly, //TODO: check sensible nullability
-  string? resourceIdString
-);
+public sealed record ProjectCommentsFilter(bool? includeArchived, bool? loadedVersionsOnly, string? resourceIdString);
 
 public sealed record ProjectCreateInput(string? name, string? description, ProjectVisibility? visibility);
 
@@ -38,7 +34,6 @@ public sealed record ProjectUpdateInput(
   ProjectVisibility? visibility = null
 );
 
-//TODO: can we enum the role?
 public sealed record ProjectUpdateRoleInput(string userId, string projectId, string? role);
 
 public sealed record UserProjectsFilter(string search, IReadOnlyList<string>? onlyWithRoles = null);

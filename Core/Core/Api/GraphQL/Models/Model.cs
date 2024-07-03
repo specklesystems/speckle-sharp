@@ -18,7 +18,7 @@ public sealed class Model
   public string id { get; init; }
   public string name { get; init; }
   public List<FileUpload> pendingImportedVersions { get; init; }
-  public Uri previewUrl { get; init; } //HACK: not URI type in schema
+  public Uri previewUrl { get; init; }
   public DateTime updatedAt { get; init; }
   public ResourceCollection<Version> versions { get; init; }
   public Version version { get; init; }

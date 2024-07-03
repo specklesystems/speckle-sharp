@@ -14,7 +14,7 @@ public sealed class Version
   public string id { get; init; }
   public string message { get; init; }
   public Model model { get; init; }
-  public Uri previewUrl { get; init; } //HACK: not URI type in schema
+  public Uri previewUrl { get; init; }
   public string referencedObject { get; init; }
   public string sourceApplication { get; init; }
 }

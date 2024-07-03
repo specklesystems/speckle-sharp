@@ -339,6 +339,17 @@ public class Comments
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+public sealed class CommentData
+{
+  public Comments comments { get; init; }
+  public List<double> camPos { get; init; }
+  public object filters { get; init; }
+  public Location location { get; init; }
+  public object selection { get; init; }
+  public object sectionBox { get; init; }
+}
+
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class CommentItem
 {
   public string id { get; set; }
@@ -353,17 +364,6 @@ public class CommentItem
   public object reactions { get; set; }
   public Comments replies { get; set; }
   public List<Resource> resources { get; set; }
-}
-
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
-public sealed class CommentData
-{
-  public Comments comments { get; init; }
-  public List<double> camPos { get; init; }
-  public object filters { get; init; }
-  public Location location { get; init; }
-  public object selection { get; init; }
-  public object sectionBox { get; init; }
 }
 
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]

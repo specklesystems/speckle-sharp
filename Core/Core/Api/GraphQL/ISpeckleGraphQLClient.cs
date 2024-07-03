@@ -13,8 +13,3 @@ internal interface ISpeckleGraphQLClient
   /// <exception cref="ObjectDisposedException">This <see cref="Client"/> already been disposed</exception>
   public Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken);
 }
-
-internal interface ISpeckleGraphQLSubscriber : ISpeckleGraphQLClient
-{
-  internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback);
-}

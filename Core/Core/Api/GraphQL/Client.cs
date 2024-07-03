@@ -26,7 +26,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubscriber, IDisposable
+public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 {
   public ProjectResource Project { get; }
   public ModelResource Model { get; }
@@ -44,6 +44,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
 
   [JsonIgnore]
   public Account Account { get; }
+
   private HttpClient HttpClient { get; }
 
   public GraphQLHttpClient GQLClient { get; }
@@ -244,7 +245,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, ISpeckleGraphQLSubsc
     };
   }
 
-  public IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
+  internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
     using (LogContext.Push(CreateEnrichers<T>(request)))
     {
