@@ -92,7 +92,6 @@ public class ICurveConverterToHost : ITypedConverter<ICurve, DB.CurveArray>
           foreach (DB.Curve curve in subCurves)
           {
             curveArray.Append(curve);
-            
           }
         }
         return curveArray;
