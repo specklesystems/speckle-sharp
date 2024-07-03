@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Autocad;
@@ -11,9 +11,11 @@ public class AutocadConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon<AutocadRootToHostConverter, AutocadToSpeckleUnitConverter, UnitsValue>();
+    // add single root converter
+    builder.AddRootCommon<AutocadRootToHostConverter>();
 
-    // single stack per conversion
+    // add application converters and context stack
+    builder.AddApplicationConverters<AutocadToSpeckleUnitConverter, UnitsValue>();
     builder.AddScoped<IConversionContextStack<Document, UnitsValue>, AutocadConversionContextStack>();
   }
 }
