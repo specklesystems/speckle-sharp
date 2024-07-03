@@ -66,9 +66,9 @@
       },
       "Speckle.Revit2023.Fakes": {
         "type": "Direct",
-        "requested": "[0.2.1-preview.5, 1.0.0)",
-        "resolved": "0.2.1-preview.5",
-        "contentHash": "J5IWMCdG+ENVlxFrGc6blG2skWU0f9RXyjsNVGTokmAgELXDKJjggkQhBsU+9hVJPjpyGM38uNgJ1NKWEaur2w==",
+        "requested": "[0.2.1-preview.6, 1.0.0)",
+        "resolved": "0.2.1-preview.6",
+        "contentHash": "tRU6SvyhKs/btDYfvMqyVQtt9I8Pun+vjaR6lkpmCuIi/CYFK16a/g0HoDBIySSs+F0J+olQscdpQ+nMfUU2Jg==",
         "dependencies": {
           "System.Drawing.Common": "8.0.6"
         }

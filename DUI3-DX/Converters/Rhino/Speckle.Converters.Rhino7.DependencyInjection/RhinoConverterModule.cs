@@ -9,8 +9,11 @@ public class RhinoConverterModule : ISpeckleModule
 {
   public void Load(SpeckleContainerBuilder builder)
   {
-    builder.AddConverterCommon<RootToSpeckleConverter, RhinoToSpeckleUnitConverter, UnitSystem>();
-    // single stack per conversion
+    // Register single root
+    builder.AddRootCommon<RootToSpeckleConverter>();
+
+    // register all application converters and context stacks
+    builder.AddApplicationConverters<RhinoToSpeckleUnitConverter, UnitSystem>();
     builder.AddScoped<IConversionContextStack<RhinoDoc, UnitSystem>, RhinoConversionContextStack>();
   }
 }

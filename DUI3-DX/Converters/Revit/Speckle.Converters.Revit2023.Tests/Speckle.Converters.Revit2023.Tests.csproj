@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -20,6 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="[0.2.1-preview.5, 1.0.0)" />
+    <PackageReference Include="Speckle.Revit2023.Fakes" VersionOverride="[0.2.1-preview.6, 1.0.0)" />
   </ItemGroup>
 </Project>

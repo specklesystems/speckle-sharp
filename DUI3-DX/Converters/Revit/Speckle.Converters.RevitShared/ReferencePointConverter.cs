@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Common;
 
@@ -29,10 +30,21 @@ public class ReferencePointConverter : IReferencePointConverter
   // POC: the original allowed for the document to be passed in
   // if required, we would probably need to push the stack with a new document if the
   // doc can change during the lifeycycle of the conversions. This may need some looking into
-  public DB.XYZ ConvertToExternalCoordindates(DB.XYZ inbound, bool isPoint)
+  public DB.XYZ ConvertToExternalCoordindates(DB.XYZ p, bool isPoint)
   {
     var rpt = GetDocReferencePointTransform(_contextStack.Current.Document);
-    return isPoint ? rpt.OfPoint(inbound) : rpt.OfVector(inbound);
+    return (isPoint) ? rpt.Inverse.OfPoint(p) : rpt.Inverse.OfVector(p);
+  }
+
+  /// <summary>
+  /// For importing in Revit, moves and rotates a point according to this document BasePoint
+  /// </summary>
+  /// <param name="p"></param>
+  /// <returns></returns>
+  public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
+  {
+    var rpt = GetDocReferencePointTransform(_contextStack.Current.Document);
+    return (isPoint) ? rpt.OfPoint(p) : rpt.OfVector(p);
   }
 
   // POC: this might be better in some RevitDocumentService
