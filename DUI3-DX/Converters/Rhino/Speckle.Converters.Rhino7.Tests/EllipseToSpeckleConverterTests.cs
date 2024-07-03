@@ -7,9 +7,8 @@ using Speckle.Testing;
 
 namespace Speckle.Converters.Rhino7.Tests;
 
-public class EllipseToSpeckleConverterTests: MoqTest
+public class EllipseToSpeckleConverterTests : MoqTest
 {
-
   [Test]
   public void Convert_Test()
   {

@@ -10,7 +10,7 @@ using Speckle.Testing;
 
 namespace Speckle.Converters.Revit2023.Tests;
 
-public class ModelCurveArrayToSpeckleConverterTests: MoqTest
+public class ModelCurveArrayToSpeckleConverterTests : MoqTest
 {
   [Test]
   public void Convert_Empty()
@@ -18,7 +18,7 @@ public class ModelCurveArrayToSpeckleConverterTests: MoqTest
     var revitConversionContextStack = Create<IRevitConversionContextStack>();
     var scalingServiceToSpeckle = Create<IScalingServiceToSpeckle>();
     var curveConverter = Create<ITypedConverter<DB.Curve, ICurve>>();
-    
+
     var sut = new ModelCurveArrayToSpeckleConverter(
       revitConversionContextStack.Object,
       scalingServiceToSpeckle.Object,
@@ -51,13 +51,13 @@ public class ModelCurveArrayToSpeckleConverterTests: MoqTest
     geometry2.Setup(x => x.GetEndPoint(1)).Returns(endpoint2.Object);
 
     var context = Create<IConversionContext<DB.Document>>();
-     revitConversionContextStack.Setup(x => x.Current).Returns(context.Object);
+    revitConversionContextStack.Setup(x => x.Current).Returns(context.Object);
 
     var units = "units";
     context.Setup(x => x.SpeckleUnits).Returns(units);
 
     var scaleLength = 2.2;
-     scalingServiceToSpeckle.Setup(x => x.ScaleLength(2 + 3)).Returns(scaleLength);
+    scalingServiceToSpeckle.Setup(x => x.ScaleLength(2 + 3)).Returns(scaleLength);
 
     endpoint1.Setup(x => x.DistanceTo(endpoint2.Object)).Returns(4.4);
 

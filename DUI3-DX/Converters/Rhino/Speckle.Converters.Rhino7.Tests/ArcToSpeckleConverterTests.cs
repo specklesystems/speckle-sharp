@@ -22,7 +22,6 @@ public class ArcToSpeckleConverterTests : MoqTest
     var mockContextStack = Create<IConversionContextStack<RhinoDoc, UnitSystem>>();
     var factory = Create<IBoxFactory>();
 
-
     var context = Create<IConversionContext<RhinoDoc>>();
     context.Setup(x => x.SpeckleUnits).Returns("units");
     mockContextStack.Setup(cs => cs.Current).Returns(context.Object);
@@ -44,7 +43,7 @@ public class ArcToSpeckleConverterTests : MoqTest
     targetArc.Setup(x => x.EndPoint).Returns(point3d.Object);
     targetArc.Setup(x => x.BoundingBox()).Returns(boundbox.Object);
     factory.Setup(x => x.Create(boundbox.Object)).Returns(targetBox.Object);
-    
+
     mockPlaneConverter.Setup(pc => pc.Convert(targetPlane.Object)).Returns(new SOG.Plane());
     mockPointConverter.Setup(pc => pc.Convert(It.IsAny<RG.Point3d>())).Returns(new SOG.Point());
     mockBoxConverter.Setup(bc => bc.Convert(targetBox.Object)).Returns(new SOG.Box());
