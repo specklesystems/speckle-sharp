@@ -25,12 +25,12 @@ public class ProjectResourceExceptionalTests
     _testProject = await _testUser.Project.Create(new("test project123", "desc", null));
   }
 
-  //TODO: There's got to be a smarter way to parametrise this.
   //We want to check the following cases
-  // 1. User lacks permissions
+  // 1. User lacks permissions (without auth)
   // 2. Target (Project or user) doesn't exist)
   // 3. Cancellation
   // 4. Server doesn't exist (is down)
+  //There's got to be a smarter way to parametrise these...
 
   [Test]
   public void ProjectCreate_WithoutAuth()
