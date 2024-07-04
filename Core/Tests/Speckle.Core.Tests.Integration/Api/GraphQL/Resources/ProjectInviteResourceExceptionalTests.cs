@@ -29,6 +29,4 @@ public class ProjectInviteResourceExceptionalTests
       await Sut.Create(_project.id, input);
     });
   }
-
-  //TODO: USe from wrong account
 }

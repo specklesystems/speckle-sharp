@@ -6,9 +6,6 @@ namespace Speckle.Core.Api.GraphQL.Models.Responses;
 // For this reason, we're keeping them internal, allowing us to be flexible without the concern for breaking.
 // It also exposes fewer similarly named types to dependent assemblies
 
-// TODO: All of these classes could be replaced by this DataResponse, if we use an alias (see https://www.baeldung.com/graphql-field-name)
-//internal readonly record DataResponse<T>([property: JsonRequired] T data);
-
 internal record ProjectResponse([property: JsonRequired] Project project);
 
 internal record ActiveUserResponse(UserInfo? activeUser);
@@ -26,3 +23,8 @@ internal record VersionMutationResponse([property: JsonRequired] VersionMutation
 internal record ProjectInviteResponse(PendingStreamCollaborator? projectInvite);
 
 internal record UserSearchResponse([property: JsonRequired] ResourceCollection<LimitedUser> userSearch);
+
+//All of the above records could be replaced by either RequiredResponse or OptionalResponse, if we use an alias (see https://www.baeldung.com/graphql-field-name)
+internal record RequiredResponse<T>([property: JsonRequired] T data);
+
+internal record OptionalResponse<T>(T? data);

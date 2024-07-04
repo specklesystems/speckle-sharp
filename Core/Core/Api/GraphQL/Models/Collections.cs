@@ -2,7 +2,6 @@
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
-//TODO: Naming - something that mentions pagination??
 public class ResourceCollection<T>
 {
   public int totalCount { get; init; }
