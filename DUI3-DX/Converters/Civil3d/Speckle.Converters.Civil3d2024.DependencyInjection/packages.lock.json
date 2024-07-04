@@ -85,19 +85,19 @@
       },
       "Microsoft.Data.Sqlite": {
         "type": "Transitive",
-        "resolved": "7.0.5",
-        "contentHash": "KGxbPeWsQMnmQy43DSBxAFtHz3l2JX8EWBSGUCvT3CuZ8KsuzbkqMIJMDOxWtG8eZSoCDI04aiVQjWuuV8HmSw==",
+        "resolved": "8.0.6",
+        "contentHash": "YVzVtU1IoGsTiMAe0BNV9ssKyrUm6lBQJP6w2N4W29YrBYYtyCmTFmrNGjxaJtJXVqttu0sYkPxmStj/OnMFdg==",
         "dependencies": {
-          "Microsoft.Data.Sqlite.Core": "7.0.5",
-          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.4"
+          "Microsoft.Data.Sqlite.Core": "8.0.6",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.6"
         }
       },
       "Microsoft.Data.Sqlite.Core": {
         "type": "Transitive",
-        "resolved": "7.0.5",
-        "contentHash": "FTerRmQPqHrCrnoUzhBu+E+1DNGwyrAMLqHkAqOOOu5pGfyMOj8qQUBxI/gDtWtG11p49UxSfWmBzRNlwZqfUg==",
+        "resolved": "8.0.6",
+        "contentHash": "umhZ0ZF2RI81rGFTnYmCxI+Euj4Aqe/6Y4+8CxN9OVJNGDNIqB5laJ3wxQTU8zXCcm2k9F7FL+/6RVoOT4z1Fw==",
         "dependencies": {
-          "SQLitePCLRaw.core": "2.1.4"
+          "SQLitePCLRaw.core": "2.1.6"
         }
       },
       "Microsoft.SourceLink.Common": {
@@ -214,6 +214,11 @@
           "Serilog": "2.10.0"
         }
       },
+      "Speckle.DoubleNumerics": {
+        "type": "Transitive",
+        "resolved": "4.0.1-alpha.3",
+        "contentHash": "7/lg9LDI3TZLiI7FhI2IhRrTzsZyDrQw1rG/S3kRtx0IU3raWzRHL4W5zvHV8LdWkqJEztS/9dUgLNYHV70o5Q=="
+      },
       "Speckle.Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.2",
@@ -221,32 +226,32 @@
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
-        "resolved": "2.1.4",
-        "contentHash": "EWI1olKDjFEBMJu0+3wuxwziIAdWDVMYLhuZ3Qs84rrz+DHwD00RzWPZCa+bLnHCf3oJwuFZIRsHT5p236QXww==",
+        "resolved": "2.1.6",
+        "contentHash": "BmAf6XWt4TqtowmiWe4/5rRot6GerAeklmOPfviOvwLoF5WwgxcJHAxZtySuyW9r9w+HLILnm8VfJFLCUJYW8A==",
         "dependencies": {
-          "SQLitePCLRaw.lib.e_sqlite3": "2.1.4",
-          "SQLitePCLRaw.provider.dynamic_cdecl": "2.1.4"
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.6",
+          "SQLitePCLRaw.provider.dynamic_cdecl": "2.1.6"
         }
       },
       "SQLitePCLRaw.core": {
         "type": "Transitive",
-        "resolved": "2.1.4",
-        "contentHash": "inBjvSHo9UDKneGNzfUfDjK08JzlcIhn1+SP5Y3m6cgXpCxXKCJDy6Mka7LpgSV+UZmKSnC8rTwB0SQ0xKu5pA==",
+        "resolved": "2.1.6",
+        "contentHash": "wO6v9GeMx9CUngAet8hbO7xdm+M42p1XeJq47ogyRoYSvNSp0NGLI+MgC0bhrMk9C17MTVFlLiN6ylyExLCc5w==",
         "dependencies": {
           "System.Memory": "4.5.3"
         }
       },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",
-        "resolved": "2.1.4",
-        "contentHash": "2C9Q9eX7CPLveJA0rIhf9RXAvu+7nWZu1A2MdG6SD/NOu26TakGgL1nsbc0JAspGijFOo3HoN79xrx8a368fBg=="
+        "resolved": "2.1.6",
+        "contentHash": "2ObJJLkIUIxRpOUlZNGuD4rICpBnrBR5anjyfUFQep4hMOIeqW+XGQYzrNmHSVz5xSWZ3klSbh7sFR6UyDj68Q=="
       },
       "SQLitePCLRaw.provider.dynamic_cdecl": {
         "type": "Transitive",
-        "resolved": "2.1.4",
-        "contentHash": "ZsaKKhgYF9B1fvcnOGKl3EycNAwd9CRWX7v0rEfuPWhQQ5Jjpvf2VEHahiLIGHio3hxi3EIKFJw9KvyowWOUAw==",
+        "resolved": "2.1.6",
+        "contentHash": "FWt5JjGGvOmppDcK3NodXqlf8hQPz5u5jxyqst0DbC6W1mT3P0Ribwb5m8Pc+djHBQEOxonuwNJLCcH/cujBvA==",
         "dependencies": {
-          "SQLitePCLRaw.core": "2.1.4"
+          "SQLitePCLRaw.core": "2.1.6"
         }
       },
       "System.Buffers": {
@@ -260,14 +265,6 @@
         "contentHash": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g==",
         "dependencies": {
           "System.Memory": "4.5.4"
-        }
-      },
-      "System.DoubleNumerics": {
-        "type": "Transitive",
-        "resolved": "3.1.3",
-        "contentHash": "KRKEM/L3KBodjA9VOg3EifFVWUY6EOqaMB05UvPEDm7Zeby/kZW+4kdWUEPzW6xtkwf46p661L9NrbeeQhtLzw==",
-        "dependencies": {
-          "NETStandard.Library": "1.6.1"
         }
       },
       "System.Memory": {
@@ -375,7 +372,7 @@
         "type": "Project",
         "dependencies": {
           "Speckle.Autofac": "[2.0.999-local, )",
-          "Speckle.Objects": "[3.0.1-alpha.14, )"
+          "Speckle.Objects": "[3.0.1-alpha.20, )"
         }
       },
       "speckle.converters.common.dependencyinjection": {
@@ -412,13 +409,13 @@
       },
       "Speckle.Core": {
         "type": "CentralTransitive",
-        "requested": "[3.0.1-alpha.14, )",
-        "resolved": "3.0.1-alpha.14",
-        "contentHash": "RzQPVIGFFkKvG56YLr8ACtiwdWJE6IJ9vCQ4qHa0PIsUEpfzAIAi59jnzqtByOFC0FiFrFPow9bkfzylaZorAA==",
+        "requested": "[3.0.1-alpha.20, )",
+        "resolved": "3.0.1-alpha.20",
+        "contentHash": "zVHHZzjvzH73ES6AoghVfctiC7uik3ruHGFEUkRIwwlqzfsFYe4YLliUKpYI82XdJVOM2RLHSpzt1nD6E8YAKg==",
         "dependencies": {
           "GraphQL.Client": "6.0.0",
           "Microsoft.CSharp": "4.7.0",
-          "Microsoft.Data.Sqlite": "7.0.5",
+          "Microsoft.Data.Sqlite": "8.0.6",
           "Polly": "7.2.3",
           "Polly.Contrib.WaitAndRetry": "1.1.1",
           "Polly.Extensions.Http": "3.0.0",
@@ -430,17 +427,17 @@
           "Serilog.Sinks.Console": "4.1.0",
           "Serilog.Sinks.Seq": "5.2.2",
           "SerilogTimings": "3.0.1",
-          "Speckle.Newtonsoft.Json": "13.0.2",
-          "System.DoubleNumerics": "3.1.3"
+          "Speckle.DoubleNumerics": "4.0.1-alpha.3",
+          "Speckle.Newtonsoft.Json": "13.0.2"
         }
       },
       "Speckle.Objects": {
         "type": "CentralTransitive",
-        "requested": "[3.0.1-alpha.14, )",
-        "resolved": "3.0.1-alpha.14",
-        "contentHash": "z38LGryMvh7iU1uBW+4uo5DwsB3CwRgLt2uFexWFx3mPSid+A0l5XcJzOgLwgFhNl6B42Ryz4ezBsddTp1Uc/g==",
+        "requested": "[3.0.1-alpha.20, )",
+        "resolved": "3.0.1-alpha.20",
+        "contentHash": "VFXoW3YOXxTuv/nDZU1ztDh1Wt0mfqJUwAfDRH+027DtXO/ZihJJUC92dSnu29kzgX4/lU52oNS4TUQ+A5hfIA==",
         "dependencies": {
-          "Speckle.Core": "3.0.1-alpha.14"
+          "Speckle.Core": "3.0.1-alpha.20"
         }
       }
     }
