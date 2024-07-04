@@ -85,7 +85,7 @@ public sealed class VersionResource
   public async Task<List<Version>> GetVersions(
     string modelId,
     string projectId,
-    int limit = 25,
+    int limit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
     string? cursor = null,
     ModelVersionsFilter? filter = null,
     CancellationToken cancellationToken = default

@@ -59,7 +59,7 @@ public sealed class ProjectResource
   /// <seealso cref="GetWithTeam"/>
   public async Task<Project> GetWithModels(
     string projectId,
-    int modelsLimit = 25,
+    int modelsLimit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
     string? modelsCursor = null,
     ProjectModelsFilter? modelsFilter = null,
     CancellationToken cancellationToken = default

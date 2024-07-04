@@ -71,7 +71,7 @@ public sealed class ModelResource
   public async Task<Model> GetWithVersions(
     string projectId,
     string modelId,
-    int versionsLimit = 25,
+    int versionsLimit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
     string? versionsCursor = null,
     ModelVersionsFilter? versionsFilter = null,
     CancellationToken cancellationToken = default

@@ -58,7 +58,7 @@ public sealed class ActiveUserResource
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<Project>> GetProjects(
-    int limit = 25,
+    int limit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
     string? cursor = null,
     UserProjectsFilter? filter = null,
     CancellationToken cancellationToken = default
