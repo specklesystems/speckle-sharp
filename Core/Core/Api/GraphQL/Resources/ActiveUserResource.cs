@@ -51,14 +51,14 @@ public sealed class ActiveUserResource
     return response.activeUser;
   }
 
-  /// <param name="limit"></param>
+  /// <param name="limit">Max number of projects to fetch</param>
   /// <param name="cursor">Optional cursor for pagination</param>
   /// <param name="filter">Optional filter</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<Project>> GetProjects(
-    int limit,
+    int limit = 25,
     string? cursor = null,
     UserProjectsFilter? filter = null,
     CancellationToken cancellationToken = default

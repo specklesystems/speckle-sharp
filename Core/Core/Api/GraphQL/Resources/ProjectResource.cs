@@ -20,6 +20,8 @@ public sealed class ProjectResource
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  /// <seealso cref="GetWithModels"/>
+  /// <seealso cref="GetWithTeam"/>
   public async Task<Project> Get(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -47,15 +49,17 @@ public sealed class ProjectResource
   }
 
   /// <param name="projectId"></param>
-  /// <param name="modelsLimit"></param>
-  /// <param name="modelsCursor"></param>
-  /// <param name="modelsFilter"></param>
+  /// <param name="modelsLimit">Max number of models to fetch</param>
+  /// <param name="modelsCursor">Optional cursor for pagination</param>
+  /// <param name="modelsFilter">Optional models filter</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  /// <seealso cref="Get"/>
+  /// <seealso cref="GetWithTeam"/>
   public async Task<Project> GetWithModels(
     string projectId,
-    int modelsLimit,
+    int modelsLimit = 25,
     string? modelsCursor = null,
     ProjectModelsFilter? modelsFilter = null,
     CancellationToken cancellationToken = default
@@ -113,6 +117,8 @@ public sealed class ProjectResource
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  /// <seealso cref="Get"/>
+  /// <seealso cref="GetWithModels"/>
   public async Task<Project> GetWithTeam(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -245,21 +251,21 @@ public sealed class ProjectResource
     return response.projectMutations.update;
   }
 
-  /// <param name="deleteId"></param>
+  /// <param name="projectId">The id of the Project to delete</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<bool> Delete(string deleteId, CancellationToken cancellationToken = default)
+  public async Task<bool> Delete(string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectDelete($deleteId: String!) {
+                         mutation ProjectDelete($projectId: String!) {
                            projectMutations {
-                             delete(id: $deleteId)
+                             delete(id: $projectId)
                            }
                          }
                          """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { deleteId } };
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
     var response = await _client
       .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)

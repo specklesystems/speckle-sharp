@@ -27,7 +27,7 @@ public sealed class CommentResource
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<Comment>> GetProjectComments(
     string projectId,
-    int limit,
+    int limit = 25,
     string? cursor = null,
     ProjectCommentsFilter? filter = null,
     int repliesLimit = 25,

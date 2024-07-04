@@ -61,7 +61,7 @@ public sealed class OtherUserResource
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<ResourceCollection<LimitedUser>> UserSearch(
     string query,
-    int limit,
+    int limit = 25,
     string? cursor = null,
     bool archived = false,
     bool emailOnly = false,

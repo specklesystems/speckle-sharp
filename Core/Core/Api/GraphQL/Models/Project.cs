@@ -27,5 +27,4 @@ public sealed class Project
   public Model model { get; init; }
   public List<ModelsTreeItem> modelChildrenTree { get; init; }
   public ResourceCollection<ModelsTreeItem> modelsTree { get; init; }
-  // public WebhookCollection webhooks { get; set; } //TODO: do we want this functionality?
 }

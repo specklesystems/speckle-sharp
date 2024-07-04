@@ -21,6 +21,7 @@ public sealed class ModelResource
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  /// <seealso cref="GetWithVersions"/>
   public async Task<Model> Get(string modelId, string projectId, CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -60,14 +61,17 @@ public sealed class ModelResource
 
   /// <param name="projectId"></param>
   /// <param name="modelId"></param>
-  /// <param name="versionsLimit"></param>
+  /// <param name="versionsLimit">Max number of versions to fetch</param>
+  /// <param name="versionsCursor">Optional cursor for pagination</param>
+  /// <param name="versionsFilter">Optional versions filter</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  /// <see cref="Get"/>
   public async Task<Model> GetWithVersions(
     string projectId,
     string modelId,
-    int versionsLimit,
+    int versionsLimit = 25,
     string? versionsCursor = null,
     ModelVersionsFilter? versionsFilter = null,
     CancellationToken cancellationToken = default
@@ -132,9 +136,6 @@ public sealed class ModelResource
     return response.project.model;
   }
 
-  /// <summary>
-  ///
-  /// </summary>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -177,9 +178,6 @@ public sealed class ModelResource
     return res.modelMutations.create;
   }
 
-  /// <summary>
-  ///
-  /// </summary>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>

@@ -7,7 +7,6 @@ namespace Speckle.Core.Api.GraphQL.Models;
 
 public sealed class FileUpload
 {
-  public string branchName { get; init; }
   public string convertedCommitId { get; init; }
   public DateTime convertedLastUpdate { get; init; }
   public FileUploadConversionStatus convertedStatus { get; init; }
@@ -19,8 +18,13 @@ public sealed class FileUpload
   public Model model { get; init; }
   public string modelName { get; init; }
   public string projectId { get; init; }
-  public string streamId { get; init; }
   public bool uploadComplete { get; init; }
   public DateTime uploadDate { get; init; }
   public string userId { get; init; }
+
+  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  public string branchName { get; init; }
+
+  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  public string streamId { get; init; }
 }
