@@ -5,34 +5,16 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class LineToSpeckleConverter : IToSpeckleTopLevelConverter, ITypedConverter<ADB.Line, SOG.Line>
+public class LineToSpeckleConverter : IToSpeckleTopLevelConverter
 {
-  private readonly ITypedConverter<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly ITypedConverter<ADB.Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
+  private readonly ITypedConverter<ADB.Line, SOG.Line> _lineConverter;
 
-  public LineToSpeckleConverter(
-    ITypedConverter<AG.Point3d, SOG.Point> pointConverter,
-    ITypedConverter<ADB.Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, ADB.UnitsValue> contextStack
-  )
+  public LineToSpeckleConverter(ITypedConverter<ADB.Line, SOG.Line> lineConverter)
   {
-    _pointConverter = pointConverter;
-    _boxConverter = boxConverter;
-    _contextStack = contextStack;
+    _lineConverter = lineConverter;
   }
 
   public Base Convert(object target) => Convert((ADB.Line)target);
 
-  public SOG.Line Convert(ADB.Line target) =>
-    new(
-      _pointConverter.Convert(target.StartPoint),
-      _pointConverter.Convert(target.EndPoint),
-      _contextStack.Current.SpeckleUnits
-    )
-    {
-      length = target.Length,
-      domain = new SOP.Interval(0, target.Length),
-      bbox = _boxConverter.Convert(target.GeometricExtents)
-    };
+  public SOG.Line Convert(ADB.Line target) => _lineConverter.Convert(target);
 }

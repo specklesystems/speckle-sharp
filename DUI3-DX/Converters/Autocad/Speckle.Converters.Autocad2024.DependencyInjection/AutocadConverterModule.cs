@@ -5,7 +5,7 @@ using Speckle.Converters.Autocad;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
 
-namespace Speckle.Converters.Autocad20243.DependencyInjection;
+namespace Speckle.Converters.Autocad2024.DependencyInjection;
 
 public class AutocadConverterModule : ISpeckleModule
 {
