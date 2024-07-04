@@ -38,12 +38,6 @@ public sealed class LimitedUser : UserBase
 /// </remarks>
 public sealed class UserInfo : UserBase
 {
-  //public List<ApiToken> apiTokens { get; init; }
-  //public ServerappListItem autorizedApps { get; init; }
-  //public ResourceCollection<ServerApp> createdApps { get; init; }
-  //public object notificationPreferences { get; init; }
-  //public object profiles { get; init; }
-
   public DateTime? createdAt { get; init; }
   public string email { get; init; }
   public bool? hasPendingVerification { get; init; }
