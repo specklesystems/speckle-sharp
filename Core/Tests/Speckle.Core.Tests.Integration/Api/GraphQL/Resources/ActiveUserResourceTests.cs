@@ -42,10 +42,10 @@ public class ActiveUserResourceTests
     Assert.That(res.items, Has.Exactly(1).Items.With.Property(nameof(Project.id)).EqualTo(p2.id));
     Assert.That(res.items, Has.Count.EqualTo(2));
   }
-  
+
   [Test]
   public void ActiveUserGetProjects_NoAuth()
   {
-     Assert.ThrowsAsync<SpeckleGraphQLException>(async () => await Fixtures.Unauthed.ActiveUser.GetProjects());
+    Assert.ThrowsAsync<SpeckleGraphQLException>(async () => await Fixtures.Unauthed.ActiveUser.GetProjects());
   }
 }

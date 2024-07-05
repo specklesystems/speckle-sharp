@@ -39,16 +39,17 @@ public static class Fixtures
   {
     using ServerTransport remote = new(client.Account, projectId);
     var objectId = await Operations.Send(new() { applicationId = "ASDF" }, remote, false);
-    CommitCreateInput input = new()
-    {
-      branchName = branchName,
-      message = "test version",
-      objectId = objectId,
-      streamId = projectId
-    };
+    CommitCreateInput input =
+      new()
+      {
+        branchName = branchName,
+        message = "test version",
+        objectId = objectId,
+        streamId = projectId
+      };
     return await client.Version.Create(input);
   }
-  
+
   public static async Task<Account> SeedUser()
   {
     var seed = Guid.NewGuid().ToString().ToLower();
@@ -156,7 +157,7 @@ public static class Fixtures
     File.WriteAllText(filePath, content);
     return new Blob(filePath);
   }
-  
+
   internal static async Task<Comment> CreateComment(Client client, string projectId, string modelId, string versionId)
   {
     var blobs = await SendBlobData(client.Account, projectId);
@@ -164,12 +165,12 @@ public static class Fixtures
     CreateCommentInput input = new(new(blobIds, null), projectId, $"{projectId},{modelId},{versionId}", null, null);
     return await client.Comment.Create(input);
   }
-  
+
   internal static async Task<Blob[]> SendBlobData(Account account, string projectId)
   {
     using ServerTransport remote = new(account, projectId);
     var blobs = Fixtures.GenerateThreeBlobs();
-    Base myObject = new() { ["blobs"] = blobs } ;
+    Base myObject = new() { ["blobs"] = blobs };
     await Operations.Send(myObject, remote, false);
     return blobs;
   }

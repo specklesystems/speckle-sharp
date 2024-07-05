@@ -13,7 +13,7 @@ public class SubscriptionResourceTests
   private Project _testProject;
   private Model _testModel;
   private string _testVersion;
-  
+
   private SubscriptionResource Sut => _testUser.Subscription;
 
   [OneTimeSetUp]
@@ -42,7 +42,7 @@ public class SubscriptionResourceTests
     Assert.That(subscriptionMessage, Is.Not.Null);
     Assert.That(subscriptionMessage.id, Is.EqualTo(created.id));
   }
-  
+
   [Test]
   public async Task ProjectModelsUpdated_SubscriptionIsCalled()
   {
@@ -61,7 +61,7 @@ public class SubscriptionResourceTests
     Assert.That(subscriptionMessage, Is.Not.Null);
     Assert.That(subscriptionMessage.id, Is.EqualTo(created.id));
   }
-  
+
   [Test]
   public async Task ProjectUpdated_SubscriptionIsCalled()
   {
@@ -80,7 +80,7 @@ public class SubscriptionResourceTests
     Assert.That(subscriptionMessage, Is.Not.Null);
     Assert.That(subscriptionMessage.id, Is.EqualTo(created.id));
   }
-  
+
   [Test]
   public async Task ProjectVersionsUpdated_SubscriptionIsCalled()
   {
@@ -90,7 +90,7 @@ public class SubscriptionResourceTests
     sub.Listeners += (_, message) => subscriptionMessage = message;
 
     await Task.Delay(WAIT_PERIOD); // Give time to subscription to be setup
-    
+
     var created = await Fixtures.CreateVersion(_testUser, _testProject.id, _testModel.name);
 
     await Task.Delay(WAIT_PERIOD); // Give time for subscription to be triggered
@@ -98,7 +98,7 @@ public class SubscriptionResourceTests
     Assert.That(subscriptionMessage, Is.Not.Null);
     Assert.That(subscriptionMessage.id, Is.EqualTo(created));
   }
-  
+
   [Test]
   public async Task ProjectCommentsUpdated_SubscriptionIsCalled()
   {
@@ -117,5 +117,4 @@ public class SubscriptionResourceTests
     Assert.That(subscriptionMessage, Is.Not.Null);
     Assert.That(subscriptionMessage.id, Is.EqualTo(created.id));
   }
-  
 }

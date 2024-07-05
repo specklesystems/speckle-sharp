@@ -14,7 +14,7 @@ public class CommentResourceTests
   private Model _model;
   private string _versionId;
   private Comment _comment;
-  
+
   [SetUp]
   public async Task Setup()
   {
@@ -25,7 +25,6 @@ public class CommentResourceTests
     _comment = await CreateComment();
   }
 
-  
   [Test]
   public async Task GetProjectComments()
   {
@@ -36,14 +35,14 @@ public class CommentResourceTests
     Comment comment = comments.items[0];
     Assert.That(comment, Is.Not.Null);
     Assert.That(comment, Has.Property(nameof(Comment.authorId)).EqualTo(_testUser.Account.userInfo.id));
-    
+
     Assert.That(comment, Has.Property(nameof(Comment.id)).EqualTo(_comment.id));
     Assert.That(comment, Has.Property(nameof(Comment.authorId)).EqualTo(_comment.authorId));
     Assert.That(comment, Has.Property(nameof(Comment.archived)).EqualTo(_comment.archived));
     Assert.That(comment, Has.Property(nameof(Comment.archived)).EqualTo(false));
     Assert.That(comment, Has.Property(nameof(Comment.createdAt)).EqualTo(_comment.createdAt));
   }
-  
+
   [Test]
   public async Task MarkViewed()
   {
@@ -52,42 +51,42 @@ public class CommentResourceTests
     viewed = await Sut.MarkViewed(_comment.id);
     Assert.That(viewed, Is.True);
   }
-  
+
   [Test]
   public async Task Archive()
   {
     var archived = await Sut.Archive(_comment.id);
     Assert.That(archived, Is.True);
-    
+
     archived = await Sut.Archive(_comment.id);
     Assert.That(archived, Is.True);
   }
-  
+
   [Test]
   public async Task Edit()
   {
     var blobs = await Fixtures.SendBlobData(_testUser.Account, _project.id);
     var blobIds = blobs.Select(b => b.id).ToList();
     EditCommentInput input = new(new(blobIds, null), _comment.id);
-    
+
     var editedComment = await Sut.Edit(input);
-    
+
     Assert.That(editedComment, Is.Not.Null);
     Assert.That(editedComment, Has.Property(nameof(Comment.id)).EqualTo(_comment.id));
     Assert.That(editedComment, Has.Property(nameof(Comment.authorId)).EqualTo(_comment.authorId));
     Assert.That(editedComment, Has.Property(nameof(Comment.createdAt)).EqualTo(_comment.createdAt));
     Assert.That(editedComment, Has.Property(nameof(Comment.updatedAt)).GreaterThanOrEqualTo(_comment.updatedAt));
   }
-  
+
   [Test]
   public async Task Reply()
   {
     var blobs = await Fixtures.SendBlobData(_testUser.Account, _project.id);
     var blobIds = blobs.Select(b => b.id).ToList();
     CreateCommentReplyInput input = new(new(blobIds, null), _comment.id);
-    
+
     var editedComment = await Sut.Reply(input);
-    
+
     Assert.That(editedComment, Is.Not.Null);
   }
 
@@ -95,5 +94,4 @@ public class CommentResourceTests
   {
     return await Fixtures.CreateComment(_testUser, _project.id, _model.id, _versionId);
   }
-  
 }

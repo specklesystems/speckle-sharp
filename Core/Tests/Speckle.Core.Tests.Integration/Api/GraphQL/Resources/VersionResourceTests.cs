@@ -15,7 +15,7 @@ public class VersionResourceTests
   private Model _model1;
   private Model _model2;
   private Version _version;
-  
+
   [SetUp]
   public async Task Setup()
   {
@@ -23,7 +23,7 @@ public class VersionResourceTests
     _project = await _testUser.Project.Create(new("Test project", "", null));
     _model1 = await _testUser.Model.Create(new("Test Model 1", "", _project.id));
     _model2 = await _testUser.Model.Create(new("Test Model 2", "", _project.id));
-    
+
     string versionId = await Fixtures.CreateVersion(_testUser, _project.id, "Test Model 1");
 
     _version = await Sut.Get(versionId, _model1.id, _project.id);
@@ -37,37 +37,44 @@ public class VersionResourceTests
     Assert.That(result, Has.Property(nameof(Version.id)).EqualTo(_version.id));
     Assert.That(result, Has.Property(nameof(Version.message)).EqualTo(_version.message));
   }
-  
+
   [Test]
   public async Task VersionsGet()
   {
     ResourceCollection<Version> result = await Sut.GetVersions(_model1.id, _project.id);
-    
+
     Assert.That(result.items, Has.Count.EqualTo(1));
     Assert.That(result.totalCount, Is.EqualTo(1));
     Assert.That(result.items[0], Has.Property(nameof(Version.id)).EqualTo(_version.id));
   }
-  
+
   [Test]
   public async Task VersionReceived()
   {
-    CommitReceivedInput input = new(){commitId = _version.id, message = "we receieved it", sourceApplication = "Integration test", streamId = _project.id};
-    var  result = await Sut.Received(input);
+    CommitReceivedInput input =
+      new()
+      {
+        commitId = _version.id,
+        message = "we receieved it",
+        sourceApplication = "Integration test",
+        streamId = _project.id
+      };
+    var result = await Sut.Received(input);
 
     Assert.That(result, Is.True);
   }
-  
+
   [Test]
   public async Task ModelGetWithVersions()
   {
     Model result = await _testUser.Model.GetWithVersions(_model1.id, _project.id);
-    
+
     Assert.That(result, Has.Property(nameof(Model.id)).EqualTo(_model1.id));
     Assert.That(result.versions.items, Has.Count.EqualTo(1));
     Assert.That(result.versions.totalCount, Is.EqualTo(1));
     Assert.That(result.versions.items[0], Has.Property(nameof(Version.id)).EqualTo(_version.id));
   }
-  
+
   [Test]
   public async Task VersionUpdate()
   {

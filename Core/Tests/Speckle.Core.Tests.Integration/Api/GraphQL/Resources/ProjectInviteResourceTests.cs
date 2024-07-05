@@ -75,19 +75,19 @@ public class ProjectInviteResourceTests
     ProjectInviteUseInput input = new(true, _createdInvite.projectId, _createdInvite.token);
     var res = await _invitee.ProjectInvite.Use(input);
     Assert.That(res, Is.True);
-    
+
     var project = await _inviter.Project.GetWithTeam(_project.id);
     var teamMembers = project.team.Select(c => c.user.id);
     var expectedTeamMembers = new[] { _inviter.Account.userInfo.id, _invitee.Account.userInfo.id };
     Assert.That(teamMembers, Is.EquivalentTo(expectedTeamMembers));
   }
-  
+
   [Test]
   public async Task ProjectInviteCancel_MemberNotAdded()
   {
     var res = await _inviter.ProjectInvite.Cancel(_createdInvite.projectId, _createdInvite.inviteId);
-    
-    Assert.That( res.invitedTeam, Is.Empty);
+
+    Assert.That(res.invitedTeam, Is.Empty);
   }
 
   [Test]

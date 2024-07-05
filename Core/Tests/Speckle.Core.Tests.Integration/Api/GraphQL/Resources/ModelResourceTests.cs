@@ -55,7 +55,7 @@ public class ModelResourceTests
     Assert.That(result.totalCount, Is.EqualTo(1));
     Assert.That(result.items[0], Has.Property(nameof(Model.id)).EqualTo(_model.id));
   }
-  
+
   [Test]
   public async Task Project_GetModels()
   {
@@ -66,7 +66,7 @@ public class ModelResourceTests
     Assert.That(result.models.totalCount, Is.EqualTo(1));
     Assert.That(result.models.items[0], Has.Property(nameof(Model.id)).EqualTo(_model.id));
   }
-  
+
   [Test]
   public async Task ModelUpdate()
   {

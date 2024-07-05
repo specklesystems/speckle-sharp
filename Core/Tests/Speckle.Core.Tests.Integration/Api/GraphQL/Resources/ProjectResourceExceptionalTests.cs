@@ -104,7 +104,7 @@ public class ProjectResourceExceptionalTests
 
     Assert.ThrowsAsync<SpeckleGraphQLStreamNotFoundException>(async () => _ = await Sut.Get(_testProject.id)); //TODO: Exception types
   }
-  
+
   [Test]
   public void ProjectInvites_NoAuth()
   {

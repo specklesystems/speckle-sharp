@@ -144,7 +144,7 @@ public sealed class ModelResource
 
     return response.project.model;
   }
-  
+
   /// <param name="projectId"></param>
   /// <param name="modelsLimit">Max number of models to fetch</param>
   /// <param name="modelsCursor">Optional cursor for pagination</param>

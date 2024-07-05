@@ -40,4 +40,3 @@ internal sealed class CommentMutation
   public bool markViewed { get; init; }
   public Comment reply { get; init; }
 }
-

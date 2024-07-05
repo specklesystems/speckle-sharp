@@ -104,7 +104,7 @@ public sealed class CommentResource
 
     return response.project.commentThreads;
   }
-  
+
   /// <remarks>
   /// This function only exists here to be able to integration tests the queries.
   /// The process of creating a comment is more complex and javascript specific than we can expose to our SDKs at this time.
@@ -144,10 +144,12 @@ public sealed class CommentResource
                          }
                          """;
     GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client.ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.data.create;
   }
-  
+
   /// <remarks><inheritdoc cref="Create"/></remarks>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
@@ -184,10 +186,12 @@ public sealed class CommentResource
                          }
                          """;
     GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client.ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.data.edit;
   }
-  
+
   /// <param name="commentId"></param>
   /// <param name="archive"></param>
   /// <param name="cancellationToken"></param>
@@ -204,10 +208,12 @@ public sealed class CommentResource
                          }
                          """;
     GraphQLRequest request = new(QUERY, variables: new { commentId, archive });
-    var res = await _client.ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.data.archive;
   }
-  
+
   /// <param name="commentId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -223,10 +229,12 @@ public sealed class CommentResource
                          }
                          """;
     GraphQLRequest request = new(QUERY, variables: new { commentId });
-    var res = await _client.ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.data.markViewed;
   }
-  
+
   /// <remarks><inheritdoc cref="Create"/></remarks>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
@@ -263,7 +271,9 @@ public sealed class CommentResource
                          }
                          """;
     GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client.ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.data.reply;
   }
 }
