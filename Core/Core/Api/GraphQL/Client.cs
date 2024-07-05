@@ -157,7 +157,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
         exception,
         "Execution of the graphql request to get {resultType} completed with success:{status} after {elapsed} seconds",
         typeof(T).Name,
-        exception is not null,
+        exception is null,
         timer.Elapsed.TotalSeconds
       );
     }
