@@ -8,8 +8,6 @@ namespace Speckle.Core.Api.GraphQL.Models;
 public sealed class Model
 {
   public LimitedUser author { get; init; }
-
-  // public AutomationStatus? automationStatus { get; init; } //See automate SDK
   public List<ModelsTreeItem> childrenTree { get; init; }
   public ResourceCollection<Comment> commentThreads { get; init; }
   public DateTime createdAt { get; init; }

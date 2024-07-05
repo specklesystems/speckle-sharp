@@ -70,12 +70,24 @@ public class ProjectInviteResourceTests
   }
 
   [Test]
-  public async Task ProjectInviteUse()
+  public async Task ProjectInviteUse_MemberAdded()
   {
     ProjectInviteUseInput input = new(true, _createdInvite.projectId, _createdInvite.token);
     var res = await _invitee.ProjectInvite.Use(input);
-
     Assert.That(res, Is.True);
+    
+    var project = await _inviter.Project.GetWithTeam(_project.id);
+    var teamMembers = project.team.Select(c => c.user.id);
+    var expectedTeamMembers = new[] { _inviter.Account.userInfo.id, _invitee.Account.userInfo.id };
+    Assert.That(teamMembers, Is.EquivalentTo(expectedTeamMembers));
+  }
+  
+  [Test]
+  public async Task ProjectInviteCancel_MemberNotAdded()
+  {
+    var res = await _inviter.ProjectInvite.Cancel(_createdInvite.projectId, _createdInvite.inviteId);
+    
+    Assert.That( res.invitedTeam, Is.Empty);
   }
 
   [Test]
@@ -85,8 +97,7 @@ public class ProjectInviteResourceTests
   [TestCase(StreamRoles.REVOKE)]
   public async Task ProjectUpdateRole(string newRole)
   {
-    await ProjectInviteUse();
-    //TODO: figure out if this test could work, we may need to invite the user first...
+    await ProjectInviteUse_MemberAdded();
     ProjectUpdateRoleInput input = new(_invitee.Account.userInfo.id, _project.id, newRole);
     _ = await _inviter.Project.UpdateRole(input);
 

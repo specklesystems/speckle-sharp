@@ -13,7 +13,7 @@ public class ModelResourceTests
   private Project _project;
   private Model _model;
 
-  [OneTimeSetUp]
+  [SetUp]
   public async Task Setup()
   {
     _testUser = await Fixtures.SeedUserWithClient();
@@ -47,6 +47,27 @@ public class ModelResourceTests
   }
 
   [Test]
+  public async Task GetModels()
+  {
+    var result = await Sut.GetModels(_project.id);
+
+    Assert.That(result.items, Has.Count.EqualTo(1));
+    Assert.That(result.totalCount, Is.EqualTo(1));
+    Assert.That(result.items[0], Has.Property(nameof(Model.id)).EqualTo(_model.id));
+  }
+  
+  [Test]
+  public async Task Project_GetModels()
+  {
+    var result = await _testUser.Project.GetWithModels(_project.id);
+
+    Assert.That(result, Has.Property(nameof(Project.id)).EqualTo(_project.id));
+    Assert.That(result.models.items, Has.Count.EqualTo(1));
+    Assert.That(result.models.totalCount, Is.EqualTo(1));
+    Assert.That(result.models.items[0], Has.Property(nameof(Model.id)).EqualTo(_model.id));
+  }
+  
+  [Test]
   public async Task ModelUpdate()
   {
     const string NEW_NAME = "MY new name";
@@ -64,13 +85,12 @@ public class ModelResourceTests
   [Test]
   public async Task ModelDelete()
   {
-    Model toDelete = await Sut.Create(new("Delete me", null, _project.id));
-    DeleteModelInput input = new(toDelete.id, _project.id);
+    DeleteModelInput input = new(_model.id, _project.id);
 
     bool response = await Sut.Delete(input);
     Assert.That(response, Is.True);
 
-    Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Get(toDelete.id, _project.id));
+    Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Get(_model.id, _project.id));
     Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Delete(input));
   }
 }

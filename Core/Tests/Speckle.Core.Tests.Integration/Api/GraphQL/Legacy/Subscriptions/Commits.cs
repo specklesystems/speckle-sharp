@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
 using Speckle.Core.Transports;
 
-namespace Speckle.Core.Tests.Integration.Subscriptions;
+namespace Speckle.Core.Tests.Integration.Api.GraphQL.Legacy.Subscriptions;
 
 public class Commits : IDisposable
 {

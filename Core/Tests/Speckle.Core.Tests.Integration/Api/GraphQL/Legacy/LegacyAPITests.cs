@@ -5,9 +5,9 @@ using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
 using Speckle.Core.Transports;
 
-namespace Speckle.Core.Tests.Integration.Api;
+namespace Speckle.Core.Tests.Integration.Api.GraphQL.Legacy;
 
-public class Legacy : IDisposable
+public class LegacyAPITests : IDisposable
 {
   private string _branchId = "";
   private string _branchName = "";

@@ -2,7 +2,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 
-namespace Speckle.Core.Tests.Integration.Subscriptions;
+namespace Speckle.Core.Tests.Integration.Api.GraphQL.Legacy.Subscriptions;
 
 public class Branches : IDisposable
 {

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Models.Responses;
 using Version = Speckle.Core.Api.GraphQL.Models.Version;
 
@@ -82,7 +83,7 @@ public sealed class VersionResource
   /// <param name="filter">Optional filter</param>
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<List<Version>> GetVersions(
+  public async Task<ResourceCollection<Version>> GetVersions(
     string modelId,
     string projectId,
     int limit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
@@ -140,7 +141,7 @@ public sealed class VersionResource
     var response = await _client
       .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response.project.model.versions.items;
+    return response.project.model.versions;
   }
 
   /// <param name="cancellationToken"></param>

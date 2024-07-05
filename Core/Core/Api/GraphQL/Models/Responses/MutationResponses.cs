@@ -31,3 +31,13 @@ internal sealed class VersionMutation
   public Model moveToModel { get; init; }
   public Version update { get; init; }
 }
+
+internal sealed class CommentMutation
+{
+  public bool archive { get; init; }
+  public Comment create { get; init; }
+  public Comment edit { get; init; }
+  public bool markViewed { get; init; }
+  public Comment reply { get; init; }
+}
+

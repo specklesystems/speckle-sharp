@@ -35,6 +35,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
   public OtherUserResource OtherUser { get; }
   public ProjectInviteResource ProjectInvite { get; }
   public CommentResource Comment { get; }
+  public SubscriptionResource Subscription { get; }
 
   public string ServerUrl => Account.serverInfo.url;
 
@@ -62,6 +63,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     OtherUser = new(this);
     ProjectInvite = new(this);
     Comment = new(this);
+    Subscription = new(this);
 
     HttpClient = CreateHttpClient(account);
 
@@ -72,6 +74,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
   {
     try
     {
+      Subscription.Dispose();
       UserStreamAddedSubscription?.Dispose();
       UserStreamRemovedSubscription?.Dispose();
       StreamUpdatedSubscription?.Dispose();
@@ -245,6 +248,10 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     };
   }
 
+  IDisposable ISpeckleGraphQLClient.SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback) =>
+    SubscribeTo(request, callback);
+
+  /// <inheritdoc cref="ISpeckleGraphQLClient.SubscribeTo{T}"/>
   internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
     using (LogContext.Push(CreateEnrichers<T>(request)))

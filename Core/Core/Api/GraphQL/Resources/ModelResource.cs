@@ -69,8 +69,8 @@ public sealed class ModelResource
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   /// <see cref="Get"/>
   public async Task<Model> GetWithVersions(
-    string projectId,
     string modelId,
+    string projectId,
     int versionsLimit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
     string? versionsCursor = null,
     ModelVersionsFilter? versionsFilter = null,
@@ -89,11 +89,20 @@ public sealed class ModelResource
                                versions(limit: $versionsLimit, cursor: $versionsCursor, filter: $versionsFilter) {
                                  items {
                                    id
-                                   message
-                                   previewUrl
                                    referencedObject
+                                   message
                                    sourceApplication
                                    createdAt
+                                   previewUrl
+                                   authorUser {
+                                     totalOwnedStreamsFavorites
+                                     id
+                                     name
+                                     bio
+                                     company
+                                     verified
+                                     role
+                                   }
                                  }
                                  totalCount
                                  cursor
@@ -134,6 +143,60 @@ public sealed class ModelResource
       .ConfigureAwait(false);
 
     return response.project.model;
+  }
+  
+  /// <param name="projectId"></param>
+  /// <param name="modelsLimit">Max number of models to fetch</param>
+  /// <param name="modelsCursor">Optional cursor for pagination</param>
+  /// <param name="modelsFilter">Optional models filter</param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<ResourceCollection<Model>> GetModels(
+    string projectId,
+    int modelsLimit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
+    string? modelsCursor = null,
+    ProjectModelsFilter? modelsFilter = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+                         query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
+                           project(id: $projectId) {
+                             models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
+                               items {
+                                 id
+                                 name
+                                 previewUrl
+                                 updatedAt
+                                 displayName
+                                 description
+                                 createdAt
+                               }
+                               totalCount
+                               cursor
+                             }
+                           }
+                         }
+                         """;
+    GraphQLRequest request =
+      new()
+      {
+        Query = QUERY,
+        Variables = new
+        {
+          projectId,
+          modelsLimit,
+          modelsCursor,
+          modelsFilter
+        }
+      };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.project.models;
   }
 
   /// <param name="input"></param>

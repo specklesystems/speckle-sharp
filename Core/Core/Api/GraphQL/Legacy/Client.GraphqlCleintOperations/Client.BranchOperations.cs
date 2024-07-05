@@ -17,7 +17,8 @@ public partial class Client
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
-  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithModels)}")]
+  /// <seealso cref="GraphQL.Resources.ModelResource.GetModels"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.GetModels)}")]
   public async Task<List<Branch>> StreamGetBranchesWithLimitRetry(string streamId, int commitsLimit = 10)
   {
     List<Branch> branches;
@@ -43,7 +44,8 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
-  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.GetWithModels)}")]
+  /// <seealso cref="GraphQL.Resources.ModelResource.GetModels"/>
+  [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.GetModels)}")]
   public async Task<List<Branch>> StreamGetBranches(
     string streamId,
     int branchesLimit = 10,

@@ -2,7 +2,6 @@
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
-using Speckle.Core.Transports;
 using Version = Speckle.Core.Api.GraphQL.Models.Version;
 
 namespace Speckle.Core.Tests.Integration.API.GraphQL.Resources;
@@ -16,32 +15,59 @@ public class VersionResourceTests
   private Model _model1;
   private Model _model2;
   private Version _version;
-
-  private CommitCreateInput _testData;
-
-  [OneTimeSetUp]
+  
+  [SetUp]
   public async Task Setup()
   {
     _testUser = await Fixtures.SeedUserWithClient();
     _project = await _testUser.Project.Create(new("Test project", "", null));
     _model1 = await _testUser.Model.Create(new("Test Model 1", "", _project.id));
     _model2 = await _testUser.Model.Create(new("Test Model 2", "", _project.id));
+    
+    string versionId = await Fixtures.CreateVersion(_testUser, _project.id, "Test Model 1");
 
-    using ServerTransport remote = new(_testUser.Account, _project.id);
-    var objectId = await Operations.Send(new() { applicationId = "ASDF" }, remote, false);
-    _testData = new()
-    {
-      branchName = "Test Model 1",
-      message = "test version",
-      objectId = objectId,
-      streamId = _project.id
-    };
-
-    string commitId = await _testUser.Version.Create(_testData);
-
-    _version = await Sut.Get(commitId, _model1.id, _project.id);
+    _version = await Sut.Get(versionId, _model1.id, _project.id);
   }
 
+  [Test]
+  public async Task VersionGet()
+  {
+    Version result = await Sut.Get(_version.id, _model1.id, _project.id);
+
+    Assert.That(result, Has.Property(nameof(Version.id)).EqualTo(_version.id));
+    Assert.That(result, Has.Property(nameof(Version.message)).EqualTo(_version.message));
+  }
+  
+  [Test]
+  public async Task VersionsGet()
+  {
+    ResourceCollection<Version> result = await Sut.GetVersions(_model1.id, _project.id);
+    
+    Assert.That(result.items, Has.Count.EqualTo(1));
+    Assert.That(result.totalCount, Is.EqualTo(1));
+    Assert.That(result.items[0], Has.Property(nameof(Version.id)).EqualTo(_version.id));
+  }
+  
+  [Test]
+  public async Task VersionReceived()
+  {
+    CommitReceivedInput input = new(){commitId = _version.id, message = "we receieved it", sourceApplication = "Integration test", streamId = _project.id};
+    var  result = await Sut.Received(input);
+
+    Assert.That(result, Is.True);
+  }
+  
+  [Test]
+  public async Task ModelGetWithVersions()
+  {
+    Model result = await _testUser.Model.GetWithVersions(_model1.id, _project.id);
+    
+    Assert.That(result, Has.Property(nameof(Model.id)).EqualTo(_model1.id));
+    Assert.That(result.versions.items, Has.Count.EqualTo(1));
+    Assert.That(result.versions.totalCount, Is.EqualTo(1));
+    Assert.That(result.versions.items[0], Has.Property(nameof(Version.id)).EqualTo(_version.id));
+  }
+  
   [Test]
   public async Task VersionUpdate()
   {
@@ -73,13 +99,12 @@ public class VersionResourceTests
   [Test]
   public async Task VersionDelete()
   {
-    string toDelete = await Sut.Create(_testData);
-    DeleteVersionsInput input = new(new[] { toDelete });
+    DeleteVersionsInput input = new(new[] { _version.id });
 
     bool response = await Sut.Delete(input);
     Assert.That(response, Is.True);
 
-    Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Get(toDelete, _model1.id, _project.id));
+    Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Get(_version.id, _model1.id, _project.id));
     Assert.CatchAsync<SpeckleGraphQLException>(async () => _ = await Sut.Delete(input));
   }
 }

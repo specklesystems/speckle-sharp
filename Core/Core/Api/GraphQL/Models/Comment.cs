@@ -20,6 +20,6 @@ public sealed class Comment
   public List<ResourceIdentifier> resources { get; init; }
   public string screenshot { get; init; }
   public DateTime updatedAt { get; init; }
-  public DateTime viewedAt { get; init; }
+  public DateTime? viewedAt { get; init; }
   public List<ViewerResourceItem> viewerResources { get; init; }
 }

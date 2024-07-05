@@ -11,7 +11,6 @@ public class ResourceCollection<T>
   public string? cursor { get; init; }
 }
 
-//TODO: no current property, check pagination with web team
 public sealed class CommentReplyAuthorCollection : ResourceCollection<LimitedUser> { }
 
 public sealed class ProjectCommentCollection : ResourceCollection<Comment>
