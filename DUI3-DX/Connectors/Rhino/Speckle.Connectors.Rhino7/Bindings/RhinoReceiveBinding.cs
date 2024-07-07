@@ -7,7 +7,6 @@ using Speckle.Connectors.Utils;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Serialisation.TypeCache;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
