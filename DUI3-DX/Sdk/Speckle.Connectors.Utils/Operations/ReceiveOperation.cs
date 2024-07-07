@@ -2,6 +2,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.SchemaVersioning;
 using Speckle.Core.Serialisation.TypeCache;
 using Speckle.Core.Transports;
 using Version = System.Version;
@@ -12,13 +13,19 @@ public sealed class ReceiveOperation
 {
   private readonly IHostObjectBuilder _hostObjectBuilder;
   private readonly ISyncToThread _syncToThread;
+  private readonly ISchemaObjectUpgradeManager<Base, Base> _objectUpgradeManager;
   private readonly ITypeCache _typeCache;
 
-  public ReceiveOperation(IHostObjectBuilder hostObjectBuilder, ITypeCache typeCache, ISyncToThread syncToThread)
+  public ReceiveOperation(
+      IHostObjectBuilder hostObjectBuilder,
+      ITypeCache typeCache,
+      ISchemaObjectUpgradeManager<Base, Base> objectUpgradeManager,
+      ISyncToThread syncToThread)
   {
     _hostObjectBuilder = hostObjectBuilder;
     _syncToThread = syncToThread;
     _typeCache = typeCache;
+    _objectUpgradeManager = objectUpgradeManager;
   }
 
   public async Task<HostObjectBuilderResult> Execute(
@@ -27,7 +34,6 @@ public sealed class ReceiveOperation
     string projectName,
     string modelName,
     string versionId,
-    ITypeCache typeCache,
     CancellationToken cancellationToken,
     Action<string, double?>? onOperationProgressed = null
   )
@@ -44,7 +50,7 @@ public sealed class ReceiveOperation
 
     using ServerTransport transport = new(account, projectId);
     Base commitObject = await Speckle.Core.Api.Operations
-      .Receive(version.referencedObject, typeCache, schemaVersion, transport, cancellationToken: cancellationToken)
+      .Receive(version.referencedObject, _typeCache, _objectUpgradeManager, schemaVersion, transport, cancellationToken: cancellationToken)
       .ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();

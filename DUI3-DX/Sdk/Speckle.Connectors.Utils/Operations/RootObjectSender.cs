@@ -1,4 +1,5 @@
 using Speckle.Connectors.Utils.Caching;
+using Speckle.Core;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -55,7 +56,8 @@ public sealed class RootObjectSender : IRootObjectSender
           streamId = sendInfo.ProjectId,
           branchName = sendInfo.ModelId,
           sourceApplication = sendInfo.SourceApplication,
-          objectId = sendResult.rootObjId
+          objectId = sendResult.rootObjId,
+          SchemaVersion = SpeckleObjectSchema.Version.ToString()
         },
         ct
       )

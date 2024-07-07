@@ -19,7 +19,6 @@ public class RhinoReceiveBinding : IReceiveBinding
   private readonly CancellationManager _cancellationManager;
   private readonly DocumentModelStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-  private readonly ITypeCache _typeCache;
   
   public ReceiveBindingUICommands Commands { get; }
 
@@ -27,15 +26,13 @@ public class RhinoReceiveBinding : IReceiveBinding
     DocumentModelStore store,
     CancellationManager cancellationManager,
     IBridge parent,
-    IUnitOfWorkFactory unitOfWorkFactory,
-    ITypeCache typeCache
+    IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     Parent = parent;
     _store = store;
     _unitOfWorkFactory = unitOfWorkFactory;
     _cancellationManager = cancellationManager;
-    _typeCache = typeCache;
     Commands = new ReceiveBindingUICommands(parent);
   }
 
@@ -65,7 +62,6 @@ public class RhinoReceiveBinding : IReceiveBinding
           modelCard.ProjectName.NotNull(),
           modelCard.ModelName.NotNull(),
           modelCard.SelectedVersionId.NotNull(),
-          _typeCache,
           cts.Token,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
