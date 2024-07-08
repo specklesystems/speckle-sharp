@@ -91,42 +91,6 @@ public sealed class SubscriptionResource : IDisposable
     return subscription;
   }
 
-  /// <summary>Subscribe to changes to any of a project's file imports</summary>
-  /// <remarks><inheritdoc cref="CreateUserProjectsUpdatedSubscription"/></remarks>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.SubscribeTo{T}"/>
-  public Subscription<ProjectFileImportUpdatedMessage> CreateProjectFileImportUpdatedSubscription(string id)
-  {
-    //language=graphql
-    const string QUERY = """
-                         subscription ProjectFileImportUpdated($id: String!) {
-                           data:projectFileImportUpdated(id: $id) {
-                             id
-                             type
-                             upload {
-                               convertedLastUpdate
-                               convertedMessage
-                               convertedStatus
-                               convertedVersionId
-                               fileName
-                               fileSize
-                               fileType
-                               id
-                               modelName
-                               projectId
-                               uploadComplete
-                               uploadDate
-                               userId
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { id } };
-
-    Subscription<ProjectFileImportUpdatedMessage> subscription = new(_client, request);
-    _subscriptions.Add(subscription);
-    return subscription;
-  }
-
   /// <summary>Subscribe to changes to a project's models. Optionally specify <paramref name="modelIds"/> to track</summary>
   /// <remarks><inheritdoc cref="CreateUserProjectsUpdatedSubscription"/></remarks>
   /// <inheritdoc cref="ISpeckleGraphQLClient.SubscribeTo{T}"/>
@@ -142,6 +106,22 @@ public sealed class SubscriptionResource : IDisposable
                              id
                              model {
                                id
+                               name
+                               previewUrl
+                               updatedAt
+                               description
+                               displayName
+                               createdAt
+                               author {
+                                 avatar
+                                 bio
+                                 company
+                                 id
+                                 name
+                                 role
+                                 totalOwnedStreamsFavorites
+                                 verified
+                               }
                              }
                              type
                            }
@@ -150,44 +130,6 @@ public sealed class SubscriptionResource : IDisposable
     GraphQLRequest request = new() { Query = QUERY, Variables = new { id, modelIds } };
 
     Subscription<ProjectModelsUpdatedMessage> subscription = new(_client, request);
-    _subscriptions.Add(subscription);
-    return subscription;
-  }
-
-  /// <summary>Subscribe to changes to a project's pending models</summary>
-  /// <remarks><inheritdoc cref="CreateUserProjectsUpdatedSubscription"/></remarks>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.SubscribeTo{T}"/>
-  public Subscription<ProjectPendingModelsUpdatedMessage> CreateProjectPendingModelsUpdatedSubscription(string id)
-  {
-    //language=graphql
-    const string QUERY = """
-                         subscription ProjectPendingModelsUpdated($id: String!) {
-                           data:projectPendingModelsUpdated(id: $id) {
-                             id
-                             model {
-                               branchName
-                               convertedCommitId
-                               convertedLastUpdate
-                               convertedMessage
-                               convertedStatus
-                               convertedVersionId
-                               fileName
-                               fileSize
-                               fileType
-                               id
-                               modelName
-                               projectId
-                               streamId
-                               uploadComplete
-                               uploadDate
-                               userId
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new() { Query = QUERY, Variables = new { id } };
-
-    Subscription<ProjectPendingModelsUpdatedMessage> subscription = new(_client, request);
     _subscriptions.Add(subscription);
     return subscription;
   }
@@ -204,6 +146,14 @@ public sealed class SubscriptionResource : IDisposable
                              id
                              project {
                                id
+                               name
+                               description
+                               visibility
+                               allowPublicComments
+                               role
+                               createdAt
+                               updatedAt
+                               sourceApps
                              }
                              type
                            }
@@ -230,6 +180,21 @@ public sealed class SubscriptionResource : IDisposable
                              type
                              version {
                                id
+                               referencedObject
+                               message
+                               sourceApplication
+                               createdAt
+                               previewUrl
+                               authorUser {
+                                 totalOwnedStreamsFavorites
+                                 id
+                                 name
+                                 bio
+                                 company
+                                 verified
+                                 role
+                                 avatar
+                               }
                              }
                            }
                          }
