@@ -116,22 +116,29 @@ public static class AccountManager
       new NewtonsoftJsonSerializer(),
       httpClient
     );
-
     //language=graphql
-    var request = new GraphQLRequest { Query = " query { activeUser { name email id company } }" };
+    const string QUERY = """
+                         query { 
+                           data:activeUser {
+                             name 
+                             email 
+                             id 
+                             company
+                           } 
+                         }
+                         """;
+    var request = new GraphQLRequest { Query = QUERY };
 
-    var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
+    var response = await gqlClient
+      .SendQueryAsync<RequiredResponse<UserInfo>>(request, cancellationToken)
+      .ConfigureAwait(false);
 
     if (response.Errors != null)
     {
-      throw new SpeckleGraphQLException<ActiveUserResponse>(
-        $"GraphQL request {nameof(GetUserInfo)} failed",
-        request,
-        response
-      );
+      throw new SpeckleGraphQLException($"GraphQL request {nameof(GetUserInfo)} failed", request, response);
     }
 
-    return response.Data.activeUser;
+    return response.Data.data;
   }
 
   /// <summary>

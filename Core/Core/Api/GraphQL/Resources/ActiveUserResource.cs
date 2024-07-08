@@ -24,7 +24,7 @@ public sealed class ActiveUserResource
   /// <returns></returns>
   /// <returns>the requested user, or null if the user does not exist (i.e. <see cref="Client"/> was initialised with an unauthenticated account)</returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  public async Task<UserInfo?> Get(CancellationToken cancellationToken = default)
+  public async Task<User?> Get(CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
