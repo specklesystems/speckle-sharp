@@ -83,6 +83,7 @@ static const char* Slabs = "slabs";
 static const char* Walls = "walls";
 static const char* Windows = "windows";
 static const char* Zones = "zones";
+static const char* Openings = "openings";
 
 static const char* Models = "models";
 static const char* SubelementModels = "subelementModels";
@@ -473,6 +474,73 @@ namespace Object
 static const char* pos = "pos";
 static const char* transform = "transform";
 }
+
+
+namespace Opening
+{
+// Floor Plan Parameters
+static const char* FloorPlanDisplayMode = "floorPlanDisplayMode";
+static const char* ConnectionMode = "connectionMode";
+
+// Cut Surfaces Parameters
+static const char* CutSurfacesUseLineOfCutElements = "cutsurfacesUseLineOfCutElements";
+static const char* CutSurfacesLinePenIndex = "cutsurfacesLinePenIndex";
+static const char* CutSurfacesLineIndex = "cutsurfacesLineIndex";
+
+// Outlines Parameters
+static const char* OutlinesStyle = "outlinesStyle";
+static const char* OutlinesUseLineOfCutElements = "outlinesUseLineOfCutElements"; // => Cut Surfaces Parameters-ben is megtalálható
+static const char* OutlinesUncutLineIndex = "outlinesUncutLineIndex";
+static const char* OutlinesOverheadLineIndex = "outlinesOverheadLineIndex";
+static const char* OutlinesUncutLinePenIndex = "outlinesUncutLinePenIndex";
+static const char* OutlinesOverheadLinePenIndex = "outlinesOverheadLinePenIndex";
+
+// Opening Cover Fills Parameters
+static const char* UseCoverFills = "useCoverFills";
+static const char* UseFillsOfCutElements = "useFillsOfCutElements";
+static const char* CoverFillIndex = "coverFillIndex";
+static const char* CoverFillPenIndex = "coverFillPenIndex";
+static const char* CoverFillBackgroundPenIndex = "coverFillBackgroundPenIndex";
+static const char* CoverFillOrientation = "coverFillOrientation";
+
+// Cover Fill Transformation Parameters
+static const char* CoverFillTransformationOrigoX = "coverFillTransformationOrigoX";
+static const char* CoverFillTransformationOrigoY = "coverFillTransformationOrigoY";
+static const char* CoverFillTransformationOrigoZ = "coverFillTransformationOrigoZ";
+static const char* CoverFillTransformationXAxisX = "coverFillTransformationXAxisX";
+static const char* CoverFillTransformationXAxisY = "coverFillTransformationXAxisY";
+static const char* CoverFillTransformationXAxisZ = "coverFillTransformationXAxisZ";
+static const char* CoverFillTransformationYAxisX = "coverFillTransformationYAxisX";
+static const char* CoverFillTransformationYAxisY = "coverFillTransformationYAxisY";
+static const char* CoverFillTransformationYAxisZ = "coverFillTransformationYAxisZ";
+
+// Reference Axis Parameters
+static const char* ShowReferenceAxis = "showReferenceAxis";
+static const char* ReferenceAxisPenIndex = "referenceAxisPenIndex";
+static const char* ReferenceAxisLineTypeIndex = "referenceAxisLineTypeIndex";
+static const char* ReferenceAxisOverhang = "referenceAxisOverhang";
+
+// Extrusion Geometry Parameters
+static const char* ExtrusionGeometryBasePoint = "extrusionGeometryBasePoint";
+static const char* ExtrusionGeometryXAxis = "extrusionGeometryXAxis";
+static const char* ExtrusionGeometryYAxis = "extrusionGeometryYAxis";
+static const char* ExtrusionGeometryZAxis = "extrusionGeometryZAxis";
+static const char* BasePolygonType = "basePolygonType";
+static const char* Width = "width";
+static const char* Height = "height";
+static const char* Constraint = "constraint";
+static const char* Anchor = "anchor";
+static const char* AnchorIndex = "anchorIndex";
+static const char* AnchorAltitude = "anchorAltitude";
+static const char* LimitType = "limitType";
+static const char* ExtrusionStartOffSet = "extrusionStartOffSet";
+static const char* FiniteBodyLength = "finiteBodyLength";
+static const char* LinkedStatus = "linkedStatus";
+static const char* NCoords = "nCoords";
+static const char* NSubPolys = "nSubPolys";
+static const char* NArcs = "nArcs";
+}
+
 
 namespace GridElement
 {

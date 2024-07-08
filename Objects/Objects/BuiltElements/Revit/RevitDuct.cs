@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
@@ -11,22 +12,48 @@ public class RevitDuct : Duct, IHasMEPConnectors
 {
   public RevitDuct() { }
 
-  /// <summary>
-  /// SchemaBuilder constructor for a Revit duct (deprecated)
-  /// </summary>
-  /// <param name="family"></param>
-  /// <param name="type"></param>
-  /// <param name="baseLine"></param>
-  /// <param name="systemName"></param>
-  /// <param name="systemType"></param>
-  /// <param name="level"></param>
-  /// <param name="width"></param>
-  /// <param name="height"></param>
-  /// <param name="diameter"></param>
-  /// <param name="velocity"></param>
-  /// <param name="parameters"></param>
-  /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
-  [SchemaInfo("RevitDuct", "Creates a Revit duct", "Revit", "MEP"), SchemaDeprecated]
+  public RevitDuct(
+    string family,
+    string type,
+    ICurve baseCurve,
+    string systemName,
+    string systemType,
+    Level level,
+    double width,
+    double height,
+    double diameter,
+    double length,
+    string? units,
+    string? elementId,
+    double velocity = 0,
+    IReadOnlyList<Mesh>? displayValue = null,
+    List<Parameter>? parameters = null
+  )
+    : base(baseCurve, width, height, diameter, length, units, velocity, displayValue)
+  {
+    this.family = family;
+    this.type = type;
+    this.systemName = systemName;
+    this.systemType = systemType;
+    this.level = level;
+    this.parameters = parameters?.ToBase();
+    this.elementId = elementId;
+  }
+
+  public string family { get; set; }
+  public string type { get; set; }
+  public string systemName { get; set; }
+  public string systemType { get; set; }
+  public Level level { get; set; }
+  public Base? parameters { get; set; }
+  public string? elementId { get; set; }
+  public List<RevitMEPConnector> Connectors { get; set; } = new();
+
+  #region Schema Info Constructors
+
+  [SchemaInfo("RevitDuct (DEPRECATED)", "Creates a Revit duct", "Revit", "MEP")]
+  [SchemaDeprecated]
+  [Obsolete("Use other Constructor")]
   public RevitDuct(
     string family,
     string type,
@@ -54,21 +81,6 @@ public class RevitDuct : Duct, IHasMEPConnectors
     this.level = level;
   }
 
-  /// <summary>
-  /// SchemaBuilder constructor for a Revit duct
-  /// </summary>
-  /// <param name="family"></param>
-  /// <param name="type"></param>
-  /// <param name="baseCurve"></param>
-  /// <param name="systemName"></param>
-  /// <param name="systemType"></param>
-  /// <param name="level"></param>
-  /// <param name="width"></param>
-  /// <param name="height"></param>
-  /// <param name="diameter"></param>
-  /// <param name="velocity"></param>
-  /// <param name="parameters"></param>
-  /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
   [SchemaInfo("RevitDuct", "Creates a Revit duct", "Revit", "MEP")]
   public RevitDuct(
     string family,
@@ -83,49 +95,76 @@ public class RevitDuct : Duct, IHasMEPConnectors
     double velocity = 0,
     List<Parameter>? parameters = null
   )
-  {
-    this.baseCurve = baseCurve;
-    this.family = family;
-    this.type = type;
-    this.width = width;
-    this.height = height;
-    this.diameter = diameter;
-    this.velocity = velocity;
-    this.systemName = systemName;
-    this.systemType = systemType;
-    this.parameters = parameters?.ToBase();
-    this.level = level;
-  }
+    : this(
+      family,
+      type,
+      baseCurve,
+      systemName,
+      systemType,
+      level,
+      width,
+      height,
+      diameter,
+      default, //TODO: what to do with length?
+      null,
+      null,
+      velocity,
+      parameters: parameters
+    ) { }
 
-  public string family { get; set; }
-  public string type { get; set; }
-  public string systemName { get; set; }
-  public string systemType { get; set; }
-  public Level level { get; set; }
-  public Base? parameters { get; set; }
-  public string elementId { get; set; }
-  public List<RevitMEPConnector> Connectors { get; set; } = new();
+  #endregion
 }
 
 public class RevitFlexDuct : RevitDuct
 {
   public RevitFlexDuct() { }
 
-  /// <summary>
-  /// SchemaBuilder constructor for a Revit flex duct
-  /// </summary>
-  /// <param name="family"></param>
-  /// <param name="type"></param>
-  /// <param name="baseCurve"></param>
-  /// <param name="systemName"></param>
-  /// <param name="systemType"></param>
-  /// <param name="level"></param>
-  /// <param name="width"></param>
-  /// <param name="height"></param>
-  /// <param name="diameter"></param>
-  /// <param name="velocity"></param>
-  /// <param name="parameters"></param>
-  /// <remarks>Assign units when using this constructor due to <paramref name="width"/>, <paramref name="height"/>, and <paramref name="diameter"/> params</remarks>
+  public RevitFlexDuct(
+    string family,
+    string type,
+    [SchemaMainParam] ICurve baseCurve,
+    string systemName,
+    string systemType,
+    Level level,
+    double width,
+    double height,
+    double diameter,
+    double length,
+    Vector startTangent,
+    Vector endTangent,
+    string? units,
+    string? elementId,
+    double velocity = 0,
+    IReadOnlyList<Mesh>? displayValue = null,
+    List<Parameter>? parameters = null
+  )
+    : base(
+      family,
+      type,
+      baseCurve,
+      systemName,
+      systemType,
+      level,
+      width,
+      height,
+      diameter,
+      length,
+      units,
+      elementId,
+      velocity,
+      displayValue,
+      parameters
+    )
+  {
+    this.startTangent = startTangent;
+    this.endTangent = endTangent;
+  }
+
+  public Vector startTangent { get; set; }
+  public Vector endTangent { get; set; }
+
+  #region Schema Info Constructor
+
   [SchemaInfo("RevitFlexDuct", "Creates a Revit flex duct", "Revit", "MEP")]
   public RevitFlexDuct(
     string family,
@@ -142,22 +181,24 @@ public class RevitFlexDuct : RevitDuct
     double velocity = 0,
     List<Parameter>? parameters = null
   )
-  {
-    this.baseCurve = baseCurve;
-    this.family = family;
-    this.type = type;
-    this.width = width;
-    this.height = height;
-    this.diameter = diameter;
-    this.startTangent = startTangent;
-    this.endTangent = endTangent;
-    this.velocity = velocity;
-    this.systemName = systemName;
-    this.systemType = systemType;
-    this.parameters = parameters?.ToBase();
-    this.level = level;
-  }
+    : this(
+      family,
+      type,
+      baseCurve,
+      systemName,
+      systemType,
+      level,
+      width,
+      height,
+      diameter,
+      0,
+      startTangent,
+      endTangent,
+      null,
+      null,
+      velocity,
+      parameters: parameters
+    ) { }
 
-  public Vector startTangent { get; set; }
-  public Vector endTangent { get; set; }
+  #endregion
 }

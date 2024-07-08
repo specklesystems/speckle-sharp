@@ -28,7 +28,7 @@ public interface IHasArea
   /// <summary>
   /// The area of the object
   /// </summary>
-  double area { get; set; }
+  double area { get; }
 }
 
 /// <summary>
@@ -39,7 +39,7 @@ public interface IHasVolume
   /// <summary>
   /// The volume of the object
   /// </summary>
-  double volume { get; set; }
+  double volume { get; }
 }
 
 /// <summary>
@@ -50,12 +50,14 @@ public interface ICurve
   /// <summary>
   /// The length of the curve.
   /// </summary>
-  double length { get; set; }
+  double length { get; }
 
   /// <summary>
   /// The numerical domain driving the curve's internal parametrization.
   /// </summary>
-  Interval domain { get; set; }
+  Interval domain { get; }
+
+  string units { get; }
 }
 
 /// <summary>
@@ -108,6 +110,17 @@ public interface IDisplayValue<out T>
   /// if a native displayable object cannot be converted.
   /// </summary>
   T displayValue { get; }
+}
+
+/// <summary>
+/// Represents a calculated object for civil disciplines
+/// </summary>
+public interface ICivilCalculatedObject
+{
+  /// <summary>
+  /// <see cref="codes"/> for this calculated object.
+  /// </summary>
+  List<string> codes { get; set; }
 }
 
 
