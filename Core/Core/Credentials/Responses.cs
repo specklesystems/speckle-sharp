@@ -6,14 +6,14 @@ namespace Speckle.Core.Credentials;
 
 internal sealed class ActiveUserServerInfoResponse
 {
-  public UserInfo activeUser { get; set; }
-  public ServerInfo serverInfo { get; set; }
+  public UserInfo activeUser { get; init; }
+  public ServerInfo serverInfo { get; init; }
 }
 
 internal sealed class TokenExchangeResponse
 {
-  public string token { get; set; }
-  public string refreshToken { get; set; }
+  public string token { get; init; }
+  public string refreshToken { get; init; }
 }
 
 public sealed class UserInfo

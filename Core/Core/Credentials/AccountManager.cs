@@ -101,6 +101,7 @@ public static class AccountManager
   /// </summary>
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
+  /// <returns></returns>
   public static async Task<UserInfo> GetUserInfo(
     string token,
     Uri server,
@@ -115,9 +116,18 @@ public static class AccountManager
       new NewtonsoftJsonSerializer(),
       httpClient
     );
-
     //language=graphql
-    var request = new GraphQLRequest { Query = "query { data:activeUser { name email id company } }" };
+    const string QUERY = """
+                         query { 
+                           data:activeUser {
+                             name 
+                             email 
+                             id 
+                             company
+                           } 
+                         }
+                         """;
+    var request = new GraphQLRequest { Query = QUERY };
 
     var response = await gqlClient
       .SendQueryAsync<RequiredResponse<UserInfo>>(request, cancellationToken)
