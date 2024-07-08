@@ -6,9 +6,15 @@
 	AC_MDID_LOC /* Set AC_MDID_LOC value as your local id. */
 }
 
+#ifdef macintosh
 'GICN' 10001 "AddOnIcon" {
-	"AddOnIcon"
+	"AddOnIconMac"
 }
+#else
+'GICN' 10001 "AddOnIcon" {
+	"AddOnIconWin"
+}
+#endif
 
 'STR#' ID_FIX_ELEMENT_TYPE_STRINGS "Element Type Strings" {
 /* [  1] */		"Wall"

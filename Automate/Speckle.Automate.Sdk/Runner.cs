@@ -41,7 +41,7 @@ public static class AutomationRunner
     catch (Exception ex) when (!ex.IsFatal())
     {
       Console.WriteLine(ex.ToString());
-      automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
+      automationContext.MarkRunException("Function error. Check the automation run logs for details.");
     }
     finally
     {
@@ -59,16 +59,14 @@ public static class AutomationRunner
     Func<AutomationContext, Task> automateFunction,
     AutomationRunData automationRunData,
     string speckleToken
-  )
-  {
-    return await RunFunction(
+  ) =>
+    await RunFunction(
         async (context, _) => await automateFunction(context).ConfigureAwait(false),
         automationRunData,
         speckleToken,
         new Fake()
       )
       .ConfigureAwait(false);
-  }
 
   private struct Fake { }
 
@@ -100,14 +98,25 @@ public static class AutomationRunner
     Argument<string> pathArg = new(name: "Input Path", description: "A file path to retrieve function inputs");
     RootCommand rootCommand = new();
 
+    // a stupid hack to be able to exit with a specific integer exit code
+    // read more at https://github.com/dotnet/command-line-api/issues/1570
+    var exitCode = 0;
+
     rootCommand.AddArgument(pathArg);
     rootCommand.SetHandler(
       async inputPath =>
       {
         FunctionRunData<TInput> data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        await RunFunction(automateFunction, data.AutomationRunData, data.SpeckleToken, data.FunctionInputs)
+        var context = await RunFunction(
+            automateFunction,
+            data.AutomationRunData,
+            data.SpeckleToken,
+            data.FunctionInputs
+          )
           .ConfigureAwait(false);
+
+        exitCode = context.RunStatus == "EXCEPTION" ? 1 : 0;
       },
       pathArg
     );
@@ -118,7 +127,7 @@ public static class AutomationRunner
     Command generateSchemaCommand = new("generate-schema", "Generate JSON schema for the function inputs");
     generateSchemaCommand.AddArgument(schemaFilePathArg);
     generateSchemaCommand.SetHandler(
-      (schemaFilePath) =>
+      schemaFilePath =>
       {
         JSchemaGenerator generator = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         generator.GenerationProviders.Add(new SpeckleSecretProvider());
@@ -134,7 +143,7 @@ public static class AutomationRunner
 
     // if we've gotten this far, the execution should technically be completed as expected
     // thus exiting with 0 is the semantically correct thing to do
-    return 0;
+    return exitCode;
   }
 }
 

@@ -46,7 +46,7 @@ public sealed class AutomationContextTest : IDisposable
     string functionRelease = Utils.RandomString(10);
     string functionRunId = Utils.RandomString(10);
 
-    var triggers = new List<AutomationRunTriggerBase>() { new VersionCreationTrigger(modelId, versionId) };
+    var triggers = new List<VersionCreationTrigger> { new(modelId, versionId) };
 
     return new AutomationRunData
     {
@@ -59,7 +59,7 @@ public sealed class AutomationContextTest : IDisposable
     };
   }
 
-  private VersionCreationTrigger GetVersionCreationTrigger(List<AutomationRunTriggerBase> triggers)
+  private VersionCreationTrigger GetVersionCreationTrigger(List<VersionCreationTrigger> triggers)
   {
     if (triggers.FirstOrDefault() is not VersionCreationTrigger trigger)
     {

@@ -9,12 +9,12 @@ public class DataField : Base
 {
   public DataField() { }
 
-  public DataField(string name, string type, string units, object? value = null)
+  public DataField(string name, string type, object? value, string? units = null)
   {
     this.name = name;
     this.type = type;
-    this.units = units;
     this.value = value;
+    this.units = units;
   }
 
   public string name { get; set; }
@@ -23,5 +23,5 @@ public class DataField : Base
 
   public object? value { get; set; }
 
-  public string units { get; set; }
+  public string? units { get; set; }
 }

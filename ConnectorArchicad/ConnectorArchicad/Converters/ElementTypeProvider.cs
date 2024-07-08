@@ -10,6 +10,7 @@ using Shell = Objects.BuiltElements.Archicad.ArchicadShell;
 using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
+using Opening = Objects.BuiltElements.Archicad.ArchicadOpening;
 
 namespace Archicad;
 
@@ -28,7 +29,8 @@ public static class ElementTypeProvider
       { "Door", typeof(Door) },
       { "Window", typeof(Window) },
       { "Skylight", typeof(Skylight) },
-      { "GridElement", typeof(GridElement) }
+      { "GridElement", typeof(GridElement) },
+      { "Opening", typeof(Opening) }
     };
 
   public static Type GetTypeByName(string name)

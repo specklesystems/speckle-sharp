@@ -5,39 +5,48 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements;
 
-public class Wall : Base, IDisplayValue<List<Mesh>>
+public class Wall : Base, IDisplayValue<IReadOnlyList<Base>>
 {
   public Wall() { }
 
-  /// <summary>
-  /// SchemaBuilder constructor for a Speckle wall
-  /// </summary>
-  /// <param name="height"></param>
-  /// <param name="baseLine"></param>
-  /// <param name="elements"></param>
-  /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+  public Wall(
+    double height,
+    string? units,
+    ICurve baseLine,
+    Level? level = null,
+    IReadOnlyList<Mesh>? displayValue = null,
+    List<Base>? elements = null
+  )
+  {
+    this.height = height;
+    this.units = units;
+    this.baseLine = baseLine;
+    this.level = level;
+    this.displayValue = ((IReadOnlyList<Base>?)displayValue) ?? new[] { (Base)baseLine };
+    this.elements = elements;
+  }
+
+  public double height { get; set; }
+
+  public string? units { get; set; }
+  public ICurve baseLine { get; set; }
+  public virtual Level? level { get; internal set; }
+
+  [DetachProperty]
+  public List<Base>? elements { get; set; }
+
+  [DetachProperty]
+  public IReadOnlyList<Base> displayValue { get; set; }
+
+  #region SchemaInfo Ctors
+
   [SchemaInfo("Wall", "Creates a Speckle wall", "BIM", "Architecture")]
   public Wall(
     double height,
     [SchemaMainParam] ICurve baseLine,
     [SchemaParamInfo("Any nested elements that this wall might have")] List<Base>? elements = null
   )
-  {
-    this.height = height;
-    this.baseLine = baseLine;
-    this.elements = elements;
-  }
+    : this(height, null, baseLine, null, null, elements) { }
 
-  public double height { get; set; }
-
-  [DetachProperty]
-  public List<Base>? elements { get; set; }
-
-  public ICurve baseLine { get; set; }
-  public virtual Level? level { get; internal set; }
-
-  public string units { get; set; }
-
-  [DetachProperty]
-  public List<Mesh> displayValue { get; set; }
+  #endregion
 }

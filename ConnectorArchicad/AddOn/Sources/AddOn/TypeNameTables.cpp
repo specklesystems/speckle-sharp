@@ -301,3 +301,63 @@ const GS::HashTable<short, GS::UniString> coreSymbolTypeNames
 	{ 3,		"X"},
 	{ 4,		"CrossHair"}
 };
+
+
+const GS::HashTable<API_OpeningFloorPlanDisplayModeTypeID, GS::UniString> openingFloorPlanDisplayModeNames
+{
+	{ API_OpeningSymbolic,			"Symbolic"},
+	{ API_OpeningSymbolicCut,		"Symbolic Cut"},
+	{ API_OpeningSymbolicOverhead,	"Symbolic Overhead"}
+};
+
+
+const GS::HashTable<API_OpeningFloorPlanConnectionModeTypeID, GS::UniString> openingFloorPlanConnectionModeNames
+{
+	{ API_OpeningDisconnected,		"Disconnected"},
+	{ API_OpeningConnected,			"Connected"}
+};
+
+
+const GS::HashTable<API_OpeningFloorPlanOutlinesStyleTypeID, GS::UniString> openingOutlinesStyleNames
+{
+	{ API_OpeningHideBorder,			"Hide Border"},
+	{ API_OpeningShowUncutBorder,		"Show Uncut Border"},
+	{ API_OpeningShowOverheadBorder,	"Show Overhead Border"}
+};
+
+
+const GS::HashTable<API_OpeningBasePolygonTypeTypeID, GS::UniString> openingBasePolygonTypeNames
+{
+	{ API_OpeningBasePolygonRectangular,	"Rectangular"},
+	{ API_OpeningBasePolygonCircular,		"Circular"},
+	{ API_OpeningBasePolygonCustom,			"Custom"}
+};
+
+
+const GS::HashTable<API_AnchorID, GS::UniString> openingAnchorNames
+{
+	{ APIAnc_LT,		"Left Top"},
+	{ APIAnc_MT,		"Middle Top"},
+	{ APIAnc_RT,		"Right Top"},
+	{ APIAnc_LM,		"Left Middle"},
+	{ APIAnc_MM,		"Middle Middle"},
+	{ APIAnc_RM,		"Right Middle"},
+	{ APIAnc_LB,		"Left Bottom"},
+	{ APIAnc_MB,		"Middle Bottom"},
+	{ APIAnc_RB,		"Right Bottom"}
+};
+
+
+const GS::HashTable<API_OpeningLimitTypeTypeID, GS::UniString> openingLimitTypeNames
+{
+	{ API_OpeningLimitInfinite,		"Infinite"},
+	{ API_OpeningLimitFinite,		"Finite"},
+	{ API_OpeningLimitHalfInfinite,	"Half Infinite"}
+};
+
+
+const GS::HashTable<API_OpeningLinkedStatusTypeID, GS::UniString> openingLinkedStatusNames
+{
+	{ API_OpeningLinked,		"Linked"},
+	{ API_OpeningNotLinked,		"Not Linked"}
+};
