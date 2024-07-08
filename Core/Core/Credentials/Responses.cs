@@ -21,8 +21,8 @@ public sealed class UserInfo
   public string id { get; init; }
   public string name { get; init; }
   public string email { get; init; }
-  public string company { get; init; }
-  public string avatar { get; init; }
+  public string? company { get; init; }
+  public string? avatar { get; init; }
 
   [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
   public Streams streams { get; init; }
