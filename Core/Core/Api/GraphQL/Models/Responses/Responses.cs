@@ -8,7 +8,7 @@ namespace Speckle.Core.Api.GraphQL.Models.Responses;
 
 internal record ProjectResponse([property: JsonRequired] Project project);
 
-internal record ActiveUserResponse(UserInfo? activeUser);
+internal record ActiveUserResponse(User? activeUser);
 
 internal record LimitedUserResponse(LimitedUser? otherUser);
 

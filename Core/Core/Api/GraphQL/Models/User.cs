@@ -36,7 +36,7 @@ public sealed class LimitedUser : UserBase
 /// <remarks>
 /// Named "User" in GraphQL Schema
 /// </remarks>
-public sealed class UserInfo : UserBase
+public sealed class User : UserBase
 {
   public DateTime? createdAt { get; init; }
   public string email { get; init; }
