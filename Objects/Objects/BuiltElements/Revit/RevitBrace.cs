@@ -42,7 +42,7 @@ public class RevitBrace : Brace
     string family,
     string type,
     [SchemaMainParam] ICurve baseLine,
-    Level level,
+    Level? level,
     List<Parameter>? parameters = null
   )
     : this(family, type, baseLine, level, null, null, parameters: parameters) { }

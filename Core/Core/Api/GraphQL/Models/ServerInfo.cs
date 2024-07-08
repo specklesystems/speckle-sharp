@@ -1,8 +1,11 @@
 ﻿#nullable disable
 using System;
+using System.Runtime.InteropServices;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public sealed class ServerInfo
 {
   public string name { get; init; }

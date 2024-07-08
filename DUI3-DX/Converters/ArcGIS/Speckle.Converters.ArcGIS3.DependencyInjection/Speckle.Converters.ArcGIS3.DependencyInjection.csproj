@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
+      <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3\Speckle.Converters.ArcGIS3.csproj" />
+    </ItemGroup>
+  
+    <ItemGroup>
+      <PackageReference Include="Autofac" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+  
+    <ItemGroup>
+      <PackageReference Include="Autofac" PrivateAssets="All"/>
+    </ItemGroup>
+  
+    <ItemGroup>
+      <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
+      <ProjectReference Include="..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+    </ItemGroup>
+
+</Project>

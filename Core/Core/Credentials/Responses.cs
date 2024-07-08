@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 
@@ -16,6 +17,8 @@ internal sealed class TokenExchangeResponse
   public string refreshToken { get; init; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public sealed class UserInfo
 {
   public string id { get; init; }
@@ -31,12 +34,16 @@ public sealed class UserInfo
   public Commits commits { get; init; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Streams
 {
   public int totalCount { get; set; }
 }
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Commits
 {

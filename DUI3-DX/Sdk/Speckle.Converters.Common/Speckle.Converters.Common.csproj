@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.Objects" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
+  </ItemGroup>
+
+</Project>

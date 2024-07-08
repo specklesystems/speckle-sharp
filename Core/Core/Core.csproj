@@ -17,22 +17,22 @@
 
   <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>
-      $(WarningsNotAsErrors);
+    <NoWarn>
+      $(NoWarn);
       CA1000; CA1001; CA1003; CA1024; CA1033; CA1034; CA1051; CA1055; CA1063; CA1065;
       CA1502; CA1506;
       CA1708; CA1710; CA1711; CA1716; CA1720; CA1721; CA1724;
       CA1816; CA1851; CA1861;
-      CA2201; CS8618;
+      CA2201; CS8618; CA1054;
       CS0419; CS0618; CS0659; CS0809;
       CS8600; CS8602; CS8603; CS8604;
       IDE0032; IDE0059; IDE0130; IDE1006;
-    </WarningsNotAsErrors>
+    </NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <InternalsVisibleTo Include="Speckle.Core.Tests.Unit" />
-    <InternalsVisibleTo Include="Speckle.Core.Tests.Integration" />
+    <InternalsVisibleTo Include="Speckle.Core.Tests.Unit"/>
+    <InternalsVisibleTo Include="Speckle.Core.Tests.Integration"/>
   </ItemGroup>
 
   <!--Do
@@ -42,28 +42,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="6.0.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Polly" Version="7.2.3" />
-    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
-    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-    <PackageReference Include="Sentry" Version="3.33.0" />
-    <PackageReference Include="Sentry.Serilog" Version="3.33.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.3.0" />
-    <PackageReference Include="Serilog.Enrichers.GlobalLogContext" Version="3.0.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
-    <PackageReference Include="SerilogTimings" Version="3.0.1" />
-    <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5" />
-    <PackageReference Include="System.DoubleNumerics" Version="3.1.3" />
+    <PackageReference Include="GraphQL.Client" Version="6.0.0"/>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+    <PackageReference Include="Polly" Version="7.2.3"/>
+    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1"/>
+    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0"/>
+    <PackageReference Include="Sentry" Version="3.33.0"/>
+    <PackageReference Include="Sentry.Serilog" Version="3.33.0"/>
+    <PackageReference Include="Serilog" Version="2.12.0"/>
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.3.0"/>
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
+    <PackageReference Include="SerilogTimings" Version="3.0.1"/>
+    <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5"/>
+    <PackageReference Include="System.DoubleNumerics" Version="3.1.3"/>
   </ItemGroup>
 
-<!--  Ensure-->
+  <!--  Ensure-->
   <Target Name="husky" BeforeTargets="Restore" Condition="$(IsDesktopBuild) == 'true'">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="$(RepositoryRoot)" />
+    <Exec Command="dotnet tool restore" StandardOutputImportance="Low"
+      StandardErrorImportance="High"/>
+    <Exec Command="dotnet husky install" StandardOutputImportance="Low"
+      StandardErrorImportance="High" WorkingDirectory="$(RepositoryRoot)"/>
   </Target>
 </Project>

@@ -1,11 +1,14 @@
 #nullable disable
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Helpers;
 
 namespace Speckle.Core.Credentials;
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class Account : IEquatable<Account>
 {
   private string _id;
