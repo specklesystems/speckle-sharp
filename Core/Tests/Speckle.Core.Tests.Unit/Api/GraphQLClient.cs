@@ -2,6 +2,7 @@ using System.Diagnostics;
 using GraphQL;
 using NUnit.Framework;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 
 namespace Speckle.Core.Tests.Unit.Api;
@@ -30,16 +31,10 @@ public sealed class GraphQLClientTests : IDisposable
 
   private static IEnumerable<TestCaseData> ErrorCases()
   {
+    yield return new TestCaseData(typeof(SpeckleGraphQLForbiddenException), new Map { { "code", "FORBIDDEN" } });
+    yield return new TestCaseData(typeof(SpeckleGraphQLForbiddenException), new Map { { "code", "UNAUTHENTICATED" } });
     yield return new TestCaseData(
-      typeof(SpeckleGraphQLForbiddenException<FakeGqlResponseModel>),
-      new Map { { "code", "FORBIDDEN" } }
-    );
-    yield return new TestCaseData(
-      typeof(SpeckleGraphQLForbiddenException<FakeGqlResponseModel>),
-      new Map { { "code", "UNAUTHENTICATED" } }
-    );
-    yield return new TestCaseData(
-      typeof(SpeckleGraphQLInternalErrorException<FakeGqlResponseModel>),
+      typeof(SpeckleGraphQLInternalErrorException),
       new Map { { "code", "INTERNAL_SERVER_ERROR" } }
     );
     yield return new TestCaseData(typeof(SpeckleGraphQLException<FakeGqlResponseModel>), new Map { { "foo", "bar" } });
@@ -109,7 +104,7 @@ public sealed class GraphQLClientTests : IDisposable
       counter++;
       if (counter < maxRetryCount)
       {
-        throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
+        throw new SpeckleGraphQLInternalErrorException(new GraphQLRequest(), new GraphQLResponse<string>());
       }
 
       return Task.FromResult(expectedResult);
