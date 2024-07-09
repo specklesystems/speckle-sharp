@@ -221,14 +221,19 @@ public partial class ConverterNavisworks
   {
     Base internals = (Base)propertiesBase["Internal"] ?? new Base();
 
-    internals["ClassDisplayName"] = element.ClassDisplayName ?? internals["ClassDisplayName"];
-    internals["ClassName"] = element.ClassName ?? internals["ClassName"];
-    internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
-    internals["InstanceGuid"] =
-      element.InstanceGuid.ToByteArray().Select(x => (int)x).Sum() > 0 ? element.InstanceGuid : null;
-    internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
-    internals["Source Guid"] = element.Model?.SourceGuid ?? internals["Source Guid"];
-    internals["NodeType"] = element.IsCollection
+    AddPropertyIfNotNullOrEmpty(internals, "ClassDisplayName", element.ClassDisplayName);
+    AddPropertyIfNotNullOrEmpty(internals, "ClassName", element.ClassName);
+    AddPropertyIfNotNullOrEmpty(internals, "DisplayName", element.DisplayName);
+
+    if (element.InstanceGuid.ToByteArray().Select(x => (int)x).Sum() > 0)
+    {
+      internals["InstanceGuid"] = element.InstanceGuid;
+    }
+
+    AddPropertyIfNotNullOrEmpty(internals, "Source", element.Model?.SourceFileName);
+    AddPropertyIfNotNullOrEmpty(internals, "Source Guid", element.Model?.SourceGuid);
+
+    string nodeType = element.IsCollection
       ? "Collection"
       : element.IsComposite
         ? "Composite Object"
@@ -238,7 +243,30 @@ public partial class ConverterNavisworks
             ? "Layer"
             : null;
 
+    AddPropertyIfNotNullOrEmpty(internals, "NodeType", nodeType);
+
     propertiesBase["Internal"] = internals;
+  }
+
+  /// <summary>
+  /// Adds a property to a Base object if the value is not null or empty.
+  /// </summary>
+  /// <param name="baseObject">The Base object to which the property is to be added.</param>
+  /// <param name="propertyName">The name of the property to add.</param>
+  /// <param name="value">The value of the property.</param>
+  private static void AddPropertyIfNotNullOrEmpty(Base baseObject, string propertyName, object value)
+  {
+    if (value is string stringValue)
+    {
+      if (!string.IsNullOrEmpty(stringValue))
+      {
+        baseObject[propertyName] = value;
+      }
+    }
+    else if (value != null)
+    {
+      baseObject[propertyName] = value;
+    }
   }
 
   private static Base GetModelProperties(Model elementModel)
