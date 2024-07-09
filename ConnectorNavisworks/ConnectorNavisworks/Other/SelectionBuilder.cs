@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Gui;
 using DesktopUI2.Models;
@@ -411,7 +414,7 @@ public class SelectionHandler
   /// </summary>
   /// <param name="startNode">The starting node for traversal.</param>
   /// <param name="totalDescendants">The total number of descendants.</param>
-  private void TraverseDescendants(ModelItem startNode, int totalDescendants)
+  private void TraverseDescendants(ModelItem startNode, int totalDescendants, IProgress<double> progress)
   {
     var descendantInterval = Math.Max(totalDescendants / 100.0, 1); // Update progress every 1%
     var validDescendants = new HashSet<ModelItem>();
@@ -433,6 +436,7 @@ public class SelectionHandler
 
       ModelItem currentNode = stack.Pop();
 
+      // ReSharper disable once CanSimplifySetAddingWithSingleCall
       if (_visited.Contains(currentNode))
       {
         continue;
@@ -445,45 +449,62 @@ public class SelectionHandler
       {
         // If node is hidden, skip processing it and all its descendants
         var descendantsCount = currentNode.Descendants.Count();
-        _descendantProgress += descendantsCount + 1;
+        Interlocked.Add(ref _descendantProgress, descendantsCount + 1);
         continue;
       }
 
       validDescendants.Add(currentNode); // currentNode is visible, process it
-      _descendantProgress++;
+      Interlocked.Increment(ref _descendantProgress);
 
       if (currentNode.Children.Any())
       {
         // Add visible children to the stack
-        int childrenCount = 0;
-        foreach (var child in currentNode.Children)
+
+        var childrenToProcess = new ConcurrentBag<ModelItem>();
+
+        Parallel.ForEach(
+          currentNode.Children,
+          child =>
+          {
+            if (_visited.Contains(child))
+            {
+              return;
+            }
+
+            if (IsVisibleCached(child))
+            {
+              childrenToProcess.Add(child);
+            }
+            else
+            {
+              // If child is hidden, skip processing it and all its descendants
+              int descendantsCount = child.Descendants.Count();
+              Interlocked.Add(ref _descendantProgress, descendantsCount + 1);
+            }
+          }
+        );
+
+        foreach (ModelItem child in childrenToProcess)
         {
-          if (!_visited.Contains(child) && IsVisibleCached(child))
-          {
-            stack.Push(child);
-            childrenCount++;
-          }
-          else if (!IsVisibleCached(child))
-          {
-            // If child is hidden, skip processing it and all its descendants
-            var descendantsCount = child.Descendants.Count();
-            _descendantProgress += descendantsCount + 1;
-          }
+          stack.Push(child);
         }
       }
 
-      _uniqueModelItems.AddRange(validDescendants);
+      lock (_uniqueModelItems)
+      {
+        _uniqueModelItems.UnionWith(validDescendants);
+      }
       validDescendants.Clear();
 
       updateCounter++;
 
-      if (!(updateCounter >= descendantInterval) || (lastUpdate >= _descendantProgress))
+      if (!(updateCounter >= descendantInterval) || lastUpdate >= _descendantProgress)
       {
         continue;
       }
 
-      double progress = _descendantProgress / (double)totalDescendants;
-      ProgressBar.Update(progress);
+      double progressValue = _descendantProgress / (double)totalDescendants;
+      progress.Report(progressValue);
       lastUpdate = _descendantProgress;
       updateCounter = 0;
     }

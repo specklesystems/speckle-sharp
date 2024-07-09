@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -85,90 +86,147 @@ public class Element
   /// <param name="converted"></param>
   /// <param name="streamState"></param>
   /// <returns>An IEnumerable of root nodes representing the hierarchical structure.</returns>
-  public static IEnumerable<Base> BuildNestedObjectHierarchy(
+  public static IEnumerable<Base> BuildNestedObjectHierarchyInParallel(
     Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted,
-    StreamState streamState
+    StreamState streamState,
+    ProgressInvoker progressBar
   )
   {
     var convertedDictionary = converted.ToDictionary(x => x.Key.IndexPath, x => (x.Value.Item2, x.Key));
 
-    // This dictionary is for looking up parents quickly
-    Dictionary<string, Base> lookupDictionary = new();
+    ConcurrentDictionary<string, Base> lookupDictionary = new();
+    ConcurrentDictionary<string, Base> potentialRootNodes = new();
 
-    // This dictionary will hold potential root nodes until we confirm they are roots
-    Dictionary<string, Base> potentialRootNodes = new();
+    int totalCount = convertedDictionary.Count;
+    const int DEFAULT_UPDATE_INTERVAL = 1000;
 
-    // First pass: Create lookup dictionary and identify potential root nodes
-    foreach (var pair in convertedDictionary)
+    List<Base> rootNodes = new(); // Initialize rootNodes here
+
+    try
     {
-      var element = pair.Value.Key;
-      var indexPath = element.IndexPath;
-      var baseNode = pair.Value.Item1;
-      var modelItem = element.ModelItem;
-      var type = baseNode?.GetType().Name;
-
-      if (baseNode == null)
-      {
-        continue;
-      }
-
-      // Geometry Nodes can add all the properties to the FirstObject classification - this will help with the selection logic
-      if (
-        streamState.Settings.Find(x => x.Slug == "coalesce-data") is CheckBoxSetting { IsChecked: true }
-        && type == "GeometryNode"
-      )
-      {
-        AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
-      }
-
-      string[] parts = indexPath.Split(SEPARATOR);
-      string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
-
-      lookupDictionary.Add(indexPath, baseNode);
-
-      if (!lookupDictionary.ContainsKey(parentKey))
-      {
-        potentialRootNodes.Add(indexPath, baseNode);
-      }
-    }
-
-    // Second pass: Attach child nodes to their parents, and confirm root nodes
-    foreach (var pair in lookupDictionary)
-    {
-      string key = pair.Key;
-      Base value = pair.Value;
-
-      string[] parts = key.Split(SEPARATOR);
-      string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
-
-      if (!lookupDictionary.TryGetValue(parentKey, out Base value1))
-      {
-        continue;
-      }
-
-      if (value1 is Collection parent)
-      {
-        parent.elements ??= new List<Base>();
-        if (value != null)
+      // First pass: Populate lookup dictionary and identify potential root nodes
+      ExecuteWithProgress(
+        totalCount,
+        progressBar,
+        "Identifying roots",
+        i =>
         {
-          parent.elements.Add(value);
+          var pair = convertedDictionary.ElementAt(i);
+          var element = pair.Value.Key;
+          var indexPath = element.IndexPath;
+          var baseNode = pair.Value.Item1;
+          var modelItem = element.ModelItem;
+          var type = baseNode?.GetType().Name;
+
+          if (baseNode == null)
+          {
+            return;
+          }
+
+          if (
+            streamState.Settings.Find(x => x.Slug == "coalesce-data") is CheckBoxSetting { IsChecked: true }
+            && type == "GeometryNode"
+          )
+          {
+            AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
+          }
+
+          string[] parts = indexPath.Split(SEPARATOR);
+          string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
+
+          lookupDictionary.TryAdd(indexPath, baseNode);
+
+          if (!lookupDictionary.ContainsKey(parentKey))
+          {
+            potentialRootNodes.TryAdd(indexPath, baseNode);
+          }
         }
-      }
+      );
 
-      // This node has a parent, so it's not a root node
-      potentialRootNodes.Remove(key);
+      // Second pass: Attach child nodes to parents and confirm root nodes
+      ExecuteWithProgress(
+        lookupDictionary.Count,
+        progressBar,
+        "Reuniting children with parents",
+        i =>
+        {
+          var pair = lookupDictionary.ElementAt(i);
+          string key = pair.Key;
+          Base value = pair.Value;
+
+          string[] parts = key.Split(SEPARATOR);
+          string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
+
+          if (!lookupDictionary.TryGetValue(parentKey, out Base parentValue) || parentValue is not Collection parent)
+          {
+            return;
+          }
+
+          parent.elements.Add(value);
+
+          potentialRootNodes.TryRemove(key, out _);
+        }
+      );
+
+      rootNodes = potentialRootNodes.Values.ToList();
+
+      // Prune empty collections
+      ExecuteWithProgress(
+        rootNodes.Count,
+        progressBar,
+        "Recycling empties",
+        i =>
+        {
+          var rootNode = rootNodes[i];
+          if (rootNode != null)
+          {
+            PruneEmptyCollections(rootNode);
+          }
+        }
+      );
+
+      rootNodes.RemoveAll(node => node is Collection { elements: null });
     }
-
-    List<Base> rootNodes = potentialRootNodes.Values.ToList();
-
-    foreach (var rootNode in rootNodes.Where(rootNode => rootNode != null))
+    catch (OperationCanceledException)
     {
-      PruneEmptyCollections(rootNode);
+      // Handle cancellation if needed
     }
-
-    rootNodes.RemoveAll(node => node is Collection { elements: null });
+    catch (Exception ex)
+    {
+      throw new InvalidOperationException("An error occurred during the operation.", ex);
+    }
 
     return rootNodes;
+  }
+
+  private static void ExecuteWithProgress(
+    int totalCount,
+    ProgressInvoker progressBar,
+    string operationName,
+    Action<int> action
+  )
+  {
+    int progressCounter = 0;
+    const int DEFAULT_UPDATE_INTERVAL = 1000;
+
+    progressBar.BeginSubOperation(0.2, operationName);
+    progressBar.Update(0);
+
+    for (int i = 0; i < totalCount; i++)
+    {
+      action(i);
+
+      progressCounter++;
+      if (progressCounter % DEFAULT_UPDATE_INTERVAL != 0 && progressCounter != totalCount)
+      {
+        continue;
+      }
+
+      double progressValue = Math.Min((double)progressCounter / totalCount, 1.0);
+      progressBar.Update(progressValue);
+    }
+
+    progressBar.EndSubOperation();
   }
 
   /// <summary>
@@ -183,27 +241,41 @@ public class Element
     DynamicBase baseNode
   )
   {
-    var firstObjectAncestor = modelItem.FindFirstObjectAncestor();
-    var ancestors = modelItem.Ancestors;
+    if (modelItem == null || baseNode == null || converted == null)
+    {
+      throw new ArgumentNullException("modelItem, baseNode, and converted cannot be null.");
+    }
+
+    var firstObjectAncestor =
+      modelItem.FindFirstObjectAncestor() ?? throw new InvalidOperationException("firstObjectAncestor is null.");
+    var ancestors = modelItem.Ancestors ?? throw new InvalidOperationException("ancestors is null.");
     var trimmedAncestors = ancestors.TakeWhile(ancestor => ancestor != firstObjectAncestor).Append(firstObjectAncestor);
 
-    var propertyStack = trimmedAncestors
+    var filtered = trimmedAncestors
       .Select(item => converted.FirstOrDefault(keyValuePair => Equals(keyValuePair.Key.ModelItem, item)))
+      .Where(kVp => kVp.Key != null) // Filter out null keys
       .Select(kVp => kVp.Value.Item2["properties"] as Base)
+      .Where(propertySet => propertySet != null); // Filter out null property sets
+
+    var categoryProperties = filtered.SelectMany(
+      propertySet => propertySet.GetMembers().Where(member => member.Value is Base),
+      (_, propertyCategory) =>
+        new { Category = propertyCategory.Key, Properties = ((Base)propertyCategory.Value).GetMembers() }
+    );
+
+    var properties = categoryProperties
       .SelectMany(
-        propertySet => propertySet?.GetMembers().Where(member => member.Value is Base),
-        (_, propertyCategory) =>
-          new { Category = propertyCategory.Key, Properties = ((Base)propertyCategory.Value).GetMembers() }
+        cp => cp.Properties,
+        (cp, property) => new { ConcatenatedKey = $"{cp.Category}--{property.Key}", property.Value }
       )
-      .SelectMany(
-        categoryProperties => categoryProperties.Properties,
-        (categoryProperties, property) =>
-          new { ConcatenatedKey = $"{categoryProperties.Category}--{property.Key}", property.Value }
-      )
-      .Where(property => property.Value != null && !string.IsNullOrEmpty(property.Value.ToString()))
+      .Where(property => property.Value != null && !string.IsNullOrEmpty(property.Value.ToString()));
+
+    var groupedProperties = properties
       .GroupBy(property => property.ConcatenatedKey)
       .Where(group => group.Select(item => item.Value).Distinct().Count() == 1)
-      .ToDictionary(group => group.Key, group => group.First().Value)
+      .ToDictionary(group => group.Key, group => group.First().Value);
+
+    var formattedProperties = groupedProperties
       .Select(
         kVp =>
           new
@@ -213,11 +285,17 @@ public class Element
             kVp.Value
           }
       )
-      .Where(item => item.Category != "Internal")
+      .Where(item => item.Category != "Internal");
+
+    var propertyStack = formattedProperties
       .GroupBy(item => item.Category)
       .ToDictionary(group => group.Key, group => group.ToDictionary(item => item.Property, item => item.Value));
 
-    var propertiesBase = (Base)baseNode["properties"];
+    if (baseNode["properties"] is not Base propertiesBase)
+    {
+      propertiesBase = new Base();
+      baseNode["properties"] = propertiesBase;
+    }
 
     var baseProperties = propertiesBase.GetMembers().Where(item => item.Value is Base).ToList();
 
@@ -269,8 +347,6 @@ public class Element
         propertiesBase[stackProperty.Key] = newPropertyCategory;
       }
     }
-
-    // baseNode["property-stack"] = propertyStack;
   }
 
   /// <summary>
@@ -284,7 +360,7 @@ public class Element
       return;
     }
 
-    if (collection.elements == null)
+    if (collection.elements.Count == 0)
     {
       return;
     }
@@ -293,10 +369,7 @@ public class Element
     {
       PruneEmptyCollections(collection.elements[i]);
 
-      if (
-        collection.elements[i] is Collection childCollection
-        && (childCollection.elements == null || childCollection.elements.Count == 0)
-      )
+      if (collection.elements[i] is Collection { elements.Count: 0 })
       {
         collection.elements.RemoveAt(i);
       }
@@ -304,7 +377,7 @@ public class Element
 
     if (collection.elements.Count == 0)
     {
-      collection.elements = null;
+      collection.elements = null!;
     }
   }
 
@@ -316,7 +389,7 @@ public class Element
     var pathId = string.Join(SEPARATOR.ToString(), indexPathParts.Skip(1));
 
     // assign the first part of indexPathParts to modelIndex and parse it to int, the second part to pathId string
-    ModelItemPathId modelItemPathId = new() { ModelIndex = int.Parse(indexPathParts[0]), PathId = indexPathParts[1] };
+    ModelItemPathId modelItemPathId = new() { ModelIndex = modelIndex, PathId = pathId };
 
     var modelItem = Application.ActiveDocument.Models.ResolvePathId(modelItemPathId);
     return modelItem;
@@ -330,4 +403,14 @@ public class Element
       ? $"{modelItemPathId.ModelIndex}"
       : $"{modelItemPathId.ModelIndex}{SEPARATOR}{modelItemPathId.PathId}";
   }
+
+  /// <summary>
+  ///   Checks is the Element is hidden or if any of its ancestors is hidden
+  /// </summary>
+  /// <param name="element"></param>
+  /// <returns></returns>
+  internal static bool IsElementVisible(ModelItem element) =>
+    // Hidden status is stored at the earliest node in the hierarchy
+    // All the tree path nodes need to not be Hidden
+    element.AncestorsAndSelf.All(x => x.IsHidden != true);
 }
