@@ -73,24 +73,24 @@ public class SelectionHandler
 
     // Selections are modelItem pseudo-ids.
     var selection = _filter.Selection;
-    var count = selection.Count;
-    var progressIncrement = 1.0 / count != 0 ? count : 1.0;
 
-    // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.05, "Rolling up the sleeves... Time to handpick your favorite data items!");
+    ProgressLooper(
+      "Rolling up the sleeves... Time to handpick your favourite data items!",
+      (index) =>
+      {
+        if (index >= selection.Count)
+        {
+          return false;
+        }
 
-    // Iterate over the selection and retrieve the corresponding model items
-    for (var i = 0; i < count; i++)
-    {
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-      ProgressBar.Update(i * progressIncrement);
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+        _uniqueModelItems.Add(Element.ResolveIndexPath(selection[index]));
 
-      var indexPath = selection[i];
-      _uniqueModelItems.Add(Element.ResolveIndexPath(indexPath));
-    }
-
-    // End the progress sub-operation
-    ProgressBar.EndSubOperation();
+        return true;
+      },
+      0.05, // Fraction of remaining time
+      totalCount: selection.Count // Pass the total count if known, else pass null
+    );
 
     return _uniqueModelItems;
   }
@@ -137,20 +137,28 @@ public class SelectionHandler
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
 
-    for (var i = 0; i < models.Count; i++)
-    {
-      var model = models.ElementAt(i);
-      var rootItem = model.RootItem;
-      if (!rootItem.IsHidden)
+    // Use ProgressLooper to handle the looping and progress updates
+    ProgressLooper(
+      "Checking the Canvas... Looking Closely!",
+      (index) =>
       {
-        _uniqueModelItems.Add(rootItem);
-      }
+        if (index >= models.Count)
+        {
+          return false;
+        }
 
-      ProgressBar.Update(i + 1 / (double)models.Count);
-    }
+        var model = models[index];
+        var rootItem = model.RootItem;
+        if (!rootItem.IsHidden)
+        {
+          _uniqueModelItems.Add(rootItem);
+        }
 
-    // End the progress sub-operation
-    ProgressBar.EndSubOperation();
+        return true;
+      },
+      0.05, // Fraction of remaining time
+      models.Count // Pass the total count if known, else pass null
+    );
 
     return _uniqueModelItems;
   }
@@ -361,16 +369,39 @@ public class SelectionHandler
 
     _visited = new HashSet<ModelItem>();
     _descendantProgress = 0;
-    var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
-    ProgressBar.BeginSubOperation(0.1, $"Validating {allDescendants} descendants...");
+    HashSet<ModelItem> distinctDescendants = DistinctDescendants(startNodes);
+    var allDescendants = distinctDescendants.Count;
+
+    ProgressLooper(
+      "Validating descendants...",
+      i =>
+      {
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        TraverseDescendants(
+          startNodes[i],
+          allDescendants,
+          new Progress<double>(value =>
+          {
+            ProgressBar.Update(value);
+          })
+        );
+
+        return true;
+      },
+      0.1,
+      startNodes.Count
+    );
+  }
 
     foreach (var node in startNodes)
     {
-      TraverseDescendants(node, allDescendants);
+      var nodeDescendants = node.Descendants.ToList();
+      distinctDescendants.UnionWith(nodeDescendants);
     }
 
-    ProgressBar.EndSubOperation();
+    return distinctDescendants;
   }
 
   /// <summary>
@@ -491,44 +522,96 @@ public class SelectionHandler
   /// <param name="operationName">The name of the operation.</param>
   /// <param name="fn">The function to execute on each iteration.</param>
   /// <param name="fractionOfRemainingTime">The fraction of remaining time for the operation (optional).</param>
-  private void ProgressLooper(
-    int totalCount,
+  /// <param name="totalCount">The total number of iterations, if known.</param>
+  public void ProgressLooper(
     string operationName,
     Func<int, bool> fn,
-    double fractionOfRemainingTime = 0
+    double fractionOfRemainingTime = 0,
+    int? totalCount = null
   )
   {
-    var increment = 1.0 / totalCount != 0 ? 1.0 / totalCount : 1.0;
-    var updateInterval = Math.Max(totalCount / 100, 1);
+    const int DEFAULT_UPDATE_INTERVAL = 1000;
+    const double DEFAULT_PROGRESS_INCREMENT = 0.01;
+
     ProgressBar.BeginSubOperation(fractionOfRemainingTime, operationName);
     ProgressBar.Update(0);
 
-    for (int i = 0; i < totalCount; i++)
+    try
     {
-      if (ProgressBar.IsCanceled)
+      int i = 0;
+      double progress = 0;
+      double increment;
+      int updateInterval;
+
+      if (totalCount.HasValue)
       {
-        _progressViewModel.CancellationTokenSource.Cancel();
+        increment = 1.0 / totalCount.Value;
+        updateInterval = Math.Max(totalCount.Value / 100, 1);
+      }
+      else
+      {
+        increment = DEFAULT_PROGRESS_INCREMENT;
+        updateInterval = DEFAULT_UPDATE_INTERVAL;
       }
 
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-      bool shouldContinue = fn(i);
-
-      if (!shouldContinue)
+      while (true)
       {
-        break;
+        if (ProgressBar.IsCanceled)
+        {
+          _progressViewModel.CancellationTokenSource.Cancel();
+          break;
+        }
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        if (!fn(i))
+        {
+          break;
+        }
+
+        var test = fn(i);
+
+        i++;
+
+        if (totalCount.HasValue)
+        {
+          progress = Math.Min((double)i / totalCount.Value, 1.0);
+          if (i % updateInterval == 0 || i == totalCount.Value)
+          {
+            ProgressBar.Update(progress);
+          }
+
+          if (i >= totalCount.Value)
+          {
+            break;
+          }
+        }
+        else
+        {
+          if (i % updateInterval != 0)
+          {
+            continue;
+          }
+
+          progress = Math.Min(progress + increment, 1.0);
+          ProgressBar.Update(progress);
+        }
       }
 
-      if (i % updateInterval != 0 && i != totalCount)
-      {
-        continue;
-      }
-
-      double progress = (i + 1) * increment;
-      ProgressBar.Update(progress);
+      ProgressBar.Update(1.0);
     }
-
-    ProgressBar.EndSubOperation();
+    catch (OperationCanceledException)
+    {
+      // Handle cancellation if needed
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidOperationException("An error occurred during the operation.", ex);
+    }
+    finally
+    {
+      ProgressBar.EndSubOperation();
+    }
   }
 
   /// <summary>
