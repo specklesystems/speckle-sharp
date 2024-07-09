@@ -218,6 +218,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 environment:
                   SLUG: << parameters.slug >>
       - when: # Setup certificates and build installers signed for tagged builds that are in main or dev
+          condition:
             and:
               -  << pipeline.git.tag >>
               - or:
