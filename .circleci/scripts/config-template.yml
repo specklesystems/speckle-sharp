@@ -212,7 +212,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 -  equal: [ dev, << pipeline.git.branch >> ]
           steps:
             - run:
-                name: Build Installer
+                name: Build Installer Unsigned
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
                 shell: cmd.exe #does not work in powershell
                 environment:
@@ -241,7 +241,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   & $env:SSM\smksp_cert_sync.exe
             - run:
-                name: Build Installer
+                name: Build Installer Signed
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
                 shell: cmd.exe #does not work in powershell
                 environment:
