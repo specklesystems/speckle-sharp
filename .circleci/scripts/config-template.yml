@@ -203,13 +203,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
-      - unless: # Build installers unsigned on non-tagged builds that aren't in main or dev
+      - unless: # Build installers unsigned on non-tagged builds or pre-release tags 
           condition: 
             and:
               -  << pipeline.git.tag >>
-              - or:
-                -  equal: [ main, << pipeline.git.branch >> ]
-                -  equal: [ dev, << pipeline.git.branch >> ]
+              - not:
+                - matches:
+                  - pattern: "-"
+                  - value: << pipeline.git.tag >>
           steps:
             - run:
                 name: Build Installer Unsigned
@@ -217,13 +218,14 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
-      - when: # Setup certificates and build installers signed for tagged builds that are in main or dev
+      - when: # Setup certificates and build installers signed for tagged builds that aren't prerelease
           condition:
             and:
               -  << pipeline.git.tag >>
-              - or:
-                -  equal: [ main, << pipeline.git.branch >> ]
-                -  equal: [ dev, << pipeline.git.branch >> ]
+              - not:
+                - matches:
+                  - pattern: "-"
+                  - value: << pipeline.git.tag >>
           steps:
             - run:
                 name: "Digicert Signing Manager Setup"
