@@ -1,4 +1,4 @@
-#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+#if CIVIL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +12,11 @@ using CivilDB = Autodesk.Civil.DatabaseServices;
 using Civil = Autodesk.Civil;
 using Autodesk.AutoCAD.Geometry;
 using Acad = Autodesk.AutoCAD.Geometry;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Objects.BuiltElements.Civil;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
+using CivilDataField = Objects.Other.Civil.CivilDataField;
 using Polycurve = Objects.Geometry.Polycurve;
 using Featureline = Objects.BuiltElements.Featureline;
 using Line = Objects.Geometry.Line;
@@ -29,6 +29,7 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using Vector = Objects.Geometry.Vector;
 using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
@@ -599,7 +600,7 @@ public partial class ConverterAutocadCivil
     foreach (ProfilePVI pvi in profile.PVIs)
     {
       double pviStation = 0;
-#if CIVIL2024
+#if CIVIL2024_OR_GREATER
       pviStation = pvi.RawStation;
 #else
       pviStation = pvi.Station;
@@ -639,7 +640,7 @@ public partial class ConverterAutocadCivil
   }
 
   // featurelines
-  public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
+  public Featureline FeaturelineToSpeckle(CivilDB.FeatureLine featureline)
   {
     // get all points
     var points = new List<Point>();
@@ -665,25 +666,18 @@ public partial class ConverterAutocadCivil
       piPoints.Add(allPoints.IndexOf(piPoint));
     }
 
-    /*
-    // get bulges at pi point indices
-    int count = (featureline.Closed) ? featureline.PointsCount : featureline.PointsCount - 1;
-    List<double> bulges = new List<double>();
-    for (int i = 0; i < count; i++) bulges.Add(featureline.GetBulge(i));
-    var piBulges = new List<double>();
-    foreach (var index in indices) piBulges.Add(bulges[index]);
-    */
-
     // get displayvalue
     var polyline = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, intersectionPoints, false));
 
     // featureline
     Featureline speckleFeatureline = new()
     {
+      points = points,
       curve = CurveToSpeckle(featureline.BaseCurve, ModelUnits),
       units = ModelUnits,
       displayValue = new List<Polyline>() { polyline }
     };
+
     AddNameAndDescriptionProperty(featureline.Name, featureline.Description, speckleFeatureline);
     speckleFeatureline["@piPoints"] = piPoints;
     speckleFeatureline["@elevationPoints"] = ePoints;
@@ -1016,37 +1010,62 @@ public partial class ConverterAutocadCivil
 
     // assign additional structure props
     AddNameAndDescriptionProperty(structure.Name, structure.Description, speckleStructure);
+    speckleStructure["partData"] = PartDataRecordToSpeckle(structure.PartData);
 
-    try
-    {
-      speckleStructure["grate"] = structure.Grate;
-      speckleStructure["station"] = structure.Station;
-      speckleStructure["network"] = structure.NetworkName;
-    }
-    catch (Exception e) when (!e.IsFatal())
-    {
-      // Couldn't set non-essential structure properties
-    }
+    try { speckleStructure["station"] = structure.Station; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["network"] = structure.NetworkName; } catch (Exception ex) when (!ex.IsFatal()) { }
+    try { speckleStructure["rotation"] = structure.Rotation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["sumpDepth"] = structure.SumpDepth; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["rimElevation"] = structure.RimElevation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["sumpElevation"] = structure.SumpElevation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["lengthOuter"] = structure.Length; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["lengthInner"] = structure.InnerLength; } catch (Exception e) when (!e.IsFatal()) { }
+    try { speckleStructure["structureId"] = structure.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return speckleStructure;
   }
+
+  // part data
+  /// <summary>
+  /// Converts PartData into a list of DataField
+  /// </summary>
+  private List<CivilDataField> PartDataRecordToSpeckle(PartDataRecord partData)
+  {
+    List<CivilDataField> fields = new();
+
+    foreach (PartDataField partField in partData.GetAllDataFields())
+    {
+      CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Value, partField.Units.ToString(),partField.Context.ToString(), null);
+      fields.Add(field);
+    }
+
+    return fields;
+  }
+
+#if CIVIL2022_OR_GREATER
+  /// <summary>
+  /// Converts PressureNetworkPartData into a list of DataField
+  /// </summary>
+  private List<CivilDataField> PartDataRecordToSpeckle(PressureNetworkPartData partData)
+  {
+    List<CivilDataField> fields = new();
+
+    foreach (PressurePartProperty partField in partData)
+    {
+      CivilDataField field = new(partField.Name, partField.GetType().ToString(), partField.Value, null, null, partField.DisplayName);
+      fields.Add(field);
+    }
+
+    return fields;
+  }
+#endif
 
   // pipes
   // TODO: add pressure fittings
   public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
   {
-    // get the pipe curve
-    ICurve curve;
-    switch (pipe.SubEntityType)
-    {
-      case PipeSubEntityType.Straight:
-        var line = new Acad.LineSegment3d(pipe.StartPoint, pipe.EndPoint);
-        curve = LineToSpeckle(line);
-        break;
-      default:
-        curve = CurveToSpeckle(pipe.BaseCurve);
-        break;
-    }
+    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
+
 
     Pipe specklePipe = new()
     {
@@ -1059,6 +1078,7 @@ public partial class ConverterAutocadCivil
 
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
+    specklePipe["partData"] = PartDataRecordToSpeckle(pipe.PartData);
 
     try { specklePipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["slope"] = pipe.Slope; } catch(Exception ex) when(!ex.IsFatal()) { }
@@ -1069,8 +1089,9 @@ public partial class ConverterAutocadCivil
     try { specklePipe["endOffset"] = pipe.EndOffset; } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["startStation"] = pipe.StartStation; } catch(Exception ex) when(!ex.IsFatal()) { }
     try { specklePipe["endStation"] = pipe.EndStation; } catch(Exception ex) when(!ex.IsFatal()) { }
-    try { specklePipe["startStructure"] = pipe.StartStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
-    try { specklePipe["endStructure"] = pipe.EndStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["startStructureId"] = pipe.StartStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["endStructureId"] = pipe.EndStructureId.ToString(); } catch(Exception ex) when(!ex.IsFatal()) { }
+    try { specklePipe["pipeId"] = pipe.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return specklePipe;
   }
@@ -1078,17 +1099,7 @@ public partial class ConverterAutocadCivil
   public Pipe PipeToSpeckle(PressurePipe pipe)
   {
     // get the pipe curve
-    ICurve curve;
-    switch (pipe.BaseCurve)
-    {
-      case AcadDB.Line:
-        var line = new LineSegment3d(pipe.StartPoint, pipe.EndPoint);
-        curve = LineToSpeckle(line);
-        break;
-      default:
-        curve = CurveToSpeckle(pipe.BaseCurve);
-        break;
-    }
+    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
 
     Pipe specklePipe = new()
     {
@@ -1101,8 +1112,11 @@ public partial class ConverterAutocadCivil
 
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
-    specklePipe["isPressurePipe"] = true;
+#if CIVIL2022_OR_GREATER
+    specklePipe["partData"] = PartDataRecordToSpeckle(pipe.PartData);
+#endif
 
+    specklePipe["isPressurePipe"] = true;
     try { specklePipe["partType"] = pipe.PartType.ToString(); } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["slope"] = pipe.Slope; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["network"] = pipe.NetworkName; } catch (Exception e) when (!e.IsFatal()) { }
@@ -1110,19 +1124,161 @@ public partial class ConverterAutocadCivil
     try { specklePipe["endOffset"] = pipe.EndOffset; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["startStation"] = pipe.StartStation; } catch (Exception e) when (!e.IsFatal()) { }
     try { specklePipe["endStation"] = pipe.EndStation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["pipeId"] = pipe.Id.ToString(); } catch (Exception ex) when (!ex.IsFatal()) { }
 
     return specklePipe;
   }
 
   // corridors
   // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
+
+  private CivilDataField AppliedSubassemblyParamToSpeckle(IAppliedSubassemblyParam param)
+  {
+    CivilDataField baseParam = new(param.KeyName, param.ValueType.Name, param.ValueAsObject, null, null, param.DisplayName);
+    return baseParam;
+  }
+
+  private CivilAppliedSubassembly AppliedSubassemblyToSpeckle(AppliedSubassembly appliedSubassembly)
+  {
+    // retrieve subassembly name
+    Subassembly subassembly = Trans.GetObject(appliedSubassembly.SubassemblyId, OpenMode.ForRead) as Subassembly;
+
+    // get the calculated shapes
+    List<CivilCalculatedShape> speckleShapes = new();
+    foreach (CalculatedShape shape in appliedSubassembly.Shapes)
+    {
+      CivilCalculatedShape speckleShape = CalculatedShapeToSpeckle(shape);
+      speckleShapes.Add(speckleShape);
+    }
+
+    Point soePoint = PointToSpeckle(appliedSubassembly.OriginStationOffsetElevationToBaseline);
+    List<CivilDataField> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
+
+    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, soePoint, speckleParameters);
+    return speckleAppliedSubassembly;
+  }
+
+  private CivilAppliedAssembly AppliedAssemblyToSpeckle(AppliedAssembly appliedAssembly)
+  {
+    // get the applied subassemblies
+    List<CivilAppliedSubassembly> speckleSubassemblies = new();
+    foreach (AppliedSubassembly appliedSubassembly in appliedAssembly.GetAppliedSubassemblies())
+    {
+      CivilAppliedSubassembly speckleSubassembly = AppliedSubassemblyToSpeckle(appliedSubassembly);
+      speckleSubassemblies.Add(speckleSubassembly);
+    }
+
+    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, appliedAssembly.AdjustedElevation, ModelUnits);
+    return speckleAppliedAssembly;
+  }
+
+  private CivilBaselineRegion BaselineRegionToSpeckle(BaselineRegion region)
+  {
+    // get the region assembly
+    Assembly assembly = Trans.GetObject(region.AssemblyId, OpenMode.ForRead) as Assembly;
+
+    // get the applied assemblies by station
+    List<CivilAppliedAssembly> speckleAppliedAssemblies = new();
+    double[] sortedStations = region.SortedStations();
+    for (int i = 0; i < sortedStations.Length; i++)
+    {
+      double station = sortedStations[i];
+      CivilAppliedAssembly speckleAssembly = AppliedAssemblyToSpeckle(region.AppliedAssemblies[i]);
+      speckleAssembly["station"] = station;
+      speckleAppliedAssemblies.Add(speckleAssembly);
+    }
+
+    // create the speckle region
+    CivilBaselineRegion speckleRegion = new(region.Name, region.StartStation, region.EndStation, assembly.Id.ToString(), assembly.Name, speckleAppliedAssemblies);
+    return speckleRegion;
+  }
+
+  private CivilCalculatedShape CalculatedShapeToSpeckle(CalculatedShape shape)
+  {
+    List<string> codes = shape.CorridorCodes.ToList();
+    List<CivilCalculatedLink> speckleLinks = new();
+    foreach (CalculatedLink link in shape.CalculatedLinks)
+    {
+      CivilCalculatedLink speckleLink = CalculatedLinkToSpeckle(link);
+      speckleLinks.Add(speckleLink);
+    }
+
+    CivilCalculatedShape speckleCalculatedShape = new(codes, speckleLinks, shape.Area, ModelUnits);
+    return speckleCalculatedShape;
+  }
+
+  private CivilCalculatedLink CalculatedLinkToSpeckle(CalculatedLink link)
+  {
+    List<string> codes = link.CorridorCodes.ToList();
+    List<CivilCalculatedPoint> specklePoints = new();
+    foreach (CalculatedPoint point in link.CalculatedPoints)
+    {
+      CivilCalculatedPoint specklePoint = CalculatedPointToSpeckle(point);
+      specklePoints.Add(specklePoint);
+    }
+
+    CivilCalculatedLink speckleLink = new(codes, specklePoints);
+    return speckleLink;
+  }
+
+  private CivilCalculatedPoint CalculatedPointToSpeckle(CalculatedPoint point)
+  {
+    Point specklePoint = PointToSpeckle(point.XYZ);
+    List<string> codes = point.CorridorCodes.ToList();
+    Vector normalBaseline = VectorToSpeckle(point.NormalToBaseline);
+    Vector normalSubAssembly = VectorToSpeckle(point.NormalToSubassembly);
+    Point soePoint = PointToSpeckle(point.StationOffsetElevationToBaseline);
+    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly, soePoint);
+    return speckleCalculatedPoint;
+  }
+
+  private CivilBaseline BaselineToSpeckle(CivilDB.Baseline baseline)
+  {
+    CivilBaseline speckleBaseline = null;
+
+    // get the speckle regions
+    List<CivilBaselineRegion> speckleRegions = new();
+    foreach (BaselineRegion region in baseline.BaselineRegions)
+    {
+      CivilBaselineRegion speckleRegion = BaselineRegionToSpeckle(region);
+      speckleRegions.Add(speckleRegion);
+    }
+
+    // get profile and alignment if nonfeaturelinebased
+    // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
+    // and throw an exception ""This operation on feature line based baseline is invalid".
+    if (!baseline.IsFeatureLineBased())
+    {
+      // get the speckle alignment
+      var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+      CivilAlignment speckleAlignment = AlignmentToSpeckle(alignment);
+
+      // get the speckle profile
+      var profile = Trans.GetObject(baseline.ProfileId, OpenMode.ForRead) as CivilDB.Profile;
+      CivilProfile speckleProfile = ProfileToSpeckle(profile);
+
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile);
+    }
+    else
+    {
+      // get the baseline featureline
+      var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
+      Featureline speckleFeatureline = FeaturelineToSpeckle(featureline);
+
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleFeatureline);
+    }
+    
+    return speckleBaseline;
+  }
+
   public Base CorridorToSpeckle(Corridor corridor)
   {
-    List<Alignment> alignments = new();
-    List<Profile> profiles = new();
     List<Featureline> featurelines = new();
-    foreach (Baseline baseline in corridor.Baselines)
+    List<CivilBaseline> baselines = new();
+    foreach (CivilDB.Baseline baseline in corridor.Baselines)
     {
+      CivilBaseline speckleBaseline = BaselineToSpeckle(baseline);
+      baselines.Add(speckleBaseline);  
 
       // get the collection of featurelines for this baseline
       foreach (FeatureLineCollection mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
@@ -1140,32 +1296,6 @@ public partial class ConverterAutocadCivil
           foreach (CorridorFeatureLine featureline in featurelineCollection)
           {
             featurelines.Add(FeaturelineToSpeckle(featureline));
-          }
-        }
-      }
-
-      // get alignment and profile if relevant
-      // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
-      // and throw an exception ""This operation on feature line based baseline is invalid".
-      if (!baseline.IsFeatureLineBased())
-      {
-        if (baseline.AlignmentId is ObjectId alignmentId)
-        {
-          var alignment = Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-          var convertedAlignment = AlignmentToSpeckle(alignment);
-          if (convertedAlignment != null)
-          {
-            alignments.Add(convertedAlignment);
-          }
-        }
-        
-        if (baseline.ProfileId is ObjectId profileId)
-        {
-          var profile = Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile;
-          var convertedProfile = ProfileToSpeckle(profile);
-          if (convertedProfile != null)
-          {
-            profiles.Add(convertedProfile);
           }
         }
       }
@@ -1190,9 +1320,8 @@ public partial class ConverterAutocadCivil
     }
 
     var corridorBase = new Base();
-    corridorBase["@alignments"] = alignments;
-    corridorBase["@profiles"] = profiles;
     corridorBase["@featurelines"] = featurelines;
+    corridorBase["@baselines"] = baselines;
     AddNameAndDescriptionProperty(corridor.Name, corridor.Description, corridorBase);
     corridorBase["units"] = ModelUnits;
     if (surfaces.Count > 0)

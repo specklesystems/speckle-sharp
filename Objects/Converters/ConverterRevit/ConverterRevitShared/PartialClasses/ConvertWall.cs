@@ -187,18 +187,21 @@ public partial class ConverterRevit
       return RevitElementToSpeckle(revitWall, out notes);
     }
 
-    RevitWall speckleWall = new();
-    speckleWall.family = revitWall.WallType.FamilyName.ToString();
-    speckleWall.type = revitWall.WallType.Name;
-    speckleWall.baseLine = (ICurve)baseGeometry;
-    speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
-    speckleWall.topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE);
-    speckleWall.height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-    speckleWall.baseOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET);
-    speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
-    speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-    speckleWall.flipped = revitWall.Flipped;
-
+    RevitWall speckleWall =
+      new(
+        revitWall.WallType.FamilyName,
+        revitWall.WallType.Name,
+        (ICurve)baseGeometry,
+        ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT),
+        ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM),
+        ModelUnits,
+        revitWall.Id.ToString(),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_BASE_OFFSET),
+        GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET),
+        revitWall.Flipped,
+        GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT)
+      );
     //CreateVoids(revitWall, speckleWall);
 
     if (revitWall.CurtainGrid is not CurtainGrid grid)
@@ -261,19 +264,33 @@ public partial class ConverterRevit
       return children;
     }
 
-    var allSubelementsInView = revitDocumentAggregateCache
-      .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
-      .GetOrAdd(
-        category.ToString(),
-        () =>
-        {
-          using var filter = new ElementCategoryFilter(category);
-          using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+    var allSubelementsInView = new HashSet<ElementId>();
 
-          return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
-        },
-        out _
+    if (revitDocumentAggregateCache is null)
+    {
+      var filter = new ElementCategoryFilter(category);
+      var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+      allSubelementsInView = new HashSet<ElementId>(
+        collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds()
       );
+    }
+    else
+    {
+      allSubelementsInView = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
+        .GetOrAdd(
+          category.ToString(),
+          () =>
+          {
+            using var filter = new ElementCategoryFilter(category);
+            using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+            return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+          },
+          out _
+        );
+    }
 
     return children.Where(allSubelementsInView.Contains);
   }

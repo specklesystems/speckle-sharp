@@ -49,7 +49,9 @@ internal static class ParameterExtensions
       case StorageType.String:
         return parameter.AsString();
       case StorageType.ElementId:
-        return parameter.AsElementId().ToString();
+        ElementId id = parameter.AsElementId();
+        Element el = parameter.Element.Document.GetElement(id);
+        return el?.Name ?? id.ToString();
       default:
         return null;
     }

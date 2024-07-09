@@ -24,6 +24,7 @@
 #define GetElementBaseDataCommandName			"GetElementBaseData";
 #define GetGridElementCommandName				"GetGridElementData";
 #define GetObjectDataCommandName				"GetObjectData";
+#define GetOpeningDataCommandName				"GetOpeningData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetRoomDataCommandName					"GetRoomData";
 #define GetRoofDataCommandName					"GetRoofData";
@@ -38,6 +39,7 @@
 #define CreateColumnCommandName					"CreateColumn";
 #define CreateGridElementCommandName			"CreateGridElement";
 #define CreateObjectCommandName					"CreateObject";
+#define CreateOpeningCommandName				"CreateOpening";
 #define CreateSlabCommandName					"CreateSlab";
 #define CreateSkylightCommandName				"CreateSkylight";
 #define CreateRoofCommandName					"CreateRoof";

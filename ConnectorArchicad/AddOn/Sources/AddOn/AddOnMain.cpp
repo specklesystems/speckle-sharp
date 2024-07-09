@@ -18,6 +18,7 @@
 #include "Commands/GetElementBaseData.hpp"
 #include "Commands/GetGridElementData.hpp"
 #include "Commands/GetObjectData.hpp"
+#include "Commands/GetOpeningData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoofData.hpp"
 #include "Commands/GetShellData.hpp"
@@ -31,6 +32,7 @@
 #include "Commands/CreateColumn.hpp"
 #include "Commands/CreateGridElement.hpp"
 #include "Commands/CreateObject.hpp"
+#include "Commands/CreateOpening.hpp"
 #include "Commands/CreateRoof.hpp"
 #include "Commands/CreateSkylight.hpp"
 #include "Commands/CreateSlab.hpp"
@@ -90,46 +92,41 @@ public:
 private:
 	GS::UniString GetPlatformSpecificExecutablePath ()
 	{
-#if defined (macintosh)
-		static const char* FileName = "ConnectorArchicad";
-#else
-		static const char* FileName = "ConnectorArchicad.exe";
-#endif
-		static const char* FolderNameCommon = "Common";
-		static const char* FolderName = "ConnectorArchicad";
-
 		IO::Location ownFileLoc;
 		auto err = ACAPI_GetOwnLocation (&ownFileLoc);
 		if (err != NoError) {
 			return "";
 		}
 
+#if defined (macintosh)
+		static const char* ProductionConnector = "../../../Common/ConnectorArchicad/ConnectorArchicad.app/Contents/MacOS/ConnectorArchicad";
+#else
+		static const char* ProductionConnector = "../../../Common/ConnectorArchicad/ConnectorArchicad.exe";
+#endif
+
 		IO::Location location (ownFileLoc);
-		location.DeleteLastLocalName ();
-		location.DeleteLastLocalName ();
-		location.DeleteLastLocalName ();
-		location.AppendToLocal (IO::Name (FolderNameCommon));
-		location.AppendToLocal (IO::Name (FolderName));
-		location.AppendToLocal (IO::Name (FileName));
+		location.AppendToLocal (IO::RelativeLocation (ProductionConnector));
 
 		bool exist (false);
 		err = IO::fileSystem.Contains (location, &exist);
 		if (err != NoError || !exist) {
 			location = ownFileLoc;
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
-			location.DeleteLastLocalName ();
 
-			location.AppendToLocal (IO::Name (FolderName));
-			location.AppendToLocal (IO::Name ("bin"));
+#if defined (macintosh)
 #ifdef DEBUG
-			location.AppendToLocal (IO::Name ("Debug"));
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Debug/net6.0/ConnectorArchicad";
 #else
-			location.AppendToLocal (IO::Name ("Release"));
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Release/net6.0/ConnectorArchicad";
 #endif
-			location.AppendToLocal (IO::Name ("net6.0"));
-			location.AppendToLocal (IO::Name (FileName));
+#else
+#ifdef DEBUG
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Debug/net6.0/ConnectorArchicad.exe";
+#else
+			static const char* DevelopmentConnector = "../../../../ConnectorArchicad/bin/Release/net6.0/ConnectorArchicad.exe";
+#endif
+#endif
+
+			location.AppendToLocal (IO::RelativeLocation (DevelopmentConnector));
 		}
 
 		GS::UniString executableStr;
@@ -200,6 +197,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetGridElementData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetOpeningData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetShellData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSkylightData> ()));
@@ -213,6 +211,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateGridElement> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateObject> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateOpening> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateRoof> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateShell> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateSkylight> ()));

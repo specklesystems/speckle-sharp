@@ -15,6 +15,9 @@ using Polly.Contrib.WaitAndRetry;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
+using Serilog.Events;
+using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -23,71 +26,55 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public sealed partial class Client : IDisposable
+public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 {
-  [Obsolete]
-  internal Client() { }
-
-  public Client(Account account)
-  {
-    Account = account ?? throw new SpeckleException("Provided account is null.");
-
-    HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
-    Http.AddAuthHeader(HttpClient, account.token);
-
-    HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
-    HttpClient.DefaultRequestHeaders.Add(
-      "apollographql-client-version",
-      Assembly.GetExecutingAssembly().GetName().Version.ToString()
-    );
-
-    GQLClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions
-      {
-        EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
-        UseWebSocketForQueriesAndMutations = false,
-        WebSocketProtocol = "graphql-ws",
-        ConfigureWebSocketConnectionInitPayload = _ =>
-        {
-          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
-        },
-      },
-      new NewtonsoftJsonSerializer(),
-      HttpClient
-    );
-
-    GQLClient.WebSocketReceiveErrors.Subscribe(e =>
-    {
-      if (e is WebSocketException we)
-      {
-        Console.WriteLine(
-          $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
-        );
-      }
-      else
-      {
-        Console.WriteLine($"Exception in websocket receive stream: {e}");
-      }
-    });
-  }
+  public ProjectResource Project { get; }
+  public ModelResource Model { get; }
+  public VersionResource Version { get; }
+  public ActiveUserResource ActiveUser { get; }
+  public OtherUserResource OtherUser { get; }
+  public ProjectInviteResource ProjectInvite { get; }
+  public CommentResource Comment { get; }
+  public SubscriptionResource Subscription { get; }
 
   public string ServerUrl => Account.serverInfo.url;
 
   public string ApiToken => Account.token;
 
-  public System.Version? ServerVersion { get; set; }
+  public System.Version? ServerVersion { get; private set; }
 
   [JsonIgnore]
-  public Account Account { get; set; }
+  public Account Account { get; }
 
-  private HttpClient HttpClient { get; set; }
+  private HttpClient HttpClient { get; }
 
-  public GraphQLHttpClient GQLClient { get; set; }
+  public GraphQLHttpClient GQLClient { get; }
+
+  /// <param name="account"></param>
+  /// <exception cref="ArgumentException"><paramref name="account"/> was null</exception>
+  public Client(Account account)
+  {
+    Account = account ?? throw new ArgumentException("Provided account is null.");
+
+    Project = new(this);
+    Model = new(this);
+    Version = new(this);
+    ActiveUser = new(this);
+    OtherUser = new(this);
+    ProjectInvite = new(this);
+    Comment = new(this);
+    Subscription = new(this);
+
+    HttpClient = CreateHttpClient(account);
+
+    GQLClient = CreateGraphQLClient(account, HttpClient);
+  }
 
   public void Dispose()
   {
     try
     {
+      Subscription.Dispose();
       UserStreamAddedSubscription?.Dispose();
       UserStreamRemovedSubscription?.Dispose();
       StreamUpdatedSubscription?.Dispose();
@@ -116,42 +103,34 @@ public sealed partial class Client : IDisposable
 
     var delay = Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5);
     var graphqlRetry = Policy
-      .Handle<SpeckleGraphQLInternalErrorException<T>>()
+      .Handle<SpeckleGraphQLInternalErrorException>()
       .WaitAndRetryAsync(
         delay,
-        (ex, timeout, context) =>
+        (ex, timeout, _) =>
         {
-          var graphqlEx = (SpeckleGraphQLException<T>)ex;
-          SpeckleLog.Logger
-            .ForContext("graphqlExtensions", graphqlEx.Extensions)
-            .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
-            .Warning(
-              ex,
-              "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}.",
-              typeof(T).Name,
-              ex.Message,
-              timeout
-            );
+          SpeckleLog.Logger.Debug(
+            ex,
+            "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}",
+            typeof(T).Name,
+            ex.Message,
+            timeout
+          );
         }
       );
 
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
-  /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
-  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
+  /// <inheritdoc/>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
+    var timer = Stopwatch.StartNew();
 
-    SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
-    var timer = new Stopwatch();
-    var success = false;
-    timer.Start();
+    Exception? exception = null;
     try
     {
-      var result = await ExecuteWithResiliencePolicies(async () =>
+      return await ExecuteWithResiliencePolicies(async () =>
         {
           GraphQLResponse<T> result = await GQLClient
             .SendMutationAsync<T>(request, cancellationToken)
@@ -160,58 +139,28 @@ public sealed partial class Client : IDisposable
           return result.Data;
         })
         .ConfigureAwait(false);
-      success = true;
-      return result;
     }
-    // cancellations are bubbling up with no logging
-    catch (OperationCanceledException)
+    catch (Exception ex)
     {
+      exception = ex;
       throw;
-    }
-    // we catch forbidden to rethrow, making sure its not logged.
-    catch (SpeckleGraphQLForbiddenException<T>)
-    {
-      throw;
-    }
-    // anything else related to graphql gets logged
-    catch (SpeckleGraphQLException<T> gqlException)
-    {
-      SpeckleLog.Logger
-        .ForContext("graphqlResponse", gqlException.Response)
-        .ForContext("graphqlExtensions", gqlException.Extensions)
-        .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
-        .Warning(
-          gqlException,
-          "Execution of the graphql request to get {resultType} failed with {graphqlExceptionType} {exceptionMessage}.",
-          typeof(T).Name,
-          gqlException.GetType().Name,
-          gqlException.Message
-        );
-      throw;
-    }
-    // we log and wrap anything that is not a graphql exception.
-    // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      SpeckleLog.Logger.Warning(
-        ex,
-        "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
-        typeof(T).Name,
-        ex.Message
-      );
-      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", ex, request, null);
     }
     finally
     {
-      // this is a performance metric log operation
-      // this makes sure that both success and failed operations report
-      // the same performance log
-      timer.Stop();
-      var status = success ? "succeeded" : "failed";
-      SpeckleLog.Logger.Information(
-        "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
+      LogEventLevel logLevel = exception switch
+      {
+        null => LogEventLevel.Information,
+        OperationCanceledException
+          => cancellationToken.IsCancellationRequested ? LogEventLevel.Debug : LogEventLevel.Error,
+        SpeckleException => LogEventLevel.Warning,
+        _ => LogEventLevel.Error,
+      };
+      SpeckleLog.Logger.Write(
+        logLevel,
+        exception,
+        "Execution of the graphql request to get {resultType} completed with success:{status} after {elapsed} seconds",
         typeof(T).Name,
-        status,
+        exception is null,
         timer.Elapsed.TotalSeconds
       );
     }
@@ -236,7 +185,7 @@ public sealed partial class Client : IDisposable
         )
       )
       {
-        throw new SpeckleGraphQLForbiddenException<T>(request, response);
+        throw new SpeckleGraphQLForbiddenException(request, response);
       }
 
       if (
@@ -246,7 +195,7 @@ public sealed partial class Client : IDisposable
         )
       )
       {
-        throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
+        throw new SpeckleGraphQLStreamNotFoundException(request, response);
       }
 
       if (
@@ -257,7 +206,7 @@ public sealed partial class Client : IDisposable
         )
       )
       {
-        throw new SpeckleGraphQLInternalErrorException<T>(request, response);
+        throw new SpeckleGraphQLInternalErrorException(request, response);
       }
 
       throw new SpeckleGraphQLException<T>("Request failed with errors", request, response);
@@ -299,6 +248,10 @@ public sealed partial class Client : IDisposable
     };
   }
 
+  IDisposable ISpeckleGraphQLClient.SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback) =>
+    SubscribeTo(request, callback);
+
+  /// <inheritdoc cref="ISpeckleGraphQLClient.SubscribeTo{T}"/>
   internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
     using (LogContext.Push(CreateEnrichers<T>(request)))
@@ -325,7 +278,7 @@ public sealed partial class Client : IDisposable
               }
             }
             // we catch forbidden to rethrow, making sure its not logged.
-            catch (SpeckleGraphQLForbiddenException<T>)
+            catch (SpeckleGraphQLForbiddenException)
             {
               throw;
             }
@@ -356,7 +309,7 @@ public sealed partial class Client : IDisposable
             // so far we've swallowed these errors
             SpeckleLog.Logger.Error(
               ex,
-              "Subscription request for {resultType} failed with {exceptionMessage}",
+              "Subscription for {resultType} terminated unexpectedly with {exceptionMessage}",
               typeof(T).Name,
               ex.Message
             );
@@ -375,11 +328,57 @@ public sealed partial class Client : IDisposable
         );
         throw new SpeckleGraphQLException<T>(
           "The graphql request failed without a graphql response",
-          ex,
           request,
-          null
+          null,
+          ex
         );
       }
     }
+  }
+
+  private static GraphQLHttpClient CreateGraphQLClient(Account account, HttpClient httpClient)
+  {
+    var gQLClient = new GraphQLHttpClient(
+      new GraphQLHttpClientOptions
+      {
+        EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
+        UseWebSocketForQueriesAndMutations = false,
+        WebSocketProtocol = "graphql-ws",
+        ConfigureWebSocketConnectionInitPayload = _ =>
+        {
+          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
+        },
+      },
+      new NewtonsoftJsonSerializer(),
+      httpClient
+    );
+
+    gQLClient.WebSocketReceiveErrors.Subscribe(e =>
+    {
+      if (e is WebSocketException we)
+      {
+        Console.WriteLine(
+          $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
+        );
+      }
+      else
+      {
+        Console.WriteLine($"Exception in websocket receive stream: {e}");
+      }
+    });
+    return gQLClient;
+  }
+
+  private static HttpClient CreateHttpClient(Account account)
+  {
+    var httpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
+    Http.AddAuthHeader(httpClient, account.token);
+
+    httpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
+    httpClient.DefaultRequestHeaders.Add(
+      "apollographql-client-version",
+      Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    );
+    return httpClient;
   }
 }

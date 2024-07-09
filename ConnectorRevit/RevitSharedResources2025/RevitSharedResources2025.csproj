@@ -5,6 +5,7 @@
     <DefineConstants>$(DefineConstants);REVIT2025</DefineConstants>
     <RootNamespace>RevitSharedResources</RootNamespace>
     <IsPackable>true</IsPackable>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>

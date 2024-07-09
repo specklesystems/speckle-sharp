@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
@@ -7,7 +5,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel;
 
-public class AsteelBeam : Beam, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea, IAsteelObject
+public class AsteelBeam : Beam, IHasVolume, IHasArea, IAsteelObject
 {
   [DetachProperty]
   public SectionProfile profile { get; set; }

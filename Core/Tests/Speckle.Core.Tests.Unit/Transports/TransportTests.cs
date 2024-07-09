@@ -1,6 +1,5 @@
 #nullable enable
 using NUnit.Framework;
-using Speckle.Core.Api;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 

@@ -9,6 +9,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -224,21 +225,21 @@ public class DummyBindings : ConnectorBindings
       {
         id = "123",
         name = "Matteo Cominetti",
-        role = "stream:contributor",
+        role = StreamRoles.STREAM_CONTRIBUTOR,
         avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
       },
       new()
       {
         id = "321",
         name = "Izzy Lyseggen",
-        role = "stream:owner",
+        role = StreamRoles.STREAM_OWNER,
         avatar = "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
       },
       new()
       {
         id = "456",
         name = "Dimitrie Stefanescu",
-        role = "stream:contributor",
+        role = StreamRoles.STREAM_CONTRIBUTOR,
         avatar = "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
       }
     };

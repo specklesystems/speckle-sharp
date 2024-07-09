@@ -186,7 +186,7 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
         break;
       }
       (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
-#if RHINO7
+#if RHINO7_OR_GREATER
       if (!Instances.RunningHeadless)
       {
         (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
@@ -252,13 +252,14 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       RegisterPropertyAsInputParameter(p, k++);
     }
 
+    SelectedConstructor = constructor;
+
     UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
 
     Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
     Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
 
     Message = constructor.DeclaringType.FullName.Split('.')[0];
-    SelectedConstructor = constructor;
     Params.Output[0].NickName = constructor.DeclaringType.Name;
     Params.OnParametersChanged();
 
