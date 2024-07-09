@@ -35,53 +35,110 @@ namespace {
 	
 	
 	/*!
+	 Structure facilitating the measurement of material quantities in an element
+	 Each member is a function providing key information for quantity take-offs
+	 */
+	struct QuantityManager {
+			///Gets the element building material
+		MaterialGet getMaterial;
+			///Sets the volume take-off mask for the element
+		MaskSet setVolumeMask;
+			///Gets the volume for the element (for the above material)
+		QuantGet getVolume;
+			///Sets the surface area take-off mask for the element
+		MaskSet setAreaMask;
+			///Gets the surface area for the element (for the above material)
+		QuantGet getArea;
+	};
+	
+	/*!
 	 Set a mask in a specified field (i.e. mark with a non-zero value to flag that this value should be calculated)
 	 @param field A pointer to the target field
 	 */
 	void setMask(void* field) {
 		*(reinterpret_cast<unsigned char*>(field)) = 0xFF;
 	}
-
 	
-		//Get the material for a specified element type
-	std::map<API_ElemTypeID, MaterialGet> elementMaterial = {
-		{ API_BeamSegmentID, [](const API_Element& element){ return element.beamSegment.assemblySegmentData.buildingMaterial; } },
-		{ API_ColumnSegmentID, [](const API_Element& element){ return element.columnSegment.assemblySegmentData.buildingMaterial; } },
-		{ API_WallID, [](const API_Element& element){ return element.wall.buildingMaterial; } },
+	/*!
+	 Quantity management operation for handled Archicad element types (combines getter/setter for material, quants mask and quants values
+	 NB: The API for elements is C structs with no abstraction or polymorphic behaviours. Rather than writing object wrappers for these structs,
+	 the following collections of functions facilitate required getters/setters based on a type identifier
+	 */
+	std::map<API_ElemTypeID, QuantityManager> quantityManager = {
+		{ API_BeamSegmentID,
+			{
+				[](const API_Element& element){ return element.beamSegment.assemblySegmentData.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.beamSegment.volume); },
+				[](const API_ElementQuantity& quant){ return quant.beamSegment.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.beamSegment.rightSurface); },
+				[](const API_ElementQuantity& quant){ return quant.beamSegment.rightSurface; },
+			}
+		},
+		{ API_ColumnSegmentID,
+			{
+				[](const API_Element& element){ return element.columnSegment.assemblySegmentData.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.columnSegment.volume); },
+				[](const API_ElementQuantity& quant){ return quant.columnSegment.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.columnSegment.coreNetSurface); },
+				[](const API_ElementQuantity& quant){ return quant.columnSegment.coreNetSurface; },
+			}
+		},
+		{ API_MeshID,
+			{
+				[](const API_Element& element){ return element.mesh.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.mesh.volume); },
+				[](const API_ElementQuantity& quant){ return quant.mesh.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.mesh.topSurface); },
+				[](const API_ElementQuantity& quant){ return quant.mesh.topSurface; },
+			}
+		},
+		{ API_MorphID,
+			{
+				[](const API_Element& element){ return element.morph.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.morph.volume); },
+				[](const API_ElementQuantity& quant){ return quant.morph.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.morph.surface); },
+				[](const API_ElementQuantity& quant){ return quant.morph.surface; },
+			}
+		},
+		{ API_RoofID,
+			{
+				[](const API_Element& element){ return element.roof.shellBase.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.roof.volume); },
+				[](const API_ElementQuantity& quant){ return quant.roof.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.roof.topSurface); },
+				[](const API_ElementQuantity& quant){ return quant.roof.topSurface; },
+			}
+		},
+		{ API_ShellID,
+			{
+				[](const API_Element& element){ return element.shell.shellBase.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.shell.volume); },
+				[](const API_ElementQuantity& quant){ return quant.shell.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.shell.referenceSurface); },
+				[](const API_ElementQuantity& quant){ return quant.shell.referenceSurface; },
+			}
+		},
+		{ API_SlabID,
+			{
+				[](const API_Element& element){ return element.slab.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.slab.volume); },
+				[](const API_ElementQuantity& quant){ return quant.slab.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.slab.topSurface); },
+				[](const API_ElementQuantity& quant){ return quant.slab.topSurface; },
+			}
+		},
+		{ API_WallID,
+			{
+				[](const API_Element& element){ return element.wall.buildingMaterial; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.wall.volume); },
+				[](const API_ElementQuantity& quant){ return quant.wall.volume; },
+				[](API_ElementQuantityMask& mask){ setMask(&mask.wall.surface1); },
+				[](const API_ElementQuantity& quant){ return quant.wall.surface1; },
+			}
+		},
 	};
-
 	
-		//Set a volume quantity calculation mask for specified element types
-	std::map<API_ElemTypeID, MaskSet> volumeMask = {
-		{ API_BeamSegmentID, [](API_ElementQuantityMask& mask){ setMask(&mask.beamSegment.volume); } },
-		{ API_ColumnSegmentID, [](API_ElementQuantityMask& mask){ setMask(&mask.columnSegment.volume); } },
-		{ API_WallID, [](API_ElementQuantityMask& mask){ setMask(&mask.wall.volume); } },
-	};
-
-	
-		//Get a volume quantity for specified element types
-	std::map<API_ElemTypeID, QuantGet> volumeValue = {
-		{ API_BeamSegmentID, [](const API_ElementQuantity& quant){ return quant.beamSegment.volume; } },
-		{ API_ColumnSegmentID, [](const API_ElementQuantity& quant){ return quant.columnSegment.volume; } },
-		{ API_WallID, [](const API_ElementQuantity& quant){ return quant.wall.volume; } },
-	};
-
-	
-		//Set a surface area quantity calculation mask for specified element types (NB: these may need to be adjusted based on user requirements)
-	std::map<API_ElemTypeID, MaskSet> areaMask = {
-		{ API_BeamSegmentID, [](API_ElementQuantityMask& mask){ setMask(&mask.beamSegment.rightSurface); } },
-		{ API_ColumnSegmentID, [](API_ElementQuantityMask& mask){ setMask(&mask.columnSegment.veneerSideSurface); } },
-		{ API_WallID, [](API_ElementQuantityMask& mask){ setMask(&mask.wall.surface1); } },
-	};
-
-	
-		//Get a surface area quantity for specified element types (NB: these may need to be adjusted based on user requirements)
-	std::map<API_ElemTypeID, QuantGet> areaValue = {
-		{ API_BeamSegmentID, [](const API_ElementQuantity& quant){ return quant.beamSegment.rightSurface; } },
-		{ API_ColumnSegmentID, [](const API_ElementQuantity& quant){ return quant.columnSegment.veneerSideSurface; } },
-		{ API_WallID, [](const API_ElementQuantity& quant){ return quant.wall.surface1; } },
-	};
-
 	
 	/*!
 	 Collect the individual segments from a segmented assembly (e.g. beam/column)
@@ -194,22 +251,21 @@ namespace {
 	auto collectBasicQuantitites(const API_Element& element) {
 		MaterialQuantArray result;
 			//First determine that this element type has a suitable material definition and supports quantity take-offs for volume and area
-		auto getMaterial = elementMaterial.find(element.header.type.typeID);
-		auto setVolumeMask = volumeMask.find(element.header.type.typeID);
-		auto getVolume = volumeValue.find(element.header.type.typeID);
-		auto setAreaMask = areaMask.find(element.header.type.typeID);
-		auto getArea = areaValue.find(element.header.type.typeID);
-		if ((getMaterial != elementMaterial.end()) && (setVolumeMask != volumeMask.end()) && (getVolume != volumeValue.end()) &&
-				(setAreaMask != areaMask.end()) && (getArea != areaValue.end())) {
+		auto manager = quantityManager.find(element.header.type.typeID);
+		if (manager != quantityManager.end()) {
 			API_ElementQuantity elementQuantity{};
 			API_Quantities extendedQuantity{};
 			API_QuantitiesMask quantityMask{};
 				//Set the appropriate masks for material volume/area quantity takeoffs
-			setVolumeMask->second(quantityMask.elements);
-			setAreaMask->second(quantityMask.elements);
+			manager->second.setVolumeMask(quantityMask.elements);
+			manager->second.setAreaMask(quantityMask.elements);
 			measureQuantities(element, elementQuantity, extendedQuantity, quantityMask);
 				//Create a material quantity from the quantity takeoff
-			result.push_back({getMaterial->second(element), getVolume->second(elementQuantity), getArea->second(elementQuantity)});
+			result.push_back({
+				manager->second.getMaterial(element),
+				manager->second.getVolume(elementQuantity),
+				manager->second.getArea(elementQuantity)
+			});
 		}
 		return result;
 	} //collectBasicQuantitites
@@ -248,6 +304,7 @@ namespace {
 	MaterialQuantArray getQuantity(const API_Element& element, const API_ElementMemo& memo) {
 		if (isAssembly(element)) {
 			MaterialQuantArray result;
+				//Get the constituent parts of the assembly and process each as an independent element
 			if (auto parts = getElementParts(element, memo); !parts.empty()) {
 				API_ElementMemo partMemo{};	//NB: The memo is not used for the quantity take-offs in part elements, so an empty structure is fine
 				for (auto& part : parts) {
