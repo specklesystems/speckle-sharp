@@ -81,6 +81,13 @@ public partial class ConnectorBindingsNavisworks
       },
       new CheckBoxSetting
       {
+        Slug = "exclude-properties",
+        Name = "Exclude Properties",
+        IsChecked = false,
+        Description = "Excludes Properties from the commit. Can reduce payloads for large models."
+      },
+      new CheckBoxSetting
+      {
         Slug = "internal-property-names",
         Name = "Internal Property Names",
         IsChecked = false,
