@@ -193,28 +193,40 @@ public partial class ConverterNavisworks
     }
   }
 
+  /// <summary>
+  /// Adds properties of a given ModelItem to a Base object.
+  /// </summary>
+  /// <param name="element">The ModelItem whose properties are to be added.</param>
+  /// <param name="base">The Base object to which the properties are to be added.</param>
   private static void AddItemProperties(ModelItem element, Base @base)
   {
     @base["class"] = element.ClassName;
 
-    bool properties = ShouldIncludeProperties();
-
+    if (ExcludeProperties)
+    {
+      return;
+    }
     // Cascade through the Property Sets
-    @base["properties"] = properties ? GetPropertiesBase(element) : new Base();
+    @base["properties"] = GetPropertiesBase(element);
 
     // If the node is a Model
     if (element.HasModel)
     {
-      ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
+      (((Base)@base["properties"])!)["Model"] = GetModelProperties(element.Model);
     }
 
     // Internal Properties
-    AddInternalProperties(element, (Base)@base["properties"]);
+    if (IncludeInternalProperties)
+    {
+      AddInternalProperties(element, (Base)@base["properties"]);
+    }
   }
 
-  private static bool ShouldIncludeProperties() =>
-    !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
-
+  /// <summary>
+  /// Adds internal properties of a given ModelItem to a Base object.
+  /// </summary>
+  /// <param name="element">The ModelItem whose properties are to be added.</param>
+  /// <param name="propertiesBase">The Base object to which the properties are to be added.</param>
   private static void AddInternalProperties(ModelItem element, Base propertiesBase)
   {
     Base internals = (Base)propertiesBase["Internal"] ?? new Base();
