@@ -31,18 +31,6 @@ public partial class ConnectorBindingsNavisworks
 
   public override bool CanPreviewSend => false;
 
-  /// <summary>
-  /// Gets a new instance of a commit object with initial properties.
-  /// </summary>
-  private static Collection CommitObject =>
-    new()
-    {
-      ["units"] = GetUnits(s_activeDoc),
-      collectionType = "Navisworks Model",
-      name = s_activeDoc.Title,
-      applicationId = "Root"
-    };
-
   // Stub - Preview send is not supported
   public override async void PreviewSend(StreamState state, ProgressViewModel progress) =>
     await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);

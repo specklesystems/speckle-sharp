@@ -37,6 +37,17 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   private readonly NavisworksOptionsManager _settingsHandler;
 
+  /// <summary>
+  /// Gets a new instance of a commit object with initial properties.
+  /// </summary>
+  private static Collection CommitObject =>
+    new()
+    {
+      ["units"] = GetUnits(s_activeDoc),
+      collectionType = "Navisworks Model",
+      name = s_activeDoc.Title
+    };
+
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
     s_activeDoc = navisworksActiveDocument;

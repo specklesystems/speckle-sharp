@@ -31,14 +31,4 @@ public partial class ConnectorBindingsNavisworks
 
     return selectedObjects.ToList();
   }
-
-  /// <summary>
-  ///   Checks is the Element is hidden or if any of its ancestors is hidden
-  /// </summary>
-  /// <param name="element"></param>
-  /// <returns></returns>
-  private static bool IsElementVisible(ModelItem element) =>
-    // Hidden status is stored at the earliest node in the hierarchy
-    // All the tree path nodes need to not be Hidden
-    element.AncestorsAndSelf.All(x => x.IsHidden != true);
 }
