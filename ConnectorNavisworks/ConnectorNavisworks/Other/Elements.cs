@@ -16,6 +16,8 @@ public class Element
 
   private string _indexPath;
 
+  const char SEPARATOR = '/';
+
   public string IndexPath
   {
     get
@@ -52,7 +54,7 @@ public class Element
     _modelItem = modelItem;
   }
 
-  private static readonly string[] s_separator = { "." };
+  private static readonly string[] s_separator = { SEPARATOR.ToString() };
 
   /// <summary>
   /// Generates a descriptor for the given model item.
@@ -119,8 +121,8 @@ public class Element
         AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
       }
 
-      string[] parts = indexPath.Split('-');
-      string parentKey = string.Join("-", parts.Take(parts.Length - 1));
+      string[] parts = indexPath.Split(SEPARATOR);
+      string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
 
       lookupDictionary.Add(indexPath, baseNode);
 
@@ -136,8 +138,8 @@ public class Element
       string key = pair.Key;
       Base value = pair.Value;
 
-      string[] parts = key.Split('-');
-      string parentKey = string.Join("-", parts.Take(parts.Length - 1));
+      string[] parts = key.Split(SEPARATOR);
+      string parentKey = string.Join(SEPARATOR.ToString(), parts.Take(parts.Length - 1));
 
       if (!lookupDictionary.TryGetValue(parentKey, out Base value1))
       {
@@ -308,7 +310,10 @@ public class Element
 
   public static ModelItem ResolveIndexPath(string indexPath)
   {
-    var indexPathParts = indexPath.Split('-');
+    var indexPathParts = indexPath.Split(SEPARATOR);
+
+    var modelIndex = int.Parse(indexPathParts[0]);
+    var pathId = string.Join(SEPARATOR.ToString(), indexPathParts.Skip(1));
 
     // assign the first part of indexPathParts to modelIndex and parse it to int, the second part to pathId string
     ModelItemPathId modelItemPathId = new() { ModelIndex = int.Parse(indexPathParts[0]), PathId = indexPathParts[1] };
@@ -320,6 +325,9 @@ public class Element
   public static string ResolveModelItemToIndexPath(ModelItem modelItem)
   {
     var modelItemPathId = Application.ActiveDocument.Models.CreatePathId(modelItem);
-    return $"{modelItemPathId.ModelIndex}-{modelItemPathId.PathId}";
+
+    return modelItemPathId.PathId == "a"
+      ? $"{modelItemPathId.ModelIndex}"
+      : $"{modelItemPathId.ModelIndex}{SEPARATOR}{modelItemPathId.PathId}";
   }
 }
