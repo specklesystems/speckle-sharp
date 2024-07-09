@@ -875,10 +875,7 @@ namespace FieldNames
 	
 	namespace Material
 	{
-		static const char* Name = "material";
-		static const char* Volume = "volume";
-		static const char* Area = "area";
-		static const char* Units = "units";
+		static const char* Name = "name";
 	}
 		
 }

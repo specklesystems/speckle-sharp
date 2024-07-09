@@ -13,11 +13,11 @@ namespace {
 	 */
 	struct MaterialQuantity {
 			//The material index
-		API_AttributeIndex materialIndex;
+		API_AttributeIndex materialIndex{};
 			//The net volume
-		double volume;
+		double volume = 0.0;
 			//The net surface area
-		double surfaceArea;
+		double surfaceArea = 0.0;
 	};
 	
 		///Array of elements
@@ -249,9 +249,9 @@ namespace {
 		if (isAssembly(element)) {
 			MaterialQuantArray result;
 			if (auto parts = getElementParts(element, memo); !parts.empty()) {
-				API_ElementMemo memo{};	//NB: The memo is not used for the quantity take-offs in part elements, so an empty structure is fine
+				API_ElementMemo partMemo{};	//NB: The memo is not used for the quantity take-offs in part elements, so an empty structure is fine
 				for (auto& part : parts) {
-					auto partMaterials = getQuantity(part, memo);
+					auto partMaterials = getQuantity(part, partMemo);
 					result.insert(result.end(), std::make_move_iterator(partMaterials.begin()), std::make_move_iterator(partMaterials.end()));
 				}
 			}
@@ -297,8 +297,8 @@ namespace {
 	GS::ErrCode exportMaterialQuantities(const API_Element& element, const API_ElementMemo& memo, GS::ObjectState& serialiser) {
 		auto materialQuants = getQuantity(element, memo);
 		if (materialQuants.empty())
-			return noErr;
-		const auto& serialMaterialQuants = serialiser.AddList<GS::ObjectState> ("materialQuantity");
+			return NoError;
+		const auto& serialMaterialQuants = serialiser.AddList<GS::ObjectState> (FieldNames::ElementBase::MaterialQuantities);
 		for (auto& quantity : materialQuants) {
 			GS::ObjectState serialMaterialQuant, serialMaterial;
 			if (auto error = exportMaterial(quantity.materialIndex, serialMaterial); error != NoError)
