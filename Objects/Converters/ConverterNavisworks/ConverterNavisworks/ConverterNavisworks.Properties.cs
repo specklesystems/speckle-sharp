@@ -78,8 +78,6 @@ public partial class ConverterNavisworks
     var useInternalNames = UseInternalPropertyNames;
 
     UpdatePropertyCategoryBase(propertyCategoryBase, useInternalNames ? internalName : propertyName, propertyValue);
-
-    propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
   }
 
   private static string GetSanitizedPropertyName(string displayName)
