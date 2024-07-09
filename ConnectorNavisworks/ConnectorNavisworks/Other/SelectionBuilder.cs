@@ -98,23 +98,18 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the saved viewpoint.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSavedViewpoint()
+  private HashSet<ModelItem> GetObjectsFromSavedViewpoint()
   {
     _uniqueModelItems.Clear();
-
-    // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.05, "Checking the Canvas... Looking Closely!");
 
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
     if (string.IsNullOrEmpty(selection))
     {
-      return Enumerable.Empty<ModelItem>();
+      return new HashSet<ModelItem>();
     }
 
     // Resolve the saved viewpoint based on the selection
-    // Makes the view active on the main thread.
-
     var success = false;
 
     new Invoker().Invoke(() =>
@@ -131,7 +126,7 @@ public class SelectionHandler
 
     if (!success)
     {
-      return Enumerable.Empty<ModelItem>();
+      return new HashSet<ModelItem>();
     }
 
     var models = Application.ActiveDocument.Models;
@@ -296,11 +291,14 @@ public class SelectionHandler
     {
       if (item.HasExplicitModelItems)
       {
+        // This is for saved selections. If the models are as were when selection was made, then the static results are all valid.
         _uniqueModelItems.AddRange(item.ExplicitModelItems);
       }
-      else if (item.HasSearch)
+      else if (item.HasSearch) // This is for saved searches. The results are dynamic and need to be resolved.
       {
-        _uniqueModelItems.AddRange(item.Search.FindAll(Application.ActiveDocument, false));
+        // This is for saved searches. The results are dynamic and need to be resolved.
+        var foundModelItems = item.Search.FindAll(Application.ActiveDocument, false);
+        _uniqueModelItems.AddRange(foundModelItems);
       }
     }
 
@@ -337,7 +335,7 @@ public class SelectionHandler
             || _uniqueModelItems.Contains(firstObjectAncestor)
           )
           {
-            return Enumerable.Empty<ModelItem>();
+            return new HashSet<ModelItem>();
           }
 
           var trimmedAncestors = targetFirstObjectChild.Ancestors
@@ -356,14 +354,14 @@ public class SelectionHandler
       var allAncestors = startNodes.SelectMany(e => e.Ancestors).Distinct().ToList();
 
       ProgressLooper(
-        allAncestors.Count,
         "Brb, time traveling to find your data's great-grandparents...",
         i =>
         {
-          _uniqueModelItems.Add(allAncestors.ElementAt(i));
+          _uniqueModelItems.Add(allAncestors[i]);
           return true;
         },
-        0.05
+        0.05,
+        allAncestors.Count
       );
     }
 
@@ -394,6 +392,10 @@ public class SelectionHandler
       startNodes.Count
     );
   }
+
+  private static HashSet<ModelItem> DistinctDescendants(List<ModelItem> startNodes)
+  {
+    var distinctDescendants = new HashSet<ModelItem>();
 
     foreach (var node in startNodes)
     {
@@ -518,7 +520,6 @@ public class SelectionHandler
   /// <summary>
   /// Executes a given function while updating a progress bar.
   /// </summary>
-  /// <param name="totalCount">The total number of iterations.</param>
   /// <param name="operationName">The name of the operation.</param>
   /// <param name="fn">The function to execute on each iteration.</param>
   /// <param name="fractionOfRemainingTime">The fraction of remaining time for the operation (optional).</param>
