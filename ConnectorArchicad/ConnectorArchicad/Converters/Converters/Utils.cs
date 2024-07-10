@@ -162,11 +162,11 @@ public static class Utils
     return shape;
   }
 
-  /*!
-   Convert incoming JSON (from Archicad) to an equivalent (specified) object type
-   @param jObject The incoming JSON (handled as a dynamic object)
-   @return An object of the specified type (T)
-   */
+  /// <summary>
+  /// Convert incoming JSON (from Archicad) to an equivalent (specified) object type
+  /// </summary>
+  /// <param name="jObject">The incoming JSON (handled as a dynamic object)</param>
+  /// <returns>An object of the specified type (T)</returns>
   public static T ConvertToSpeckleDTOs<T>(dynamic jObject)
     where T : Speckle.Core.Models.Base
   {

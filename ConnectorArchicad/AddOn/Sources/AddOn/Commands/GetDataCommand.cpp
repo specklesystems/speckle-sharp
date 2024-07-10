@@ -6,6 +6,9 @@
 
 #include "BM.hpp"
 
+#include <map>
+#include <vector>
+
 namespace {
 
 	/*!
@@ -218,28 +221,16 @@ namespace {
 	 @param elementQuantity Quantities extracted from the target element (out)
 	 @param extendedQuantity Optional extended quantities calculated for some element types
 	 @param quantityMask Mask to determine which quantities are required (minimise calculation time)
-	 @return An array of material quantities collected from the element composite structure
+	 @return An error code (NoError = success)
 	 */
-	auto measureQuantities(const API_Element& element, API_ElementQuantity& elementQuantity, API_Quantities& extendedQuantity,
+	GS::ErrCode measureQuantities(const API_Element& element, API_ElementQuantity& elementQuantity, API_Quantities& extendedQuantity,
 						   const API_QuantitiesMask& quantityMask) {
 		extendedQuantity.elements = &elementQuantity;
 		GS::Array<API_ElemPartQuantity> elementPartQuantities;
-		bool isPartQuantity = (element.header.type == API_MorphID);
-		extendedQuantity.elemPartQuantities = isPartQuantity ? &elementPartQuantities : nullptr;
 		API_QuantityPar quantityParameters{};
 		quantityParameters.minOpeningSize = Eps;
 		MaterialQuantArray result;
-		if (auto error = ACAPI_Element_GetQuantities(element.header.guid, &quantityParameters, &extendedQuantity, &quantityMask); error != NoError)
-			return result;
-		if (isPartQuantity) {
-			if (elementPartQuantities.GetSize() > 0) {
-				elementQuantity.morph.baseLevel = elementPartQuantities[0].quantity.morph.baseLevel;
-				elementQuantity.morph.baseHeight = elementPartQuantities[0].quantity.morph.baseHeight;
-				elementQuantity.morph.wholeHeight = elementPartQuantities[0].quantity.morph.wholeHeight;
-			}
-			extendedQuantity.elemPartQuantities = nullptr;
-		}
-		return result;
+		return ACAPI_Element_GetQuantities(element.header.guid, &quantityParameters, &extendedQuantity, &quantityMask);
 	} //measureQuantities
 	
 	
@@ -305,7 +296,8 @@ namespace {
 		if (isAssembly(element)) {
 			MaterialQuantArray result;
 				//Get the constituent parts of the assembly and process each as an independent element
-			if (auto parts = getElementParts(element, memo); !parts.empty()) {
+			auto parts = getElementParts (element, memo);
+			if (!parts.empty()) {
 				API_ElementMemo partMemo{};	//NB: The memo is not used for the quantity take-offs in part elements, so an empty structure is fine
 				for (auto& part : parts) {
 					auto partMaterials = getQuantity(part, partMemo);
@@ -337,7 +329,8 @@ namespace {
 		API_Attribute attribute{};
 		attribute.header.index = materialIndex;
 		attribute.header.typeID = API_BuildingMaterialID;
-		if (auto error = ACAPI_Attribute_Get(&attribute); error != NoError)
+		auto error = ACAPI_Attribute_Get (&attribute);
+		if (error != NoError)
 			return error;
 		serialiser.Add(FieldNames::Material::Name, attribute.header.name);
 		return NoError;
@@ -358,7 +351,8 @@ namespace {
 		const auto& serialMaterialQuants = serialiser.AddList<GS::ObjectState> (FieldNames::ElementBase::MaterialQuantities);
 		for (auto& quantity : materialQuants) {
 			GS::ObjectState serialMaterialQuant, serialMaterial;
-			if (auto error = exportMaterial(quantity.materialIndex, serialMaterial); error != NoError)
+			auto error = exportMaterial (quantity.materialIndex, serialMaterial);
+			if (error != NoError)
 				return error;
 			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Material, serialMaterial);
 			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Volume, quantity.volume);
@@ -671,7 +665,8 @@ GS::ErrCode GetDataCommand::SerializeElementType(const API_Element& elem, const 
 	if (ACAPI_Attribute_Get (&attribute) == NoError) {
 		os.Add(FieldNames::ElementBase::Layer, GS::UniString{attribute.header.name});
 	}
-	if (auto err = exportMaterialQuantities(elem, memo, os); err != NoError)
+	auto err = exportMaterialQuantities (elem, memo, os);
+	if (err != NoError)
 		return err;
 	return ExportClassificationsAndProperties (elem, os, sendProperties, sendListingParameters);
 }
