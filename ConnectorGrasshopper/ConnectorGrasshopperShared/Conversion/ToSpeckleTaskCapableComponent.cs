@@ -127,10 +127,7 @@ public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<I
 
       if (converted == null)
       {
-        AddRuntimeMessage(
-          GH_RuntimeMessageLevel.Warning,
-          $"Cannot convert item {DA.ParameterTargetPath(0)}[{DA.ParameterTargetIndex(0)}] to Speckle."
-        );
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Cannot convert {item} to Speckle.");
         return new GH_SpeckleBase();
       }
 
