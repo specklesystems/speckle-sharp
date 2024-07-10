@@ -486,14 +486,15 @@ public static class Utilities
 
     value = UnwrapRhino8Object(value);
 
-
     if (value is IGH_Goo)
     {
-      var valuePropInfo = value.GetType().GetField("m_value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-      if(valuePropInfo != null)
+      var valuePropInfo = value
+        .GetType()
+        .GetField("m_value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+      if (valuePropInfo != null)
       {
         var tempValue = valuePropInfo.GetValue(value);
-        if(tempValue != null)
+        if (tempValue != null)
         {
           value = tempValue;
         }
@@ -553,10 +554,10 @@ public static class Utilities
       }
       default:
         return value;
-#else
-      return value;
-#endif
     }
+#else
+    return value;
+#endif
   }
 
   public static string GetRefId(object value)
