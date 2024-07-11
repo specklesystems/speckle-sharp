@@ -163,11 +163,26 @@ namespace {
 	
 	
 	/*!
+	 Get the type identifier for an element
+	 @param element The target element
+	 @return The element type ID, e.g. `API_WallID`
+	 */
+	API_ElemTypeID getTypeID(const API_Element& element) {
+#ifdef ServerMainVers_2600
+		return element.header.type.typeID;
+#else
+		return element.header.typeID;
+#endif
+	}
+	
+	
+	/*!
 	 Determine if the specified element is an assembly, i.e. made of multiple parts (sub-elements)
 	 @return True if the element is an assembly
 	 */
 	bool isAssembly(const API_Element& element) {
-		return (element.header.type.typeID == API_BeamID) || (element.header.type.typeID == API_ColumnID);
+		auto typeID = getTypeID(element);
+		return (typeID == API_BeamID) || (typeID == API_ColumnID);
 	} //isAssembly
 	
 	
@@ -178,7 +193,7 @@ namespace {
 	 @return An array of element parts (empty if the element is not made of parts - the original element is never included)
 	 */
 	auto getElementParts(const API_Element& element, const API_ElementMemo& memo) {
-		switch (element.header.type.typeID) {
+		switch (getTypeID(element)) {
 			case API_BeamID:
 				return getSegments(memo.beamSegments, [](const API_BeamSegmentType& segment, API_Element& element){ element.beamSegment = segment; });
 			case API_ColumnID:
@@ -196,7 +211,7 @@ namespace {
 	 @return The element structural type
 	 */
 	auto getStructureType(const API_Element& element) {
-		switch (element.header.type.typeID) {
+		switch (getTypeID(element)) {
 			case API_BeamSegmentID:
 				return element.beamSegment.assemblySegmentData.modelElemStructureType;
 			case API_ColumnSegmentID:
@@ -242,7 +257,7 @@ namespace {
 	auto collectBasicQuantitites(const API_Element& element) {
 		MaterialQuantArray result;
 			//First determine that this element type has a suitable material definition and supports quantity take-offs for volume and area
-		auto manager = quantityManager.find(element.header.type.typeID);
+		auto manager = quantityManager.find(getTypeID(element));
 		if (manager != quantityManager.end()) {
 			API_ElementQuantity elementQuantity{};
 			API_Quantities extendedQuantity{};
