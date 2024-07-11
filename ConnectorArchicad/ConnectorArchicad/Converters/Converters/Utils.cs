@@ -5,6 +5,7 @@ using Archicad.Model;
 using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -12,6 +13,8 @@ namespace Archicad.Converters;
 
 public static class Utils
 {
+  private const string MATERIAL_QUANTITIES_TAG = "materialQuantities";
+
   public static Point VertexToPoint(MeshModel.Vertex vertex)
   {
     return new Point
@@ -159,7 +162,13 @@ public static class Utils
     return shape;
   }
 
+  /// <summary>
+  /// Convert incoming JSON (from Archicad) to an equivalent (specified) object type
+  /// </summary>
+  /// <param name="jObject">The incoming JSON (handled as a dynamic object)</param>
+  /// <returns>An object of the specified type (T)</returns>
   public static T ConvertToSpeckleDTOs<T>(dynamic jObject)
+    where T : Speckle.Core.Models.Base
   {
     Objects.BuiltElements.Archicad.ArchicadLevel level = null;
     if (jObject.level != null)
@@ -184,6 +193,14 @@ public static class Utils
       jObject.Remove("componentProperties");
     }
 
+    //Seek optional material quantities attached to the element (volume/area associated with a building material)
+    List<MaterialQuantity> materialQuantities = null;
+    if (jObject.materialQuantities != null)
+    {
+      materialQuantities = jObject.materialQuantities.ToObject<List<MaterialQuantity>>();
+      jObject.Remove(MATERIAL_QUANTITIES_TAG);
+    }
+
     T speckleObject = jObject.ToObject<T>();
 
     if (level != null)
@@ -203,6 +220,11 @@ public static class Utils
     {
       PropertyInfo propComponentProperties = speckleObject.GetType().GetProperty("componentProperties");
       propComponentProperties.SetValue(speckleObject, ComponentProperties.ToBase(componentProperties));
+    }
+
+    if (materialQuantities != null)
+    {
+      speckleObject[MATERIAL_QUANTITIES_TAG] = materialQuantities;
     }
 
     return speckleObject;
