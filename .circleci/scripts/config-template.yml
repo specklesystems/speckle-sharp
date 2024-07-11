@@ -208,9 +208,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             and:
               -  << pipeline.git.tag >>
               - not:
-                - matches:
-                  - pattern: "-"
-                  - value: << pipeline.git.tag >>
+                  matches:
+                    pattern: "[-]+"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
                 name: Build Installer Unsigned
@@ -223,9 +223,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             and:
               -  << pipeline.git.tag >>
               - not:
-                - matches:
-                  - pattern: "-"
-                  - value: << pipeline.git.tag >>
+                  matches:
+                    pattern: "[-]+"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
                 name: "Digicert Signing Manager Setup"
