@@ -1,56 +1,43 @@
-#nullable disable
 using System;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Credentials;
 
-[Obsolete("Use activeUser query and ActiveUserServerInfoResponse instead", true)]
-public class UserServerInfoResponse
+internal sealed class ActiveUserServerInfoResponse
 {
-  public UserInfo user { get; set; }
-  public ServerInfo serverInfo { get; set; }
+  public UserInfo activeUser { get; init; }
+  public ServerInfo serverInfo { get; init; }
 }
 
-public class ActiveUserServerInfoResponse
+internal sealed class TokenExchangeResponse
 {
-  public UserInfo activeUser { get; set; }
-  public ServerInfo serverInfo { get; set; }
+  public string token { get; init; }
+  public string refreshToken { get; init; }
 }
 
-[Obsolete("Use activeUser query and ActiveUserResponse instead", true)]
-public class UserInfoResponse
+public sealed class UserInfo
 {
-  public UserInfo user { get; set; }
+  public string id { get; init; }
+  public string name { get; init; }
+  public string email { get; init; }
+  public string? company { get; init; }
+  public string? avatar { get; init; }
+
+  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  public Streams streams { get; init; }
+
+  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  public Commits commits { get; init; }
 }
 
-public class ActiveUserResponse
-{
-  public UserInfo activeUser { get; set; }
-}
-
-public class UserInfo
-{
-  public string id { get; set; }
-  public string name { get; set; }
-  public string email { get; set; }
-  public string company { get; set; }
-  public string avatar { get; set; }
-
-  public Streams streams { get; set; }
-  public Commits commits { get; set; }
-}
-
-public class TokenExchangeResponse
-{
-  public string token { get; set; }
-  public string refreshToken { get; set; }
-}
-
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Streams
 {
   public int totalCount { get; set; }
 }
 
+[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
 public class Commits
 {
   public int totalCount { get; set; }

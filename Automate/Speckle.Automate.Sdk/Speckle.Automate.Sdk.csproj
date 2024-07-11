@@ -13,7 +13,7 @@
 
   <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8618;</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS8618;CS0618;</WarningsNotAsErrors>
   </PropertyGroup>
   
   <ItemGroup>
