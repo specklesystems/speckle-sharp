@@ -45,6 +45,7 @@ public partial class ConverterCSI
     eForce forceUnits = eForce.NotApplicable;
     eLength lengthUnits = eLength.NotApplicable;
     eTemperature temperatureUnits = eTemperature.NotApplicable;
+    // GetPresentUnits_2() works for ETABS and SAFE
     _ = Model.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
 
     if (lengthUnits == eLength.NotApplicable)
@@ -54,15 +55,17 @@ public partial class ConverterCSI
 
     return lengthUnits.ToString();
   }
+
   public string GetModelUnitsFromSAP()
   {
+    // GetPresentUnits() works for SAP 2000 and CSIBridge
     var units = Model.GetPresentUnits();
     if (units != 0)
     {
       string[] unitsCat = units.ToString().Split('_');
       return unitsCat[1];
     }
-    return null;
+    throw new SpeckleException("Unable to retreive valid length units from the SAP2000 document");
   }
 
   public double ScaleToNative(double value, string units)
