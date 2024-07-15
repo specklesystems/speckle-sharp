@@ -702,7 +702,7 @@ public partial class ConverterAutocadCivil
       var point = featureline.FeatureLinePoints[i];
       baseCurvePoints.Add(point.XYZ);
       if (!point.IsBreak) { polylinePoints.Add(point.XYZ); }
-      if (polylinePoints.Count > 0 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
+      if (polylinePoints.Count > 1 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
       {
         var polyline = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, polylinePoints, false));
         polylines.Add(polyline);
@@ -1168,7 +1168,18 @@ public partial class ConverterAutocadCivil
       speckleSubassemblies.Add(speckleSubassembly);
     }
 
-    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, appliedAssembly.AdjustedElevation, ModelUnits);
+    var adjustedElevation = double.MinValue;
+    try
+    {
+      adjustedElevation = appliedAssembly.AdjustedElevation;
+    }
+    catch (ArgumentException e) when (!e.IsFatal())
+    {
+      // Do nothing. Leave the value as NaN
+    }
+
+    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, adjustedElevation, ModelUnits);
+
     return speckleAppliedAssembly;
   }
 
