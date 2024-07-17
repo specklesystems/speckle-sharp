@@ -1,0 +1,8 @@
+[
+  {
+    "name": "speckle_test_speckle-server",
+    "listen": "0.0.0.0:3001",
+    "upstream": "speckle-server:3000",
+    "enabled": true
+  }
+]

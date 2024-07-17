@@ -23,7 +23,7 @@ public class SetUp
 
 public static class Fixtures
 {
-  private static readonly ServerInfo s_server = new() { url = "http://localhost:3000", name = "Docker Server" };
+  private static readonly ServerInfo s_server = new() { url = "http://localhost:3001", name = "Docker Server" };
 
   public static async Task<Account> SeedUser()
   {

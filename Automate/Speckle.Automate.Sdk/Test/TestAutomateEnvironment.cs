@@ -57,7 +57,7 @@ public static class TestAutomateEnvironment
   public static Uri GetSpeckleServerUrl()
   {
     var urlString =
-      GetAppSettings()?.SpeckleServerUrl ?? TryGetEnvironmentVariable("SPECKLE_SERVER_URL") ?? "http://127.0.0.1:3000";
+      GetAppSettings()?.SpeckleServerUrl ?? TryGetEnvironmentVariable("SPECKLE_SERVER_URL") ?? "http://127.0.0.1:3001";
 
     return new Uri(urlString);
   }
