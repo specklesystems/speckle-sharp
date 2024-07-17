@@ -139,6 +139,12 @@ public sealed class DllConflictManager
       // is core which will be checked as a dependency of many other libraries.
       // there are a couple other random types that will trigger this exception as well
     }
+    catch (FileLoadException)
+    {
+      // reported here https://speckle.community/t/issue-with-revit-2025-will-not-load/12445
+      // wrong version of dll found and fails to load
+    }
+
     return null;
   }
 
