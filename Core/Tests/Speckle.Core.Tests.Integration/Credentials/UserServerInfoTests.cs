@@ -33,8 +33,8 @@ public class UserServerInfoTests
   }
 
   /// <remarks>
-  /// We get ServerInfo from "http://localhost:3000/graphql",
-  /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3000/",
+  /// We get ServerInfo from "http://localhost:3001/graphql",
+  /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3001/",
   /// This is not doable in local server because there is no end-point on this to ping.
   /// This is a bad sign for mutation.
   /// </remarks>
