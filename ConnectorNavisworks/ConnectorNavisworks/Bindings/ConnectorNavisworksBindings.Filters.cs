@@ -23,14 +23,14 @@ public partial class ConnectorBindingsNavisworks
 
     var manualFilter = new ManualSelectionFilter();
 
-    if (s_doc == null)
+    if (s_activeDoc == null)
     {
       return filters;
     }
 
     filters.Add(manualFilter);
 
-    var selectSetsRootItem = s_doc.SelectionSets.RootItem;
+    var selectSetsRootItem = s_activeDoc.SelectionSets.RootItem;
 
     var savedSelectionSets = selectSetsRootItem?.Children.Select(GetSets).ToList() ?? new List<TreeNode>();
 
@@ -47,7 +47,7 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(selectionSetsFilter);
     }
 
-    var savedViewsRootItem = s_doc.SavedViewpoints.RootItem;
+    var savedViewsRootItem = s_activeDoc.SavedViewpoints.RootItem;
 
     var savedViews =
       savedViewsRootItem?.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null).ToList()
@@ -61,14 +61,14 @@ public partial class ConnectorBindingsNavisworks
         Name = "Saved Viewpoints",
         Icon = "FileTree",
         Description =
-          "Select a saved viewpoint and send its visible items in the commit. Only views with Hide/Require attribute checked are listed.",
+          "Select saved viewpoints and send their visible items in the commit. Only views with Hide/Require attribute checked are listed.",
         Values = savedViews,
-        SelectionMode = "Toggle"
+        SelectionMode = "Multiple"
       };
       filters.Add(savedViewsFilter);
     }
 
-    DocumentClash clashPlugin = s_doc.GetClash();
+    DocumentClash clashPlugin = s_activeDoc.GetClash();
 
     var clashTests = clashPlugin?.TestsData;
 
@@ -102,7 +102,7 @@ public partial class ConnectorBindingsNavisworks
       DisplayName = savedItem.DisplayName,
       Guid = savedItem.Guid,
       IndexWith = nameof(TreeNode.Guid),
-      Indices = s_doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
+      Indices = s_activeDoc.SelectionSets.CreateIndexPath(savedItem).ToArray()
     };
 
     if (!savedItem.IsGroup)
@@ -121,7 +121,7 @@ public partial class ConnectorBindingsNavisworks
 
   private static TreeNode GetViews(SavedItem savedItem)
   {
-    var reference = s_doc.SavedViewpoints.CreateReference(savedItem);
+    var reference = s_activeDoc.SavedViewpoints.CreateReference(savedItem);
 
     var treeNode = new TreeNode
     {
