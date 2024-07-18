@@ -203,17 +203,29 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
-      - unless: # Build installers unsigned on non-tagged builds
-          condition: << pipeline.git.tag >>
+      - unless: # Build installers unsigned on non-tagged builds or pre-release tags 
+          condition: 
+            and:
+              -  << pipeline.git.tag >>
+              - not:
+                  matches:
+                    pattern: "[-]+"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
-                name: Build Installer
+                name: Build Installer Unsigned
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
-      - when: # Setup certificates and build installers signed for tagged builds
-          condition: << pipeline.git.tag >>
+      - when: # Setup certificates and build installers signed for tagged builds that aren't prerelease
+          condition:
+            and:
+              -  << pipeline.git.tag >>
+              - not:
+                  matches:
+                    pattern: "[-]+"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
                 name: "Digicert Signing Manager Setup"
@@ -232,7 +244,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   & $env:SSM\smksp_cert_sync.exe
             - run:
-                name: Build Installer
+                name: Build Installer Signed
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
                 shell: cmd.exe #does not work in powershell
                 environment:
@@ -341,6 +353,28 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
+      - unless:
+          condition: << parameters.build-with-mono >>
+          steps:
+            - run:
+                name: Publish x64 and arm64
+                command: |
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+                  VER=$(echo "$SEMVER" | sed -e 's/-.*//')
+                  VERSION=$(echo $VER.$WORKFLOW_NUM)
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-arm64 --self-contained /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-x64 --self-contained /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
+      # Create installer
+      - run:
+          name: Exit if External PR
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      # Zip files for installer
+      - when:
+          condition: << parameters.build-with-mono >>
+          steps:
             # Compress build files
             - run:
                 name: Zip Objects Kit files
@@ -362,34 +396,25 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           condition: << parameters.build-with-mono >>
           steps:
             - run:
-                name: Publish x64 and arm64
+                name: Create app bundles
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-                  VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-                  VERSION=$(echo $VER.$WORKFLOW_NUM)
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-arm64 --self-contained /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-x64 --self-contained /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
-                environment:
-                  WORKFLOW_NUM: << pipeline.number >>
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/<< parameters.slnname >>
+                  sh ./speckle-sharp-ci-tools/Mac/AppBundle/bundle.sh ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/ ./<< parameters.slnname >>/<< parameters.slnname >>/Info.plist ./<< parameters.slnname >>/<< parameters.slnname >>/Assets/icon-mac.icns ./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/<< parameters.slnname >>
             - run:
                 name: Zip Connector files
                 command: |
-                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
-                  zip -r << parameters.slug >>-mac-arm64.zip "./"
-                  cd "../../osx-x64/publish"
-                  zip -r << parameters.slug >>-mac-x64.zip "./"
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/"
+                  zip -r << parameters.slug >>-mac-arm64.zip "./<< parameters.slnname >>.app"
+                  cd "../osx-x64/"
+                  zip -r << parameters.slug >>-mac-x64.zip "./<< parameters.slnname >>.app"
             # Copy installer files
             - run:
                 name: Copy files to installer
                 command: |
                   mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.slug >>-mac-arm64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac-x64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
-      # Create installer
-      - run:
-          name: Exit if External PR
-          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/<< parameters.slug >>-mac-arm64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/<< parameters.slug >>-mac-x64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+
       - run:
           name: Build Mac installer
           command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release

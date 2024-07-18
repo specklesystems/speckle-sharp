@@ -7,6 +7,7 @@ using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
 using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -73,6 +74,7 @@ public sealed class DirectShape : IConverter
 
     IEnumerable<ApplicationObject> result;
     result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShape(directShapes), token);
+
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
@@ -83,7 +85,8 @@ public sealed class DirectShape : IConverter
   )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-    IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data = await AsyncCommandProcessor.Execute(
+
+    Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
       new Communication.Commands.GetElementBaseData(
         elementModels.Select(e => e.applicationId),
         conversionOptions.SendProperties,
@@ -93,7 +96,7 @@ public sealed class DirectShape : IConverter
     );
 
     var directShapes = new List<Base>();
-    if (data is null)
+    if (jArray is null)
     {
       return directShapes;
     }
@@ -103,12 +106,18 @@ public sealed class DirectShape : IConverter
       context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
+        // convert between DTOs
+        Objects.BuiltElements.Archicad.DirectShape directShape =
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.DirectShape>(jToken);
+
         {
+          directShape.units = Units.Meters;
           directShape.displayValue = Operations.ModelConverter.MeshesToSpeckle(
             elementModels.First(e => e.applicationId == directShape.applicationId).model
           );
+
           directShapes.Add(directShape);
         }
       }

@@ -220,7 +220,8 @@ public partial class ArchicadBinding : ConnectorBindings
           return await Speckle.Core.Api.Helpers.Send(
             IdentifyStream(state),
             commitObject,
-            state.CommitMessage,
+            state.CommitMessage
+              ?? $"Sent {progress.Report.ReportObjects.Count} objects from {HostApplications.Archicad.Name + " " + archicadVersion}.",
             HostApplications.Archicad.Name
           );
         }

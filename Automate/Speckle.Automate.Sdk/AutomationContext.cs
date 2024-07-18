@@ -3,6 +3,7 @@ using GraphQL;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Automate.Sdk.Schema.Triggers;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;

@@ -252,13 +252,14 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       RegisterPropertyAsInputParameter(p, k++);
     }
 
+    SelectedConstructor = constructor;
+
     UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
 
     Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
     Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
 
     Message = constructor.DeclaringType.FullName.Split('.')[0];
-    SelectedConstructor = constructor;
     Params.Output[0].NickName = constructor.DeclaringType.Name;
     Params.OnParametersChanged();
 

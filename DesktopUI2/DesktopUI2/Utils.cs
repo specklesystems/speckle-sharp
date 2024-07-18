@@ -19,6 +19,7 @@ using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
 using SkiaSharp;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 

@@ -9,9 +9,9 @@ namespace Speckle.DllConflictManagement.EventEmitter;
 /// </summary>
 public class DllConflictEventEmitter
 {
-  public event EventHandler<LoggingEventArgs> OnError;
-  public event EventHandler<LoggingEventArgs> OnInfo;
-  public event EventHandler<ActionEventArgs> OnAction;
+  public event EventHandler<LoggingEventArgs>? OnError;
+  public event EventHandler<LoggingEventArgs>? OnInfo;
+  public event EventHandler<ActionEventArgs>? OnAction;
 
   private bool _shouldEmitEvents;
   private readonly List<LoggingEventArgs> _savedErrorEvents = new();

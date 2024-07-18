@@ -13,6 +13,7 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Fenestration = Objects.BuiltElements.Archicad.ArchicadFenestration;
+using Opening = Objects.BuiltElements.Opening;
 using Floor = Objects.BuiltElements.Floor;
 using Roof = Objects.BuiltElements.Roof;
 using Wall = Objects.BuiltElements.Wall;
@@ -20,6 +21,7 @@ using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 using GridLine = Objects.BuiltElements.GridLine;
 using DesktopUI2.Models;
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad;
 
@@ -95,13 +97,24 @@ public sealed partial class ElementConverterManager
       allObjects.AddRange(objects);
 
       // subelements translated into "elements" property of the parent
-      if (typeof(Fenestration).IsAssignableFrom(elemenType))
+      if (typeof(Fenestration).IsAssignableFrom(elemenType) || typeof(Opening).IsAssignableFrom(elemenType))
       {
         Collection elementCollection = null;
 
         foreach (Base item in objects)
         {
-          Base parent = allObjects.Find(x => x.applicationId == ((Fenestration)item).parentApplicationId);
+          string parentApplicationId = null;
+
+          if (item is Fenestration fenestration)
+          {
+            parentApplicationId = fenestration.parentApplicationId;
+          }
+          else if (item is ArchicadOpening opening)
+          {
+            parentApplicationId = opening.parentApplicationId;
+          }
+
+          Base parent = allObjects.Find(x => x.applicationId == parentApplicationId);
 
           if (parent == null)
           {
@@ -245,6 +258,11 @@ public sealed partial class ElementConverterManager
     if (elementType.IsSubclassOf(typeof(Roof)))
     {
       return Converters[typeof(Roof)];
+    }
+
+    if (elementType.IsSubclassOf(typeof(Opening)))
+    {
+      return Converters[typeof(Opening)];
     }
 
     if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))

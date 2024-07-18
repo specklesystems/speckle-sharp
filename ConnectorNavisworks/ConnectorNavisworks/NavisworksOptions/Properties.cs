@@ -79,9 +79,19 @@ public partial class NavisworksOptionsManager
   public void ShowInternalProperties() => UpdateInternalPropertySetting(true);
 
   /// <summary>
+  /// Hides internal properties.
+  /// </summary>
+  public void HideInternalProperties() => UpdateInternalPropertySetting(false);
+
+  /// <summary>
   /// Uses internal property names.
   /// </summary>
   public void UseInternalPropertyNames() => UpdateInternalPropertyNameSetting(true);
+
+  /// <summary>
+  /// Masks internal property names.
+  /// </summary>
+  public void MaskInternalPropertyNames() => UpdateInternalPropertyNameSetting(false);
 
   /// <summary>
   /// Restores the internal properties display to its original state after the send process.

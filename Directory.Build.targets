@@ -74,7 +74,7 @@
       CS0618;CA1034;CA2201;CA1051;CA1040;CA1724;
       IDE0044;IDE0130;CA1508;
       <!-- Analysers that provide no tangeable value to a test project -->
-      CA5394;CA2007;CA1852;CA1819;CA1711;CA1063;CA1816;CA2234;
+      CA5394;CA2007;CA1852;CA1819;CA1711;CA1063;CA1816;CA2234;CS8618;
     </NoWarn>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
   </PropertyGroup>

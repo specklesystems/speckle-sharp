@@ -225,7 +225,7 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       SpeckleLog.Logger
         .ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
-          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
+          "Execution of http request to {httpScheme}://{hostUrl}{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
           request.RequestUri.Scheme,
           request.RequestUri.Host,
           request.RequestUri.PathAndQuery,
