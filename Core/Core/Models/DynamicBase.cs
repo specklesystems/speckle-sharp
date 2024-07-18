@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -22,7 +23,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   public const DynamicBaseMemberType DEFAULT_INCLUDE_MEMBERS =
     DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
 
-  private static readonly Dictionary<Type, List<PropertyInfo>> s_propInfoCache = new();
+  private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> s_propInfoCache = new();
 
   /// <summary>
   /// The actual property bag, where dynamically added props are stored.
@@ -47,8 +48,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
         return value;
       }
 
-      PopulatePropInfoCache(GetType());
-      var prop = s_propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
+      var prop = GetPopulatePropInfoFromCache(GetType()).FirstOrDefault(p => p.Name == key);
 
       if (prop == null)
       {
@@ -70,8 +70,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
         return;
       }
 
-      PopulatePropInfoCache(GetType());
-      var prop = s_propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
+      var prop = GetPopulatePropInfoFromCache(GetType()).FirstOrDefault(p => p.Name == key);
 
       if (prop == null)
       {
@@ -157,15 +156,10 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     return true;
   }
 
-  private static void PopulatePropInfoCache(Type type)
-  {
-    if (!s_propInfoCache.ContainsKey(type))
-    {
-      s_propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+  private static List<PropertyInfo> GetPopulatePropInfoFromCache(Type type) =>
+    s_propInfoCache.GetOrAdd(type, t =>t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true))
-        .ToList();
-    }
-  }
+        .ToList());
 
   /// <summary>
   /// Gets all of the property names on this class, dynamic or not.
@@ -173,8 +167,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead")]
   public override IEnumerable<string> GetDynamicMemberNames()
   {
-    PopulatePropInfoCache(GetType());
-    var pinfos = s_propInfoCache[GetType()];
+    var pinfos = GetPopulatePropInfoFromCache(GetType());
 
     var names = new List<string>(_properties.Count + pinfos.Count);
     foreach (var pinfo in pinfos)
@@ -202,8 +195,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
   public static IEnumerable<string> GetInstanceMembersNames(Type t)
   {
-    PopulatePropInfoCache(t);
-    var pinfos = s_propInfoCache[t];
+    var pinfos = GetPopulatePropInfoFromCache(t);
 
     var names = new List<string>(pinfos.Count);
     foreach (var pinfo in pinfos)
@@ -225,8 +217,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
   public static IEnumerable<PropertyInfo> GetInstanceMembers(Type t)
   {
-    PopulatePropInfoCache(t);
-    var pinfos = s_propInfoCache[t];
+    var pinfos = GetPopulatePropInfoFromCache(t);
 
     var names = new List<PropertyInfo>(pinfos.Count);
 
@@ -269,8 +260,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
     if (includeMembers.HasFlag(DynamicBaseMemberType.Instance))
     {
-      PopulatePropInfoCache(GetType());
-      var pinfos = s_propInfoCache[GetType()].Where(x =>
+      var pinfos = GetPopulatePropInfoFromCache(GetType()).Where(x =>
       {
         var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
         var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
