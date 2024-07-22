@@ -460,34 +460,36 @@ public static class Utils
   /// </summary>
   /// <param name="obj"></param>
   /// <returns></returns>
-  public static List<Dictionary<string, object>> GetPropertySets(this DBObject obj, Transaction tr)
+  public static bool TryGetPropertySets(this DBObject obj, Transaction tr, out Base propertySets)
   {
-    var sets = new List<Dictionary<string, object>>();
-    ObjectIdCollection propertySets = null;
+    propertySets = new();
+
+    ObjectIdCollection propertySetIds = null;
     try
     {
-      propertySets = PropertyDataServices.GetPropertySets(obj);
+      propertySetIds = PropertyDataServices.GetPropertySets(obj);
     }
     catch (Autodesk.AutoCAD.Runtime.Exception e) 
     {
       // This may throw if property sets do not exist on the object.
       // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
+      return false;
     }
 
-    if (propertySets is null)
+    if (propertySetIds is null)
     {
-      return sets;
+      return false;
     }
 
-    foreach (ObjectId id in propertySets)
+    foreach (ObjectId id in propertySetIds)
     {
-      var setDictionary = new Dictionary<string, object>();
+      Dictionary<string, object> setDictionary = new() ;
 
       PropertySet propertySet = (PropertySet)tr.GetObject(id, OpenMode.ForRead);
       PropertySetDefinition setDef = (PropertySetDefinition)tr.GetObject(propertySet.PropertySetDefinition, OpenMode.ForRead);
 
       PropertyDefinitionCollection propDef = setDef.Definitions;
-      var propDefs = new Dictionary<int, PropertyDefinition>();
+      Dictionary<int, PropertyDefinition> propDefs = new();
       foreach (PropertyDefinition def in propDef)
       {
         propDefs.Add(def.Id, def);
@@ -507,10 +509,11 @@ public static class Utils
 
       if (setDictionary.Count > 0)
       {
-        sets.Add(CleanDictionary(setDictionary));
+        propertySets[propertySet.Name] = CleanDictionary(setDictionary);
       }
     }
-    return sets;
+
+    return true;
   }
 
   // Handles object types from property set dictionaries
