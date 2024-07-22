@@ -476,7 +476,7 @@ public static class Utils
       return false;
     }
 
-    if (propertySetIds is null)
+    if (propertySetIds is null || propertySetIds.Count == 0)
     {
       return false;
     }
