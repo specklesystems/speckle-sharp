@@ -9,7 +9,7 @@ public class CivilAppliedAssembly : Base
 
   public CivilAppliedAssembly(
     List<CivilAppliedSubassembly> appliedSubassemblies,
-    double adjustedElevation,
+    double? adjustedElevation,
     string units
   )
   {
@@ -20,7 +20,7 @@ public class CivilAppliedAssembly : Base
 
   public List<CivilAppliedSubassembly> appliedSubassemblies { get; set; }
 
-  public double adjustedElevation { get; set; }
+  public double? adjustedElevation { get; set; }
 
   public string units { get; set; }
 }

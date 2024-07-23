@@ -1168,7 +1168,7 @@ public partial class ConverterAutocadCivil
       speckleSubassemblies.Add(speckleSubassembly);
     }
 
-    var adjustedElevation = double.NaN;
+    double? adjustedElevation = null;
     try
     {
       adjustedElevation = appliedAssembly.AdjustedElevation;
