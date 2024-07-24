@@ -225,14 +225,15 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       SpeckleLog.Logger
         .ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
-          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
+          "Execution of http request to {httpScheme}://{hostUrl}{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
           request.RequestUri.Scheme,
           request.RequestUri.Host,
           request.RequestUri.PathAndQuery,
           status,
           policyResult.Result?.StatusCode,
           timer.Elapsed.TotalSeconds,
-          retryCount ?? 0
+          retryCount ?? 0,
+          context.CorrelationId.ToString()
         );
       if (policyResult.Outcome == OutcomeType.Successful)
       {

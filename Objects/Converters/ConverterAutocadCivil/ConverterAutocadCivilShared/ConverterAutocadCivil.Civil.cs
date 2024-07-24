@@ -1029,17 +1029,18 @@ public partial class ConverterAutocadCivil
   /// <summary>
   /// Converts PartData into a list of DataField
   /// </summary>
-  private List<CivilDataField> PartDataRecordToSpeckle(PartDataRecord partData)
+  private Base PartDataRecordToSpeckle(PartDataRecord partData)
   {
+    Base partDataBase = new();
     List<CivilDataField> fields = new();
 
     foreach (PartDataField partField in partData.GetAllDataFields())
     {
       CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Value, partField.Units.ToString(),partField.Context.ToString(), null);
-      fields.Add(field);
+      partDataBase[partField.Name] = field;
     }
 
-    return fields;
+    return partDataBase;
   }
 
 #if CIVIL2022_OR_GREATER

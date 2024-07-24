@@ -2,12 +2,8 @@ version: 2.1
 
 orbs:
   win: circleci/windows@5.0.0
-  aws-s3: circleci/aws-s3@2.0.0
-  codecov: codecov/codecov@3.2.2
-  wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
-  docker: circleci/docker@2.2.0
-  macos: circleci/macos@2.4.1
+  macos: circleci/macos@2.5.2
 # The main workflows for our monorepo pipeline.
 
 workflows:
@@ -74,7 +70,7 @@ commands:
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - cached-checkout
       - run:
@@ -121,7 +117,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     machine:
-      image: ubuntu-2204:2023.02.1
+      image: ubuntu-2204:2024.05.1
     resource_class: large
     steps:
       - cached-checkout
@@ -536,7 +532,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -666,7 +662,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connectors: # Uploads all installers found to S3
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - run:
           name: Proceed to deploy
@@ -674,7 +670,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   notify-deploy:
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - discord/status:
           mentions: "1067457311980933140"

@@ -70,6 +70,32 @@ public partial class ConverterNavisworks
     }
   }
 
+  private static bool ExcludeProperties
+  {
+    get
+    {
+      if (!Settings.TryGetValue("exclude-properties", out string shouldExcludeProperties))
+      {
+        return false;
+      }
+
+      return shouldExcludeProperties == "True";
+    }
+  }
+
+  private static bool IncludeInternalProperties
+  {
+    get
+    {
+      if (!Settings.TryGetValue("internal-properties", out string shouldIncludeInternalProperties))
+      {
+        return false;
+      }
+
+      return shouldIncludeInternalProperties == "True";
+    }
+  }
+
   private static bool UseInternalPropertyNames
   {
     get

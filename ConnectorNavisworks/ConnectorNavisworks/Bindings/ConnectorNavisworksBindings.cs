@@ -1,21 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
 using Speckle.ConnectorNavisworks.NavisworksOptions;
-using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using static Speckle.ConnectorNavisworks.Other.SpeckleNavisworksUtilities;
-using Application = Autodesk.Navisworks.Api.Application;
-using Cursor = System.Windows.Forms.Cursor;
 using MenuItem = DesktopUI2.Models.MenuItem;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
@@ -23,7 +15,7 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
   // Much of the interaction in Navisworks is through the ActiveDocument API
-  private static Document s_doc;
+  private static Document s_activeDoc;
   internal static Control Control;
   private static object s_cachedCommit;
 
@@ -37,10 +29,21 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   private readonly NavisworksOptionsManager _settingsHandler;
 
+  /// <summary>
+  /// Gets a new instance of a commit object with initial properties.
+  /// </summary>
+  private static Collection CommitObject =>
+    new()
+    {
+      ["units"] = GetUnits(s_activeDoc),
+      collectionType = "Navisworks Model",
+      name = s_activeDoc.Title
+    };
+
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
-    s_doc = navisworksActiveDocument;
-    s_doc.SelectionSets.ToSavedItemCollection();
+    s_activeDoc = navisworksActiveDocument;
+    s_activeDoc.SelectionSets.ToSavedItemCollection();
 
     // Sets the Main Thread Control to Invoke commands on.
     Control = new Control();
@@ -84,7 +87,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   {
     // TODO!
     // An unsaved document has no path or filename
-    var fileName = s_doc.CurrentFileName;
+    var fileName = s_activeDoc.CurrentFileName;
     var hash = Core.Models.Utilities.HashString(fileName, Core.Models.Utilities.HashingFunctions.MD5);
     return hash;
   }
@@ -93,69 +96,4 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     // TODO!
     =>
     throw new NotImplementedException();
-
-  public async Task RetryLastConversionSend()
-  {
-    if (s_doc == null)
-    {
-      return;
-    }
-
-    if (CachedConvertedElements == null || s_cachedCommit == null)
-    {
-      throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");
-    }
-
-    if (s_cachedCommit is Collection commitObject)
-    {
-      // _isRetrying = true;
-
-      var applicationProgress = Application.BeginProgress("Retrying that send to Speckle.");
-      _progressBar = new ProgressInvoker(applicationProgress);
-      _progressViewModel = new ProgressViewModel();
-
-      commitObject.elements = CachedConvertedElements;
-
-      var state = s_cachedState;
-
-      _progressBar.BeginSubOperation(0.7, "Retrying cached conversion.");
-      _progressBar.EndSubOperation();
-
-      var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
-
-      if (_progressViewModel.Report.OperationErrors.Count != 0)
-      {
-        ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
-      }
-
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-      state.Settings.Add(new CheckBoxSetting { Slug = "retrying", IsChecked = true });
-
-      string commitId;
-      try
-      {
-        commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
-      }
-      finally
-      {
-        _progressBar.EndSubOperation();
-        Application.EndProgress();
-        Cursor.Current = Cursors.Default;
-      }
-
-      state.Settings.RemoveAll(x => x.Slug == "retrying");
-
-      if (string.IsNullOrEmpty(commitId))
-      {
-        return;
-      }
-    }
-
-    // nullify the cached conversion and commit on success.
-    s_cachedCommit = null;
-
-    CachedConvertedElements = null;
-    // _isRetrying = false;
-  }
 }

@@ -6,6 +6,7 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using Speckle.Core.Kits;
+using Objects.Structural.Properties;
 
 namespace Objects.Converter.CSI;
 
@@ -46,18 +47,12 @@ public partial class ConverterCSI
   {
     string units = ModelUnits();
 
-    var speckleStructLink = new CSIElement1D();
-
-    speckleStructLink.type = ElementType1D.Link;
-    speckleStructLink.name = name;
     string pointI,
       pointJ;
     pointI = pointJ = null;
     _ = Model.LinkObj.GetPoints(name, ref pointI, ref pointJ);
     var pointINode = PointToSpeckle(pointI);
     var pointJNode = PointToSpeckle(pointJ);
-    speckleStructLink.end1Node = pointINode;
-    speckleStructLink.end2Node = pointJNode;
     var speckleLine = new Line();
     if (units != null)
     {
@@ -67,17 +62,21 @@ public partial class ConverterCSI
     {
       speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
     }
-    speckleStructLink.baseLine = speckleLine;
+
+    string linkProp = null;
+    Model.LinkObj.GetProperty(name, ref linkProp);
+    Property1D property = LinkPropertyToSpeckle(linkProp);
+
+    var speckleStructLink = new CSIElement1D(speckleLine, property, ElementType1D.Link);
 
     double localAxis = 0;
     bool advanced = false;
     Model.LinkObj.GetLocalAxes(name, ref localAxis, ref advanced);
     speckleStructLink.orientationAngle = localAxis;
 
-    speckleStructLink.type = ElementType1D.Link;
-    string linkProp = null;
-    Model.LinkObj.GetProperty(name, ref linkProp);
-    speckleStructLink.property = LinkPropertyToSpeckle(linkProp);
+    speckleStructLink.name = name;
+    speckleStructLink.end1Node = pointINode;
+    speckleStructLink.end2Node = pointJNode;
 
     var GUID = "";
     Model.LinkObj.GetGUID(name, ref GUID);
