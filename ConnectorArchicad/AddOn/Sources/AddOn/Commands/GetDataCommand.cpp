@@ -344,10 +344,10 @@ namespace {
 		API_Attribute attribute{};
 		attribute.header.index = materialIndex;
 		attribute.header.typeID = API_BuildingMaterialID;
-		auto error = ACAPI_Attribute_Get (&attribute);
+		auto error = ACAPI_Attribute_Get(&attribute);
 		if (error != NoError)
 			return error;
-		serialiser.Add(FieldNames::Material::Name, attribute.header.name);
+		serialiser.Add(FieldNames::Material::Name, GS::UniString{attribute.header.name});
 		return NoError;
 	} //exportMaterial
 	
@@ -366,13 +366,13 @@ namespace {
 		const auto& serialMaterialQuants = serialiser.AddList<GS::ObjectState> (FieldNames::ElementBase::MaterialQuantities);
 		for (auto& quantity : materialQuants) {
 			GS::ObjectState serialMaterialQuant, serialMaterial;
-			auto error = exportMaterial (quantity.materialIndex, serialMaterial);
+			auto error = exportMaterial(quantity.materialIndex, serialMaterial);
 			if (error != NoError)
 				return error;
 			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Material, serialMaterial);
 			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Volume, quantity.volume);
 			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Area, quantity.surfaceArea);
-			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Units, "m");
+			serialMaterialQuant.Add(FieldNames::ElementBase::Quantity::Units, GS::UniString{"m"});
 			serialMaterialQuants(serialMaterialQuant);
 		}
 		return NoError;
@@ -733,7 +733,7 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 		err = SerializeElementType (element, memo, os);
 		if (err != NoError)
 			continue;
-
+		
 		listAdder (os);
 	}
 
