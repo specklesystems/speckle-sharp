@@ -1169,7 +1169,18 @@ public partial class ConverterAutocadCivil
       speckleSubassemblies.Add(speckleSubassembly);
     }
 
-    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, appliedAssembly.AdjustedElevation, ModelUnits);
+    double? adjustedElevation = null;
+    try
+    {
+      adjustedElevation = appliedAssembly.AdjustedElevation;
+    }
+    catch (ArgumentException e) when (!e.IsFatal())
+    {
+      // Do nothing. Leave the value as null.
+    }
+
+    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, adjustedElevation, ModelUnits);
+
     return speckleAppliedAssembly;
   }
 
