@@ -1176,7 +1176,7 @@ public partial class ConverterAutocadCivil
     }
     catch (ArgumentException e) when (!e.IsFatal())
     {
-      // Do nothing. Leave the value as NaN
+      // Do nothing. Leave the value as null.
     }
 
     CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, adjustedElevation, ModelUnits);
