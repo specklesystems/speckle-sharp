@@ -23,6 +23,7 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -274,7 +275,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
         (s, e) =>
-          Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
+          Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
     }
   }

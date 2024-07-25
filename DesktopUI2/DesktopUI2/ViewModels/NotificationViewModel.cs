@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Material.Icons;
 using ReactiveUI;
 using Speckle.Core.Api.GraphQL.Models;
+using Speckle.Core.Helpers;
 
 namespace DesktopUI2.ViewModels;
 
@@ -19,7 +20,7 @@ public class NotificationViewModel : ReactiveObject
     Message = $"{invite.invitedBy.name} is inviting you to collaborate on '{invite.streamName}'!";
     Launch = () =>
     {
-      Process.Start(new ProcessStartInfo($"{serverUrl}/streams/{invite.streamId}") { UseShellExecute = true });
+      Open.Url($"{serverUrl}/streams/{invite.streamId}");
     };
   }
 

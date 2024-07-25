@@ -18,6 +18,7 @@ using Speckle.DllConflictManagement.Analytics;
 using Speckle.DllConflictManagement.EventEmitter;
 using Speckle.DllConflictManagement.ConflictManagementOptions;
 using Autodesk.Revit.DB.Events;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -378,7 +379,7 @@ public class App : IExternalApplication
 
     if (TaskDialogResult.CommandLink1 == tResult)
     {
-      Process.Start("https://speckle.community/");
+      Open.Url("https://speckle.community/");
     }
   }
 

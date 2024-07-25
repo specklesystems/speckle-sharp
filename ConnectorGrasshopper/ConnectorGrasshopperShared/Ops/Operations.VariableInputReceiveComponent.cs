@@ -343,7 +343,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
         (s, e) =>
-          Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
+          Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
     }
   }

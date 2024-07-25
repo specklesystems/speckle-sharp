@@ -605,7 +605,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   public void OpenProfileCommand(Account account)
   {
-    Process.Start(new ProcessStartInfo($"{account.serverInfo.url}/profile") { UseShellExecute = true });
+    Open.Url($"{account.serverInfo.url}/profile");
     Analytics.TrackEvent(
       account,
       Analytics.Events.DUIAction,
@@ -633,7 +633,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/projects/{streamAcc.Stream.id}";
     }
 
-    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    Open.Url(url);
     Analytics.TrackEvent(
       streamAcc.Account,
       Analytics.Events.DUIAction,

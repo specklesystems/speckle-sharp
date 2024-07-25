@@ -130,14 +130,9 @@ public class ProgressViewModel : ReactiveObject
     }
 
     var safeReport = HttpUtility.UrlEncode(report);
-    Process.Start(
-      new ProcessStartInfo(
+    Open.Url(
         $"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help"
-      )
-      {
-        UseShellExecute = true
-      }
-    );
+      );
   }
 
   public void CancelCommand()

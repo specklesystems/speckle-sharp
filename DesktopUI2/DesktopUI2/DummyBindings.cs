@@ -11,6 +11,7 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Commits = Speckle.Core.Api.Commits;
@@ -56,8 +57,7 @@ public class DummyBindings : ConnectorBindings
 
   public void OpenLink(StreamState state)
   {
-    //to open urls in .net core must set UseShellExecute = true
-    Process.Start(new ProcessStartInfo(state.ServerUrl) { UseShellExecute = true });
+    Open.Url(state.ServerUrl);
   }
 
   public override string GetDocumentId()

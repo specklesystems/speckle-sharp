@@ -19,6 +19,7 @@ namespace Speckle.Core.Helpers;
 
 public static class Http
 {
+
   public static IEnumerable<TimeSpan> DefaultDelay()
   {
     return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
