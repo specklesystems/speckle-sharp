@@ -1065,8 +1065,23 @@ public partial class ConverterAutocadCivil
   // TODO: add pressure fittings
   public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
   {
-    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
-
+    // get the pipe curve
+    // rant: if this is a straight or curved pipe, the BaseCurve prop is fake news && will return a DB.line with start and endpoints set to [0,0,0] & [0,0,1]
+    // do not use CurveToSpeckle(basecurve) 😡
+    ICurve curve;
+    switch (pipe.SubEntityType)
+    {
+      case PipeSubEntityType.Straight:
+        var line = new Acad.LineSegment3d(pipe.StartPoint, pipe.EndPoint);
+        curve = LineToSpeckle(line);
+        break;
+      case PipeSubEntityType.Curved:
+        curve = ArcToSpeckle(pipe.Curve2d);
+        break;
+      default:
+        curve = CurveToSpeckle(pipe.BaseCurve); // basecurve is fake news, but we're still sending the other types with props for now
+        break;
+    }
 
     Pipe specklePipe = new()
     {
@@ -1100,7 +1115,25 @@ public partial class ConverterAutocadCivil
   public Pipe PipeToSpeckle(PressurePipe pipe)
   {
     // get the pipe curve
-    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
+    // rant: if this is a straight or curved pipe, the BaseCurve prop is fake news && will return a DB.line with start and endpoints set to [0,0,0] & [0,0,1]
+    // do not use CurveToSpeckle(basecurve) 😡
+    ICurve curve;
+    switch (pipe.BaseCurve)
+    {
+      case Autodesk.AutoCAD.DatabaseServices.Line:
+        var line = new LineSegment3d(pipe.StartPoint, pipe.EndPoint);
+        curve = LineToSpeckle(line);
+        break;
+#if CIVIL2024_OR_GREATER
+      case Autodesk.AutoCAD.DatabaseServices.Arc:
+        var arc = pipe.CurveGeometry.GetArc2d();
+        curve = ArcToSpeckle(arc);
+        break;
+#endif
+      default:
+        curve = CurveToSpeckle(pipe.BaseCurve);
+        break;
+    }
 
     Pipe specklePipe = new()
     {
