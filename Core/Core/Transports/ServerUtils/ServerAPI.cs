@@ -27,7 +27,6 @@ public sealed class ServerApi : IDisposable, IServerApi
 
   private const int MAX_REQUEST_SIZE = 100_000_000;
 
-  private const int RETRY_COUNT = 3;
   private static readonly char[] s_separator = { '\t' };
   private static readonly string[] s_filenameSeparator = { "filename=" };
 
