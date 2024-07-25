@@ -11,7 +11,9 @@ public static class Open
     {
       Process.Start(psi);
     }
+#pragma warning disable CA1031
     catch
+#pragma warning restore CA1031
     {
       psi.UseShellExecute = false;
       Process.Start(psi);
@@ -37,7 +39,9 @@ public static class Open
         Process.Start(psi);
       }
     }
+#pragma warning disable CA1031
     catch
+#pragma warning restore CA1031
     {
       psi.UseShellExecute = false;
       System.IO.FileAttributes attr = System.IO.File.GetAttributes(path);
