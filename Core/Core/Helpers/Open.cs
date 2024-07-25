@@ -6,14 +6,13 @@ public static class Open
 {
   public static void Url(string url)
   {
-    var psi = new ProcessStartInfo
+    var psi = new ProcessStartInfo { FileName = url, UseShellExecute = true };
+    try
     {
-      FileName = url,
-      UseShellExecute = true
-    };
-    try {
       Process.Start(psi);
-    } catch {
+    }
+    catch
+    {
       psi.UseShellExecute = false;
       Process.Start(psi);
     }

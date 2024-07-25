@@ -130,9 +130,7 @@ public class ProgressViewModel : ReactiveObject
     }
 
     var safeReport = HttpUtility.UrlEncode(report);
-    Open.Url(
-        $"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help"
-      );
+    Open.Url($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help");
   }
 
   public void CancelCommand()

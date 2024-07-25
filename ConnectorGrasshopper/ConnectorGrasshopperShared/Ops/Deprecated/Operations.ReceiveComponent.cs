@@ -274,8 +274,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
       Menu_AppendItem(
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
-        (s, e) =>
-          Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
+        (s, e) => Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
     }
   }

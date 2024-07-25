@@ -1366,6 +1366,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     Open.Url(Url);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream View" } });
   }
+
   public async void CopyStreamURLCommand()
   {
     //ensure click transition has finished
