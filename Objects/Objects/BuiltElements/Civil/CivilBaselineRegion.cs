@@ -42,4 +42,6 @@ public class CivilBaselineRegion : Base
 
   [DetachProperty]
   public List<CivilAppliedAssembly> appliedAssemblies { get; set; }
+
+  public string units { get; set; }
 }
