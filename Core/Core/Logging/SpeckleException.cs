@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphQL;
-using Sentry;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Logging;
@@ -19,18 +18,18 @@ public class SpeckleException : Exception
 
   #region obsolete
   [Obsolete("Use any other constructor", true)]
-  public SpeckleException(string? message, Exception? inner, bool log = true, SentryLevel level = SentryLevel.Info)
+  public SpeckleException(string? message, Exception? inner, bool log = true)
     : base(message, inner) { }
 
   [Obsolete($"Use {nameof(SpeckleGraphQLException)} instead", true)]
-  public SpeckleException(string? message, GraphQLError[] errors, bool log = true, SentryLevel level = SentryLevel.Info)
+  public SpeckleException(string? message, GraphQLError[] errors, bool log = true)
     : base(message)
   {
     GraphQLErrors = errors.Select(error => new KeyValuePair<string, object>("error", error.Message)).ToList();
   }
 
   [Obsolete("Use any other constructor", true)]
-  public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info)
+  public SpeckleException(string message, bool log)
     : base(message) { }
 
   [Obsolete($"Use {nameof(SpeckleGraphQLException)} instead", true)]
