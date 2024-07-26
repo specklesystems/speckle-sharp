@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
 using Point = Objects.Geometry.Point;
 
 namespace Objects.Converter.Revit;
@@ -70,14 +74,54 @@ public partial class ConverterRevit
     //no mesh seems to be retrievable, not even using the SpatialElementGeometryCalculator
     //speckleArea.displayValue = GetElementDisplayValue(revitArea);
 
-    var displayValue = new List<Base>();
+    speckleArea.displayValue ??= new List<Base>();
+
     if (profiles.Count != 0 && profiles[0] is Polycurve polyCurve)
     {
-      displayValue.Add(polyCurve);
+      speckleArea.displayValue.Add(polyCurve);
     }
 
-    speckleArea.displayValue = displayValue;
+    // If life were simple this triangulation world be sufficient - we know areas are 2d planar - but could have curves.
+    // speckleArea.displayValue.Add(PolycurveToMesh(speckleArea.outline as Polycurve));
 
     return speckleArea;
+  }
+
+  private static Mesh PolycurveToMesh(Polycurve polycurve)
+  {
+    var mesh = new Mesh { units = polycurve.units };
+
+    // Convert all segments to Lines (assuming they are all Lines)
+    var segments = polycurve.segments.OfType<Line>().ToList();
+
+    var points = new List<Point>();
+    foreach (var segment in segments.Where(segment => !PointExists(points, segment.start)))
+    {
+      points.Add(segment.start);
+    }
+    if (!polycurve.closed && !PointExists(points, segments.Last().end))
+    {
+      points.Add(segments.Last().end);
+    }
+
+    mesh.vertices = points.SelectMany(p => new List<double> { p.x, p.y, p.z }).ToList();
+
+    mesh.faces = new List<int> { points.Count }; // First element is the number of vertices in the face
+    mesh.faces.AddRange(Enumerable.Range(0, points.Count));
+
+    mesh.TriangulateMesh();
+
+    return mesh;
+  }
+
+  private static bool PointExists(List<Point> points, Point newPoint)
+  {
+    const double TOLERANCE = 1e-6; // Adjust this tolerance as needed
+    return points.Any(
+      p =>
+        Math.Abs(p.x - newPoint.x) < TOLERANCE
+        && Math.Abs(p.y - newPoint.y) < TOLERANCE
+        && Math.Abs(p.z - newPoint.z) < TOLERANCE
+    );
   }
 }
