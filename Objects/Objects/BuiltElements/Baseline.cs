@@ -32,6 +32,8 @@ public abstract class Baseline : Base
   public Featureline? featureline { get; internal set; }
 
   public bool isFeaturelineBased { get; set; }
+
+  public string units { get; set; }
 }
 
 /// <summary>
