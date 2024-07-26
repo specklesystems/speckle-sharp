@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Objects.Geometry;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -44,13 +47,14 @@ public partial class ConverterRevit
   {
     var profiles = GetProfiles(revitArea);
 
-    var speckleArea = new BuiltElements.Area();
-
-    speckleArea.name = revitArea.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();
-    speckleArea.number = revitArea.Number;
-    speckleArea.center = (Point)LocationToSpeckle(revitArea);
-    speckleArea.level = ConvertAndCacheLevel(revitArea, BuiltInParameter.ROOM_LEVEL_ID);
-    if (profiles.Any())
+    var speckleArea = new BuiltElements.Area
+    {
+      name = revitArea.get_Parameter(BuiltInParameter.ROOM_NAME).AsString(),
+      number = revitArea.Number,
+      center = (Point)LocationToSpeckle(revitArea),
+      level = ConvertAndCacheLevel(revitArea, BuiltInParameter.ROOM_LEVEL_ID)
+    };
+    if (profiles.Count != 0)
     {
       speckleArea.outline = profiles[0];
     }
@@ -63,8 +67,17 @@ public partial class ConverterRevit
 
     GetAllRevitParamsAndIds(speckleArea, revitArea);
 
-    //no mesh seems to be retriavable, not even using the SpatialElementGeometryCalculator
+    //no mesh seems to be retrievable, not even using the SpatialElementGeometryCalculator
     //speckleArea.displayValue = GetElementDisplayValue(revitArea);
+
+    var displayValue = new List<Base>();
+    if (profiles.Count != 0 && profiles[0] is Polycurve polyCurve)
+    {
+      displayValue.Add(polyCurve);
+    }
+
+    speckleArea.displayValue = displayValue;
+
     return speckleArea;
   }
 }
