@@ -37,8 +37,8 @@ public partial class ConverterRevit
       };
     }
     return DirectShapeToNative(speckleDirectShape, ToNativeMeshSettingEnum.Default);
-
   }
+
   public ApplicationObject PolygonElementToNative(PolygonElement polygonElement)
   {
     var speckleDirectShape = new Objects.BuiltElements.Revit.DirectShape()
