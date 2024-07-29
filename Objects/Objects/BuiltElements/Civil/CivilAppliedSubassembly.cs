@@ -34,4 +34,6 @@ public class CivilAppliedSubassembly : Base
 
   [DetachProperty]
   public List<CivilDataField> parameters { get; set; }
+
+  public string units { get; set; }
 }
