@@ -10,6 +10,7 @@ using Objects.Other;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using static Archicad.Model.MeshModel;
+using Speckle.Core.Logging;
 
 namespace Archicad.Operations;
 
@@ -562,7 +563,9 @@ public static class ModelConverter
 
     if (outline is not Polyline polyline)
     {
-      throw new SpeckleException($"An opening of type {outline.GetType()} has been found - only Polyline openings are currently supported");
+      throw new SpeckleException(
+        $"An opening of type {outline.GetType()} has been found - only Polyline openings are currently supported"
+      );
     }
 
     // Form the 4 points of the rectangle from the polyline
