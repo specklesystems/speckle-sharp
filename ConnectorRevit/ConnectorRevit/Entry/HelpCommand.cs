@@ -1,9 +1,9 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -12,7 +12,7 @@ public class ForumCommand : IExternalCommand
 {
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
-    Process.Start("https://speckle.community/");
+    Open.Url("https://speckle.community/");
     return Result.Succeeded;
   }
 }
@@ -22,7 +22,7 @@ public class DocsCommand : IExternalCommand
 {
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
-    Process.Start("https://speckle.guide/user/revit.html");
+    Open.Url("https://speckle.guide/user/revit.html");
     return Result.Succeeded;
   }
 }
@@ -32,7 +32,7 @@ public class TutorialsCommand : IExternalCommand
 {
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
-    Process.Start("https://speckle.systems/tutorials/");
+    Open.Url("https://speckle.systems/tutorials/");
     return Result.Succeeded;
   }
 }
@@ -50,7 +50,7 @@ public class ManagerCommand : IExternalCommand
     );
     if (File.Exists(path))
     {
-      Process.Start(path);
+      Open.File(path);
     }
     else
     {

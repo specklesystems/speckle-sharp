@@ -229,7 +229,7 @@ public static class SpeckleLog
   {
     try
     {
-      Process.Start(s_logFolderPath);
+      Open.File(s_logFolderPath);
     }
     catch (FileNotFoundException ex)
     {

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
@@ -23,6 +22,7 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -273,8 +273,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
       Menu_AppendItem(
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
-        (s, e) =>
-          Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
+        (s, e) => Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
     }
   }
