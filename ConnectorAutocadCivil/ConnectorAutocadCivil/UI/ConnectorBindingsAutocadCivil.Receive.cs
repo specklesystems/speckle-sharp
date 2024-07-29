@@ -545,12 +545,15 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
             // add property sets if this is Civil3D
 #if CIVIL
-            if (obj["propertySets"] is IReadOnlyList<object> list)
+            if (obj["propertySets"] is Base propertySetsBase)
             {
               List<Dictionary<string, object>> propertySets = new();
-              foreach (var listObj in list)
+              foreach (object baseObj in propertySetsBase.GetMembers(DynamicBaseMemberType.Dynamic).Values)
               {
-                propertySets.Add(listObj as Dictionary<string, object>);
+                if (baseObj is Dictionary<string, object> propertySet)
+                {
+                  propertySets.Add(propertySet);
+                }
               }
 
               try
