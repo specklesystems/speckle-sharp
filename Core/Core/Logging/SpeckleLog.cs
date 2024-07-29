@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Sentry;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -138,17 +137,6 @@ public static class SpeckleLog
     var id = GetUserIdFromDefaultAccount();
     s_logger = s_logger.ForContext("id", id).ForContext("isMachineId", s_isMachineIdUsed);
 
-    // Configure scope after logger created.
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.User = new User { Id = id };
-    });
-
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.SetTag("hostApplication", hostApplicationName);
-    });
-
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
       .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
@@ -220,35 +208,6 @@ public static class SpeckleLog
         "https://seq.speckle.systems",
         apiKey: "agZqxG4jQELxQQXh0iZQ"
       );
-    }
-
-    if (logConfiguration.LogToSentry)
-    {
-      const string ENV =
-#if DEBUG
-        "dev";
-#else
-        "production";
-#endif
-
-      serilogLogConfiguration = serilogLogConfiguration.WriteTo.Sentry(o =>
-      {
-        o.Dsn = logConfiguration.SentryDns;
-        o.Debug = false;
-        o.Environment = ENV;
-        o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
-        o.AttachStacktrace = true;
-        o.StackTraceMode = StackTraceMode.Enhanced;
-        // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
-        // We recommend adjusting this value in production.
-        o.TracesSampleRate = 1.0;
-        // Enable Global Mode if running in a client app
-        o.IsGlobalModeEnabled = true;
-        // Debug and higher are stored as breadcrumbs (default is Information)
-        o.MinimumBreadcrumbLevel = LogEventLevel.Debug;
-        // Warning and higher is sent as event (default is Error)
-        o.MinimumEventLevel = LogEventLevel.Error;
-      });
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
