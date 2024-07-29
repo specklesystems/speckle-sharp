@@ -562,11 +562,7 @@ public static class ModelConverter
 
     if (outline is not Polyline polyline)
     {
-      extrusionBasePoint = null;
-      extrusionXAxis = null;
-      extrusionYAxis = null;
-      extrusionZAxis = null;
-      return;
+      throw new SpeckleException($"An opening of type {outline.GetType()} has been found - only Polyline openings are currently supported");
     }
 
     // Form the 4 points of the rectangle from the polyline
