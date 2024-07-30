@@ -205,7 +205,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
               -  << pipeline.git.tag >>
               - not:
                   matches:
-                    pattern: "[-]+"
+                    pattern: "^.*-.*$"
                     value: << pipeline.git.tag >>
           steps:
             - run:
@@ -220,7 +220,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
               -  << pipeline.git.tag >>
               - not:
                   matches:
-                    pattern: "[-]+"
+                    pattern: "^.*-.*$"
                     value: << pipeline.git.tag >>
           steps:
             - run:
