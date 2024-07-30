@@ -22,6 +22,7 @@ using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -217,7 +218,7 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
         Menu_AppendItem(
           menu,
           $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
-          (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
+          (s, e) => Open.Url($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
         );
       }
     }
