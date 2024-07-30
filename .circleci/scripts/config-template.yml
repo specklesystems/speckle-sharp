@@ -214,6 +214,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
+            - persist_to_workspace:
+                root: ./
+                paths:
+                  - speckle-sharp-ci-tools/Installers
       - when: # Setup certificates and build installers signed for tagged builds that aren't prerelease
           condition:
             and:
@@ -320,7 +324,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.2xx
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
