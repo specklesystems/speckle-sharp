@@ -201,6 +201,7 @@ public static class BaseExtensions
     {
       T b => new List<T> { b },
       IReadOnlyList<T> list => list,
+      IEnumerable enumerable => enumerable.OfType<T>().ToList(),
       _ => null
     };
   }

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
 using Speckle.ConnectorNavisworks.Bindings;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;
 
@@ -262,7 +262,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
       case Community.COMMAND:
       {
-        Process.Start("https://speckle.community/tag/navisworks");
+        Open.Url("https://speckle.community/tag/navisworks");
         break;
       }
 

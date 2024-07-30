@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Web;
@@ -130,14 +129,7 @@ public class ProgressViewModel : ReactiveObject
     }
 
     var safeReport = HttpUtility.UrlEncode(report);
-    Process.Start(
-      new ProcessStartInfo(
-        $"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help"
-      )
-      {
-        UseShellExecute = true
-      }
-    );
+    Open.Url($"https://speckle.community/new-topic?title=I%20need%20help%20with...&body={safeReport}&category=help");
   }
 
   public void CancelCommand()

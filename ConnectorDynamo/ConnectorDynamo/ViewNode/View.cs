@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using Dynamo.Engine;
 using Dynamo.Graph.Nodes;
@@ -9,6 +8,7 @@ using Dynamo.Utilities;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorDynamo.ViewNode;
 
@@ -103,7 +103,7 @@ public class View : NodeModel
     }
     AnalyticsUtils.TrackNodeRun("Stream View");
 
-    Process.Start(Url);
+    Open.Url(Url);
   }
 
   //Cache input value each time it comes available

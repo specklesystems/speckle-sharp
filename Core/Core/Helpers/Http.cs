@@ -30,16 +30,10 @@ public static class Http
       .HandleTransientHttpError()
       .WaitAndRetryAsync(
         delay ?? DefaultDelay(),
-        (ex, timeSpan, retryAttempt, context) => {
-          //context.Remove("retryCount");
-          //context.Add("retryCount", retryAttempt);
-          //Log.Information(
-          //  ex.Exception,
-          //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",
-          //  ex.GetType().Name,
-          //  timeSpan.TotalSeconds * 1000,
-          //  retryAttempt
-          //);
+        (ex, timeSpan, retryAttempt, context) =>
+        {
+          context.Remove("retryCount");
+          context.Add("retryCount", retryAttempt);
         }
       );
   }
@@ -209,11 +203,13 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       var timer = new Stopwatch();
       timer.Start();
       context.Add("retryCount", 0);
+
+      request.Headers.Add("x-request-id", context.CorrelationId.ToString());
+
       var policyResult = await Http.HttpAsyncPolicy(_delay)
         .ExecuteAndCaptureAsync(
           ctx =>
           {
-            request.Headers.Add("x-request-id", ctx.CorrelationId.ToString());
             return base.SendAsync(request, cancellationToken);
           },
           context
@@ -225,14 +221,15 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       SpeckleLog.Logger
         .ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
-          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
+          "Execution of http request to {httpScheme}://{hostUrl}{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
           request.RequestUri.Scheme,
           request.RequestUri.Host,
           request.RequestUri.PathAndQuery,
           status,
           policyResult.Result?.StatusCode,
           timer.Elapsed.TotalSeconds,
-          retryCount ?? 0
+          retryCount ?? 0,
+          context.CorrelationId.ToString()
         );
       if (policyResult.Outcome == OutcomeType.Successful)
       {

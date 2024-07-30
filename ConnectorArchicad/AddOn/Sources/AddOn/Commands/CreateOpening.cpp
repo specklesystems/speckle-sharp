@@ -7,7 +7,6 @@
 #include "RealNumber.h"
 #include "DGModule.hpp"
 #include "LibpartImportManager.hpp"
-#include "APIHelper.hpp"
 #include "FieldNames.hpp"
 #include "OnExit.hpp"
 #include "ExchangeManager.hpp"

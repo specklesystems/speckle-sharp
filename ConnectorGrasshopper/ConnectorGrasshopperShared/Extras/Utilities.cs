@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Grasshopper;
@@ -15,6 +16,10 @@ using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+
+#if RHINO8_OR_GREATER
+using Grasshopper.Rhinoceros.Model;
+#endif
 
 namespace ConnectorGrasshopper.Extras;
 
@@ -476,14 +481,24 @@ public static class Utilities
   {
     if (value is null)
     {
-      return value;
+      return null;
     }
 
-    string refId = GetRefId(value);
+    value = UnwrapRhino8Object(value);
 
     if (value is IGH_Goo)
     {
-      value = value.GetType().GetProperty("Value").GetValue(value);
+      var valuePropInfo = value
+        .GetType()
+        .GetField("m_value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+      if (valuePropInfo != null)
+      {
+        var tempValue = valuePropInfo.GetValue(value);
+        if (tempValue != null)
+        {
+          value = tempValue;
+        }
+      }
     }
 
     if (value.GetType().IsSimpleType())
@@ -496,6 +511,7 @@ public static class Utilities
       var result = converter.ConvertToSpeckle(value);
       if (result != null)
       {
+        string refId = GetRefId(value);
         result.applicationId = refId;
       }
 
@@ -520,6 +536,28 @@ public static class Utilities
     }
 
     return null;
+  }
+
+  private static object UnwrapRhino8Object(object value)
+  {
+#if RHINO8_OR_GREATER
+    // INFO: Fill in here as we enable conversion for other non-model object types.
+    switch (value)
+    {
+      case ModelObject modelObject:
+      {
+        var propInfo = value
+                      .GetType()
+                      .GetProperty("Geometry", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        
+        return propInfo?.GetValue(value) ?? value;
+      }
+      default:
+        return value;
+    }
+#else
+    return value;
+#endif
   }
 
   public static string GetRefId(object value)

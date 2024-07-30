@@ -10,6 +10,9 @@ namespace Objects.Structural.CSI.Geometry;
 
 public class CSIElement1D : Element1D
 {
+  public CSIElement1D(Line baseLine, Property1D property, ElementType1D type)
+    : this(baseLine, property, type, null, null, null, null, null, null, null) { }
+
   /// <summary>
   /// SchemaBuilder constructor for structural 1D element (based on local axis)
   /// </summary>
@@ -40,16 +43,8 @@ public class CSIElement1D : Element1D
       double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
+    : base(baseLine, property, type, name, end1Releases, end2Releases, end1Offset, end2Offset, localAxis)
   {
-    this.baseLine = baseLine;
-    this.property = property;
-    this.type = type;
-    this.name = name;
-    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
-    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
-    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
-    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
-    this.localAxis = localAxis;
     this.CSILinearSpring = CSILinearSpring;
     this.DesignProcedure = DesignProcedure;
     Modifiers = Modifier;
@@ -92,17 +87,19 @@ public class CSIElement1D : Element1D
       double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
+    : base(
+      baseLine,
+      property,
+      type,
+      name,
+      end1Releases,
+      end2Releases,
+      end1Offset,
+      end2Offset,
+      orientationNode,
+      orientationAngle
+    )
   {
-    this.baseLine = baseLine;
-    this.property = property;
-    this.type = type;
-    this.name = name;
-    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
-    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
-    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
-    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
-    this.orientationNode = orientationNode;
-    this.orientationAngle = orientationAngle;
     this.CSILinearSpring = CSILinearSpring;
     this.DesignProcedure = DesignProcedure;
     Modifiers = Modifier;
