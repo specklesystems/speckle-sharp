@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -561,7 +560,7 @@ public static class AccountManager
 
     var accessCode = "";
 
-    Process.Start(new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true });
+    Open.Url($"{server}/authn/verify/sca/{challenge}");
 
     var task = Task.Run(() =>
     {

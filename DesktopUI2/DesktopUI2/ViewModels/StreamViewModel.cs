@@ -1363,14 +1363,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     //ensure click transition has finished
     await Task.Delay(100).ConfigureAwait(true);
 
-    OpenUrl(Url);
+    Open.Url(Url);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream View" } });
-  }
-
-  private void OpenUrl(string url)
-  {
-    //to open urls in .net core must set UseShellExecute = true
-    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
   }
 
   public async void CopyStreamURLCommand()
@@ -1443,7 +1437,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
               url = $"{StreamState.ServerUrl}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
             }
 
-            OpenUrl(url);
+            Open.Url(url);
           },
           Type = NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(10)

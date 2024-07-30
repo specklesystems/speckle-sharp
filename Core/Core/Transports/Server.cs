@@ -198,7 +198,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return;
     }
 
-    if (_totalElapsed > 300 && _isWriting == false && _queue.Count != 0)
+    if (_totalElapsed > 300 && !_isWriting && _queue.Count != 0)
     {
       _totalElapsed = 0;
       _writeTimer.Enabled = false;

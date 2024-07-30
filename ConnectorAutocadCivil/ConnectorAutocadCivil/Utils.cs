@@ -509,7 +509,7 @@ public static class Utils
 
       if (setDictionary.Count > 0)
       {
-        propertySets[propertySet.Name] = CleanDictionary(setDictionary);
+        propertySets[propertySet.PropertySetDefinitionName] = CleanDictionary(setDictionary);
       }
     }
 

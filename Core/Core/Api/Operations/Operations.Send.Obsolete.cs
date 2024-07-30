@@ -125,7 +125,7 @@ public static partial class Operations
     transports ??= new List<ITransport>();
     using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
 
-    if (transports.Count == 0 && useDefaultCache == false)
+    if (transports.Count == 0 && !useDefaultCache)
     {
       throw new ArgumentException(
         "You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
