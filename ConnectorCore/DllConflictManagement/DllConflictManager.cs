@@ -101,7 +101,6 @@ public sealed class DllConflictManager
     }
   }
 
-
   private static bool PathIsValid(string path)
   {
     if (path.Any(x => Path.GetInvalidPathChars().Contains(x)))
