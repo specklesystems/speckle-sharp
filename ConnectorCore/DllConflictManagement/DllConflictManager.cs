@@ -101,11 +101,16 @@ public sealed class DllConflictManager
     }
   }
 
-  private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly loadedAssembly)
+  private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly? loadedAssembly)
   {
+    if (string.IsNullOrWhiteSpace(loadedAssembly?.Location))
+    {
+      return false;
+    }
+    string location = loadedAssembly!.Location;
     foreach (var exactPath in _exactAssemblyPathsToIgnore)
     {
-      if (Path.GetDirectoryName(loadedAssembly.Location) == exactPath)
+      if (Path.GetDirectoryName(location) == exactPath)
       {
         return true;
       }
@@ -113,7 +118,7 @@ public sealed class DllConflictManager
 
     foreach (var pathFragment in _assemblyPathFragmentsToIgnore)
     {
-      if (loadedAssembly.Location.Contains(pathFragment))
+      if (location.Contains(pathFragment))
       {
         return true;
       }
