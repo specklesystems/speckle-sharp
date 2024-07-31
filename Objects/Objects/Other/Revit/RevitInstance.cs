@@ -19,7 +19,11 @@ public class RevitInstance : Instance<RevitSymbolElementType>
 
   protected override IEnumerable<Base> GetTransformableGeometry()
   {
-    var allChildren = typedDefinition.elements ?? new List<Base>();
+    var allChildren = new List<Base>();
+    if (typedDefinition.elements != null)
+    {
+      allChildren.AddRange(typedDefinition.elements);
+    }
     if (typedDefinition.displayValue.Count != 0)
     {
       allChildren.AddRange(typedDefinition.displayValue);
