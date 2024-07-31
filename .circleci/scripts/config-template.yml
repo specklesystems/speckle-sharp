@@ -199,13 +199,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
-      - unless: # Build installers unsigned on non-tagged builds or pre-release tags 
+      - unless: # Build Unsigned Installers for untagged, or wip/alpha/feature/etc. tags (non-stable, non-rc)
           condition: 
             and:
               -  << pipeline.git.tag >>
               - not:
                   matches:
-                    pattern: "^.*-.*$"
+                    pattern: "^.*-(?!rc).*$"
                     value: << pipeline.git.tag >>
           steps:
             - run:
@@ -224,7 +224,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
               -  << pipeline.git.tag >>
               - not:
                   matches:
-                    pattern: "^.*-.*$"
+                    pattern: "^.*-(?!rc).*$"
                     value: << pipeline.git.tag >>
           steps:
             - run:
