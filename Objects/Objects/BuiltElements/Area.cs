@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements;
 
-public class Area : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
+public class Area : Base, IHasArea, IHasVolume, IDisplayValue<List<Base>>
 {
   public Area() { }
 
@@ -31,7 +31,7 @@ public class Area : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public string units { get; set; }
 
   [DetachProperty]
-  public List<Mesh> displayValue { get; set; }
+  public List<Base> displayValue { get; set; }
 
   public double area { get; set; }
   public double volume { get; set; }
