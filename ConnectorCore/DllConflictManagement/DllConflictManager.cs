@@ -101,6 +101,16 @@ public sealed class DllConflictManager
     }
   }
 
+
+  private static bool PathIsValid(string path)
+  {
+    if (path.Any(x => Path.GetInvalidPathChars().Contains(x)))
+    {
+      return false;
+    }
+    return true;
+  }
+
   private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly? loadedAssembly)
   {
     if (string.IsNullOrWhiteSpace(loadedAssembly?.Location))
@@ -108,6 +118,10 @@ public sealed class DllConflictManager
       return false;
     }
     string location = loadedAssembly!.Location;
+    if (!PathIsValid(location))
+    {
+      return false;
+    }
     foreach (var exactPath in _exactAssemblyPathsToIgnore)
     {
       if (Path.GetDirectoryName(location) == exactPath)
