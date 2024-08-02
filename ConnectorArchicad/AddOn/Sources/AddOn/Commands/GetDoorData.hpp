@@ -1,5 +1,5 @@
-#ifndef GET_OPENING_DATA_HPP
-#define GET_OPENING_DATA_HPP
+#ifndef GET_DOOR_DATA_HPP
+#define GET_DOOR_DATA_HPP
 
 #include "GetDataCommand.hpp"
 

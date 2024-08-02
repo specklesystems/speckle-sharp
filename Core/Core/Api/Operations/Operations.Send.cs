@@ -83,9 +83,11 @@ public static partial class Operations
 
     var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
 
+    var correlationId = Guid.NewGuid().ToString();
+
     // make sure all logs in the operation have the proper context
     using (LogContext.PushProperty("transportContext", transportContext))
-    using (LogContext.PushProperty("correlationId", Guid.NewGuid().ToString()))
+    using (LogContext.PushProperty("correlationId", correlationId))
     {
       var sendTimer = Stopwatch.StartNew();
       SpeckleLog.Logger.Information("Starting send operation");
@@ -110,8 +112,9 @@ public static partial class Operations
       {
         SpeckleLog.Logger.Information(
           ex,
-          "Send operation failed after {elapsed} seconds",
-          sendTimer.Elapsed.TotalSeconds
+          "Send operation failed after {elapsed} seconds. Correlation ID: {correlationId}",
+          sendTimer.Elapsed.TotalSeconds,
+          correlationId
         );
         if (ex is OperationCanceledException or SpeckleException)
         {
@@ -134,10 +137,11 @@ public static partial class Operations
         .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
         .ForContext("serializerElapsed", serializerV2.Elapsed)
         .Information(
-          "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
+          "Finished sending {objectCount} objects after {elapsed}, result: {objectId}. Correlation ID: {correlationId}",
           transports.Max(t => t.SavedObjectCount),
           sendTimer.Elapsed.TotalSeconds,
-          hash
+          hash,
+          correlationId
         );
       return hash;
     }

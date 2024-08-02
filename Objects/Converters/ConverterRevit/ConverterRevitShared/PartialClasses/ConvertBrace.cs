@@ -1,8 +1,10 @@
+using System;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using Objects.Geometry;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;
@@ -37,18 +39,21 @@ public partial class ConverterRevit
 
   private Base BraceToSpeckle(DB.FamilyInstance myFamily, out List<string> notes)
   {
-    notes = new List<string>();
-    var myBeam = BeamToSpeckle(myFamily, out notes) as RevitBeam;
+    var myBeam = (RevitBeam)BeamToSpeckle(myFamily, out notes);
 
-    var myBrace = new RevitBrace()
+    var myBrace = new RevitBrace(
+      myBeam.family,
+      myBeam.type,
+      myBeam.baseLine,
+      myBeam.level,
+      myBeam.units,
+      myBeam.elementId,
+      Array.Empty<Mesh>()
+    )
     {
-      applicationId = myBeam.applicationId,
-      type = myBeam.type,
-      baseLine = myBeam.baseLine,
-      level = myBeam.level,
-      family = myBeam.family,
-      parameters = myBeam.parameters,
       displayValue = myBeam.displayValue,
+      applicationId = myBeam.applicationId,
+      parameters = myBeam.parameters,
     };
 
     var dynamicProps = myBeam.GetMembers(DynamicBaseMemberType.Dynamic);

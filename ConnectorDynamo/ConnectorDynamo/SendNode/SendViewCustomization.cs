@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorDynamo.SendNode;
 
@@ -83,7 +84,7 @@ public class SendViewCustomization : INodeViewCustomization<Send>
         var viewStream = new MenuItem { Header = $"View stream {stream.StreamId} @ {stream.ServerUrl} online ↗" };
         viewStream.Click += (a, e) =>
         {
-          System.Diagnostics.Process.Start($"{stream.ServerUrl}/streams/{stream.StreamId}");
+          Open.Url($"{stream.ServerUrl}/streams/{stream.StreamId}");
         };
         customMenuItems.Add(viewStream);
         _nodeView.grid.ContextMenu.Items.Add(viewStream);

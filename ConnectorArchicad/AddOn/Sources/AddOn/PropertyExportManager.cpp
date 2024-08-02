@@ -2,7 +2,6 @@
 #include "Utility.hpp"
 #include "MD5Channel.hpp"
 
-
 PropertyExportManager* PropertyExportManager::instance = nullptr;
 
 PropertyExportManager* PropertyExportManager::GetInstance ()
@@ -286,6 +285,16 @@ GS::UInt64 GenerateFingerPrint (const API_ElemType& elementType, const bool& sen
 }
 
 
+/*!
+ Get property definitions for a specified element
+ @param element The target element to retrieve the property definitions for
+ @param sendProperties True to export the Archicad properties attached to the element
+ @param sendListingParameters True to export calculated listing parameters from the element, e.g. top/bottom surface area etc
+ @param systemItemPairs Array pairing a classification system ID against a classification item ID (attached to the target element)
+ @param elementDefinitions The element property definitions (retrieved in this function)
+ @param componentsDefinitions The component property definitions (paired with the component ID, retrieved in this function)
+ @return NoError if the definitions were retrieved without errors
+ */
 GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& element, const bool& sendProperties, const bool& sendListingParameters, const GS::Array<GS::Pair<API_Guid, API_Guid>>& systemItemPairs, GS::Array<API_PropertyDefinition>& elementDefinitions, GS::Array<GS::Pair<API_ElemComponentID, GS::Array<API_PropertyDefinition>>>& componentsDefinitions)
 {
 	GSErrCode err = NoError;
@@ -296,13 +305,15 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 	
 	// element-level properties
 	{
+			//Create a hash value for target element and prefs
 		GS::UInt64 fingerPrint = GenerateFingerPrint (elementType, sendProperties, sendListingParameters, systemItemPairs);
+			//If we've already encountered this combo, use the property definitions we already found (will always be the same - saves a lot of time)
 		if (cache.ContainsKey (fingerPrint)) {
 			elementDefinitions = cache.Get (fingerPrint).first;
 			elementUserDefinedDefinitions = cache.Get (fingerPrint).second;
-		}
-		else {
+		} else {
 			if (sendProperties) {
+					//Collect user-defined property definitions for the target element when the user requests them
 				err = ACAPI_Element_GetPropertyDefinitions (element.header.guid, API_PropertyDefinitionFilter_UserDefined, elementUserDefinedDefinitions);
 				if (err != NoError)
 					return err;
@@ -310,10 +321,11 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 
 			GS::Array<API_PropertyDefinition> elementUserLevelBuiltInDefinitions;
 			if (sendListingParameters) {
+					//Collect built-in property definitions for the target element when the user requests them
 				err = ACAPI_Element_GetPropertyDefinitions (element.header.guid, API_PropertyDefinitionFilter_UserLevelBuiltIn, elementUserLevelBuiltInDefinitions);
 				if (err != NoError)
 					return err;
-
+					//The list of definitions can include many things we don't want - filter it to definitions we're really interested in
 				err = FilterDefinitionsByDefinitionIds (elementUserLevelBuiltInDefinitions, propertyGroupFilter.elementPropertiesFilter);
 				if (err != NoError)
 					return err;
@@ -321,7 +333,7 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 
 			elementDefinitions = elementUserDefinedDefinitions;
 			elementDefinitions.Append (elementUserLevelBuiltInDefinitions);
-
+				//Add the definitions to the cache to save looking them up again for the same target specs
 			cache.Add (fingerPrint, GS::Pair<GS::Array<API_PropertyDefinition>, GS::Array<API_PropertyDefinition>> (elementDefinitions, elementUserDefinedDefinitions));
 		}
 	}

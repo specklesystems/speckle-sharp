@@ -27,8 +27,6 @@ public sealed class ServerApi : IDisposable, IServerApi
 
   private const int MAX_REQUEST_SIZE = 100_000_000;
 
-  private const int RETRY_COUNT = 3;
-  private static readonly HashSet<int> s_retryCodes = new() { 408, 502, 503, 504 };
   private static readonly char[] s_separator = { '\t' };
   private static readonly string[] s_filenameSeparator = { "filename=" };
 
@@ -77,13 +75,9 @@ public sealed class ServerApi : IDisposable, IServerApi
       Method = HttpMethod.Get
     };
 
-    HttpResponseMessage rootHttpResponse;
-    do
-    {
-      rootHttpResponse = await _client
-        .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
-        .ConfigureAwait(false);
-    } while (ShouldRetry(rootHttpResponse));
+    HttpResponseMessage rootHttpResponse = await _client
+      .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
+      .ConfigureAwait(false);
 
     rootHttpResponse.EnsureSuccessStatusCode();
 
@@ -256,11 +250,7 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     try
     {
-      HttpResponseMessage response;
-      do
-      {
-        response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
-      } while (ShouldRetry(response)); //TODO: can we get rid of this now we have polly?
+      HttpResponseMessage response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
 
       response.EnsureSuccessStatusCode();
 
@@ -335,13 +325,9 @@ public sealed class ServerApi : IDisposable, IServerApi
     childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
     childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
-    HttpResponseMessage childrenHttpResponse;
-    do
-    {
-      childrenHttpResponse = await _client
-        .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
-        .ConfigureAwait(false);
-    } while (ShouldRetry(childrenHttpResponse));
+    HttpResponseMessage childrenHttpResponse = await _client
+      .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
+      .ConfigureAwait(false);
 
     childrenHttpResponse.EnsureSuccessStatusCode();
 
@@ -370,12 +356,8 @@ public sealed class ServerApi : IDisposable, IServerApi
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
 
-    HttpResponseMessage response;
     using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
-    do
-    {
-      response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
-    } while (ShouldRetry(response));
+    HttpResponseMessage response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
 
     response.EnsureSuccessStatusCode();
 
@@ -434,11 +416,7 @@ public sealed class ServerApi : IDisposable, IServerApi
       }
     }
     message.Content = multipart;
-    HttpResponseMessage response;
-    do
-    {
-      response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
-    } while (ShouldRetry(response));
+    HttpResponseMessage response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
 
     response.EnsureSuccessStatusCode();
 
@@ -454,12 +432,7 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     using StringContent stringContent = new(payload, Encoding.UTF8, "application/json");
 
-    //TODO: can we get rid of this now we have polly?
-    HttpResponseMessage response;
-    do
-    {
-      response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
-    } while (ShouldRetry(response));
+    HttpResponseMessage response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
 
     response.EnsureSuccessStatusCode();
 
@@ -471,28 +444,6 @@ public sealed class ServerApi : IDisposable, IServerApi
     }
 
     return parsed;
-  }
-
-  //TODO: can we get rid of this now we have polly?
-  private bool ShouldRetry(HttpResponseMessage? serverResponse)
-  {
-    if (serverResponse == null)
-    {
-      return true;
-    }
-
-    if (!s_retryCodes.Contains((int)serverResponse.StatusCode))
-    {
-      return false;
-    }
-
-    if (RetriedCount >= RETRY_COUNT)
-    {
-      return false;
-    }
-
-    RetriedCount += 1;
-    return true;
   }
 
   private sealed class BlobUploadResult
