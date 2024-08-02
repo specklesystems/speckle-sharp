@@ -288,7 +288,12 @@ public class SelectionHandler
 
     // Saved Sets filter stores Guids of the selection sets. This can be converted to ModelItem pseudoIds
     var selections = _filter.Selection.Select(guid => new Guid(guid)).ToList();
-    var savedItems = selections.Select(Application.ActiveDocument.SelectionSets.ResolveGuid).OfType<SelectionSet>();
+
+    // Resolve the saved items and extract the inner selection sets when folder items are encountered
+    var savedItems = selections
+      .Select(guid => Application.ActiveDocument.SelectionSets.ResolveGuid(guid))
+      .SelectMany(ExtractSelectionSets)
+      .ToList();
 
     foreach (var item in savedItems)
     {
@@ -306,6 +311,45 @@ public class SelectionHandler
     }
 
     return _uniqueModelItems;
+  }
+
+  /// <summary>
+  /// Recursively extracts SelectionSet objects from the given item.
+  /// </summary>
+  /// <param name="selection">The object to extract SelectionSets from. Can be a SelectionSet, FolderItem, or any other object.</param>
+  /// <returns>An IEnumerable of SelectionSet objects extracted from the item and its children (if applicable).</returns>
+  /// <exception cref="ArgumentNullException">Thrown if the input item is null.</exception>
+  static IEnumerable<SelectionSet> ExtractSelectionSets(object selection)
+  {
+    if (selection == null)
+    {
+      throw new ArgumentNullException(nameof(selection), "Input item cannot be null.");
+    }
+
+    switch (selection)
+    {
+      case SelectionSet selectionSet:
+        yield return selectionSet;
+        break;
+      case FolderItem folderItem:
+        if (folderItem.Children == null)
+        {
+          yield break;
+        }
+        foreach (var childItem in folderItem.Children)
+        {
+          if (childItem == null)
+          {
+            continue;
+          }
+
+          foreach (var extractedSet in ExtractSelectionSets(childItem))
+          {
+            yield return extractedSet;
+          }
+        }
+        break;
+    }
   }
 
   /// <summary>
