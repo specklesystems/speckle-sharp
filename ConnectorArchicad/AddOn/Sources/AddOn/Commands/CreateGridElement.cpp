@@ -1,6 +1,7 @@
 #include "CreateGridElement.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
+#include "APIHelper.hpp"
 #include "Utility.hpp"
 #include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
