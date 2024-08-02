@@ -4,6 +4,7 @@
 #include "CreateCommand.hpp"
 #include "LibpartImportManager.hpp"
 #include "ClassificationImportManager.hpp"
+#include "APIHelper.hpp"
 #include "FieldNames.hpp"
 #include "OnExit.hpp"
 #include "ExchangeManager.hpp"
@@ -123,6 +124,8 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 	parameters.Get (GetFieldName (), objectStates);
 
 	ACAPI_CallUndoableCommand (GetUndoableCommandName (), [&] () -> GSErrCode {
+		LibraryHelper helper (false);
+
 		GS::Array<GS::ObjectState> applicationObjects;
 
 		AttributeManager* attributeManager = AttributeManager::GetInstance ();
