@@ -1,6 +1,7 @@
 #include "CreateObject.hpp"
 
 #include "APIMigrationHelper.hpp"
+#include "APIHelper.hpp"
 #include "LibpartImportManager.hpp"
 #include "ResourceIds.hpp"
 #include "Utility.hpp"
@@ -130,6 +131,8 @@ GS::ObjectState CreateObject::Execute (const GS::ObjectState& parameters, GS::Pr
 	parameters.Get (FieldNames::MeshModels, meshModels);
 
 	ACAPI_CallUndoableCommand (GetUndoableCommandName (), [&] () -> GSErrCode {
+		LibraryHelper helper (false);
+
 		AttributeManager* attributeManager = AttributeManager::GetInstance ();
 		LibpartImportManager* libpartImportManager = LibpartImportManager::GetInstance ();
 		for (ModelInfo meshModel : meshModels) {
