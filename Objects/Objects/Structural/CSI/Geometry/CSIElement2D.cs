@@ -21,7 +21,7 @@ public class CSIElement2D : Element2D
     Property2D property,
     double offset = 0,
     double orientationAngle = 0,
-    double[]? modifiers = null,
+    List<double>? modifiers = null,
     CSIAreaSpring? CSIAreaSpring = null,
     CSIDiaphragm? CSIDiaphragm = null
   )
@@ -43,7 +43,7 @@ public class CSIElement2D : Element2D
   public string? DiaphragmAssignment { get; set; }
   public string? PierAssignment { get; set; }
   public string? SpandrelAssignment { get; set; }
-  public double[]? modifiers { get; set; }
+  public List<double>? modifiers { get; set; }
   public bool Opening { get; set; }
 
   [DetachProperty]
