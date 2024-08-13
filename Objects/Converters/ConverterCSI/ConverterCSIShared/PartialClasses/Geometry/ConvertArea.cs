@@ -359,9 +359,9 @@ public partial class ConverterCSI
     if (area is CSIElement2D csiArea)
     {
       double[] values = null;
-      if (csiArea.modifiers != null)
+      if (csiArea.StiffnessModifiers != null)
       {
-        values = csiArea.modifiers.ToArray();
+        values = csiArea.StiffnessModifiers.ToArray();
       }
 
       Model.AreaObj.SetModifiers(name, ref values);
@@ -440,7 +440,7 @@ public partial class ConverterCSI
 
     double[] values = null;
     Model.AreaObj.GetModifiers(name, ref values);
-    speckleStructArea.modifiers = values.ToList();
+    speckleStructArea.StiffnessModifiers = values.ToList();
 
     string springArea = null;
     Model.AreaObj.GetSpringAssignment(name, ref springArea);
