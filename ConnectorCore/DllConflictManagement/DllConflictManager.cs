@@ -157,6 +157,11 @@ public sealed class DllConflictManager
       // is core which will be checked as a dependency of many other libraries.
       // there are a couple other random types that will trigger this exception as well
     }
+    catch (FileLoadException)
+    {
+      // this is new for .NET Core and is invalid for Speckle assemblies.  Not catching causes other issues
+      // with other plugins so swallowing is the best we can do.
+    }
     return null;
   }
 
