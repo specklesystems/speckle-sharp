@@ -6,6 +6,7 @@ using Dynamo.ViewModels;
 
 using ProtoCore.Mirror;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Extension;
@@ -34,7 +35,7 @@ public class SpeckleWatchHandler : IWatchHandler
 
     node.Clicked += () =>
     {
-      System.Diagnostics.Process.Start(account.serverInfo.url);
+      Open.Url(account.serverInfo.url);
     };
 
     node.Link = account.serverInfo.url;

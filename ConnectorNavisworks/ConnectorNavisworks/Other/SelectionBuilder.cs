@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Gui;
 using DesktopUI2.Models;
@@ -73,25 +76,24 @@ public class SelectionHandler
 
     // Selections are modelItem pseudo-ids.
     var selection = _filter.Selection;
-    var count = selection.Count;
-    var progressIncrement = 1.0 / count != 0 ? count : 1.0;
 
-    // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.05, "Rolling up the sleeves... Time to handpick your favorite data items!");
+    ProgressLooper(
+      "Rolling up the sleeves... Time to handpick your favourite data items!",
+      (index) =>
+      {
+        if (index >= selection.Count)
+        {
+          return false;
+        }
 
-    // Iterate over the selection and retrieve the corresponding model items
-    for (var i = 0; i < count; i++)
-    {
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-      ProgressBar.Update(i * progressIncrement);
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+        _uniqueModelItems.Add(Element.ResolveIndexPath(selection[index]));
 
-      var pseudoId = selection[i];
-      var element = Element.GetElement(pseudoId);
-      _uniqueModelItems.Add(element.ModelItem);
-    }
-
-    // End the progress sub-operation
-    ProgressBar.EndSubOperation();
+        return true;
+      },
+      0.05, // Fraction of remaining time
+      totalCount: selection.Count // Pass the total count if known, else pass null
+    );
 
     return _uniqueModelItems;
   }
@@ -99,23 +101,18 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the saved viewpoint.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSavedViewpoint()
+  private HashSet<ModelItem> GetObjectsFromSavedViewpoint()
   {
     _uniqueModelItems.Clear();
-
-    // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.05, "Checking the Canvas... Looking Closely!");
 
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
     if (string.IsNullOrEmpty(selection))
     {
-      return Enumerable.Empty<ModelItem>();
+      return new HashSet<ModelItem>();
     }
 
     // Resolve the saved viewpoint based on the selection
-    // Makes the view active on the main thread.
-
     var success = false;
 
     new Invoker().Invoke(() =>
@@ -132,26 +129,34 @@ public class SelectionHandler
 
     if (!success)
     {
-      return Enumerable.Empty<ModelItem>();
+      return new HashSet<ModelItem>();
     }
 
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
 
-    for (var i = 0; i < models.Count; i++)
-    {
-      var model = models.ElementAt(i);
-      var rootItem = model.RootItem;
-      if (!rootItem.IsHidden)
+    // Use ProgressLooper to handle the looping and progress updates
+    ProgressLooper(
+      "Checking the Canvas... Looking Closely!",
+      (index) =>
       {
-        _uniqueModelItems.Add(rootItem);
-      }
+        if (index >= models.Count)
+        {
+          return false;
+        }
 
-      ProgressBar.Update(i + 1 / (double)models.Count);
-    }
+        var model = models[index];
+        var rootItem = model.RootItem;
+        if (!rootItem.IsHidden)
+        {
+          _uniqueModelItems.Add(rootItem);
+        }
 
-    // End the progress sub-operation
-    ProgressBar.EndSubOperation();
+        return true;
+      },
+      0.05, // Fraction of remaining time
+      models.Count // Pass the total count if known, else pass null
+    );
 
     return _uniqueModelItems;
   }
@@ -204,7 +209,6 @@ public class SelectionHandler
   /// <summary>
   /// Resolves the SavedViewpoint based on the provided viewpoint match and saved view reference.
   /// </summary>
-  /// <param name="viewpointMatch">The dynamic object representing the viewpoint match.</param>
   /// <param name="savedViewReference">The saved view reference to resolve.</param>
   /// <returns>The resolved SavedViewpoint.</returns>
   private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
@@ -284,21 +288,68 @@ public class SelectionHandler
 
     // Saved Sets filter stores Guids of the selection sets. This can be converted to ModelItem pseudoIds
     var selections = _filter.Selection.Select(guid => new Guid(guid)).ToList();
-    var savedItems = selections.Select(Application.ActiveDocument.SelectionSets.ResolveGuid).OfType<SelectionSet>();
+
+    // Resolve the saved items and extract the inner selection sets when folder items are encountered
+    var savedItems = selections
+      .Select(guid => Application.ActiveDocument.SelectionSets.ResolveGuid(guid))
+      .SelectMany(ExtractSelectionSets)
+      .ToList();
 
     foreach (var item in savedItems)
     {
       if (item.HasExplicitModelItems)
       {
+        // This is for saved selections. If the models are as were when selection was made, then the static results are all valid.
         _uniqueModelItems.AddRange(item.ExplicitModelItems);
       }
-      else if (item.HasSearch)
+      else if (item.HasSearch) // This is for saved searches. The results are dynamic and need to be resolved.
       {
-        _uniqueModelItems.AddRange(item.Search.FindAll(Application.ActiveDocument, false));
+        // This is for saved searches. The results are dynamic and need to be resolved.
+        var foundModelItems = item.Search.FindAll(Application.ActiveDocument, false);
+        _uniqueModelItems.AddRange(foundModelItems);
       }
     }
 
     return _uniqueModelItems;
+  }
+
+  /// <summary>
+  /// Recursively extracts SelectionSet objects from the given item.
+  /// </summary>
+  /// <param name="selection">The object to extract SelectionSets from. Can be a SelectionSet, FolderItem, or any other object.</param>
+  /// <returns>An IEnumerable of SelectionSet objects extracted from the item and its children (if applicable).</returns>
+  /// <exception cref="ArgumentNullException">Thrown if the input item is null.</exception>
+  static IEnumerable<SelectionSet> ExtractSelectionSets(object selection)
+  {
+    if (selection == null)
+    {
+      throw new ArgumentNullException(nameof(selection), "Input item cannot be null.");
+    }
+
+    switch (selection)
+    {
+      case SelectionSet selectionSet:
+        yield return selectionSet;
+        break;
+      case FolderItem folderItem:
+        if (folderItem.Children == null)
+        {
+          yield break;
+        }
+        foreach (var childItem in folderItem.Children)
+        {
+          if (childItem == null)
+          {
+            continue;
+          }
+
+          foreach (var extractedSet in ExtractSelectionSets(childItem))
+          {
+            yield return extractedSet;
+          }
+        }
+        break;
+    }
   }
 
   /// <summary>
@@ -331,7 +382,7 @@ public class SelectionHandler
             || _uniqueModelItems.Contains(firstObjectAncestor)
           )
           {
-            return Enumerable.Empty<ModelItem>();
+            return new HashSet<ModelItem>();
           }
 
           var trimmedAncestors = targetFirstObjectChild.Ancestors
@@ -350,29 +401,56 @@ public class SelectionHandler
       var allAncestors = startNodes.SelectMany(e => e.Ancestors).Distinct().ToList();
 
       ProgressLooper(
-        allAncestors.Count,
         "Brb, time traveling to find your data's great-grandparents...",
         i =>
         {
-          _uniqueModelItems.Add(allAncestors.ElementAt(i));
+          _uniqueModelItems.Add(allAncestors[i]);
           return true;
         },
-        0.05
+        0.05,
+        allAncestors.Count
       );
     }
 
     _visited = new HashSet<ModelItem>();
     _descendantProgress = 0;
-    var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
-    ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
+    HashSet<ModelItem> distinctDescendants = DistinctDescendants(startNodes);
+    var allDescendants = distinctDescendants.Count;
+
+    ProgressLooper(
+      "Validating descendants...",
+      i =>
+      {
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        TraverseDescendants(
+          startNodes[i],
+          allDescendants,
+          new Progress<double>(value =>
+          {
+            ProgressBar.Update(value);
+          })
+        );
+
+        return true;
+      },
+      0.1,
+      startNodes.Count
+    );
+  }
+
+  private static HashSet<ModelItem> DistinctDescendants(List<ModelItem> startNodes)
+  {
+    var distinctDescendants = new HashSet<ModelItem>();
 
     foreach (var node in startNodes)
     {
-      TraverseDescendants(node, allDescendants);
+      var nodeDescendants = node.Descendants.ToList();
+      distinctDescendants.UnionWith(nodeDescendants);
     }
 
-    ProgressBar.EndSubOperation();
+    return distinctDescendants;
   }
 
   /// <summary>
@@ -380,11 +458,13 @@ public class SelectionHandler
   /// </summary>
   /// <param name="startNode">The starting node for traversal.</param>
   /// <param name="totalDescendants">The total number of descendants.</param>
-  private void TraverseDescendants(ModelItem startNode, int totalDescendants)
+  private void TraverseDescendants(ModelItem startNode, int totalDescendants, IProgress<double> progress)
   {
-    var descendantInterval = Math.Max(totalDescendants / 100.0, 1);
+    var descendantInterval = Math.Max(totalDescendants / 100.0, 1); // Update progress every 1%
     var validDescendants = new HashSet<ModelItem>();
-    int lastPercentile = 0;
+
+    int updateCounter = 0; // Counter to track when to update the UI
+    int lastUpdate = 0; // Track the last update to avoid frequent updates
 
     Stack<ModelItem> stack = new();
     stack.Push(startNode);
@@ -400,6 +480,7 @@ public class SelectionHandler
 
       ModelItem currentNode = stack.Pop();
 
+      // ReSharper disable once CanSimplifySetAddingWithSingleCall
       if (_visited.Contains(currentNode))
       {
         continue;
@@ -407,84 +488,196 @@ public class SelectionHandler
 
       _visited.Add(currentNode);
 
-      if (currentNode.IsHidden)
+      bool isVisible = IsVisibleCached(currentNode);
+      if (!isVisible)
       {
+        // If node is hidden, skip processing it and all its descendants
         var descendantsCount = currentNode.Descendants.Count();
-        _descendantProgress += descendantsCount + 1;
+        Interlocked.Add(ref _descendantProgress, descendantsCount + 1);
+        continue;
       }
-      else
-      {
-        validDescendants.Add(currentNode);
-        _descendantProgress++;
-      }
+
+      validDescendants.Add(currentNode); // currentNode is visible, process it
+      Interlocked.Increment(ref _descendantProgress);
 
       if (currentNode.Children.Any())
       {
-        foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
+        // Add visible children to the stack
+
+        var childrenToProcess = new ConcurrentBag<ModelItem>();
+
+        Parallel.ForEach(
+          currentNode.Children,
+          child =>
+          {
+            if (_visited.Contains(child))
+            {
+              return;
+            }
+
+            if (IsVisibleCached(child))
+            {
+              childrenToProcess.Add(child);
+            }
+            else
+            {
+              // If child is hidden, skip processing it and all its descendants
+              int descendantsCount = child.Descendants.Count();
+              Interlocked.Add(ref _descendantProgress, descendantsCount + 1);
+            }
+          }
+        );
+
+        foreach (ModelItem child in childrenToProcess)
         {
           stack.Push(child);
         }
       }
 
-      _uniqueModelItems.AddRange(validDescendants);
+      lock (_uniqueModelItems)
+      {
+        _uniqueModelItems.UnionWith(validDescendants);
+      }
+      validDescendants.Clear();
 
-      int currentPercentile = (int)(_descendantProgress / descendantInterval);
-      if (currentPercentile <= lastPercentile)
+      updateCounter++;
+
+      if (!(updateCounter >= descendantInterval) || lastUpdate >= _descendantProgress)
       {
         continue;
       }
 
-      double progress = _descendantProgress / (double)totalDescendants;
-      ProgressBar.Update(progress);
-      lastPercentile = currentPercentile;
+      double progressValue = _descendantProgress / (double)totalDescendants;
+      progress.Report(progressValue);
+      lastUpdate = _descendantProgress;
+      updateCounter = 0;
     }
   }
+
+  // Cache to store visibility status of ModelItems
+  private readonly Dictionary<ModelItem, bool> _visibilityCache = new();
+
+  /// <summary>
+  /// Checks if a ModelItem is visible, with caching to avoid redundant calculations.
+  /// </summary>
+  /// <param name="item">The ModelItem to check visibility for.</param>
+  /// <returns>True if the item is visible, false otherwise.</returns>
+  private bool IsVisibleCached(ModelItem item)
+  {
+    // Check if the result is already in the cache
+    if (_visibilityCache.TryGetValue(item, out bool isVisible))
+    {
+      return isVisible;
+    }
+    // Calculate visibility if not in cache
+    isVisible = CalculateVisibility(item);
+    _visibilityCache[item] = isVisible;
+    return isVisible;
+  }
+
+  /// <summary>
+  /// Placeholder for if the default visibility determination logic need augmenting.
+  /// </summary>
+  /// <param name="item">The ModelItem to check.</param>
+  /// <returns>True if visible, false otherwise.</returns>
+  private static bool CalculateVisibility(ModelItem item) => !item.IsHidden;
 
   /// <summary>
   /// Executes a given function while updating a progress bar.
   /// </summary>
-  /// <param name="totalCount">The total number of iterations.</param>
   /// <param name="operationName">The name of the operation.</param>
   /// <param name="fn">The function to execute on each iteration.</param>
   /// <param name="fractionOfRemainingTime">The fraction of remaining time for the operation (optional).</param>
-  private void ProgressLooper(
-    int totalCount,
+  /// <param name="totalCount">The total number of iterations, if known.</param>
+  public void ProgressLooper(
     string operationName,
     Func<int, bool> fn,
-    double fractionOfRemainingTime = 0
+    double fractionOfRemainingTime = 0,
+    int? totalCount = null
   )
   {
-    var increment = 1.0 / totalCount != 0 ? 1.0 / totalCount : 1.0;
-    var updateInterval = Math.Max(totalCount / 100, 1);
+    const int DEFAULT_UPDATE_INTERVAL = 1000;
+    const double DEFAULT_PROGRESS_INCREMENT = 0.01;
+
     ProgressBar.BeginSubOperation(fractionOfRemainingTime, operationName);
     ProgressBar.Update(0);
 
-    for (int i = 0; i < totalCount; i++)
+    try
     {
-      if (ProgressBar.IsCanceled)
+      int i = 0;
+      double progress = 0;
+      double increment;
+      int updateInterval;
+
+      if (totalCount.HasValue)
       {
-        _progressViewModel.CancellationTokenSource.Cancel();
+        increment = 1.0 / totalCount.Value;
+        updateInterval = Math.Max(totalCount.Value / 100, 1);
+      }
+      else
+      {
+        increment = DEFAULT_PROGRESS_INCREMENT;
+        updateInterval = DEFAULT_UPDATE_INTERVAL;
       }
 
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-      bool shouldContinue = fn(i);
-
-      if (!shouldContinue)
+      while (true)
       {
-        break;
+        if (ProgressBar.IsCanceled)
+        {
+          _progressViewModel.CancellationTokenSource.Cancel();
+          break;
+        }
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        if (!fn(i))
+        {
+          break;
+        }
+
+        var test = fn(i);
+
+        i++;
+
+        if (totalCount.HasValue)
+        {
+          progress = Math.Min((double)i / totalCount.Value, 1.0);
+          if (i % updateInterval == 0 || i == totalCount.Value)
+          {
+            ProgressBar.Update(progress);
+          }
+
+          if (i >= totalCount.Value)
+          {
+            break;
+          }
+        }
+        else
+        {
+          if (i % updateInterval != 0)
+          {
+            continue;
+          }
+
+          progress = Math.Min(progress + increment, 1.0);
+          ProgressBar.Update(progress);
+        }
       }
 
-      if (i % updateInterval != 0 && i != totalCount)
-      {
-        continue;
-      }
-
-      double progress = (i + 1) * increment;
-      ProgressBar.Update(progress);
+      ProgressBar.Update(1.0);
     }
-
-    ProgressBar.EndSubOperation();
+    catch (OperationCanceledException)
+    {
+      // Handle cancellation if needed
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidOperationException("An error occurred during the operation.", ex);
+    }
+    finally
+    {
+      ProgressBar.EndSubOperation();
+    }
   }
 
   /// <summary>

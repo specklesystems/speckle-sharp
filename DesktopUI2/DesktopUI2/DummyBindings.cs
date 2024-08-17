@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
@@ -9,7 +8,9 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Commits = Speckle.Core.Api.Commits;
@@ -55,8 +56,7 @@ public class DummyBindings : ConnectorBindings
 
   public void OpenLink(StreamState state)
   {
-    //to open urls in .net core must set UseShellExecute = true
-    Process.Start(new ProcessStartInfo(state.ServerUrl) { UseShellExecute = true });
+    Open.Url(state.ServerUrl);
   }
 
   public override string GetDocumentId()
@@ -224,21 +224,21 @@ public class DummyBindings : ConnectorBindings
       {
         id = "123",
         name = "Matteo Cominetti",
-        role = "stream:contributor",
+        role = StreamRoles.STREAM_CONTRIBUTOR,
         avatar = "https://avatars0.githubusercontent.com/u/2679513?s=88&v=4"
       },
       new()
       {
         id = "321",
         name = "Izzy Lyseggen",
-        role = "stream:owner",
+        role = StreamRoles.STREAM_OWNER,
         avatar = "https://avatars2.githubusercontent.com/u/7717434?s=88&u=08db51f5799f6b21580485d915054b3582d519e6&v=4"
       },
       new()
       {
         id = "456",
         name = "Dimitrie Stefanescu",
-        role = "stream:contributor",
+        role = StreamRoles.STREAM_CONTRIBUTOR,
         avatar = "https://avatars3.githubusercontent.com/u/7696515?s=88&u=fa253b5228d512e1ce79357c63925b7258e69f4c&v=4"
       }
     };

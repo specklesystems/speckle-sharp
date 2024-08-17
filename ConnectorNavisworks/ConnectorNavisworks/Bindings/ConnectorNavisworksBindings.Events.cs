@@ -22,9 +22,9 @@ public partial class ConnectorBindingsNavisworks
   public void RegisterAppEvents()
   {
     // Register event handlers for document, selection sets, and model collection changes
-    s_doc.FileNameChanged += DocumentChangedEvent;
-    s_doc.SelectionSets.Changed += SetsChangedEvent;
-    s_doc.Models.CollectionChanged += ModelsChangedEvent;
+    s_activeDoc.FileNameChanged += DocumentChangedEvent;
+    s_activeDoc.SelectionSets.Changed += SetsChangedEvent;
+    s_activeDoc.Models.CollectionChanged += ModelsChangedEvent;
   }
 
   /// <summary>

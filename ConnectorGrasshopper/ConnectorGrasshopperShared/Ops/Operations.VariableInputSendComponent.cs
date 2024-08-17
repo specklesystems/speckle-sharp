@@ -228,7 +228,7 @@ public class NewVariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Va
         Menu_AppendItem(
           menu,
           $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
-          (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
+          (s, e) => Open.Url($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
         );
       }
     }
