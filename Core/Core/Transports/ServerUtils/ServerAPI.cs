@@ -417,6 +417,10 @@ public sealed class ServerApi : IDisposable, IServerApi
     }
     message.Content = multipart;
     HttpResponseMessage response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
+    if (response.Headers.TryGetValues("cf-ray",  out var rayValues))
+    {
+      SpeckleLog.Logger.Information("Received Speckle API response with CF Ray {rayId}", string.Join(";", rayValues));
+    }
 
     response.EnsureSuccessStatusCode();
 
