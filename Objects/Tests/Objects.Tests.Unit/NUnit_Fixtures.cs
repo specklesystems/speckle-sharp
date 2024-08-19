@@ -12,7 +12,7 @@ public class NUnitFixtures
     SpeckleLog.Initialize(
       "ObjectsTests",
       "Testing",
-      new SpeckleLogConfiguration(logToConsole: false, logToFile: false, logToSeq: false)
+      new SpeckleLogConfiguration(logToConsole: true, logToFile: true, logToSeq: true)
     );
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }

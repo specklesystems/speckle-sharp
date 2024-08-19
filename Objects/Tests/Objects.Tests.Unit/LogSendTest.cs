@@ -12,7 +12,8 @@ namespace Objects.Tests.Unit;
 public class LogSendTest
 {
   [Test]
-  [TestCase("5cbf84a0061172102ef8a66ae914f232", "https://testing1.speckle.dev/projects/1e9cb95ada")]
+  // [TestCase("5cbf84a0061172102ef8a66ae914f232", "https://bakerhicks.speckle.xyz/projects/872b5e6927/models/3a4fbb8a2a")]
+  [TestCase("5cbf84a0061172102ef8a66ae914f232", "https://testing1.speckle.dev/projects/cdedc63e6d/models/2d68380f1d")]
   public async Task SendTest(string objectId, string destination)
   {
     var testData = await GetSampleData(objectId);
@@ -35,8 +36,10 @@ public class LogSendTest
 
   private async Task<Base> GetSampleData(string objectId)
   {
-    using SQLiteTransport source = new(SpecklePathProvider.UserApplicationDataPath(), "longsendtest");
+    SpeckleLog.Logger.Information("Gathering Sample Data Set");
 
-    return await Operations.Receive(objectId, source);
+    using SQLiteTransport source = new(SpecklePathProvider.UserApplicationDataPath(), "longsendtest");
+    MemoryTransport memoryTransport = new();
+    return await Operations.Receive(objectId, source, memoryTransport);
   }
 }
