@@ -1,10 +1,10 @@
-<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ template language="C#" #>
 <#@ output extension=".cs" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="System.Security.Cryptography" #>
-<#@ assembly name="..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
+<#@ assembly name="$(SolutionDir)\ConnectorGrasshopper\ConnectorGrasshopperUtils\bin\$(Configuration)\net462\ConnectorGrasshopperUtils.dll" #>
+<#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
-<#@ import namespace="System" #>
+<#@ import namespace="ConnectorGrasshopperUtils" #>
 
 <#
     var allTypes = CSOUtils.ListAvailableTypes();
@@ -23,6 +23,7 @@
 using System;
 using System.Linq;
 using Grasshopper.Kernel;
+using Grasshopper;
 using ConnectorGrasshopperUtils;
 
 namespace ConnectorGrasshopper {
@@ -57,22 +58,39 @@ namespace ConnectorGrasshopper {
         }
 #>
 // This is generated code:
-public class <#= compName #>: CreateSchemaObjectBase {
-    static <#= compName #>() {
+public class <#= compName #> : CreateSchemaObjectBase 
+{
+    static <#= compName #>() 
+    {
        SpeckleGHSettings.SettingsChanged += (_, args) =>
           {
-            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
-            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-            if (proxy == null) return;
+            if (!args.Key.StartsWith("Speckle2:tabs.")) 
+            {
+                return;
+            }
+
+            var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) 
+            {
+                return;
+            }
+
             proxy.Exposure = internalExposure;
           };
     }
-    public <#= compName #>(): base("<#= name #>", "<#= name #>", "<#= description #>", "<#= cat #>", "<#= subcat #>") { }
+
+    public <#= compName #>()
+      : base(
+        "<#= name #>", 
+        "<#= name #>",
+        "<#= description #>",
+         "<#= cat #>",
+         "<#= subcat #>"
+    ) { }
     
-    internal static string internalCategory { get; }  = "<#= cat #>";
+    internal static string internalCategory { get; } = "<#= cat #>";
 
-    internal static Guid internalGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
-
+    internal static Guid internalGuid => new("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
 
     public override GH_Exposure Exposure => internalExposure;
 
@@ -85,15 +103,19 @@ public class <#= compName #>: CreateSchemaObjectBase {
 <#
         } else {
 #>
-    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
-      ? GH_Exposure.tertiary
-      : GH_Exposure.hidden;
+
+    internal static GH_Exposure internalExposure => 
+        SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
 <#
         }
 #>
     
-    public override void AddedToDocument(GH_Document document){
-        SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
+    public override void AddedToDocument(GH_Document document)
+    {
+        SelectedConstructor = CSOUtils.FindConstructor(
+            "<#= CSOUtils.MethodFullName(constructor) #>",
+            "<#= constructor.DeclaringType.FullName #>"
+        );
         base.AddedToDocument(document);
     }
 }
