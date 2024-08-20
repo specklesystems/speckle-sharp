@@ -46,7 +46,7 @@ public class CSIElement1D : Element1D
     [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
     Plane? localAxis = null,
     CSILinearSpring? CSILinearSpring = null,
-    [SchemaParamInfo("A list of 8 values referring to the modifiers as seen in CSI in order")]
+    [SchemaParamInfo("An array of 8 values referring to the modifiers as seen in CSI in order")]
       double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
@@ -126,7 +126,7 @@ public class CSIElement1D : Element1D
     [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
     Plane? localAxis = null,
     CSILinearSpring? CSILinearSpring = null,
-    [SchemaParamInfo("An array of 8 values referring to the modifiers as seen in CSI in order")]
+    [SchemaParamInfo("A list of 8 values referring to the modifiers as seen in CSI in order")]
       List<double>? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
