@@ -23,7 +23,7 @@
     <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CSiAPIv1" Version="1.0.0" />
+    <PackageReference Include="CSiAPIv1" Version="1.0.0" IncludeAssets="compile; build" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 </Project>
