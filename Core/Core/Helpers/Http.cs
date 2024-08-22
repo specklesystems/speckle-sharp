@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Polly;
 using Polly.Contrib.WaitAndRetry;
 using Polly.Extensions.Http;
-using Polly.Retry;
 using Polly.Timeout;
 using Serilog.Context;
 using Speckle.Core.Credentials;
