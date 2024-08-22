@@ -2,14 +2,15 @@
   <PropertyGroup>
     <RootNamespace>SpeckleConnectorCSI</RootNamespace>
     <AssemblyName>SpeckleConnectorCSI</AssemblyName>
-    <TargetFramework>net48</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Computers and Structures\ETABS 22\ETABS.exe</StartProgram>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyTitle>ConnectorETABS</AssemblyTitle>
     <Product>ConnectorETABS</Product>
     <DefineConstants>$(DefineConstants);ETABS</DefineConstants>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PostBuildEvent Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">if EXIST "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" (
       xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" /Y /I /E
       )

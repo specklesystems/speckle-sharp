@@ -20,7 +20,7 @@
     <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CSiAPIv1" Version="1.0.0" />
+    <PackageReference Include="CSiAPIv1" Version="1.0.0"  />
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
 </Project>

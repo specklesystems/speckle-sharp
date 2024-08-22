@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSiAPIv1" Version="1.0.0" />
+    <PackageReference Include="CSiAPIv1" Version="1.0.0" IncludeAssets="compile; build" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
