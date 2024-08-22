@@ -39,9 +39,7 @@ public sealed class ServerApi : IDisposable, IServerApi
     BlobStorageFolder = blobStorageFolder;
 
     _client = Http.GetHttpProxyClient(
-      new SpeckleHttpClientHandler(
-        Http.HttpAsyncPolicy(timeoutSeconds: timeoutSeconds)
-      )
+      new SpeckleHttpClientHandler(Http.HttpAsyncPolicy(timeoutSeconds: timeoutSeconds))
       {
         AutomaticDecompression = DecompressionMethods.GZip
       }
