@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Polly;
 using Polly.Contrib.WaitAndRetry;
 using Polly.Extensions.Http;
-using Polly.Retry;
+using Polly.Timeout;
 using Serilog.Context;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -19,15 +19,21 @@ namespace Speckle.Core.Helpers;
 
 public static class Http
 {
+  public const int DEFAULT_TIMEOUT_SECONDS = 60;
+
   public static IEnumerable<TimeSpan> DefaultDelay()
   {
-    return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
+    return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(200), 5);
   }
 
-  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(IEnumerable<TimeSpan>? delay = null)
+  public static IAsyncPolicy<HttpResponseMessage> HttpAsyncPolicy(
+    IEnumerable<TimeSpan>? delay = null,
+    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS
+  )
   {
-    return HttpPolicyExtensions
+    var retryPolicy = HttpPolicyExtensions
       .HandleTransientHttpError()
+      .Or<TimeoutRejectedException>()
       .WaitAndRetryAsync(
         delay ?? DefaultDelay(),
         (ex, timeSpan, retryAttempt, context) =>
@@ -36,6 +42,10 @@ public static class Http
           context.Add("retryCount", retryAttempt);
         }
       );
+
+    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds);
+
+    return Policy.WrapAsync(retryPolicy, timeoutPolicy);
   }
 
   /// <summary>
@@ -145,13 +155,17 @@ public static class Http
     }
   }
 
-  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
+  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? speckleHttpClientHandler = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    handler ??= new SpeckleHttpClientHandler();
-    var client = new HttpClient(handler) { Timeout = timeout ?? TimeSpan.FromSeconds(100) };
+    speckleHttpClientHandler ??= new SpeckleHttpClientHandler(HttpAsyncPolicy());
+
+    var client = new HttpClient(speckleHttpClientHandler)
+    {
+      Timeout = Timeout.InfiniteTimeSpan //timeout is configured on the SpeckleHttpClientHandler through policy
+    };
     return client;
   }
 
@@ -178,11 +192,11 @@ public static class Http
 
 public sealed class SpeckleHttpClientHandler : HttpClientHandler
 {
-  private readonly IEnumerable<TimeSpan> _delay;
+  private readonly IAsyncPolicy<HttpResponseMessage> _resiliencePolicy;
 
-  public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
+  public SpeckleHttpClientHandler(IAsyncPolicy<HttpResponseMessage> resiliencePolicy)
   {
-    _delay = delay ?? Http.DefaultDelay();
+    _resiliencePolicy = resiliencePolicy;
   }
 
   /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancel</exception>
@@ -206,7 +220,7 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
 
       request.Headers.Add("x-request-id", context.CorrelationId.ToString());
 
-      var policyResult = await Http.HttpAsyncPolicy(_delay)
+      var policyResult = await _resiliencePolicy
         .ExecuteAndCaptureAsync(
           ctx =>
           {
