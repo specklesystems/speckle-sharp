@@ -319,7 +319,7 @@ public class SelectionHandler
   /// <param name="selection">The object to extract SelectionSets from. Can be a SelectionSet, FolderItem, or any other object.</param>
   /// <returns>An IEnumerable of SelectionSet objects extracted from the item and its children (if applicable).</returns>
   /// <exception cref="ArgumentNullException">Thrown if the input item is null.</exception>
-  static IEnumerable<SelectionSet> ExtractSelectionSets(object selection)
+  private static IEnumerable<SelectionSet> ExtractSelectionSets(object selection)
   {
     if (selection == null)
     {
@@ -440,17 +440,24 @@ public class SelectionHandler
     );
   }
 
-  private static HashSet<ModelItem> DistinctDescendants(List<ModelItem> startNodes)
+  private static HashSet<ModelItem> DistinctDescendants(IEnumerable<ModelItem> startNodes)
   {
-    var distinctDescendants = new HashSet<ModelItem>();
-
-    foreach (var node in startNodes)
-    {
-      var nodeDescendants = node.Descendants.ToList();
-      distinctDescendants.UnionWith(nodeDescendants);
-    }
-
+    var distinctDescendants = new HashSet<ModelItem>(
+      startNodes.SelectMany(GetDescendantsWithLogging)
+    );
     return distinctDescendants;
+  }
+  
+  private static IEnumerable<ModelItem> GetDescendantsWithLogging(ModelItem node)
+  {
+    int count = 0;
+    foreach (var descendant in node.Descendants)
+    {
+      var c = node.Descendants.Count(); // Force evaluation of descendants
+      count++;
+      yield return descendant;
+    }
+    Console.WriteLine($"Node {node} has {count} descendants.");
   }
 
   /// <summary>
