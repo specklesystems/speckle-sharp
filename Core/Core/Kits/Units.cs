@@ -18,18 +18,17 @@ public static class Units
   public const string Miles = "mi";
   public const string None = "none";
 
-  /// <summary>US Survey foot</summary>
-  /// <remarks>Considered an obsolete unit, superseded by the international foot <seealso cref="Feet"/></remarks>
-  public const string USFeet = "us_ft";
+  /// <summary>US Survey foot, now not supported by Speckle, kept privately for backwards compatibility</summary>
+  private const string USFeet = "us_ft";
 
-  private static readonly List<string> s_supportedUnits =
-    new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
+  internal static readonly List<string> SupportedUnits =
+    new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, Yards, Miles, None };
 
   /// <param name="unit"></param>
   /// <returns><see langword="true"/> if <paramref name="unit"/> is a recognised/supported unit string, otherwise <see langword="false"/></returns>
   public static bool IsUnitSupported(string unit)
   {
-    return s_supportedUnits.Contains(unit);
+    return SupportedUnits.Contains(unit);
   }
 
   /// <summary>
@@ -98,7 +97,7 @@ public static class Units
           case Centimeters:
             return 100;
           case Kilometers:
-            return 1000;
+            return 0.001;
           case Inches:
             return 39.3701;
           case Feet:
