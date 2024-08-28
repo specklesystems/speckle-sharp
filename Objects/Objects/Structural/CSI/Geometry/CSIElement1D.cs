@@ -46,7 +46,7 @@ public class CSIElement1D : Element1D
     [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
     Plane? localAxis = null,
     CSILinearSpring? CSILinearSpring = null,
-    [SchemaParamInfo("A list of 8 values referring to the modifiers as seen in CSI in order")]
+    [SchemaParamInfo("An array of 8 values referring to the modifiers as seen in CSI in order")]
       double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
@@ -55,31 +55,6 @@ public class CSIElement1D : Element1D
     this.CSILinearSpring = CSILinearSpring;
     this.DesignProcedure = DesignProcedure;
     StiffnessModifiers = Modifier.ToList();
-  }
-
-  [SchemaInfo("Element1D (from local axis)", "Creates a Speckle CSI 1D element (from local axis)", "CSI", "Geometry")]
-  public CSIElement1D(
-    Line baseLine,
-    Property1D property,
-    ElementType1D type,
-    string? name = null,
-    [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint? end1Releases = null,
-    [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint? end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
-    Plane? localAxis = null,
-    CSILinearSpring? CSILinearSpring = null,
-    [SchemaParamInfo("An array of 8 values referring to the modifiers as seen in CSI in order")]
-      List<double>? Modifier = null,
-    DesignProcedure DesignProcedure = DesignProcedure.NoDesign
-  )
-    : base(baseLine, property, type, name, end1Releases, end2Releases, end1Offset, end2Offset, localAxis)
-  {
-    this.CSILinearSpring = CSILinearSpring;
-    this.DesignProcedure = DesignProcedure;
-    StiffnessModifiers = Modifier;
   }
 
   /// <summary>
@@ -131,6 +106,31 @@ public class CSIElement1D : Element1D
       orientationNode,
       orientationAngle
     )
+  {
+    this.CSILinearSpring = CSILinearSpring;
+    this.DesignProcedure = DesignProcedure;
+    StiffnessModifiers = Modifier;
+  }
+
+  [SchemaInfo("Element1D (from local axis)", "Creates a Speckle CSI 1D element (from local axis)", "CSI", "Geometry")]
+  public CSIElement1D(
+    Line baseLine,
+    Property1D property,
+    ElementType1D type,
+    string? name = null,
+    [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
+      Restraint? end1Releases = null,
+    [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Plane? localAxis = null,
+    CSILinearSpring? CSILinearSpring = null,
+    [SchemaParamInfo("A list of 8 values referring to the modifiers as seen in CSI in order")]
+      List<double>? Modifier = null,
+    DesignProcedure DesignProcedure = DesignProcedure.NoDesign
+  )
+    : base(baseLine, property, type, name, end1Releases, end2Releases, end1Offset, end2Offset, localAxis)
   {
     this.CSILinearSpring = CSILinearSpring;
     this.DesignProcedure = DesignProcedure;
