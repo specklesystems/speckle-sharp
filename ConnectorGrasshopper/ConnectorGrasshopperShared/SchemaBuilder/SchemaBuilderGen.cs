@@ -1344,9 +1344,9 @@ namespace ConnectorGrasshopper
 
     public CSIElement1D1SchemaComponent()
       : base(
-        "Element1D (from local axis)",
-        "Element1D (from local axis)",
-        "Creates a Speckle CSI 1D element (from local axis)",
+        "Element1D (from orientation node and angle)",
+        "Element1D (from orientation node and angle)",
+        "Creates a Speckle CSI 1D element (from orientation node and angle)",
         "Speckle 2 CSI",
         "Geometry"
       ) { }
@@ -1365,7 +1365,7 @@ namespace ConnectorGrasshopper
     public override void AddedToDocument(GH_Document document)
     {
       SelectedConstructor = CSOUtils.FindConstructor(
-        "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Geometry.Plane,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
+        "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
         "Objects.Structural.CSI.Geometry.CSIElement1D"
       );
       base.AddedToDocument(document);
@@ -1396,9 +1396,9 @@ namespace ConnectorGrasshopper
 
     public CSIElement1D2SchemaComponent()
       : base(
-        "Element1D (from orientation node and angle)",
-        "Element1D (from orientation node and angle)",
-        "Creates a Speckle CSI 1D element (from orientation node and angle)",
+        "Element1D (from local axis)",
+        "Element1D (from local axis)",
+        "Creates a Speckle CSI 1D element (from local axis)",
         "Speckle 2 CSI",
         "Geometry"
       ) { }
@@ -1417,7 +1417,7 @@ namespace ConnectorGrasshopper
     public override void AddedToDocument(GH_Document document)
     {
       SelectedConstructor = CSOUtils.FindConstructor(
-        "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
+        "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Geometry.Plane,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
         "Objects.Structural.CSI.Geometry.CSIElement1D"
       );
       base.AddedToDocument(document);
