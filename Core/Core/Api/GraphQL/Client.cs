@@ -362,7 +362,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 
   private static HttpClient CreateHttpClient(Account account)
   {
-    var httpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
+    var httpClient = Http.GetHttpProxyClient(new SpeckleHttpClientHandler(Http.HttpAsyncPolicy(timeoutSeconds: 30)));
     Http.AddAuthHeader(httpClient, account.token);
 
     httpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
