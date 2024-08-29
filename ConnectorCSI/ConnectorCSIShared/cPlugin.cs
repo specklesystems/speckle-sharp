@@ -11,6 +11,7 @@ using CSiAPIv1;
 using Speckle.ConnectorCSI.UI;
 using System.Reflection;
 using System.IO;
+using System.Linq;
 using Speckle.Core.Logging;
 
 namespace SpeckleConnectorCSI;
@@ -96,6 +97,13 @@ public class cPlugin
     string path = Path.GetDirectoryName(typeof(cPlugin).Assembly.Location);
 
     string assemblyFile = Path.Combine(path, name + ".dll");
+
+    var existing = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.Location == assemblyFile);
+
+    if (existing is not null)
+    {
+      return existing;
+    }
 
     if (File.Exists(assemblyFile))
     {
