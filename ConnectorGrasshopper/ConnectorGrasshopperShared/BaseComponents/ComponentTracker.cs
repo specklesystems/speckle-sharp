@@ -61,9 +61,15 @@ public class ComponentTracker
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, customProperties);
   }
 
-  public void TrackNodeReceive(Account acc, bool auto)
+  public void TrackNodeReceive(Account acc, bool auto, bool isMultiplayer, string sourceHostApp)
   {
-    var properties = new Dictionary<string, object> { { "auto", auto } };
+    var properties = new Dictionary<string, object>
+    {
+      { "auto", auto },
+      { "isMultiplayer", isMultiplayer },
+      { "sourceHostApp", HostApplications.GetHostAppFromString(sourceHostApp).Slug },
+      { "sourceHostAppVersion", sourceHostApp },
+    };
     AppendHostAppInfoToProperties(properties);
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Receive, properties);
   }
