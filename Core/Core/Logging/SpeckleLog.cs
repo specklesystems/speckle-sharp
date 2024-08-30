@@ -182,10 +182,7 @@ public static class SpeckleLog
 
     if (logConfiguration.EnhancedLogContext)
     {
-      serilogLogConfiguration = serilogLogConfiguration.Enrich
-        .WithClientAgent()
-        .Enrich.WithClientIp()
-        .Enrich.WithExceptionDetails();
+      serilogLogConfiguration = serilogLogConfiguration.Enrich.WithExceptionDetails();
     }
 
     if (logConfiguration.LogToFile && canLogToFile)
