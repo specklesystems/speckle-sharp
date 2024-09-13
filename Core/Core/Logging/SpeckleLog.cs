@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Exceptions;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 
@@ -186,10 +185,10 @@ public static class SpeckleLog
       .Enrich.WithProperty("runtime", RuntimeInformation.FrameworkDescription)
       .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
-    if (logConfiguration.EnhancedLogContext)
-    {
-      serilogLogConfiguration = serilogLogConfiguration.Enrich.WithExceptionDetails();
-    }
+    // if (logConfiguration.EnhancedLogContext)
+    // {
+    //   serilogLogConfiguration = serilogLogConfiguration.Enrich.WithExceptionDetails();
+    // }
 
     if (logConfiguration.LogToFile && canLogToFile)
     {
