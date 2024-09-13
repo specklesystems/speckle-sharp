@@ -734,6 +734,9 @@ public partial class ConverterRevit : ISpeckleConverter
       case PolygonElement o:
         return PolygonElementToNative(o);
 
+      case GisFeature o:
+        return GisFeatureToNative(o);
+
 #if (REVIT2024)
       case RevitToposolid o:
         return ToposolidToNative(o);
@@ -910,6 +913,13 @@ public partial class ConverterRevit : ISpeckleConverter
       Organization.DataTable _ => true,
       // GIS
       PolygonElement _ => true,
+      GisFeature feat
+        when (
+          feat.GetMembers(DynamicBaseMemberType.All).TryGetValue("displayValue", out var value)
+          && value is List<Base> valueList
+          && valueList.Count > 0
+        )
+        => true,
       _ => false,
     };
     if (objRes)

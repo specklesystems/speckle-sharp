@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorDynamo.CreateStreamNode;
 
@@ -73,7 +74,7 @@ public class CreateStreamViewCustomization : INodeViewCustomization<CreateStream
         };
         viewStreamMenuItem.Click += (a, e) =>
         {
-          System.Diagnostics.Process.Start($"{createNode.Stream.ServerUrl}/streams/{createNode.Stream.StreamId}");
+          Open.Url($"{createNode.Stream.ServerUrl}/streams/{createNode.Stream.StreamId}");
         };
         _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
       }

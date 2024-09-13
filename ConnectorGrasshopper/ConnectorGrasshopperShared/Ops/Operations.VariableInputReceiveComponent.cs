@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
@@ -342,8 +341,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       Menu_AppendItem(
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
-        (s, e) =>
-          Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
+        (s, e) => Open.Url($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
     }
   }

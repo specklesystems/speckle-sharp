@@ -141,7 +141,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     StreamId = streamId;
 
     Client = Http.GetHttpProxyClient(
-      new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
+      new SpeckleHttpClientHandler(Http.HttpAsyncPolicy()) { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
     Client.BaseAddress = new Uri(baseUri);
@@ -198,7 +198,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return;
     }
 
-    if (_totalElapsed > 300 && _isWriting == false && _queue.Count != 0)
+    if (_totalElapsed > 300 && !_isWriting && _queue.Count != 0)
     {
       _totalElapsed = 0;
       _writeTimer.Enabled = false;

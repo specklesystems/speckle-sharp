@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -213,17 +212,17 @@ public class Loader : GH_AssemblyPriority
     speckleMenu.DropDown.Items.Add(
       "Community Forum",
       Resources.forum16,
-      (o, args) => Process.Start("https://speckle.community/tag/grasshopper")
+      (o, args) => Open.Url("https://speckle.community/tag/grasshopper")
     );
     speckleMenu.DropDown.Items.Add(
       "Tutorials",
       Resources.tutorials16,
-      (o, args) => Process.Start("https://speckle.systems/tag/grasshopper/")
+      (o, args) => Open.Url("https://speckle.systems/tag/grasshopper/")
     );
     speckleMenu.DropDown.Items.Add(
       "Docs",
       Resources.docs16,
-      (o, args) => Process.Start("https://speckle.guide/user/grasshopper.html")
+      (o, args) => Open.Url("https://speckle.guide/user/grasshopper.html")
     );
 
     speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
@@ -257,11 +256,11 @@ public class Loader : GH_AssemblyPriority
 
           if (File.Exists(path) || Directory.Exists(path))
           {
-            Process.Start(path);
+            Open.File(path);
           }
           else
           {
-            Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
+            Open.Url("https://speckle.systems/download");
           }
         }
         catch (Exception ex) when (!ex.IsFatal())
@@ -314,9 +313,9 @@ public class Loader : GH_AssemblyPriority
           Directory.CreateDirectory(path);
         }
 #if MAC
-          Process.Start("file://" + path);
+          Open.File("file://" + path);
 #else
-        Process.Start("explorer.exe", "/select, " + path);
+        Open.File("explorer.exe", "/select, " + path);
 #endif
       }
     );

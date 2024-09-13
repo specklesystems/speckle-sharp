@@ -3,6 +3,7 @@ using Objects.Geometry;
 using BE = Objects.BuiltElements;
 using Objects.BuiltElements.TeklaStructures;
 using System.Linq;
+using Speckle.Core.Models;
 using Tekla.Structures.Model;
 
 namespace Objects.Converter.TeklaStructures;
@@ -12,6 +13,7 @@ public partial class ConverterTeklaStructures
   public void ContourPlateToNative(BE.Area area)
   {
     if (!(area.outline is Polyline)) { }
+
     var ContourPlate = new ContourPlate();
     if (area is TeklaContourPlate)
     {
@@ -25,8 +27,10 @@ public partial class ConverterTeklaStructures
       {
         ContourPlate.AddContourPoint(ToTeklaContourPoint(cp));
       }
+
       SetPartProperties(ContourPlate, contour);
     }
+
     ContourPlate.Insert();
     //Model.CommitChanges();
   }
@@ -63,7 +67,15 @@ public partial class ConverterTeklaStructures
     GetAllUserProperties(specklePlate, plate);
 
     var solid = plate.GetSolid();
-    specklePlate.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
+
+    var displayMesh = GetMeshFromSolid(solid);
+    if (displayMesh != null)
+    {
+      var displayValue = new List<Base>();
+      displayValue.Add(displayMesh);
+      specklePlate.displayValue = displayValue;
+    }
+
     var rebars = plate.GetReinforcements();
     if (rebars != null)
     {
@@ -75,6 +87,7 @@ public partial class ConverterTeklaStructures
         }
       }
     }
+
     return specklePlate;
   }
 

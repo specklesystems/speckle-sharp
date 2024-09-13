@@ -21,6 +21,7 @@ using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace DesktopUI2;
@@ -227,11 +228,11 @@ public static class Utils
 
       if (File.Exists(path) || Directory.Exists(path))
       {
-        Process.Start(path);
+        Open.File(path);
       }
       else
       {
-        Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
+        Open.Url("https://speckle.systems/download");
       }
     }
     catch (Exception ex)

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -8,6 +7,7 @@ using DesktopUI2.Models;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Splat;
@@ -235,7 +235,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
 
   private void ViewOnlineCommand()
   {
-    Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
+    Open.Url(Url);
   }
 
   private void CopyCommand()

@@ -283,7 +283,7 @@ public class AutomationContext
     formData.Add(streamContent, "files", Path.GetFileName(filePath));
     HttpResponseMessage? request = await SpeckleClient.GQLClient.HttpClient
       .PostAsync(
-        new Uri($"{AutomationRunData.SpeckleServerUrl}/api/stream/{AutomationRunData.ProjectId}/blob"),
+        new Uri($"{AutomationRunData.SpeckleServerUrl}api/stream/{AutomationRunData.ProjectId}/blob"),
         formData
       )
       .ConfigureAwait(false);

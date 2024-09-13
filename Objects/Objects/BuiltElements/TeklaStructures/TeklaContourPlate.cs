@@ -7,6 +7,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.TeklaStructures;
 
+// TODO: This class really shouldn't inherit from Area, but we need to fix the inheritance chain in the future.
 public class TeklaContourPlate : Area
 {
   [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]

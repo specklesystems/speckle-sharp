@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -13,6 +12,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 
 namespace ConnectorGrasshopper.Accounts;
 
@@ -47,7 +47,7 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
       "Launch the Speckle Manager to add new accounts, or remove old ones.",
       (s, e) =>
       {
-        Process.Start("speckle://goto=accounts");
+        Open.Url("speckle://goto=accounts");
       }
     );
     return true;

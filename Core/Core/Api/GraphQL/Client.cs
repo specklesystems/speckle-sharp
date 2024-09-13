@@ -92,15 +92,6 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)
   {
-    // TODO: handle these in the HttpClient factory with a custom RequestHandler class
-    // 408 Request Timeout
-    // 425 Too Early
-    // 429 Too Many Requests
-    // 500 Internal Server Error
-    // 502 Bad Gateway
-    // 503 Service Unavailable
-    // 504 Gateway Timeout
-
     var delay = Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5);
     var graphqlRetry = Policy
       .Handle<SpeckleGraphQLInternalErrorException>()
@@ -371,7 +362,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 
   private static HttpClient CreateHttpClient(Account account)
   {
-    var httpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
+    var httpClient = Http.GetHttpProxyClient(new SpeckleHttpClientHandler(Http.HttpAsyncPolicy(timeoutSeconds: 30)));
     Http.AddAuthHeader(httpClient, account.token);
 
     httpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
