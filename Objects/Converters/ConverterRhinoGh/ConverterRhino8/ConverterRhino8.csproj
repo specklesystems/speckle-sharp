@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <Title>Objects.Converter.Rhino8</Title>
     <Description>Converter for Rhino and Grasshopper</Description>
     <TargetExt>.dll</TargetExt>
