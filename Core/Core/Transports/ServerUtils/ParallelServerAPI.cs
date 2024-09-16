@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Core.Serialisation.SerializationUtilities;
+using Speckle.Sdk.Logging;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
@@ -142,6 +143,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
 
   public async Task UploadObjects(string streamId, IReadOnlyList<(string, string)> objects)
   {
+    using var activity = SpeckleActivityFactory.Start();
     EnsureStarted();
     List<Task<object?>> tasks = new();
     IReadOnlyList<IReadOnlyList<(string, string)>> splitObjects;
