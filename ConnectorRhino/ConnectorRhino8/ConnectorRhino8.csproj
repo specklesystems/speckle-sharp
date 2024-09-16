@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
+    <TargetFramework>net48</TargetFramework>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
-    <PackageReference Include="RhinoWindows" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="RhinoCommon" Version="8.9.24194.18121" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="RhinoWindows" Version="8.9.24194.18121" IncludeAssets="compile; build" PrivateAssets="all" />
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
 

@@ -9,36 +9,46 @@ public partial class ConverterRevit
 {
   public RevitMEPConnector ConnectorToSpeckle(Connector connector)
   {
-    var speckleMEPConnector = new RevitMEPConnector
+    var speckleMepConnector = new RevitMEPConnector
     {
       applicationId = connector.GetUniqueApplicationId(),
-      origin = PointToSpeckle(connector.Origin, Doc),
       shape = connector.Shape.ToString(),
-      systemName = connector.MEPSystem?.Name ?? connector.Owner.Category?.Name,
+      systemName = (connector.MEPSystem?.Name ?? connector.Owner.Category?.Name) ?? string.Empty
     };
+
+    try
+    {
+      speckleMepConnector.origin = PointToSpeckle(connector.Origin, Doc);
+    }
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+    {
+      // ignore this exception if there is no origin, we cant report it.
+      // and yet there is no discovery of a Physical connector type.
+    }
 
     if (connector.Domain is Domain.DomainHvac or Domain.DomainPiping or Domain.DomainCableTrayConduit)
     {
-      speckleMEPConnector.angle = connector.Angle;
+      speckleMepConnector.angle = connector.Angle;
     }
 
-    if (connector.Shape is ConnectorProfileType.Rectangular)
+    if (connector.Shape == ConnectorProfileType.Rectangular)
     {
-      speckleMEPConnector.height = ScaleToSpeckle(connector.Height);
-      speckleMEPConnector.width = ScaleToSpeckle(connector.Width);
+      speckleMepConnector.height = ScaleToSpeckle(connector.Height);
+      speckleMepConnector.width = ScaleToSpeckle(connector.Width);
     }
-    else if (connector.Shape is ConnectorProfileType.Round)
+    else if (connector.Shape == ConnectorProfileType.Round)
     {
-      speckleMEPConnector.radius = ScaleToSpeckle(connector.Radius);
+      speckleMepConnector.radius = ScaleToSpeckle(connector.Radius);
     }
 
     foreach (var reference in connector.AllRefs.Cast<Connector>())
     {
       if (connector.IsConnectedTo(reference))
       {
-        speckleMEPConnector.connectedConnectorIds.Add(reference.GetUniqueApplicationId());
+        speckleMepConnector.connectedConnectorIds.Add(reference.GetUniqueApplicationId());
       }
     }
-    return speckleMEPConnector;
+
+    return speckleMepConnector;
   }
 }
