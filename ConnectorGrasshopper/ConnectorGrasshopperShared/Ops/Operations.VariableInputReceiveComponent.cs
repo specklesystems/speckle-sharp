@@ -24,7 +24,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -523,7 +522,6 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
     StreamWrapper = wrapper;
 
-    //ResetApiClient(wrapper);
     Task.Run(async () =>
     {
       ApiResetTask = ResetApiClient(StreamWrapper);
@@ -722,16 +720,11 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         }
 
         ReceivedCommit = myCommit;
-        Speckle.Core.Logging.Analytics.TrackEvent(
+        receiveComponent.Tracker.TrackNodeReceive(
           acc,
-          Speckle.Core.Logging.Analytics.Events.Receive,
-          new Dictionary<string, object>
-          {
-            { "auto", receiveComponent.AutoReceive },
-            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
-            { "sourceHostAppVersion", myCommit.sourceApplication },
-            { "isMultiplayer", myCommit.authorId != acc.userInfo.id }
-          }
+          receiveComponent.AutoReceive,
+          myCommit.authorId != acc.userInfo.id,
+          myCommit.sourceApplication
         );
 
         if (CancellationToken.IsCancellationRequested)
