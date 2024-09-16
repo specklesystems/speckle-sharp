@@ -359,23 +359,23 @@ public partial class ConverterCSI
     if (area is CSIElement2D csiArea)
     {
       double[] values = null;
-      if (csiArea.modifiers != null)
+      if (csiArea.StiffnessModifiers != null)
       {
-        values = csiArea.modifiers;
+        values = csiArea.StiffnessModifiers.ToArray();
       }
 
-      Model.AreaObj.SetModifiers(csiArea.name, ref values);
-      Model.AreaObj.SetLocalAxes(csiArea.name, csiArea.orientationAngle);
-      Model.AreaObj.SetPier(csiArea.name, csiArea.PierAssignment);
-      Model.AreaObj.SetSpandrel(csiArea.name, csiArea.SpandrelAssignment);
+      Model.AreaObj.SetModifiers(name, ref values);
+      Model.AreaObj.SetLocalAxes(name, csiArea.orientationAngle);
+      Model.AreaObj.SetPier(name, csiArea.PierAssignment);
+      Model.AreaObj.SetSpandrel(name, csiArea.SpandrelAssignment);
       if (csiArea.CSIAreaSpring != null)
       {
-        Model.AreaObj.SetSpringAssignment(csiArea.name, csiArea.CSIAreaSpring.name);
+        Model.AreaObj.SetSpringAssignment(name, csiArea.CSIAreaSpring.name);
       }
 
       if (csiArea.DiaphragmAssignment != null)
       {
-        Model.AreaObj.SetDiaphragm(csiArea.name, csiArea.DiaphragmAssignment);
+        Model.AreaObj.SetDiaphragm(name, csiArea.DiaphragmAssignment);
       }
     }
   }
@@ -440,7 +440,7 @@ public partial class ConverterCSI
 
     double[] values = null;
     Model.AreaObj.GetModifiers(name, ref values);
-    speckleStructArea.modifiers = values;
+    speckleStructArea.StiffnessModifiers = values.ToList();
 
     string springArea = null;
     Model.AreaObj.GetSpringAssignment(name, ref springArea);
