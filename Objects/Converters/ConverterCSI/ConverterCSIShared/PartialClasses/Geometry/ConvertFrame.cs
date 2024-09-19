@@ -283,7 +283,7 @@ public partial class ConverterCSI
     int s = Model.FrameObj.GetModifiers(name, ref modifiers);
     if (s == 0)
     {
-      speckleStructFrame.Modifiers = modifiers;
+      speckleStructFrame.StiffnessModifiers = modifiers.ToList();
     }
 
     speckleStructFrame.AnalysisResults =
@@ -351,20 +351,21 @@ public partial class ConverterCSI
       var CSIelement1D = (CSIElement1D)element1D;
       if (CSIelement1D.SpandrelAssignment != null)
       {
-        Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment);
+        Model.FrameObj.SetSpandrel(newFrame, CSIelement1D.SpandrelAssignment);
       }
       if (CSIelement1D.PierAssignment != null)
       {
-        Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment);
+        Model.FrameObj.SetPier(newFrame, CSIelement1D.PierAssignment);
       }
       if (CSIelement1D.CSILinearSpring != null)
       {
-        Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name);
+        Model.FrameObj.SetSpringAssignment(newFrame, CSIelement1D.CSILinearSpring.name);
       }
-      if (CSIelement1D.Modifiers != null)
+
+      if (CSIelement1D.StiffnessModifiers != null)
       {
-        var modifiers = CSIelement1D.Modifiers;
-        Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
+        var modifiers = CSIelement1D.StiffnessModifiers.ToArray();
+        Model.FrameObj.SetModifiers(newFrame, ref modifiers);
       }
       if (CSIelement1D.property.material.name != null)
       {

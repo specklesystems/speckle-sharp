@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.CSI.Geometry;
 using Objects.BuiltElements;
+using ConverterCSIShared.Models;
+using Objects.Other;
 
 namespace Objects.Converter.CSI;
 
@@ -53,29 +56,63 @@ public partial class ConverterCSI
 
     if (GridSysType == "Cartesian")
     {
+      // Create transformation matrix
+      var gridSystem = new GridSystemRepresentation(name, Xo, Yo, RZ * Math.PI / 180);
+      var transform = GetTransformFromGridSystem(gridSystem);
+
       for (int i = 0; i < NumXLines; i++)
       {
-        var pt1 = new Point(OrdinateX[i], OrdinateY[0], units: ModelUnits());
-        var pt2 = new Point(OrdinateX[i], OrdinateY[NumYLines - 1], units: ModelUnits());
-        var gridline = new GridLine(new Line(pt1, pt2, ModelUnits()));
-        gridline.label = GridLineIDX[i];
-        speckleGridLines.gridLines.Add(gridline);
+        var line = new Line(
+          new Point(OrdinateX[i], OrdinateY[0], units: ModelUnits()),
+          new Point(OrdinateX[i], OrdinateY[NumYLines - 1], units: ModelUnits()),
+          ModelUnits()
+        );
+        if (line.TransformTo(transform, out Line transformedLine)) // Maybe it's an orthogonal system and doesn't need to be transformed
+        {
+          var gridLine = new GridLine(transformedLine) { label = GridLineIDX[i] };
+          speckleGridLines.gridLines.Add(gridLine);
+        }
       }
       for (int j = 0; j < NumYLines; j++)
       {
-        var pt1 = new Point(OrdinateX[0], OrdinateY[j], units: ModelUnits());
-        var pt2 = new Point(OrdinateX[NumXLines - 1], OrdinateY[j], units: ModelUnits());
-        var gridline = new GridLine(new Line(pt1, pt2, ModelUnits()));
-        gridline.label = GridLineIDY[j];
-        speckleGridLines.gridLines.Add(gridline);
+        var line = new Line(
+          new Point(OrdinateX[0], OrdinateY[j], units: ModelUnits()),
+          new Point(OrdinateX[NumXLines - 1], OrdinateY[j], units: ModelUnits()),
+          ModelUnits()
+        );
+        if (line.TransformTo(transform, out Line transformedLine)) // Maybe it's an orthogonal system and doesn't need to be transformed
+        {
+          var gridLine = new GridLine(transformedLine) { label = GridLineIDY[j] };
+          speckleGridLines.gridLines.Add(gridLine);
+        }
       }
-      speckleGridLines.GridSystemType = GridSysType;
-      speckleGridLines.Xo = Xo;
-      speckleGridLines.Yo = Yo;
-      speckleGridLines.Rz = RZ;
     }
-
     SpeckleModel.elements.Add(speckleGridLines);
     return speckleGridLines;
+  }
+
+  private static Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
+  {
+    return new Transform(
+      new double[]
+      {
+        Math.Cos(sys.Rotation),
+        -Math.Sin(sys.Rotation),
+        0,
+        sys.XOrigin,
+        Math.Sin(sys.Rotation),
+        Math.Cos(sys.Rotation),
+        0,
+        sys.YOrigin,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      }
+    );
   }
 }
