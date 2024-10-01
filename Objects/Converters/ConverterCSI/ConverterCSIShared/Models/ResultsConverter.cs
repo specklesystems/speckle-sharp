@@ -143,7 +143,7 @@ internal sealed class ResultsConverter
       loadCasesCommaSeparated = string.Empty;
     }
 
-    string[] loadCases = loadCasesCommaSeparated.Split(',');
+    string[] loadCases = loadCasesCommaSeparated.Split(',').Select(s => s.TrimStart()).ToArray();
 
     var numberOfLoadCombinations = 0;
     var loadCombinationNames = Array.Empty<string>();
