@@ -1409,6 +1409,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       LastUsedTime = DateTime.UtcNow;
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
+      string? workspaceId = await Client.GetWorkspaceId(StreamState.StreamId).ConfigureAwait(false);
+
       Analytics.TrackEvent(
         Client.Account,
         Analytics.Events.Send,
@@ -1420,7 +1422,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
           { "branches", Stream.branches?.totalCount },
           { "commits", Stream.commits?.totalCount },
-          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
+          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+          { "workspaceId", workspaceId }
         }
       );
 
@@ -1548,6 +1551,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
       LastUsedTime = DateTime.UtcNow;
 
+      string? workspaceId = await Client.GetWorkspaceId(StreamState.StreamId).ConfigureAwait(false);
+
       Analytics.TrackEvent(
         StreamState.Client.Account,
         Analytics.Events.Receive,
@@ -1563,7 +1568,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "branches", Stream.branches?.totalCount },
           { "commits", Stream.commits?.totalCount },
           { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
-          { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false }
+          { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false },
+          { "workspaceId", workspaceId },
         }
       );
 
