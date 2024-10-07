@@ -17,6 +17,7 @@ using Serilog.Core;
 using Serilog.Core.Enrichers;
 using Serilog.Events;
 using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
@@ -371,5 +372,28 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
       Assembly.GetExecutingAssembly().GetName().Version.ToString()
     );
     return httpClient;
+  }
+
+  public async Task<string?> GetWorkspaceId(string projectId, CancellationToken cancellationToken = default)
+  {
+    Version serverVersion = await GQLClient.GetServerVersion(cancellationToken).ConfigureAwait(false);
+
+    if (serverVersion < new Version(2, 20, 6))
+    {
+      return null;
+    }
+
+    const string QUERY = """
+                         query Project($projectId: String!) {
+                           project(id: $projectId) {
+                             workspaceId
+                           }
+                         }
+                         """;
+
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
+
+    var response = await ExecuteGraphQLRequest<ProjectResponse>(request, cancellationToken).ConfigureAwait(false);
+    return response.project.workspaceId;
   }
 }
