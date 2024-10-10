@@ -677,7 +677,7 @@ public partial class ConverterRevit
 
         if (materialAsset != null)
         {
-          concreteMaterial.compressiveStrength = materialAsset.ConcreteCompression; // Newtons per foot meter
+          concreteMaterial.compressiveStrength = ScaleToSpeckle(materialAsset.ConcreteCompression);
           concreteMaterial.lightweight = materialAsset.Lightweight;
         }
 
@@ -697,8 +697,8 @@ public partial class ConverterRevit
         if (materialAsset != null)
         {
           steelMaterial.grade = materialAsset.Name;
-          steelMaterial.yieldStrength = materialAsset.MinimumYieldStress; // Newtons per foot meter
-          steelMaterial.ultimateStrength = materialAsset.MinimumTensileStrength; // Newtons per foot meter
+          steelMaterial.yieldStrength = ScaleToSpeckle(materialAsset.MinimumYieldStress);
+          steelMaterial.ultimateStrength = ScaleToSpeckle(materialAsset.MinimumTensileStrength);
         }
 
         speckleMaterial = steelMaterial;
@@ -736,11 +736,11 @@ public partial class ConverterRevit
     if (materialAsset != null)
     {
       // some of these are actually the dumbest units I've ever heard of
-      speckleMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter
+      speckleMaterial.elasticModulus = ScaleToSpeckle(materialAsset.YoungModulus.X);
       speckleMaterial.poissonsRatio = materialAsset.PoissonRatio.X; // Unitless
-      speckleMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
-      speckleMaterial.density = materialAsset.Density; // kilograms per cubed feet
-      speckleMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
+      speckleMaterial.shearModulus = ScaleToSpeckle(materialAsset.ShearModulus.X);
+      speckleMaterial.density = ScaleToSpeckle(materialAsset.Density);
+      speckleMaterial.thermalExpansivity = ScaleToSpeckle(materialAsset.ThermalExpansionCoefficient.X);
     }
 
     return speckleMaterial;
