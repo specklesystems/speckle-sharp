@@ -410,7 +410,7 @@ public partial class ConverterRevit
     prop.name = structuralElement.Name;
     //prop.type = memberType;
     //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = thickness;
+    prop.thickness = ScaleToSpeckle(thickness);
 
     speckleElement2D.property = prop;
 
