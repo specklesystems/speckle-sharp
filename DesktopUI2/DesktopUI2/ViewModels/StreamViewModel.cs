@@ -1423,7 +1423,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "branches", Stream.branches?.totalCount },
           { "commits", Stream.commits?.totalCount },
           { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
-          { "workspaceId", workspaceId }
+          { "workspace_id", workspaceId },
         }
       );
 
@@ -1569,7 +1569,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "commits", Stream.commits?.totalCount },
           { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
           { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false },
-          { "workspaceId", workspaceId },
+          { "workspace_id", workspaceId },
         }
       );
 
