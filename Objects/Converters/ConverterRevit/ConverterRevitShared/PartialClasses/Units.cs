@@ -165,6 +165,14 @@ public partial class ConverterRevit
       return _revitUnitsTypeId;
     }
   }
+  public ForgeTypeId RevitDensityTypeId
+  {
+    get { return Doc.GetUnits().GetFormatOptions(SpecTypeId.MassDensity).GetUnitTypeId(); }
+  }
+  public ForgeTypeId RevitStressTypeId
+  {
+    get { return Doc.GetUnits().GetFormatOptions(SpecTypeId.Stress).GetUnitTypeId(); }
+  }
 
   public static double ScaleToNative(double value, string units)
   {
