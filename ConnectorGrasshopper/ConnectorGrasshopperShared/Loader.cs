@@ -217,7 +217,7 @@ public class Loader : GH_AssemblyPriority
     speckleMenu.DropDown.Items.Add(
       "Tutorials",
       Resources.tutorials16,
-      (o, args) => Open.Url("https://speckle.systems/tag/grasshopper/")
+      (o, args) => Open.Url("https://v1.speckle.systems/tag/grasshopper/")
     );
     speckleMenu.DropDown.Items.Add(
       "Docs",
@@ -533,7 +533,7 @@ public class Loader : GH_AssemblyPriority
       Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
       return _headlessDoc;
     }
-    
+
     return RhinoDoc.ActiveDoc;
 #else
     return RhinoDoc.ActiveDoc;

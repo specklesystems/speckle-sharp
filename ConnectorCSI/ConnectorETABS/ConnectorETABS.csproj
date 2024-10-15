@@ -4,7 +4,7 @@
     <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files\Computers and Structures\ETABS 19\ETABS.exe</StartProgram>
+    <StartProgram>C:\Program Files\Computers and Structures\ETABS 21\ETABS.exe</StartProgram>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyTitle>ConnectorETABS</AssemblyTitle>
     <Product>ConnectorETABS</Product>
