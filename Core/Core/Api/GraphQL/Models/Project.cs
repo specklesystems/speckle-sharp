@@ -27,4 +27,5 @@ public sealed class Project
   public Model model { get; init; }
   public List<ModelsTreeItem> modelChildrenTree { get; init; }
   public ResourceCollection<ModelsTreeItem> modelsTree { get; init; }
+  public string workspaceId { get; init; }
 }
