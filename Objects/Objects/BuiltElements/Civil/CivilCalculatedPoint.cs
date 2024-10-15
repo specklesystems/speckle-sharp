@@ -32,4 +32,6 @@ public class CivilCalculatedPoint : Base, ICivilCalculatedObject
   public Vector normalToSubassembly { get; set; }
 
   public Point stationOffsetElevationToBaseline { get; set; }
+
+  public string units { get; set; }
 }

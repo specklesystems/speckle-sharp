@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Polly;
 using Polly.Contrib.WaitAndRetry;
 using Polly.Extensions.Http;
-using Polly.Retry;
+using Polly.Timeout;
 using Serilog.Context;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -19,29 +19,33 @@ namespace Speckle.Core.Helpers;
 
 public static class Http
 {
+  public const int DEFAULT_TIMEOUT_SECONDS = 60;
+
   public static IEnumerable<TimeSpan> DefaultDelay()
   {
-    return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
+    return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(200), 5);
   }
 
-  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(IEnumerable<TimeSpan>? delay = null)
+  public static IAsyncPolicy<HttpResponseMessage> HttpAsyncPolicy(
+    IEnumerable<TimeSpan>? delay = null,
+    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS
+  )
   {
-    return HttpPolicyExtensions
+    var retryPolicy = HttpPolicyExtensions
       .HandleTransientHttpError()
+      .Or<TimeoutRejectedException>()
       .WaitAndRetryAsync(
         delay ?? DefaultDelay(),
-        (ex, timeSpan, retryAttempt, context) => {
-          //context.Remove("retryCount");
-          //context.Add("retryCount", retryAttempt);
-          //Log.Information(
-          //  ex.Exception,
-          //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",
-          //  ex.GetType().Name,
-          //  timeSpan.TotalSeconds * 1000,
-          //  retryAttempt
-          //);
+        (ex, timeSpan, retryAttempt, context) =>
+        {
+          context.Remove("retryCount");
+          context.Add("retryCount", retryAttempt);
         }
       );
+
+    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds);
+
+    return Policy.WrapAsync(retryPolicy, timeoutPolicy);
   }
 
   /// <summary>
@@ -151,13 +155,17 @@ public static class Http
     }
   }
 
-  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
+  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? speckleHttpClientHandler = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    handler ??= new SpeckleHttpClientHandler();
-    var client = new HttpClient(handler) { Timeout = timeout ?? TimeSpan.FromSeconds(100) };
+    speckleHttpClientHandler ??= new SpeckleHttpClientHandler(HttpAsyncPolicy());
+
+    var client = new HttpClient(speckleHttpClientHandler)
+    {
+      Timeout = Timeout.InfiniteTimeSpan //timeout is configured on the SpeckleHttpClientHandler through policy
+    };
     return client;
   }
 
@@ -184,11 +192,11 @@ public static class Http
 
 public sealed class SpeckleHttpClientHandler : HttpClientHandler
 {
-  private readonly IEnumerable<TimeSpan> _delay;
+  private readonly IAsyncPolicy<HttpResponseMessage> _resiliencePolicy;
 
-  public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
+  public SpeckleHttpClientHandler(IAsyncPolicy<HttpResponseMessage> resiliencePolicy)
   {
-    _delay = delay ?? Http.DefaultDelay();
+    _resiliencePolicy = resiliencePolicy;
   }
 
   /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancel</exception>
@@ -209,11 +217,13 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       var timer = new Stopwatch();
       timer.Start();
       context.Add("retryCount", 0);
-      var policyResult = await Http.HttpAsyncPolicy(_delay)
+
+      request.Headers.Add("x-request-id", context.CorrelationId.ToString());
+
+      var policyResult = await _resiliencePolicy
         .ExecuteAndCaptureAsync(
           ctx =>
           {
-            request.Headers.Add("x-request-id", ctx.CorrelationId.ToString());
             return base.SendAsync(request, cancellationToken);
           },
           context
@@ -225,14 +235,15 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       SpeckleLog.Logger
         .ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
-          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
+          "Execution of http request to {httpScheme}://{hostUrl}{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
           request.RequestUri.Scheme,
           request.RequestUri.Host,
           request.RequestUri.PathAndQuery,
           status,
           policyResult.Result?.StatusCode,
           timer.Elapsed.TotalSeconds,
-          retryCount ?? 0
+          retryCount ?? 0,
+          context.CorrelationId.ToString()
         );
       if (policyResult.Outcome == OutcomeType.Successful)
       {

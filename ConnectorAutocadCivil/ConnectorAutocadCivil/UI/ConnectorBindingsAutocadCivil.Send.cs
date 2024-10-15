@@ -246,8 +246,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
 #if CIVIL
             // add property sets if this is Civil3D
-            var propertySets = obj.GetPropertySets(tr);
-            if (propertySets.Count > 0)
+            if (obj.TryGetPropertySets(tr, out Base propertySets))
             {
               converted["propertySets"] = propertySets;
             }

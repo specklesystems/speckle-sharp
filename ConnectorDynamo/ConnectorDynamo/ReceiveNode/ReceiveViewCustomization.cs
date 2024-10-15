@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Speckle.Core.Helpers;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode;
 
@@ -99,7 +100,7 @@ public class ReceiveViewCustomization : INodeViewCustomization<Receive>
         };
         viewStreamMenuItem.Click += (a, e) =>
         {
-          System.Diagnostics.Process.Start($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
+          Open.Url($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
         };
         _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
       }

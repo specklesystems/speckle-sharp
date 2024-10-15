@@ -6,7 +6,8 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel;
 
-public class AsteelSlab : Area, IDisplayValue<List<Mesh>>, IHasArea, IHasVolume, IAsteelObject
+// TODO: This class really shouldn't inherit from Area, but we need to fix the inheritance chain in the future.
+public class AsteelSlab : Area, IDisplayValue<List<Base>>, IHasArea, IHasVolume, IAsteelObject
 {
   [DetachProperty]
   public StructuralMaterial? material { get; set; }

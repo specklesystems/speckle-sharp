@@ -101,11 +101,29 @@ public sealed class DllConflictManager
     }
   }
 
-  private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly loadedAssembly)
+  private static bool PathIsValid(string path)
   {
+    if (path.Any(x => Path.GetInvalidPathChars().Contains(x)))
+    {
+      return false;
+    }
+    return true;
+  }
+
+  private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly? loadedAssembly)
+  {
+    if (string.IsNullOrWhiteSpace(loadedAssembly?.Location))
+    {
+      return false;
+    }
+    string location = loadedAssembly!.Location;
+    if (!PathIsValid(location))
+    {
+      return false;
+    }
     foreach (var exactPath in _exactAssemblyPathsToIgnore)
     {
-      if (Path.GetDirectoryName(loadedAssembly.Location) == exactPath)
+      if (Path.GetDirectoryName(location) == exactPath)
       {
         return true;
       }
@@ -113,7 +131,7 @@ public sealed class DllConflictManager
 
     foreach (var pathFragment in _assemblyPathFragmentsToIgnore)
     {
-      if (loadedAssembly.Location.Contains(pathFragment))
+      if (location.Contains(pathFragment))
       {
         return true;
       }
@@ -138,6 +156,11 @@ public sealed class DllConflictManager
       // trying to load Objects.dll will result in this exception, but that is okay because its only dependency
       // is core which will be checked as a dependency of many other libraries.
       // there are a couple other random types that will trigger this exception as well
+    }
+    catch (FileLoadException)
+    {
+      // this is new for .NET Core and is invalid for Speckle assemblies.  Not catching causes other issues
+      // with other plugins so swallowing is the best we can do.
     }
     return null;
   }

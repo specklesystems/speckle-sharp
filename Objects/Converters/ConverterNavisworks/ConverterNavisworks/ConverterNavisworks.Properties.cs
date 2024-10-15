@@ -78,8 +78,6 @@ public partial class ConverterNavisworks
     var useInternalNames = UseInternalPropertyNames;
 
     UpdatePropertyCategoryBase(propertyCategoryBase, useInternalNames ? internalName : propertyName, propertyValue);
-
-    propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
   }
 
   private static string GetSanitizedPropertyName(string displayName)
@@ -195,40 +193,57 @@ public partial class ConverterNavisworks
     }
   }
 
+  /// <summary>
+  /// Adds properties of a given ModelItem to a Base object.
+  /// </summary>
+  /// <param name="element">The ModelItem whose properties are to be added.</param>
+  /// <param name="base">The Base object to which the properties are to be added.</param>
   private static void AddItemProperties(ModelItem element, Base @base)
   {
     @base["class"] = element.ClassName;
 
-    bool properties = ShouldIncludeProperties();
-
+    if (ExcludeProperties)
+    {
+      return;
+    }
     // Cascade through the Property Sets
-    @base["properties"] = properties ? GetPropertiesBase(element) : new Base();
+    @base["properties"] = GetPropertiesBase(element);
 
     // If the node is a Model
     if (element.HasModel)
     {
-      ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
+      (((Base)@base["properties"])!)["Model"] = GetModelProperties(element.Model);
     }
 
     // Internal Properties
-    AddInternalProperties(element, (Base)@base["properties"]);
+    if (IncludeInternalProperties)
+    {
+      AddInternalProperties(element, (Base)@base["properties"]);
+    }
   }
 
-  private static bool ShouldIncludeProperties() =>
-    !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
-
+  /// <summary>
+  /// Adds internal properties of a given ModelItem to a Base object.
+  /// </summary>
+  /// <param name="element">The ModelItem whose properties are to be added.</param>
+  /// <param name="propertiesBase">The Base object to which the properties are to be added.</param>
   private static void AddInternalProperties(ModelItem element, Base propertiesBase)
   {
     Base internals = (Base)propertiesBase["Internal"] ?? new Base();
 
-    internals["ClassDisplayName"] = element.ClassDisplayName ?? internals["ClassDisplayName"];
-    internals["ClassName"] = element.ClassName ?? internals["ClassName"];
-    internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
-    internals["InstanceGuid"] =
-      element.InstanceGuid.ToByteArray().Select(x => (int)x).Sum() > 0 ? element.InstanceGuid : null;
-    internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
-    internals["Source Guid"] = element.Model?.SourceGuid ?? internals["Source Guid"];
-    internals["NodeType"] = element.IsCollection
+    AddPropertyIfNotNullOrEmpty(internals, "ClassDisplayName", element.ClassDisplayName);
+    AddPropertyIfNotNullOrEmpty(internals, "ClassName", element.ClassName);
+    AddPropertyIfNotNullOrEmpty(internals, "DisplayName", element.DisplayName);
+
+    if (element.InstanceGuid.ToByteArray().Select(x => (int)x).Sum() > 0)
+    {
+      internals["InstanceGuid"] = element.InstanceGuid;
+    }
+
+    AddPropertyIfNotNullOrEmpty(internals, "Source", element.Model?.SourceFileName);
+    AddPropertyIfNotNullOrEmpty(internals, "Source Guid", element.Model?.SourceGuid);
+
+    string nodeType = element.IsCollection
       ? "Collection"
       : element.IsComposite
         ? "Composite Object"
@@ -238,7 +253,30 @@ public partial class ConverterNavisworks
             ? "Layer"
             : null;
 
+    AddPropertyIfNotNullOrEmpty(internals, "NodeType", nodeType);
+
     propertiesBase["Internal"] = internals;
+  }
+
+  /// <summary>
+  /// Adds a property to a Base object if the value is not null or empty.
+  /// </summary>
+  /// <param name="baseObject">The Base object to which the property is to be added.</param>
+  /// <param name="propertyName">The name of the property to add.</param>
+  /// <param name="value">The value of the property.</param>
+  private static void AddPropertyIfNotNullOrEmpty(Base baseObject, string propertyName, object value)
+  {
+    if (value is string stringValue)
+    {
+      if (!string.IsNullOrEmpty(stringValue))
+      {
+        baseObject[propertyName] = value;
+      }
+    }
+    else if (value != null)
+    {
+      baseObject[propertyName] = value;
+    }
   }
 
   private static Base GetModelProperties(Model elementModel)

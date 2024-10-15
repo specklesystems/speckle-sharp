@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Sentry;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Exceptions;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 
@@ -58,6 +56,10 @@ public sealed class SpeckleLogConfiguration
 
   private const string DEFAULT_SENTRY_DNS = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
+  public string SeqToken { get; }
+
+  private const string DEFAULT_SEQ_TOKEN = "EzYqoMOmkow12Lw0KYXp";
+
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
   /// These are the sane defaults we should be using across connectors.
@@ -75,7 +77,8 @@ public sealed class SpeckleLogConfiguration
     bool logToSentry = true,
     bool logToFile = true,
     bool enhancedLogContext = true,
-    string sentryDns = DEFAULT_SENTRY_DNS
+    string sentryDns = DEFAULT_SENTRY_DNS,
+    string seqToken = DEFAULT_SEQ_TOKEN
   )
   {
     MinimumLevel = minimumLevel;
@@ -85,6 +88,7 @@ public sealed class SpeckleLogConfiguration
     LogToFile = logToFile;
     EnhancedLogContext = enhancedLogContext;
     SentryDns = sentryDns;
+    SeqToken = seqToken;
   }
 }
 
@@ -138,17 +142,6 @@ public static class SpeckleLog
     var id = GetUserIdFromDefaultAccount();
     s_logger = s_logger.ForContext("id", id).ForContext("isMachineId", s_isMachineIdUsed);
 
-    // Configure scope after logger created.
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.User = new User { Id = id };
-    });
-
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.SetTag("hostApplication", hostApplicationName);
-    });
-
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
       .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
@@ -192,13 +185,10 @@ public static class SpeckleLog
       .Enrich.WithProperty("runtime", RuntimeInformation.FrameworkDescription)
       .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
-    if (logConfiguration.EnhancedLogContext)
-    {
-      serilogLogConfiguration = serilogLogConfiguration.Enrich
-        .WithClientAgent()
-        .Enrich.WithClientIp()
-        .Enrich.WithExceptionDetails();
-    }
+    // if (logConfiguration.EnhancedLogContext)
+    // {
+    //   serilogLogConfiguration = serilogLogConfiguration.Enrich.WithExceptionDetails();
+    // }
 
     if (logConfiguration.LogToFile && canLogToFile)
     {
@@ -218,37 +208,8 @@ public static class SpeckleLog
     {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
         "https://seq.speckle.systems",
-        apiKey: "agZqxG4jQELxQQXh0iZQ"
+        apiKey: logConfiguration.SeqToken
       );
-    }
-
-    if (logConfiguration.LogToSentry)
-    {
-      const string ENV =
-#if DEBUG
-        "dev";
-#else
-        "production";
-#endif
-
-      serilogLogConfiguration = serilogLogConfiguration.WriteTo.Sentry(o =>
-      {
-        o.Dsn = logConfiguration.SentryDns;
-        o.Debug = false;
-        o.Environment = ENV;
-        o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
-        o.AttachStacktrace = true;
-        o.StackTraceMode = StackTraceMode.Enhanced;
-        // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
-        // We recommend adjusting this value in production.
-        o.TracesSampleRate = 1.0;
-        // Enable Global Mode if running in a client app
-        o.IsGlobalModeEnabled = true;
-        // Debug and higher are stored as breadcrumbs (default is Information)
-        o.MinimumBreadcrumbLevel = LogEventLevel.Debug;
-        // Warning and higher is sent as event (default is Error)
-        o.MinimumEventLevel = LogEventLevel.Error;
-      });
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
@@ -270,7 +231,7 @@ public static class SpeckleLog
   {
     try
     {
-      Process.Start(s_logFolderPath);
+      Open.File(s_logFolderPath);
     }
     catch (FileNotFoundException ex)
     {

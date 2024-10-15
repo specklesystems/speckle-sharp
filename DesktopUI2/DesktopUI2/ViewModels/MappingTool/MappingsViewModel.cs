@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -15,6 +14,7 @@ using DesktopUI2.Views.Windows.Dialogs;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -672,7 +672,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
 
   public void OpenGuideCommand()
   {
-    Process.Start(new ProcessStartInfo("https://speckle.guide/user/mapping-tool.html") { UseShellExecute = true });
+    Open.Url("https://speckle.guide/user/mapping-tool.html");
   }
 
   public void OpenStreamSelectorCommand()
@@ -682,11 +682,6 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
 
   public void FeedbackCommand()
   {
-    Process.Start(
-      new ProcessStartInfo("https://speckle.community/t/mapping-tool-for-cad-bim-workflows/4086")
-      {
-        UseShellExecute = true
-      }
-    );
+    Open.Url("https://speckle.community/t/mapping-tool-for-cad-bim-workflows/4086");
   }
 }

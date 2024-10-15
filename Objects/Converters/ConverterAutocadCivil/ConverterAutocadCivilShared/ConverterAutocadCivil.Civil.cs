@@ -148,7 +148,8 @@ public partial class ConverterAutocadCivil
       stationEquationDirections = directions,
       offset = alignment.IsOffsetAlignment ? alignment.OffsetAlignmentInfo.NominalOffset : 0,
       site = alignment.SiteName ?? "",
-      style = alignment.StyleName ?? ""
+      style = alignment.StyleName ?? "",
+      units = ModelUnits
     };
 
     AddNameAndDescriptionProperty(alignment.Name, alignment.Description, speckleAlignment);
@@ -542,7 +543,8 @@ public partial class ConverterAutocadCivil
       offset = profile.Offset,
       style = profile.StyleName ?? "",
       startStation = profile.StartingStation,
-      endStation = profile.EndingStation
+      endStation = profile.EndingStation,
+      units = ModelUnits
     };
 
     AddNameAndDescriptionProperty(profile.Name, profile.Description, speckleProfile);
@@ -614,8 +616,6 @@ public partial class ConverterAutocadCivil
     {
       speckleProfile.displayValue = PolylineToSpeckle(pvis, profile.Closed);
     }
-
-    speckleProfile.units = ModelUnits;
 
     return speckleProfile;
   }
@@ -702,7 +702,7 @@ public partial class ConverterAutocadCivil
       var point = featureline.FeatureLinePoints[i];
       baseCurvePoints.Add(point.XYZ);
       if (!point.IsBreak) { polylinePoints.Add(point.XYZ); }
-      if (polylinePoints.Count > 0 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
+      if (polylinePoints.Count > 1 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
       {
         var polyline = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, polylinePoints, false));
         polylines.Add(polyline);
@@ -1029,17 +1029,18 @@ public partial class ConverterAutocadCivil
   /// <summary>
   /// Converts PartData into a list of DataField
   /// </summary>
-  private List<CivilDataField> PartDataRecordToSpeckle(PartDataRecord partData)
+  private Base PartDataRecordToSpeckle(PartDataRecord partData)
   {
+    Base partDataBase = new();
     List<CivilDataField> fields = new();
 
     foreach (PartDataField partField in partData.GetAllDataFields())
     {
       CivilDataField field = new(partField.Name, partField.DataType.ToString(), partField.Value, partField.Units.ToString(),partField.Context.ToString(), null);
-      fields.Add(field);
+      partDataBase[partField.Name] = field;
     }
 
-    return fields;
+    return partDataBase;
   }
 
 #if CIVIL2022_OR_GREATER
@@ -1064,8 +1065,23 @@ public partial class ConverterAutocadCivil
   // TODO: add pressure fittings
   public Pipe PipeToSpeckle(CivilDB.Pipe pipe)
   {
-    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
-
+    // get the pipe curve
+    // rant: if this is a straight or curved pipe, the BaseCurve prop is fake news && will return a DB.line with start and endpoints set to [0,0,0] & [0,0,1]
+    // do not use CurveToSpeckle(basecurve) 😡
+    ICurve curve;
+    switch (pipe.SubEntityType)
+    {
+      case PipeSubEntityType.Straight:
+        var line = new Acad.LineSegment3d(pipe.StartPoint, pipe.EndPoint);
+        curve = LineToSpeckle(line);
+        break;
+      case PipeSubEntityType.Curved:
+        curve = ArcToSpeckle(pipe.Curve2d);
+        break;
+      default:
+        curve = CurveToSpeckle(pipe.BaseCurve); // basecurve is fake news, but we're still sending the other types with props for now
+        break;
+    }
 
     Pipe specklePipe = new()
     {
@@ -1099,7 +1115,25 @@ public partial class ConverterAutocadCivil
   public Pipe PipeToSpeckle(PressurePipe pipe)
   {
     // get the pipe curve
-    ICurve curve = CurveToSpeckle(pipe.BaseCurve);
+    // rant: if this is a straight or curved pipe, the BaseCurve prop is fake news && will return a DB.line with start and endpoints set to [0,0,0] & [0,0,1]
+    // do not use CurveToSpeckle(basecurve) 😡
+    ICurve curve;
+    switch (pipe.BaseCurve)
+    {
+      case Autodesk.AutoCAD.DatabaseServices.Line:
+        var line = new LineSegment3d(pipe.StartPoint, pipe.EndPoint);
+        curve = LineToSpeckle(line);
+        break;
+#if CIVIL2024_OR_GREATER
+      case Autodesk.AutoCAD.DatabaseServices.Arc:
+        var arc = pipe.CurveGeometry.GetArc2d();
+        curve = ArcToSpeckle(arc);
+        break;
+#endif
+      default:
+        curve = CurveToSpeckle(pipe.BaseCurve);
+        break;
+    }
 
     Pipe specklePipe = new()
     {
@@ -1135,6 +1169,7 @@ public partial class ConverterAutocadCivil
   private CivilDataField AppliedSubassemblyParamToSpeckle(IAppliedSubassemblyParam param)
   {
     CivilDataField baseParam = new(param.KeyName, param.ValueType.Name, param.ValueAsObject, null, null, param.DisplayName);
+
     return baseParam;
   }
 
@@ -1154,7 +1189,11 @@ public partial class ConverterAutocadCivil
     Point soePoint = PointToSpeckle(appliedSubassembly.OriginStationOffsetElevationToBaseline);
     List<CivilDataField> speckleParameters = appliedSubassembly.Parameters.Select(p => AppliedSubassemblyParamToSpeckle(p)).ToList();
 
-    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, soePoint, speckleParameters);
+    CivilAppliedSubassembly speckleAppliedSubassembly = new(appliedSubassembly.SubassemblyId.ToString(), subassembly.Name, speckleShapes, soePoint, speckleParameters)
+    {
+      units = ModelUnits
+    };
+
     return speckleAppliedSubassembly;
   }
 
@@ -1168,7 +1207,18 @@ public partial class ConverterAutocadCivil
       speckleSubassemblies.Add(speckleSubassembly);
     }
 
-    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, appliedAssembly.AdjustedElevation, ModelUnits);
+    double? adjustedElevation = null;
+    try
+    {
+      adjustedElevation = appliedAssembly.AdjustedElevation;
+    }
+    catch (ArgumentException e) when (!e.IsFatal())
+    {
+      // Do nothing. Leave the value as null.
+    }
+
+    CivilAppliedAssembly speckleAppliedAssembly = new(speckleSubassemblies, adjustedElevation, ModelUnits);
+
     return speckleAppliedAssembly;
   }
 
@@ -1189,7 +1239,11 @@ public partial class ConverterAutocadCivil
     }
 
     // create the speckle region
-    CivilBaselineRegion speckleRegion = new(region.Name, region.StartStation, region.EndStation, assembly.Id.ToString(), assembly.Name, speckleAppliedAssemblies);
+    CivilBaselineRegion speckleRegion = new(region.Name, region.StartStation, region.EndStation, assembly.Id.ToString(), assembly.Name, speckleAppliedAssemblies)
+    {
+      units = ModelUnits
+    };
+
     return speckleRegion;
   }
 
@@ -1217,7 +1271,11 @@ public partial class ConverterAutocadCivil
       specklePoints.Add(specklePoint);
     }
 
-    CivilCalculatedLink speckleLink = new(codes, specklePoints);
+    CivilCalculatedLink speckleLink = new(codes, specklePoints)
+    {
+      units = ModelUnits
+    };
+
     return speckleLink;
   }
 
@@ -1228,7 +1286,11 @@ public partial class ConverterAutocadCivil
     Vector normalBaseline = VectorToSpeckle(point.NormalToBaseline);
     Vector normalSubAssembly = VectorToSpeckle(point.NormalToSubassembly);
     Point soePoint = PointToSpeckle(point.StationOffsetElevationToBaseline);
-    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly, soePoint);
+    CivilCalculatedPoint speckleCalculatedPoint = new(specklePoint, codes, normalBaseline, normalSubAssembly, soePoint)
+    {
+      units = ModelUnits
+    };
+
     return speckleCalculatedPoint;
   }
 
@@ -1257,7 +1319,10 @@ public partial class ConverterAutocadCivil
       var profile = Trans.GetObject(baseline.ProfileId, OpenMode.ForRead) as CivilDB.Profile;
       CivilProfile speckleProfile = ProfileToSpeckle(profile);
 
-      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile);
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleAlignment, speckleProfile)
+      {
+        units = ModelUnits
+      };
     }
     else
     {
@@ -1265,7 +1330,10 @@ public partial class ConverterAutocadCivil
       var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
       Featureline speckleFeatureline = FeaturelineToSpeckle(featureline);
 
-      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleFeatureline);
+      speckleBaseline = new(baseline.Name, speckleRegions, baseline.SortedStations().ToList(), baseline.StartStation, baseline.EndStation, speckleFeatureline)
+      {
+        units = ModelUnits
+      };
     }
     
     return speckleBaseline;

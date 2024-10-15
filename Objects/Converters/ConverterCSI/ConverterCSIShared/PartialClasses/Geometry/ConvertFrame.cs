@@ -8,6 +8,7 @@ using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI;
 
@@ -167,18 +168,13 @@ public partial class ConverterCSI
   {
     string units = ModelUnits();
 
-    var speckleStructFrame = new CSIElement1D();
-
-    speckleStructFrame.name = name;
     string pointI,
       pointJ;
     pointI = pointJ = null;
     _ = Model.FrameObj.GetPoints(name, ref pointI, ref pointJ);
     var pointINode = PointToSpeckle(pointI);
     var pointJNode = PointToSpeckle(pointJ);
-    speckleStructFrame.end1Node = pointINode;
-    speckleStructFrame.end2Node = pointJNode;
-    var speckleLine = new Line();
+    Line speckleLine;
     if (units != null)
     {
       speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint, units);
@@ -187,38 +183,22 @@ public partial class ConverterCSI
     {
       speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
     }
-    speckleStructFrame.baseLine = speckleLine;
+
+    string property,
+      SAuto;
+    property = SAuto = null;
+    Model.FrameObj.GetSection(name, ref property, ref SAuto);
+    var speckleProperty = Property1DToSpeckle(property);
+
     eFrameDesignOrientation frameDesignOrientation = eFrameDesignOrientation.Null;
     Model.FrameObj.GetDesignOrientation(name, ref frameDesignOrientation);
-    switch (frameDesignOrientation)
+    var elementType = FrameDesignOrientationToElement1dType(frameDesignOrientation);
+    var speckleStructFrame = new CSIElement1D(speckleLine, speckleProperty, elementType)
     {
-      case eFrameDesignOrientation.Column:
-      {
-        speckleStructFrame.type = ElementType1D.Column;
-        break;
-      }
-      case eFrameDesignOrientation.Beam:
-      {
-        speckleStructFrame.type = ElementType1D.Beam;
-        break;
-      }
-      case eFrameDesignOrientation.Brace:
-      {
-        speckleStructFrame.type = ElementType1D.Brace;
-        break;
-      }
-      case eFrameDesignOrientation.Null:
-      {
-        //speckleStructFrame.memberType = MemberType.Generic1D;
-        speckleStructFrame.type = ElementType1D.Null;
-        break;
-      }
-      case eFrameDesignOrientation.Other:
-      {
-        speckleStructFrame.type = ElementType1D.Other;
-        break;
-      }
-    }
+      name = name,
+      end1Node = pointINode,
+      end2Node = pointJNode
+    };
 
     bool[] iRelease,
       jRelease;
@@ -237,12 +217,6 @@ public partial class ConverterCSI
     bool advanced = false;
     Model.FrameObj.GetLocalAxes(name, ref localAxis, ref advanced);
     speckleStructFrame.orientationAngle = localAxis;
-
-    string property,
-      SAuto;
-    property = SAuto = null;
-    Model.FrameObj.GetSection(name, ref property, ref SAuto);
-    speckleStructFrame.property = Property1DToSpeckle(property);
 
     double offSetEnd1 = 0;
     double offSetEnd2 = 0;
@@ -309,7 +283,7 @@ public partial class ConverterCSI
     int s = Model.FrameObj.GetModifiers(name, ref modifiers);
     if (s == 0)
     {
-      speckleStructFrame.Modifiers = modifiers;
+      speckleStructFrame.StiffnessModifiers = modifiers.ToList();
     }
 
     speckleStructFrame.AnalysisResults =
@@ -330,6 +304,17 @@ public partial class ConverterCSI
 
     return speckleStructFrame;
   }
+
+  private static ElementType1D FrameDesignOrientationToElement1dType(eFrameDesignOrientation frameDesignOrientation) =>
+    frameDesignOrientation switch
+    {
+      eFrameDesignOrientation.Column => ElementType1D.Column,
+      eFrameDesignOrientation.Beam => ElementType1D.Beam,
+      eFrameDesignOrientation.Brace => ElementType1D.Brace,
+      eFrameDesignOrientation.Null => ElementType1D.Null,
+      eFrameDesignOrientation.Other => ElementType1D.Other,
+      _ => throw new SpeckleException($"Unrecognized eFrameDesignOrientation value, {frameDesignOrientation}"),
+    };
 
   public void SetFrameElementProperties(Element1D element1D, string newFrame, IList<string>? log)
   {
@@ -366,20 +351,21 @@ public partial class ConverterCSI
       var CSIelement1D = (CSIElement1D)element1D;
       if (CSIelement1D.SpandrelAssignment != null)
       {
-        Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment);
+        Model.FrameObj.SetSpandrel(newFrame, CSIelement1D.SpandrelAssignment);
       }
       if (CSIelement1D.PierAssignment != null)
       {
-        Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment);
+        Model.FrameObj.SetPier(newFrame, CSIelement1D.PierAssignment);
       }
       if (CSIelement1D.CSILinearSpring != null)
       {
-        Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name);
+        Model.FrameObj.SetSpringAssignment(newFrame, CSIelement1D.CSILinearSpring.name);
       }
-      if (CSIelement1D.Modifiers != null)
+
+      if (CSIelement1D.StiffnessModifiers != null)
       {
-        var modifiers = CSIelement1D.Modifiers;
-        Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
+        var modifiers = CSIelement1D.StiffnessModifiers.ToArray();
+        Model.FrameObj.SetModifiers(newFrame, ref modifiers);
       }
       if (CSIelement1D.property.material.name != null)
       {

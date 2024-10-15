@@ -17,4 +17,6 @@ public class CivilCalculatedLink : Base, ICivilCalculatedObject
 
   [DetachProperty]
   public List<CivilCalculatedPoint> points { get; set; }
+
+  public string units { get; set; }
 }

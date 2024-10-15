@@ -12,7 +12,7 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="streams">The list of stream states to write.</param>
   public override void WriteStreamsToFile(List<StreamState> streams) =>
-    SpeckleStreamManager.WriteStreamStateList(s_doc, streams);
+    SpeckleStreamManager.WriteStreamStateList(s_activeDoc, streams);
 
   /// <summary>
   /// Retrieves the list of stream states from the file.
@@ -21,9 +21,9 @@ public partial class ConnectorBindingsNavisworks
   public override List<StreamState> GetStreamsInFile()
   {
     var streams = new List<StreamState>();
-    if (s_doc != null)
+    if (s_activeDoc != null)
     {
-      streams = SpeckleStreamManager.ReadState(s_doc);
+      streams = SpeckleStreamManager.ReadState(s_activeDoc);
     }
 
     return streams;
@@ -35,19 +35,19 @@ public partial class ConnectorBindingsNavisworks
   /// <returns>The name of the current file.</returns>
   public override string GetFileName()
   {
-    IsFileAndModelsPresent();
+    IsFileAndAreModelsPresent();
 
-    return s_doc?.CurrentFileName ?? string.Empty;
+    return s_activeDoc?.CurrentFileName ?? string.Empty;
   }
 
-  private static void IsFileAndModelsPresent()
+  private static void IsFileAndAreModelsPresent()
   {
-    if (s_doc == null)
+    if (s_activeDoc == null)
     {
       throw new FileNotFoundException("No active document found. Cannot Send.");
     }
 
-    if (s_doc.Models.Count == 0)
+    if (s_activeDoc.Models.Count == 0)
     {
       throw new FileNotFoundException("No models are appended. Nothing to Send.");
     }

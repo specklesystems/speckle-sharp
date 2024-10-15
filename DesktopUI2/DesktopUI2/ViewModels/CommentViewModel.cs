@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Avalonia.Threading;
 using DesktopUI2.Views;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
 using Stream = System.IO.Stream;
@@ -135,7 +135,7 @@ public class CommentViewModel : ReactiveObject
       url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
     }
 
-    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    Open.Url(url);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });
   }
 }

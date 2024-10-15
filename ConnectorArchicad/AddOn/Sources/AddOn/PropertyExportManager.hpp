@@ -19,6 +19,7 @@ private:
 	PropertyGroupFilter propertyGroupFilter;
 	GS::HashSet<API_ElemType> complexElementsToSkipFromComponentListing;
 
+		///Cache of property definitions keyed by a hash of the target specifications (e.g. element type) - saves looking these up repeatedly
 	GS::HashTable<GS::UInt64, GS::Pair<GS::Array<API_PropertyDefinition>, GS::Array<API_PropertyDefinition>>> cache;
 
 protected:

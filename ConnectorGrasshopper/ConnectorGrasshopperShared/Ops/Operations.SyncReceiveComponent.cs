@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,7 +11,6 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -254,17 +252,7 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
             return null;
           }
 
-          Speckle.Core.Logging.Analytics.TrackEvent(
-            acc,
-            Speckle.Core.Logging.Analytics.Events.Receive,
-            new Dictionary<string, object>
-            {
-              { "sync", true },
-              { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
-              { "sourceHostAppVersion", myCommit.sourceApplication },
-              { "isMultiplayer", myCommit.authorId != acc.userInfo.id }
-            }
-          );
+          Tracker.TrackNodeReceive(acc, AutoReceive, myCommit.authorId != acc.userInfo.id, myCommit.sourceApplication);
 
           var totalObjectCount = 1;
 

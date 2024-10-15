@@ -9,6 +9,7 @@
     <Import_RootNamespace>Speckle.ConnectorNavisworks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Conversion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Selections.cs" />
@@ -23,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Autosave.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Properties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\Developer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\FilterTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Invokers.cs" />

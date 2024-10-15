@@ -2,12 +2,8 @@ version: 2.1
 
 orbs:
   win: circleci/windows@5.0.0
-  aws-s3: circleci/aws-s3@2.0.0
-  codecov: codecov/codecov@3.2.2
-  wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
-  docker: circleci/docker@2.2.0
-  macos: circleci/macos@2.4.1
+  macos: circleci/macos@2.5.2
 # The main workflows for our monorepo pipeline.
 
 workflows:
@@ -74,14 +70,14 @@ commands:
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - cached-checkout
       - run:
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
             $HOME/.dotnet/dotnet --version
       - run:
           name: Enforce formatting
@@ -121,7 +117,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     machine:
-      image: ubuntu-2204:2023.02.1
+      image: ubuntu-2204:2024.05.1
     resource_class: large
     steps:
       - cached-checkout
@@ -129,7 +125,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -203,17 +199,33 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
-      - unless: # Build installers unsigned on non-tagged builds
-          condition: << pipeline.git.tag >>
+      - unless: # Build Unsigned Installers for untagged, or wip/alpha/feature/etc. tags (non-stable, non-rc)
+          condition: 
+            and:
+              -  << pipeline.git.tag >>
+              - not:
+                  matches:
+                    pattern: "^.*-(?!rc).*$"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
-                name: Build Installer
+                name: Build Installer Unsigned
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
-      - when: # Setup certificates and build installers signed for tagged builds
-          condition: << pipeline.git.tag >>
+            - persist_to_workspace:
+                root: ./
+                paths:
+                  - speckle-sharp-ci-tools/Installers
+      - when: # Setup certificates and build installers signed for tagged builds that aren't prerelease
+          condition:
+            and:
+              -  << pipeline.git.tag >>
+              - not:
+                  matches:
+                    pattern: "^.*-(?!rc).*$"
+                    value: << pipeline.git.tag >>
           steps:
             - run:
                 name: "Digicert Signing Manager Setup"
@@ -232,7 +244,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   & $env:SSM\smksp_cert_sync.exe
             - run:
-                name: Build Installer
+                name: Build Installer Signed
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
                 shell: cmd.exe #does not work in powershell
                 environment:
@@ -312,7 +324,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Install dotnet
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.204
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
@@ -524,7 +536,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -654,7 +666,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connectors: # Uploads all installers found to S3
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - run:
           name: Proceed to deploy
@@ -662,7 +674,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   notify-deploy:
     docker:
-      - image: cimg/base:2021.01
+      - image: cimg/base:2024.07
     steps:
       - discord/status:
           mentions: "1067457311980933140"
