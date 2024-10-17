@@ -146,22 +146,27 @@ public partial class ConverterRevit
               logItem: $"Attached as hosted element to {host.UniqueId}"
             );
 
-            double area = GetAreaOfHostedElement(element as DB.FamilyInstance, host as DB.Wall);
-#if REVIT2020
-            double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, DisplayUnitType.DUT_SQUARE_METERS);
-#else
-            double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
-#endif
-            var paramObject = obj["parameters"];
-            if( paramObject != null )
+            if (host is DB.Wall wall)
             {
-              Base parameters = (Base)paramObject;
-              if (parameters != null)
+              double area = GetAreaOfHostedElement(element as DB.FamilyInstance, wall);
+#if REVIT2020
+              double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, DisplayUnitType.DUT_SQUARE_METERS);
+#else
+              double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
+#endif
+              var paramObject = obj["parameters"];
+              if (paramObject != null)
               {
-                Objects.BuiltElements.Revit.Parameter hostedAreaParameter = new Parameter("Cutout Area", areaTransformed, "m²");
-                parameters["Cutout Area"] = hostedAreaParameter;
+                Base parameters = (Base)paramObject;
+                if (parameters != null)
+                {
+                  Objects.BuiltElements.Revit.Parameter hostedAreaParameter =
+                    new Parameter("Cutout Area", areaTransformed, "m²");
+                  parameters["Cutout Area"] = hostedAreaParameter;
+                }
               }
             }
+
             convertedHostedElements.Add(obj);
             ConvertedObjects.Add(obj.applicationId);
           }
