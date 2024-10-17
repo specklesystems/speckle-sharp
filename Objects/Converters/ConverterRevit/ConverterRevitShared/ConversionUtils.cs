@@ -160,7 +160,11 @@ public partial class ConverterRevit
                 Base parameters = (Base)paramObject;
                 if (parameters != null)
                 {
-                  var hostedAreaParameter = new Parameter("Cutout Area", areaTransformed, Speckle.Core.Kits.Units.Meters); // POC: it's always in meters, even if project units are something else
+                  var hostedAreaParameter = new Parameter(
+                    "Cutout Area",
+                    areaTransformed,
+                    Speckle.Core.Kits.Units.Meters
+                  ); // POC: it's always in meters, even if project units are something else
                   parameters["Cutout Area"] = hostedAreaParameter;
                 }
               }
