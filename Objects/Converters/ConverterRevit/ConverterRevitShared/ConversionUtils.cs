@@ -160,8 +160,7 @@ public partial class ConverterRevit
                 Base parameters = (Base)paramObject;
                 if (parameters != null)
                 {
-                  Objects.BuiltElements.Revit.Parameter hostedAreaParameter =
-                    new Parameter("Cutout Area", areaTransformed, "m²");
+                  var hostedAreaParameter = new Parameter("Cutout Area", areaTransformed, Speckle.Core.Kits.Units.Meters); // POC: it's always in meters, even if project units are something else
                   parameters["Cutout Area"] = hostedAreaParameter;
                 }
               }
@@ -1140,13 +1139,17 @@ public partial class ConverterRevit
   public double GetAreaOfHostedElement(DB.FamilyInstance hostedElement, Wall host)
   {
     XYZ basisY = XYZ.BasisY;
-    CurveLoop curveLoop = IFC.ExporterIFCUtils.GetInstanceCutoutFromWall(host.Document, host, hostedElement, out basisY);
+    CurveLoop curveLoop = IFC.ExporterIFCUtils.GetInstanceCutoutFromWall(
+      host.Document,
+      host,
+      hostedElement,
+      out basisY
+    );
     IList<CurveLoop> loops = new List<CurveLoop>(1);
     loops.Add(curveLoop);
     double area = IFC.ExporterIFCUtils.ComputeAreaOfCurveLoops(loops);
     return area;
   }
-
 
   #region materials
   public RenderMaterial? GetElementRenderMaterial(DB.Element? element)
