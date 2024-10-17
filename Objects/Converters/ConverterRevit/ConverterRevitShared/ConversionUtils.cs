@@ -148,9 +148,9 @@ public partial class ConverterRevit
 
             double area = GetAreaOfHostedElement(element as DB.FamilyInstance, host as DB.Wall);
 #if REVIT2020
-            double area_transformed = UnitUtils.ConvertFromInternalUnits(area, DisplayUnitType.DUT_SQUARE_METERS);
+            double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, DisplayUnitType.DUT_SQUARE_METERS);
 #else
-    double area_transformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
+            double areaTransformed = UnitUtils.ConvertFromInternalUnits(area, UnitTypeId.SquareMeters);
 #endif
             var paramObject = obj["parameters"];
             if( paramObject != null )
@@ -158,7 +158,7 @@ public partial class ConverterRevit
               Base parameters = (Base)paramObject;
               if (parameters != null)
               {
-                Objects.BuiltElements.Revit.Parameter hostedAreaParameter = new Parameter("Cutout Area", area_transformed, "m²");
+                Objects.BuiltElements.Revit.Parameter hostedAreaParameter = new Parameter("Cutout Area", areaTransformed, "m²");
                 parameters["Cutout Area"] = hostedAreaParameter;
               }
             }
@@ -1138,8 +1138,8 @@ public partial class ConverterRevit
     CurveLoop curveLoop = IFC.ExporterIFCUtils.GetInstanceCutoutFromWall(host.Document, host, hostedElement, out basisY);
     IList<CurveLoop> loops = new List<CurveLoop>(1);
     loops.Add(curveLoop);
-    double area_sqft = IFC.ExporterIFCUtils.ComputeAreaOfCurveLoops(loops);
-    return area_sqft;
+    double area = IFC.ExporterIFCUtils.ComputeAreaOfCurveLoops(loops);
+    return area;
   }
 
 
