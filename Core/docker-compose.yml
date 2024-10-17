@@ -65,15 +65,14 @@ services:
     restart: always
     healthcheck:
       test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('node:http').request({headers: {'Content-Type': 'application/json'}, port:3000, hostname:'127.0.0.1', path:'/graphql?query={serverInfo{version}}', method: 'GET' }, (res) => { body = ''; res.on('data', (chunk) => {body += chunk;}); res.on('end', () => {process.exit(res.statusCode != 200 || body.toLowerCase().includes('error'));}); }).end();",
-        ]
+        - CMD
+        - /nodejs/bin/node
+        - -e
+        - "try { require('node:http').request({headers: {'Content-Type': 'application/json'}, port:3000, hostname:'127.0.0.1', path:'/readiness', method: 'GET', timeout: 2000 }, (res) => { body = ''; res.on('data', (chunk) => {body += chunk;}); res.on('end', () => {process.exit(res.statusCode != 200 || body.toLowerCase().includes('error'));}); }).end(); } catch { process.exit(1); }"
       interval: 10s
-      timeout: 3s
-      retries: 30
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     ports:
       - "0.0.0.0:3000:3000"
     depends_on:

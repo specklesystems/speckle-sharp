@@ -191,9 +191,6 @@ internal class ETABSGridLineDefinitionTable : DatabaseTableWrapper
     var systemName = GetUniqueGridSystemName();
     _ = cSapModel.GridSys.SetGridSys(systemName, 0, 0, gridRotation * 180 / Math.PI);
 
-    // when a grid system is created, it doesn't show up unless it has at least one grid in each direction
-    AddCartesian(systemName, XGridLineType, "Default0", 0, "No");
-    AddCartesian(systemName, YGridLineType, "Default1", 0, "No");
     return new GridSystemRepresentation(systemName, 0, 0, gridRotation);
   }
 

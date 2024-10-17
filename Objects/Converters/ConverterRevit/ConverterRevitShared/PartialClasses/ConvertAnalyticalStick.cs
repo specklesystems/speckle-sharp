@@ -430,12 +430,12 @@ public partial class ConverterRevit
     }
     else
     {
-      var botReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FX) == 1 ? "R" : "F";
-      var botReleaseY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FY) == 1 ? "R" : "F";
-      var botReleaseZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FZ) == 1 ? "R" : "F";
-      var botReleaseXX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MX) == 1 ? "R" : "F";
-      var botReleaseYY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MY) == 1 ? "R" : "F";
-      var botReleaseZZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MZ) == 1 ? "R" : "F";
+      var botReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_FX) == 1 ? "R" : "F";
+      var botReleaseY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_FY) == 1 ? "R" : "F";
+      var botReleaseZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_FZ) == 1 ? "R" : "F";
+      var botReleaseXX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_MX) == 1 ? "R" : "F";
+      var botReleaseYY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_MY) == 1 ? "R" : "F";
+      var botReleaseZZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_MZ) == 1 ? "R" : "F";
 
       string botReleaseCode = botReleaseX + botReleaseY + botReleaseZ + botReleaseXX + botReleaseYY + botReleaseZZ;
       speckleElement1D.end1Releases = new Restraint(botReleaseCode);
@@ -447,12 +447,12 @@ public partial class ConverterRevit
     }
     else
     {
-      var topReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_FX) == 1 ? "R" : "F";
-      var topReleaseY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_FY) == 1 ? "R" : "F";
-      var topReleaseZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_FZ) == 1 ? "R" : "F";
-      var topReleaseXX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_MX) == 1 ? "R" : "F";
-      var topReleaseYY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_MY) == 1 ? "R" : "F";
-      var topReleaseZZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_MZ) == 1 ? "R" : "F";
+      var topReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_FX) == 1 ? "R" : "F";
+      var topReleaseY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_FY) == 1 ? "R" : "F";
+      var topReleaseZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_FZ) == 1 ? "R" : "F";
+      var topReleaseXX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_MX) == 1 ? "R" : "F";
+      var topReleaseYY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_MY) == 1 ? "R" : "F";
+      var topReleaseZZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_MZ) == 1 ? "R" : "F";
 
       string topReleaseCode = topReleaseX + topReleaseY + topReleaseZ + topReleaseXX + topReleaseYY + topReleaseZZ;
       speckleElement1D.end2Releases = new Restraint(topReleaseCode);
