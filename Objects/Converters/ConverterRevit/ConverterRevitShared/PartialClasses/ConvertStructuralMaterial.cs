@@ -53,7 +53,7 @@ public partial class ConverterRevit
 
         if (materialAsset != null)
         {
-          concreteMaterial.compressiveStrength = materialAsset.ConcreteCompression; // Newtons per foot meter
+          concreteMaterial.compressiveStrength = ScaleToSpeckle(materialAsset.ConcreteCompression, RevitStressTypeId);
           concreteMaterial.lightweight = materialAsset.Lightweight;
         }
 
@@ -73,8 +73,8 @@ public partial class ConverterRevit
         if (materialAsset != null)
         {
           steelMaterial.grade = materialAsset.Name;
-          steelMaterial.yieldStrength = materialAsset.MinimumYieldStress; // Newtons per foot meter
-          steelMaterial.ultimateStrength = materialAsset.MinimumTensileStrength; // Newtons per foot meter
+          steelMaterial.yieldStrength = ScaleToSpeckle(materialAsset.MinimumYieldStress, RevitStressTypeId);
+          steelMaterial.ultimateStrength = ScaleToSpeckle(materialAsset.MinimumTensileStrength, RevitStressTypeId);
         }
 
         speckleMaterial = steelMaterial;
@@ -93,11 +93,23 @@ public partial class ConverterRevit
         {
           timberMaterial.grade = materialAsset.WoodGrade;
           timberMaterial.species = materialAsset.WoodSpecies;
-          timberMaterial["bendingStrength"] = materialAsset.WoodBendingStrength;
-          timberMaterial["parallelCompressionStrength"] = materialAsset.WoodParallelCompressionStrength;
-          timberMaterial["parallelShearStrength"] = materialAsset.WoodParallelShearStrength;
-          timberMaterial["perpendicularCompressionStrength"] = materialAsset.WoodPerpendicularCompressionStrength;
-          timberMaterial["perpendicularShearStrength"] = materialAsset.WoodPerpendicularShearStrength;
+          timberMaterial["bendingStrength"] = ScaleToSpeckle(materialAsset.WoodBendingStrength, RevitStressTypeId);
+          timberMaterial["parallelCompressionStrength"] = ScaleToSpeckle(
+            materialAsset.WoodParallelCompressionStrength,
+            RevitStressTypeId
+          );
+          timberMaterial["parallelShearStrength"] = ScaleToSpeckle(
+            materialAsset.WoodParallelShearStrength,
+            RevitStressTypeId
+          );
+          timberMaterial["perpendicularCompressionStrength"] = ScaleToSpeckle(
+            materialAsset.WoodPerpendicularCompressionStrength,
+            RevitStressTypeId
+          );
+          timberMaterial["perpendicularShearStrength"] = ScaleToSpeckle(
+            materialAsset.WoodPerpendicularShearStrength,
+            RevitStressTypeId
+          );
         }
 
         speckleMaterial = timberMaterial;
@@ -111,12 +123,15 @@ public partial class ConverterRevit
     // TODO: support non-isotropic materials
     if (materialAsset != null)
     {
-      // some of these are actually the dumbest units I've ever heard of
-      speckleMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter
-      speckleMaterial.poissonsRatio = materialAsset.PoissonRatio.X; // Unitless
-      speckleMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
-      speckleMaterial.density = materialAsset.Density; // kilograms per cubed feet
-      speckleMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
+      // NOTE: Convert all internal units to project units
+      speckleMaterial.elasticModulus = ScaleToSpeckle(materialAsset.YoungModulus.X, RevitStressTypeId);
+      speckleMaterial.poissonsRatio = materialAsset.PoissonRatio.X;
+      speckleMaterial.shearModulus = ScaleToSpeckle(materialAsset.ShearModulus.X, RevitStressTypeId);
+      speckleMaterial.density = ScaleToSpeckle(materialAsset.Density, RevitMassDensityTypeId);
+      speckleMaterial.thermalExpansivity = ScaleToSpeckle(
+        materialAsset.ThermalExpansionCoefficient.X,
+        RevitThermalExpansionTypeId
+      );
     }
 
     return speckleMaterial;

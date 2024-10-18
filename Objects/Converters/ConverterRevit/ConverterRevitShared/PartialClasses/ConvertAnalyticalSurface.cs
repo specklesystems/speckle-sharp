@@ -4,6 +4,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Structural;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 using Speckle.Core.Models;
@@ -268,7 +269,7 @@ public partial class ConverterRevit
     prop.name = revitSurface.Document.GetElement(revitSurface.GetElementId()).Name;
     //prop.type = memberType;
     //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = thickness;
+    prop.thickness = ScaleToSpeckle(thickness);
 
     speckleElement2D.property = prop;
 
@@ -389,28 +390,27 @@ public partial class ConverterRevit
     // Material
     DB.Material structMaterial = null;
     double thickness = 0;
-    var memberType = MemberType2D.Generic2D;
+    var memberType = PropertyType2D.Plate; // NOTE: a floor is typically classified as a plate since subjected to bending and shear stresses. Standard to have this as default.
 
     if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleFloor)
     {
       structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
       thickness = structuralElement.Thickness;
-      memberType = MemberType2D.Slab;
     }
     else if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleWall)
     {
       structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
       thickness = structuralElement.Thickness;
-      memberType = MemberType2D.Wall;
+      memberType = PropertyType2D.Shell; // NOTE: A wall is typically classified as shell since subjected to axial stresses
     }
 
     var speckleMaterial = GetStructuralMaterial(structMaterial);
     prop.material = speckleMaterial;
 
     prop.name = structuralElement.Name;
-    //prop.type = memberType;
+    prop.type = memberType;
     //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = thickness;
+    prop.thickness = ScaleToSpeckle(thickness); // NOTE: This function overload takes RevitLengthTypeId by default
 
     speckleElement2D.property = prop;
 
