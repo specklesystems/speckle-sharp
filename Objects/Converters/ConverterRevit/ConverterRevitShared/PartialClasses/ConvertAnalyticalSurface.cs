@@ -373,21 +373,9 @@ public partial class ConverterRevit
     }
 
     speckleElement2D.topology = edgeNodes;
-    var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(
-      Doc
-    );
-    if (analyticalToPhysicalManager.HasAssociation(revitSurface.Id))
-    {
-      var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
-      var physicalElement = Doc.GetElement(physicalElementId);
-      speckleElement2D.displayValue = GetElementDisplayValue(physicalElement);
-    }
 
-    speckleElement2D.openings = GetOpenings(revitSurface);
-
+    // Property and Material
     var prop = new Property2D();
-
-    // Material
     DB.Material structMaterial = null;
     double thickness = 0;
     var memberType = PropertyType2D.Plate; // NOTE: a floor is typically classified as a plate since subjected to bending and shear stresses. Standard to have this as default.
@@ -407,12 +395,24 @@ public partial class ConverterRevit
     var speckleMaterial = GetStructuralMaterial(structMaterial);
     prop.material = speckleMaterial;
 
-    prop.name = structuralElement.Name;
+    prop.name = structuralElement.Name; // NOTE: This is typically "" for analytical surfaces
     prop.type = memberType;
-    //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = ScaleToSpeckle(thickness); // NOTE: This function overload takes RevitLengthTypeId by default
+    prop.thickness = ScaleToSpeckle(thickness);
+    prop.units = ModelUnits;
+
+    var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(
+      Doc
+    );
+    if (analyticalToPhysicalManager.HasAssociation(revitSurface.Id))
+    {
+      var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
+      var physicalElement = Doc.GetElement(physicalElementId);
+      speckleElement2D.displayValue = GetElementDisplayValue(physicalElement);
+      prop.name = physicalElement.Name; // Rather use the name of the associated physical type (better than an empty string)
+    }
 
     speckleElement2D.property = prop;
+    speckleElement2D.openings = GetOpenings(revitSurface);
 
     GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
 

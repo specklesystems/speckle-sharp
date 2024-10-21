@@ -212,8 +212,8 @@ public partial class ConverterCSI
       throw new ConversionException($"There is already a frame object named {area.name} in the model");
     }
 
-    var propName = CreateOrGetProp(area.property, out bool isExactMatch);
-    if (!isExactMatch)
+    var propName = CreateOrGetProp(area.property, out bool isPropertyHandled);
+    if (!isPropertyHandled)
     {
       appObj.Update(
         logItem: $"Area section for object could not be created and was replaced with section named \"{propName}\""
@@ -299,7 +299,7 @@ public partial class ConverterCSI
     return name;
   }
 
-  private string? CreateOrGetProp(Property2D property, out bool isExactMatch)
+  private string? CreateOrGetProp(Property2D property, out bool isPropertyHandled)
   {
     int numberNames = 0;
     string[] propNames = Array.Empty<string>();
@@ -310,30 +310,43 @@ public partial class ConverterCSI
       throw new ConversionException("Failed to retrieve the names of all defined area properties");
     }
 
-    isExactMatch = true;
+    isPropertyHandled = true;
 
+    // Use the property if it already exists in the analytical model
     if (propNames.Contains(property?.name))
     {
       return property.name;
     }
 
-    if (property is CSIProperty2D prop2D)
+    // Create detailed property if it is of type CSI and doesn't exist in the analytical model
+    if (property is CSIProperty2D csiProp2D)
     {
       try
       {
-        return Property2DToNative(prop2D);
+        return Property2DToNative(csiProp2D);
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        // Should we not change the out of isPropertyHandled here??
+        SpeckleLog.Logger.Error(ex, "Unable to create property2d");
+      }
+    }
+
+    // Create the property with information we can use if it is a Property2D (i.e. thickness)
+    if (property is Property2D structuralProp2D && !string.IsNullOrEmpty(structuralProp2D.name))
+    {
+      try
+      {
+        return Property2DToNative(structuralProp2D);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Error(ex, "Unable to create property2d");
-        // something failed... replace the type
       }
     }
-
-    isExactMatch = false;
-    if (propNames.Any())
+    isPropertyHandled = false;
+    if (propNames.Length == 0)
     {
-      // TODO: support creating of Property2D
       return propNames.First();
     }
 
