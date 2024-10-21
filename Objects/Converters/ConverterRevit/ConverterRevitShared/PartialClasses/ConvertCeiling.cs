@@ -20,7 +20,7 @@ public partial class ConverterRevit
 #if REVIT2020 || REVIT2021
     var profiles = GetProfiles(revitCeiling);
 #else
-    var sketch = Doc.GetElement(revitCeiling.SketchId) as Sketch;
+    var sketch = revitCeiling.Document.GetElement(revitCeiling.SketchId) as Sketch;
     var profiles = GetSketchProfiles(sketch).Cast<ICurve>().ToList();
 #endif
     var speckleCeiling = new RevitCeiling();
