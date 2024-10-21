@@ -17,10 +17,12 @@ public partial class ConverterCSI
 
   private string Property2DToNative(Property2D property2D)
   {
-    if (property2D.type.ToString() == "Plate")
+    // Walls are typically shells (axially loaded)
+    if (property2D.type == Structural.PropertyType2D.Wall || property2D.type == Structural.PropertyType2D.Shell)
     {
-      return FloorPropertyToNative(property2D);
+      return WallPropertyToNative(property2D);
     }
+    // Floors are typically plates (loaded in bending and shear)
     else
     {
       return FloorPropertyToNative(property2D);

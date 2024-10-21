@@ -332,7 +332,9 @@ public partial class ConverterCSI
       }
     }
 
-    // Create the property with information we can use if it is a Property2D (i.e. thickness)
+    /* Create the property with information we can use if it is a Property2D (i.e. thickness)
+    * Furthermore, a property can only be created if it has a name (hence the two conditionals).
+    * Name is inherited from the physical association in Revit (i.e. it comes from the type name of the family) */
     if (property is Property2D structuralProp2D && !string.IsNullOrEmpty(structuralProp2D.name))
     {
       try
