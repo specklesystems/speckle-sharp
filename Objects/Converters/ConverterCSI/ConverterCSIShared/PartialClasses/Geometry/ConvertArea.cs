@@ -327,8 +327,8 @@ public partial class ConverterCSI
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        // Should we not change the out of isPropertyHandled here??
         SpeckleLog.Logger.Error(ex, "Unable to create property2d");
+        isPropertyHandled = false;
       }
     }
 

@@ -238,28 +238,25 @@ public partial class ConverterRevit
       .Select(p => new Node(p))
       .ToList();
 
-    speckleElement2D.displayValue = GetElementDisplayValue(revitSurface);
-
     var prop = new Property2D();
 
     // Material
     DB.Material structMaterial = null;
     double thickness = 0;
-    var memberType = MemberType2D.Generic2D;
+    var memberType = PropertyType2D.Plate; // NOTE: a floor is typically classified as a plate since subjected to bending and shear stresses. Standard to have this as default.
 
     if (structuralElement is DB.Floor)
     {
       var floor = structuralElement as DB.Floor;
       structMaterial = floor.Document.GetElement(floor.FloorType.StructuralMaterialId) as DB.Material;
       thickness = GetParamValue<double>(structuralElement, BuiltInParameter.STRUCTURAL_FLOOR_CORE_THICKNESS);
-      memberType = MemberType2D.Slab;
     }
     else if (structuralElement is DB.Wall)
     {
       var wall = structuralElement as DB.Wall;
       structMaterial = wall.Document.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as DB.Material;
       thickness = ScaleToSpeckle(wall.WallType.Width);
-      memberType = MemberType2D.Wall;
+      memberType = PropertyType2D.Shell; // NOTE: A wall is typically classified as shell since subjected to axial stresses
     }
 
     var speckleMaterial = GetStructuralMaterial(structMaterial);
@@ -267,13 +264,14 @@ public partial class ConverterRevit
     prop.material = speckleMaterial;
 
     prop.name = revitSurface.Document.GetElement(revitSurface.GetElementId()).Name;
-    //prop.type = memberType;
-    //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = ScaleToSpeckle(thickness);
+    prop.type = memberType;
+    prop.thickness = thickness;
+    prop.units = ModelUnits;
 
     speckleElement2D.property = prop;
 
     GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
+    speckleElement2D.displayValue = GetElementDisplayValue(revitSurface.Document.GetElement(revitSurface.GetElementId()));
 
     return speckleElement2D;
   }
