@@ -1,6 +1,7 @@
 using System;
 using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
+using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI;
@@ -115,6 +116,24 @@ public partial class ConverterCSI
       throw new ConversionException("Failed to set slab property");
     }
 
+    return property2D.name;
+  }
+
+  // A Property2D can be created with the basic information we have i.e. thickness and material. No need to default to "Slab1"
+  public string FloorPropertyToNative(Property2D property2D)
+  {
+    var materialName = MaterialToNative(property2D.material);
+    int success = Model.PropArea.SetSlab(
+      property2D.name,
+      eSlabType.Slab,
+      eShellType.ShellThin,
+      materialName,
+      ScaleToNative(property2D.thickness, property2D.units)
+    );
+    if (success != 0)
+    {
+      throw new ConversionException("Failed to set slab property");
+    }
     return property2D.name;
   }
 
