@@ -340,7 +340,7 @@ public partial class ConverterCSI
 
     if (element1D.orientationAngle != null)
     {
-      Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle);
+      Model.FrameObj.SetLocalAxes(newFrame, element1D.orientationAngle * (180 / Math.PI)); // Convert from radians to degrees
     }
     end1Release = end1Release.Select(b => !b).ToArray();
     end2Release = end2Release.Select(b => !b).ToArray();
