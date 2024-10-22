@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Sdk.Logging;
 
 namespace Speckle.Core.Logging;
 
@@ -80,6 +81,7 @@ public static class Setup
       Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
       Analytics.IdentifyProfile(account.GetHashedEmail(), hostApplication);
     }
+    LogBuilder.Initialize("Otel-Testing", versionedHostApplication, "revit", null, new SpeckleTracing(true));
   }
 
   [Obsolete("Use " + nameof(Mutex))]
