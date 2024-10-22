@@ -372,10 +372,13 @@ public partial class ConverterCSI
       {
         Model.AreaObj.SetSpringAssignment(name, csiArea.CSIAreaSpring.name);
       }
-
       if (csiArea.DiaphragmAssignment != null)
       {
         Model.AreaObj.SetDiaphragm(name, csiArea.DiaphragmAssignment);
+      }
+      if (csiArea.CSIOpening != null)
+      {
+        Model.AreaObj.SetOpening(name, csiArea.CSIOpening.isOpening);
       }
     }
   }
@@ -399,9 +402,9 @@ public partial class ConverterCSI
 
     bool isOpening = false;
     Model.AreaObj.GetOpening(name, ref isOpening);
-    if (isOpening == true)
+    if (isOpening)
     {
-      speckleStructArea.property = new CSIOpening(true);
+      speckleStructArea.CSIOpening = new CSIOpening(true);
     }
     else
     {
