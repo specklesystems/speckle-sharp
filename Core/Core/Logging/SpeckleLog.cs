@@ -266,12 +266,9 @@ public static class SpeckleLog
 
   private static FileVersionInfo? GetFileVersionInfo()
   {
-    // For some reason, Location will return null inside GoDot runtimes,
-    // Despite `Location` being decorated as non-nullable
-    string? assembly = Assembly.GetExecutingAssembly().Location;
+    string assembly = Assembly.GetExecutingAssembly().Location;
 
-    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-    if (assembly == null)
+    if (string.IsNullOrEmpty(assembly))
     {
       return null;
     }
