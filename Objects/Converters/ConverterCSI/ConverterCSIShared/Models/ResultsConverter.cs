@@ -143,6 +143,7 @@ internal sealed class ResultsConverter
       loadCasesCommaSeparated = string.Empty;
     }
 
+    // This approach is NOT ideal. What if the load combination name has a comma in it?
     string[] loadCases = loadCasesCommaSeparated.Split(',').Select(s => s.TrimStart()).ToArray();
 
     var numberOfLoadCombinations = 0;
