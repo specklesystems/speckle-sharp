@@ -252,7 +252,15 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
             return null;
           }
 
-          Tracker.TrackNodeReceive(acc, AutoReceive, myCommit.authorId != acc.userInfo.id, myCommit.sourceApplication);
+          var workspaceId = await client.GetWorkspaceId(StreamWrapper.StreamId).ConfigureAwait(false);
+
+          Tracker.TrackNodeReceive(
+            acc,
+            AutoReceive,
+            myCommit.authorId != acc.userInfo.id,
+            myCommit.sourceApplication,
+            workspaceId
+          );
 
           var totalObjectCount = 1;
 
