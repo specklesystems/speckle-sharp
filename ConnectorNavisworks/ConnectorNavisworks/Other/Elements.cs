@@ -277,7 +277,7 @@ public class Element
 
     var groupedProperties = properties
       .GroupBy(property => property.ConcatenatedKey)
-      .ToDictionary(group => group.Key, group => group.Select(item => item.Value).First());
+      .ToDictionary(group => group.Key, group => group.Select(item => item.Value).Last());
 
     var formattedProperties = groupedProperties
       .Select(
