@@ -243,7 +243,10 @@ public class Element
   {
     if (modelItem == null || baseNode == null || converted == null)
     {
-      throw new ArgumentNullException("modelItem, baseNode, and converted cannot be null.");
+      throw new ArgumentNullException(
+        modelItem == null ? nameof(modelItem) : 
+        baseNode == null ? nameof(baseNode) : 
+        nameof(converted));
     }
 
     var firstObjectAncestor =
