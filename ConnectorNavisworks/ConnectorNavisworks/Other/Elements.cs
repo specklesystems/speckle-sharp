@@ -243,9 +243,12 @@ public class Element
     if (modelItem == null || baseNode == null || converted == null)
     {
       throw new ArgumentNullException(
-        modelItem == null ? nameof(modelItem) : 
-        baseNode == null ? nameof(baseNode) : 
-        nameof(converted));
+        modelItem == null
+          ? nameof(modelItem)
+          : baseNode == null
+            ? nameof(baseNode)
+            : nameof(converted)
+      );
     }
 
     var firstObjectAncestor =
@@ -274,11 +277,8 @@ public class Element
 
     var groupedProperties = properties
       .GroupBy(property => property.ConcatenatedKey)
-      .ToDictionary(
-        group => group.Key,
-        group => group.Select(item => item.Value).First()
-      );
-    
+      .ToDictionary(group => group.Key, group => group.Select(item => item.Value).First());
+
     var formattedProperties = groupedProperties
       .Select(
         kVp =>
