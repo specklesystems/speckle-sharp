@@ -17,7 +17,6 @@ public class Element
 
   private string _indexPath;
   private const char SEPARATOR = '/';
-  const char SEPARATOR = '/';
 
   public string IndexPath
   {
