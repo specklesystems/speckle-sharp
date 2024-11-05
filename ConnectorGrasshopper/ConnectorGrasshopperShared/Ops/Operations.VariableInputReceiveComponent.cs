@@ -720,11 +720,14 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         }
 
         ReceivedCommit = myCommit;
+        var workspaceId = await receiveComponent.ApiClient.GetWorkspaceId(InputWrapper.StreamId).ConfigureAwait(false);
+
         receiveComponent.Tracker.TrackNodeReceive(
           acc,
           receiveComponent.AutoReceive,
           myCommit.authorId != acc.userInfo.id,
-          myCommit.sourceApplication
+          myCommit.sourceApplication, 
+          workspaceId
         );
 
         if (CancellationToken.IsCancellationRequested)

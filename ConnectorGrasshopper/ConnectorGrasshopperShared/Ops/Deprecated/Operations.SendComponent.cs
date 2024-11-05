@@ -445,7 +445,7 @@ public class SendComponentWorker : WorkerInstance
             continue;
           }
 
-          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
+          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend, null);
 
           var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
           transportBranches.Add(serverTransport, sw.BranchName ?? "main");

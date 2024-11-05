@@ -14,13 +14,13 @@ public class ComponentTracker
     Parent = parent;
   }
 
-  private static void AppendHostAppInfoToProperties(Dictionary<string, object> properties)
+  private static void AppendHostAppInfoToProperties(Dictionary<string, object?> properties)
   {
     properties["hostAppVersion"] = Loader.GetGrasshopperHostAppVersion();
     properties["hostApp"] = HostApplications.Grasshopper.Slug;
   }
 
-  public void TrackEvent(Speckle.Core.Logging.Analytics.Events eventName, Dictionary<string, object> properties)
+  public void TrackEvent(Speckle.Core.Logging.Analytics.Events eventName, Dictionary<string, object?> properties)
   {
     AppendHostAppInfoToProperties(properties);
     Speckle.Core.Logging.Analytics.TrackEvent(eventName, properties);
@@ -44,9 +44,9 @@ public class ComponentTracker
     Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeRun, customProperties);
   }
 
-  public void TrackNodeSend(Account acc, bool auto, bool sync = false)
+  public void TrackNodeSend(Account acc, bool auto, string? workspaceId, bool sync = false)
   {
-    var customProperties = new Dictionary<string, object>();
+    var customProperties = new Dictionary<string, object>() { { "workspace_id", workspaceId } };
     if (auto)
     {
       customProperties.Add("auto", auto);
@@ -61,14 +61,15 @@ public class ComponentTracker
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, customProperties);
   }
 
-  public void TrackNodeReceive(Account acc, bool auto, bool isMultiplayer, string sourceHostApp)
+  public void TrackNodeReceive(Account acc, bool auto, bool isMultiplayer, string sourceHostApp, string? workspaceId)
   {
-    var properties = new Dictionary<string, object>
+    var properties = new Dictionary<string, object?>
     {
       { "auto", auto },
       { "isMultiplayer", isMultiplayer },
       { "sourceHostApp", HostApplications.GetHostAppFromString(sourceHostApp).Slug },
       { "sourceHostAppVersion", sourceHostApp },
+      { "workspace_id", workspaceId},
     };
     AppendHostAppInfoToProperties(properties);
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Receive, properties);
