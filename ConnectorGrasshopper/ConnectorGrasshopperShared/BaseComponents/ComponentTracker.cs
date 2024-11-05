@@ -69,7 +69,7 @@ public class ComponentTracker
       { "isMultiplayer", isMultiplayer },
       { "sourceHostApp", HostApplications.GetHostAppFromString(sourceHostApp).Slug },
       { "sourceHostAppVersion", sourceHostApp },
-      { "workspace_id", workspaceId},
+      { "workspace_id", workspaceId },
     };
     AppendHostAppInfoToProperties(properties);
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Receive, properties);

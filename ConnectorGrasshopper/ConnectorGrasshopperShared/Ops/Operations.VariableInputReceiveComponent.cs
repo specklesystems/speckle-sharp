@@ -726,7 +726,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
           acc,
           receiveComponent.AutoReceive,
           myCommit.authorId != acc.userInfo.id,
-          myCommit.sourceApplication, 
+          myCommit.sourceApplication,
           workspaceId
         );
 
