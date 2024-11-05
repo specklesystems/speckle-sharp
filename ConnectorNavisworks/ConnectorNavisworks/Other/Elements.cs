@@ -275,9 +275,11 @@ public class Element
 
     var groupedProperties = properties
       .GroupBy(property => property.ConcatenatedKey)
-      .Where(group => group.Select(item => item.Value).Distinct().Count() == 1)
-      .ToDictionary(group => group.Key, group => group.First().Value);
-
+      .ToDictionary(
+        group => group.Key,
+        group => group.Select(item => item.Value).First()
+      );
+    
     var formattedProperties = groupedProperties
       .Select(
         kVp =>
