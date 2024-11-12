@@ -16,7 +16,7 @@ public class StreamGetWithTokenComponent : GH_TaskCapableComponent<StreamWrapper
     : base(
       "Stream Get with Token",
       "SGetWT",
-      "Returns a stream that will authenticate with a specific user by their Personal Access Token.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF",
+      "Returns a stream that will authenticate with a specific user by their Personal Access Token.\n You'll need to raise a token with at least Profile:Read and Stream:Read to access your account data. Add Stream:Write to enable publishing.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF",
       ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.COMPUTE
     )
