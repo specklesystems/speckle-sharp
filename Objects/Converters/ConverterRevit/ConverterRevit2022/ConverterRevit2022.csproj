@@ -22,7 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIIFC" Version="2022.1.21" />
+    <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
