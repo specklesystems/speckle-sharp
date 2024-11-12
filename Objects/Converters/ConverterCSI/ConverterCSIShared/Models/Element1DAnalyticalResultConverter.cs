@@ -135,7 +135,7 @@ internal class Element1DAnalyticalResultConverter
       numberOfResults,
       null,
       loadCase,
-      (int i) => (float)(objSta[i] / lengthOf1dElement),
+      (int i) => (float)(objSta[i] / lengthOf1dElement), // Dangerous. We are not validating if lengthOf1dElement != 0
       p,
       v2,
       v3,
