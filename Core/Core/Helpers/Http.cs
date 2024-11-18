@@ -256,6 +256,12 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
         cancellationToken.ThrowIfCancellationRequested();
       }
 
+      if (policyResult.FinalException is null)
+      {
+        // Policy was not successful, but did not terminate with an exception (e.g. repeated 500)
+        return policyResult.FinalHandledResult;
+      }
+
       throw new HttpRequestException("Policy Failed", policyResult.FinalException);
     }
   }
