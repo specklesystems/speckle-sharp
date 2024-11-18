@@ -8,6 +8,7 @@
       "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Performance\\Speckle.Core.Tests.Performance.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
+      "Core\\Tests\\TestIFCUpload\\TestIFCUpload.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
