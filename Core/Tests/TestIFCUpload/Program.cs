@@ -16,7 +16,7 @@ using StreamContent streamContent = new(fileStream);
 using MultipartFormDataContent formData = new() { { streamContent, "files", Path.GetFileName(FILE_PATH) } };
 
 var response = await httpClient
-  .PostAsync(new Uri($"{SERVER_URL}/api/file/ifc/stream/{PROJECT_ID}"), formData)
+  .PostAsync(new Uri($"{SERVER_URL}/api/file/ifc/{PROJECT_ID}"), formData)
   .ConfigureAwait(false);
 
 Console.WriteLine($"Response code: {response.StatusCode}");
