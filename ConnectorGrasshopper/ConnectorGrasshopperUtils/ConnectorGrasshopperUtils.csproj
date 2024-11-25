@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net462</TargetFrameworks>
+    <TargetFramework>net462</TargetFramework>
     <RootNamespace>ConnectorGrasshopperUtils</RootNamespace>
     <RhinoPluginType>none</RhinoPluginType>
   </PropertyGroup>

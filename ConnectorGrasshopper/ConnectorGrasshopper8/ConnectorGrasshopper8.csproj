@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
-    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFramework>net48</TargetFramework>
     <TargetExt>.gha</TargetExt>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
