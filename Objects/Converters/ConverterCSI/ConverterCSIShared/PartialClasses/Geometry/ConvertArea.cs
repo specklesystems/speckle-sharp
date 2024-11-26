@@ -347,7 +347,7 @@ public partial class ConverterCSI
       }
     }
     isPropertyHandled = false;
-    if (propNames.Length == 0)
+    if (propNames.Length > 0)
     {
       return propNames.First();
     }
