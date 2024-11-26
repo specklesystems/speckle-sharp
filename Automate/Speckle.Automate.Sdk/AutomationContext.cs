@@ -237,6 +237,7 @@ public class AutomationContext
         Query =
           @"
             mutation AutomateFunctionRunStatusReport(
+                $projectId: String!
                 $functionRunId: String!
                 $status: AutomateRunStatus!
                 $statusMessage: String
@@ -244,6 +245,7 @@ public class AutomationContext
                 $contextView: String
             ){
                 automateFunctionRunStatusReport(input: {
+                    projectId: $projectId
                     functionRunId: $functionRunId
                     status: $status
                     statusMessage: $statusMessage
@@ -254,6 +256,7 @@ public class AutomationContext
         ",
         Variables = new
         {
+          projectId = AutomationRunData.ProjectId,
           functionRunId = AutomationRunData.FunctionRunId,
           status = RunStatus,
           statusMessage = AutomationResult.StatusMessage,
