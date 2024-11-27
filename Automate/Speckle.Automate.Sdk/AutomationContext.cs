@@ -373,6 +373,20 @@ public class AutomationContext
   ) => AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
 
   /// <summary>
+  /// Add a new success case to the run results.
+  /// If the success cause has already created a success case,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <inheritdoc cref="AttachErrorToObjects"/>
+  public void AttachSuccessToObjects(
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  ) => AttachResultToObjects(ObjectResultLevel.Success, category, objectIds, message, metadata, visualOverrides);
+
+  /// <summary>
   /// Add a new case to the run results.
   /// If the cause has already created an case with equal level,
   /// the case will be extended with a new case referring to the causing objects.
