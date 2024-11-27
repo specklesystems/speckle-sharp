@@ -157,14 +157,6 @@ public static class Fixtures
     return new Blob(filePath);
   }
 
-  internal static async Task<Comment> CreateComment(Client client, string projectId, string modelId, string versionId)
-  {
-    var blobs = await SendBlobData(client.Account, projectId);
-    var blobIds = blobs.Select(b => b.id).ToList();
-    CreateCommentInput input = new(new(blobIds, null), projectId, $"{projectId},{modelId},{versionId}", null, null);
-    return await client.Comment.Create(input);
-  }
-
   internal static async Task<Blob[]> SendBlobData(Account account, string projectId)
   {
     using ServerTransport remote = new(account, projectId);
