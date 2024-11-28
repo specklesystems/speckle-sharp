@@ -11,6 +11,7 @@ using Speckle.Core.Serialisation.SerializationUtilities;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
+using SpeckleActivityFactory = Speckle.Sdk.Logging.SpeckleActivityFactory;
 
 namespace Speckle.Core.Serialisation;
 
@@ -52,6 +53,7 @@ public sealed class BaseObjectDeserializerV2
   // /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
   public Base Deserialize(string rootObjectJson)
   {
+    using var activity = SpeckleActivityFactory.Start();
     if (_isBusy)
     {
       throw new InvalidOperationException(
@@ -163,6 +165,7 @@ public sealed class BaseObjectDeserializerV2
   /// <exception cref="SpeckleDeserializeException">Failed to deserialize <see cref="JObject"/> to the target type</exception>
   public object? DeserializeTransportObject(string objectJson)
   {
+    using var activity = SpeckleActivityFactory.Start();
     if (objectJson is null)
     {
       throw new ArgumentNullException(nameof(objectJson), $"Cannot deserialize {nameof(objectJson)}, value was null");
