@@ -21,6 +21,8 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -577,8 +579,8 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
       ApiClient?.Dispose();
       ApiClient = new Client(account);
-      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      ApiClient.Subscription.CreateProjectVersionsUpdatedSubscription(StreamWrapper.StreamId).Listeners +=
+        ApiClient_OnVersionUpdate;
     }
     catch (Exception e) when (!e.IsFatal())
     {
@@ -587,10 +589,15 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     }
   }
 
-  private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
+  private void ApiClient_OnVersionUpdate(object sender, ProjectVersionsUpdatedMessage e)
   {
     // Break if wrapper is branch type and branch name is not equal.
-    if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    if (StreamWrapper.Type == StreamWrapperType.Branch && e.modelId != StreamWrapper.BranchName)
+    {
+      return;
+    }
+
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }

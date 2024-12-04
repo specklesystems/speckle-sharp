@@ -18,6 +18,7 @@ public partial class Client
   /// Subscribe to events of branch created for a stream
   /// </summary>
   /// <returns></returns>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeBranchCreated(string streamId)
   {
     var request = new GraphQLRequest { Query = $@"subscription {{ branchCreated (streamId: ""{streamId}"") }}" };
@@ -44,6 +45,7 @@ public partial class Client
   /// Subscribe to events of branch updated for a stream
   /// </summary>
   /// <returns></returns>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeBranchUpdated(string streamId, string branchId = null)
   {
     var request = new GraphQLRequest
@@ -71,6 +73,7 @@ public partial class Client
   /// Subscribe to events of branch deleted for a stream
   /// </summary>
   /// <returns></returns>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeBranchDeleted(string streamId)
   {
     var request = new GraphQLRequest { Query = $@"subscription {{ branchDeleted (streamId: ""{streamId}"") }}" };

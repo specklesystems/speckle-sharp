@@ -24,20 +24,20 @@ public sealed class UserInfo
   public string? company { get; init; }
   public string? avatar { get; init; }
 
-  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public Streams streams { get; init; }
 
-  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public Commits commits { get; init; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Streams
 {
   public int totalCount { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Commits
 {
   public int totalCount { get; set; }
