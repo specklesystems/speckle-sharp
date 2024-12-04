@@ -968,7 +968,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SetFilters(Filter oldValue, Filter newValue)
   {
-    if (newValue is Filter.favorite)
+    if (newValue == Filter.favorite)
     {
       throw new NotImplementedException();
     }

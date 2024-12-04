@@ -1106,11 +1106,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     Client.Subscription.CreateProjectModelsUpdatedSubscription(StreamState.StreamId).Listeners += Client_OnModelChange;
     Client.Subscription.CreateProjectVersionsUpdatedSubscription(StreamState.StreamId).Listeners +=
       Client_OnVersionUpdated;
-
-    //TODO: This Subscription has changed somewhat
-    // Client.Subscription.CreateProjectCommentsUpdatedSubscription(StreamState.StreamId);
-    Client.SubscribeCommentActivity(StreamState.StreamId);
-    Client.OnCommentActivity += Client_OnCommentActivity;
   }
 
   private async void Client_OnCommentActivity(object sender, CommentItem e)
