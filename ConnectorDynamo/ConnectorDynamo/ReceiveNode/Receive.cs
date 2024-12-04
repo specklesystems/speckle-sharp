@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -456,8 +458,7 @@ public class Receive : NodeModel
     {
       var account = Stream.GetAccount().Result;
       Client = new Client(account);
-      Client.SubscribeCommitCreated(Stream.StreamId);
-      Client.OnCommitCreated += OnCommitChange;
+      Client.Subscription.CreateProjectVersionsUpdatedSubscription(Stream.StreamId).Listeners += OnVersionChange;
 
       CheckIfBehind();
     }
@@ -597,14 +598,19 @@ public class Receive : NodeModel
     OnInputsChanged?.Invoke();
   }
 
-  private void OnCommitChange(object sender, CommitInfo e)
+  private void OnVersionChange(object sender, ProjectVersionsUpdatedMessage e)
   {
-    if (e.branchName != (Stream.BranchName ?? "main"))
+    if (e.modelId != Stream.BranchName)
     {
       return;
     }
 
-    Task.Run(async () => GetExpiredObjectCount(e.objectId));
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
+    {
+      return;
+    }
+
+    Task.Run(async () => GetExpiredObjectCount(e.version.referencedObject));
     if (AutoUpdate)
     {
       OnNewDataAvail?.Invoke();

@@ -9,6 +9,8 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -112,14 +114,19 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     ApiClient?.Dispose();
     var acc = await wrapper.GetAccount();
     ApiClient = new Client(acc);
-    ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-    ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+    ApiClient.Subscription.CreateProjectVersionsUpdatedSubscription(StreamWrapper.StreamId).Listeners +=
+      ApiClient_OnVersionUpdate;
   }
 
-  private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
+  private void ApiClient_OnVersionUpdate(object sender, ProjectVersionsUpdatedMessage e)
   {
     // Break if wrapper is branch type and branch name is not equal.
-    if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    if (StreamWrapper.Type == StreamWrapperType.Branch && e.modelId != StreamWrapper.BranchName)
+    {
+      return;
+    }
+
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }

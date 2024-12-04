@@ -290,7 +290,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       {
         try
         {
-          var result = await account.Client.GetAllPendingInvites().ConfigureAwait(true);
+          var result = await account.Client.ActiveUser.ProjectInvites().ConfigureAwait(true);
           foreach (var r in result)
           {
             Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
@@ -968,6 +968,11 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SetFilters(Filter oldValue, Filter newValue)
   {
+    if (newValue is Filter.favorite)
+    {
+      throw new NotImplementedException();
+    }
+
     this.RaiseAndSetIfChanged(ref _selectedFilter, newValue);
     //refresh stream list if the previous filter is/was favorite
     if (newValue == Filter.favorite || oldValue == Filter.favorite)

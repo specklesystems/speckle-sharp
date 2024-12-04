@@ -18,6 +18,7 @@ public partial class Client
   /// Subscribe to events of streams added for the current user
   /// </summary>
   /// <returns></returns>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeUserStreamAdded()
   {
     var request = new GraphQLRequest { Query = @"subscription { userStreamAdded }" };
@@ -43,6 +44,7 @@ public partial class Client
   /// Subscribe to events of streams updated for a specific streamId
   /// </summary>
   /// <param name="id">streamId</param>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeStreamUpdated(string id)
   {
     var request = new GraphQLRequest { Query = $@"subscription {{ streamUpdated( streamId: ""{id}"") }}" };
@@ -66,6 +68,7 @@ public partial class Client
   /// <summary>
   /// Subscribe to events of streams removed for the current user
   /// </summary>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeUserStreamRemoved()
   {
     var request = new GraphQLRequest { Query = @"subscription { userStreamRemoved }" };
@@ -91,6 +94,7 @@ public partial class Client
   /// Subscribe to new comment events
   /// </summary>
   ///
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public void SubscribeCommentActivity(string streamId)
   {
     var request = new GraphQLRequest
