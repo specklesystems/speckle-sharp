@@ -27,7 +27,7 @@ public sealed class Comment
 }
 
 /// <summary>
-/// See <c>SerializedViewerState</c> in shared/src/viewer/helpers/state.ts
+/// See <c>SerializedViewerState</c> in <a href="https://github.com/specklesystems/speckle-server/blob/main/packages/shared/src/viewer/helpers/state.ts">/shared/src/viewer/helpers/state.ts</a>
 /// </summary>
 /// <remarks>
 /// Note, there are many FE/Viewer specific properties on this object that are not reflected here (hence the <see cref="MissingMemberHandling"/> override)

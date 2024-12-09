@@ -120,9 +120,28 @@ public class CommentViewModel : ReactiveObject
 
   public void OpenComment()
   {
+    string url;
+    if (_client.Account.serverInfo.frontend2)
+    {
+      url = FormatFe2Url();
+    }
+    else
+    {
+      url = FormatFe1Url();
+    }
+
+    if (url is not null)
+    {
+      Open.Url(url);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });
+    }
+  }
+
+  private string FormatFe1Url()
+  {
     if (Comment.resources == null || !Comment.resources.Any())
     {
-      return;
+      return null;
     }
 
     var r0 = Comment.resources[0];
@@ -133,14 +152,19 @@ public class CommentViewModel : ReactiveObject
       overlay = "&overlay=" + string.Join(",", Comment.resources.Skip(1).Select(x => x.resourceId));
     }
 
-    var url =
-      $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
-    if (_client.Account.serverInfo.frontend2)
+    return $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
+  }
+
+  private string FormatFe2Url()
+  {
+    if (Comment.viewerResources == null || !Comment.viewerResources.Any())
     {
-      url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
+      return $"{_client.Account.serverInfo.url}/projects/{StreamId}";
     }
 
-    Open.Url(url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });
+    var r0 = Comment.viewerResources[0];
+    var resource = new[] { r0.modelId, r0.versionId }.Where(x => x != null);
+    var resourceId = string.Join("@", resource);
+    return $"{_client.Account.serverInfo.url}/projects/{StreamId}/models/{resourceId}#threadId={Comment.id}";
   }
 }
