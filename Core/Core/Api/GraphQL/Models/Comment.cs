@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
@@ -22,4 +23,33 @@ public sealed class Comment
   public DateTime updatedAt { get; init; }
   public DateTime? viewedAt { get; init; }
   public List<ViewerResourceItem> viewerResources { get; init; }
+  public ViewerState viewerState { get; init; }
+}
+
+/// <summary>
+/// See <c>SerializedViewerState</c> in shared/src/viewer/helpers/state.ts
+/// </summary>
+/// <remarks>
+/// Note, there are many FE/Viewer specific properties on this object that are not reflected here (hence the <see cref="MissingMemberHandling"/> override)
+/// We can add them as needed, keeping in mind flexiblity for breaking changes (these classes are intentionally not documented in our schema!)
+/// </remarks>
+[JsonObject(MissingMemberHandling = MissingMemberHandling.Ignore)]
+public sealed class ViewerState
+{
+  public ViewerStateUI ui { get; init; }
+}
+
+[JsonObject(MissingMemberHandling = MissingMemberHandling.Ignore)]
+public sealed class ViewerStateUI
+{
+  public ViewerStateCamera camera { get; init; }
+}
+
+[JsonObject(MissingMemberHandling = MissingMemberHandling.Ignore)]
+public sealed class ViewerStateCamera
+{
+  public List<double> position { get; init; }
+  public List<double> target { get; init; }
+  public bool isOrthoProjection { get; init; }
+  public double zoom { get; init; }
 }

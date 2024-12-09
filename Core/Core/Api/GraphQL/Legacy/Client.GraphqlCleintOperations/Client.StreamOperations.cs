@@ -168,7 +168,7 @@ public partial class Client
   /// <param name="limit">Max number of streams to return</param>
   /// <param name="cancellationToken"></param>
   /// <remarks>
-  /// Favourite streams is no longer a feature,
+  /// Favourite streams is no longer a feature
   /// </remarks>
   /// <returns></returns>
   [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]

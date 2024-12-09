@@ -386,7 +386,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
-      var commentData = await Client.StreamGetComments(Stream.id).ConfigureAwait(true);
+      var commentData = await Client.Comment.GetProjectComments(Stream.id).ConfigureAwait(true);
       var comments = new List<CommentViewModel>();
       foreach (var c in commentData.items)
       {
