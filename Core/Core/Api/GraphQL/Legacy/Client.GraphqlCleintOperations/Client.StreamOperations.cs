@@ -171,7 +171,7 @@ public partial class Client
   /// Favourite streams is no longer a feature
   /// </remarks>
   /// <returns></returns>
-  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public async Task<List<Stream>> FavoriteStreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -486,7 +486,7 @@ public partial class Client
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
-  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Use)}")]
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Use)}", true)]
   public async Task<bool> StreamInviteUse(
     string streamId,
     string token,

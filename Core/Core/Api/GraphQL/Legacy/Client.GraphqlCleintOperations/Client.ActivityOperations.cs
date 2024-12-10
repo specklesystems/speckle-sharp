@@ -20,6 +20,7 @@ public partial class Client
   /// <param name="limit">Max number of activity items to get</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  [Obsolete("Activity is no longer supported", true)]
   public async Task<List<ActivityItem>> StreamGetActivity(
     string id,
     DateTime? after = null,

@@ -8,17 +8,20 @@ namespace Speckle.Core.Api;
 public partial class Client
 {
   #region CommitCreated
-
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public delegate void CommitCreatedHandler(object sender, CommitInfo e);
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public event CommitCreatedHandler OnCommitCreated;
+
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public IDisposable CommitCreatedSubscription;
 
   /// <summary>
   /// Subscribe to events of commit created for a stream
   /// </summary>
   /// <returns></returns>
-  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public void SubscribeCommitCreated(string streamId)
   {
     var request = new GraphQLRequest { Query = $@"subscription {{ commitCreated (streamId: ""{streamId}"") }}" };
@@ -29,15 +32,19 @@ public partial class Client
     );
   }
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public bool HasSubscribedCommitCreated => CommitCreatedSubscription != null;
 
   #endregion
 
   #region CommitUpdated
-
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public delegate void CommitUpdatedHandler(object sender, CommitInfo e);
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public event CommitUpdatedHandler OnCommitUpdated;
+
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public IDisposable CommitUpdatedSubscription;
 
   /// <summary>
@@ -59,15 +66,19 @@ public partial class Client
     );
   }
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public bool HasSubscribedCommitUpdated => CommitUpdatedSubscription != null;
 
   #endregion
 
   #region CommitDeleted
-
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public delegate void CommitDeletedHandler(object sender, CommitInfo e);
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public event CommitDeletedHandler OnCommitDeleted;
+
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public IDisposable CommitDeletedSubscription;
 
   /// <summary>
@@ -75,7 +86,7 @@ public partial class Client
   /// </summary>
 
   /// <returns></returns>
-  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public void SubscribeCommitDeleted(string streamId)
   {
     var request = new GraphQLRequest { Query = $@"subscription {{ commitDeleted (streamId: ""{streamId}"") }}" };
@@ -85,6 +96,7 @@ public partial class Client
     );
   }
 
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public bool HasSubscribedCommitDeleted => CommitDeletedSubscription != null;
 
   #endregion

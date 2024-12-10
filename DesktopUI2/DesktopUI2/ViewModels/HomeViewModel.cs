@@ -188,16 +188,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           //NO SEARCH
           if (string.IsNullOrEmpty(SearchQuery))
           {
-            if (SelectedFilter == Filter.favorite)
-            {
-              result = await account.Client
-                .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
-                .ConfigureAwait(true);
-            }
-            else
-            {
-              result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
-            }
+            result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
           }
           //SEARCH
           else

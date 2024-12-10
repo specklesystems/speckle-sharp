@@ -196,29 +196,29 @@ public class LegacyAPITests : IDisposable
   //   Assert.That(res, Is.True);
   // }
 
-  #region activity
-
-  [Test, Order(51)]
-  public async Task StreamGetActivity()
-  {
-    var res = await _myClient.StreamGetActivity(_streamId);
-
-    Assert.That(res, Is.Not.Null);
-    //Assert.AreEqual(commitId, res[0].);
-  }
-
-  #endregion
+  // #region activity
+  //
+  // [Test, Order(51)]
+  // public async Task StreamGetActivity()
+  // {
+  //   var res = await _myClient.StreamGetActivity(_streamId);
+  //
+  //   Assert.That(res, Is.Not.Null);
+  //   //Assert.AreEqual(commitId, res[0].);
+  // }
+  //
+  // #endregion
 
   #region comments
 
-  [Test, Order(52)]
-  public async Task StreamGetComments()
-  {
-    var res = await _myClient.StreamGetActivity(_streamId);
-
-    Assert.That(res, Is.Not.Null);
-    //Assert.AreEqual(commitId, res[0].);
-  }
+  // [Test, Order(52)]
+  // public async Task StreamGetComments()
+  // {
+  //   var res = await _myClient.StreamGetActivity(_streamId);
+  //
+  //   Assert.That(res, Is.Not.Null);
+  //   //Assert.AreEqual(commitId, res[0].);
+  // }
 
   #endregion
 
