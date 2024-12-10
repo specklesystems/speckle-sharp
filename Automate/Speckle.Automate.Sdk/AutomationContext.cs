@@ -237,6 +237,7 @@ public class AutomationContext
         Query =
           @"
             mutation AutomateFunctionRunStatusReport(
+                $projectId: String!
                 $functionRunId: String!
                 $status: AutomateRunStatus!
                 $statusMessage: String
@@ -244,6 +245,7 @@ public class AutomationContext
                 $contextView: String
             ){
                 automateFunctionRunStatusReport(input: {
+                    projectId: $projectId
                     functionRunId: $functionRunId
                     status: $status
                     statusMessage: $statusMessage
@@ -254,6 +256,7 @@ public class AutomationContext
         ",
         Variables = new
         {
+          projectId = AutomationRunData.ProjectId,
           functionRunId = AutomationRunData.FunctionRunId,
           status = RunStatus,
           statusMessage = AutomationResult.StatusMessage,
@@ -368,6 +371,20 @@ public class AutomationContext
     Dictionary<string, object>? metadata = null,
     Dictionary<string, object>? visualOverrides = null
   ) => AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
+
+  /// <summary>
+  /// Add a new success case to the run results.
+  /// If the success cause has already created a success case,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <inheritdoc cref="AttachErrorToObjects"/>
+  public void AttachSuccessToObjects(
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  ) => AttachResultToObjects(ObjectResultLevel.Success, category, objectIds, message, metadata, visualOverrides);
 
   /// <summary>
   /// Add a new case to the run results.
