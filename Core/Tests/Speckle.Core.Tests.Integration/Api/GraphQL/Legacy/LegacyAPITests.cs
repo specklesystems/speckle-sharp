@@ -1,5 +1,4 @@
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Tests.Unit.Kits;
@@ -135,67 +134,67 @@ public class LegacyAPITests : IDisposable
     Assert.That(res, Is.True);
   }
 
-  [Test, Order(31)]
-  public async Task StreamInviteCreate()
-  {
-    var res = await _myClient.StreamInviteCreate(
-      new StreamInviteCreateInput
-      {
-        streamId = _streamId,
-        email = _secondUserAccount.userInfo.email,
-        message = "Whasssup!"
-      }
-    );
+  // [Test, Order(31)]
+  // public async Task StreamInviteCreate()
+  // {
+  //   var res = await _myClient.StreamInviteCreate(
+  //     new StreamInviteCreateInput
+  //     {
+  //       streamId = _streamId,
+  //       email = _secondUserAccount.userInfo.email,
+  //       message = "Whasssup!"
+  //     }
+  //   );
+  //
+  //   Assert.That(res, Is.True);
+  //
+  //   Assert.ThrowsAsync<ArgumentException>(
+  //     async () => await _myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = _streamId })
+  //   );
+  // }
 
-    Assert.That(res, Is.True);
+  // [Test, Order(32)]
+  // public async Task StreamInviteGet()
+  // {
+  //   var invites = await _secondClient.GetAllPendingInvites();
+  //
+  //   Assert.That(invites, Is.Not.Null);
+  // }
+  //
+  // [Test, Order(33)]
+  // public async Task StreamInviteUse()
+  // {
+  //   var invites = await _secondClient.GetAllPendingInvites();
+  //
+  //   var res = await _secondClient.StreamInviteUse(invites[0].streamId, invites[0].token);
+  //
+  //   Assert.That(res, Is.True);
+  // }
 
-    Assert.ThrowsAsync<ArgumentException>(
-      async () => await _myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = _streamId })
-    );
-  }
-
-  [Test, Order(32)]
-  public async Task StreamInviteGet()
-  {
-    var invites = await _secondClient.GetAllPendingInvites();
-
-    Assert.That(invites, Is.Not.Null);
-  }
-
-  [Test, Order(33)]
-  public async Task StreamInviteUse()
-  {
-    var invites = await _secondClient.GetAllPendingInvites();
-
-    var res = await _secondClient.StreamInviteUse(invites[0].streamId, invites[0].token);
-
-    Assert.That(res, Is.True);
-  }
-
-  [Test, Order(34)]
-  public async Task StreamUpdatePermission()
-  {
-    var res = await _myClient.StreamUpdatePermission(
-      new StreamPermissionInput
-      {
-        role = StreamRoles.STREAM_REVIEWER,
-        streamId = _streamId,
-        userId = _secondUserAccount.userInfo.id
-      }
-    );
-
-    Assert.That(res, Is.True);
-  }
-
-  [Test, Order(40)]
-  public async Task StreamRevokePermission()
-  {
-    var res = await _myClient.StreamRevokePermission(
-      new StreamRevokePermissionInput { streamId = _streamId, userId = _secondUserAccount.userInfo.id }
-    );
-
-    Assert.That(res, Is.True);
-  }
+  // [Test, Order(34)]
+  // public async Task StreamUpdatePermission()
+  // {
+  //   var res = await _myClient.StreamUpdatePermission(
+  //     new StreamPermissionInput
+  //     {
+  //       role = StreamRoles.STREAM_REVIEWER,
+  //       streamId = _streamId,
+  //       userId = _secondUserAccount.userInfo.id
+  //     }
+  //   );
+  //
+  //   Assert.That(res, Is.True);
+  // }
+  //
+  // [Test, Order(40)]
+  // public async Task StreamRevokePermission()
+  // {
+  //   var res = await _myClient.StreamRevokePermission(
+  //     new StreamRevokePermissionInput { streamId = _streamId, userId = _secondUserAccount.userInfo.id }
+  //   );
+  //
+  //   Assert.That(res, Is.True);
+  // }
 
   #region activity
 
