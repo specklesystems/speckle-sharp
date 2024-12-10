@@ -17,7 +17,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="CommentResource.GetProjectComments"/>
-  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}")]
+  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}", true)]
   public async Task<Comments> StreamGetComments(
     string streamId,
     int limit = 25,
@@ -83,7 +83,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="CommentResource.GetProjectComments"/>
-  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}")]
+  [Obsolete($"Use client.{nameof(CommentResource)}.{nameof(CommentResource.GetProjectComments)}", true)]
   public async Task<string> StreamGetCommentScreenshot(
     string id,
     string streamId,

@@ -4,7 +4,6 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;

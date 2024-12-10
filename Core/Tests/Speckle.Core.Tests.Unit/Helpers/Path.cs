@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Speckle.Core.Helpers;
 
