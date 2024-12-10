@@ -12,7 +12,6 @@ using DesktopUI2.Views;
 using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
-using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -45,20 +44,21 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   internal void ReloadUsers()
   {
-    AddedUsers = new ObservableCollection<AccountViewModel>();
+    var newAddedUsers = new ObservableCollection<AccountViewModel>();
     foreach (var collab in _stream.Stream.collaborators)
     //skip myself
     //if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
     //  continue;
     {
-      AddedUsers.Add(new AccountViewModel(collab));
+      newAddedUsers.Add(new AccountViewModel(collab));
     }
 
     foreach (var collab in _stream.Stream.pendingCollaborators)
     {
-      AddedUsers.Add(new AccountViewModel(collab));
+      newAddedUsers.Add(new AccountViewModel(collab));
     }
 
+    AddedUsers = newAddedUsers;
     this.RaisePropertyChanged(nameof(AddedUsers));
   }
 
@@ -395,8 +395,6 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         ex.Message
       );
     }
-
-    this.RaisePropertyChanged(nameof(AddedUsers));
   }
 
   private async void CloseCommand()
