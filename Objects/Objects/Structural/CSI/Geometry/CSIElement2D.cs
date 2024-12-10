@@ -84,6 +84,7 @@ public class CSIElement2D : Element2D
   }
   public List<double>? StiffnessModifiers { get; set; }
   public bool Opening { get; set; }
+  public CSIOpening? CSIOpening { get; set; }
 
   [DetachProperty]
   public AnalyticalResults? AnalysisResults { get; set; }
