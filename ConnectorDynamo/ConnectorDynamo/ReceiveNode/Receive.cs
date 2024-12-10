@@ -600,12 +600,13 @@ public class Receive : NodeModel
 
   private void OnVersionChange(object sender, ProjectVersionsUpdatedMessage e)
   {
-    if (e.modelId != Stream.BranchName)
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }
 
-    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
+    var isSameBranch = e.version.model.name == (Stream.BranchName ?? "main") || e.version.model.id == Stream.BranchName;
+    if (!isSameBranch)
     {
       return;
     }
