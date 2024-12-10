@@ -591,13 +591,16 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
   private void ApiClient_OnVersionUpdate(object sender, ProjectVersionsUpdatedMessage e)
   {
-    // Break if wrapper is branch type and branch name is not equal.
-    if (StreamWrapper.Type == StreamWrapperType.Branch && e.modelId != StreamWrapper.BranchName)
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }
 
-    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
+    // Break if wrapper is branch type and branch name is not equal.
+    bool isCurrentBranch =
+      StreamWrapper.Type == StreamWrapperType.Branch
+      && (e.version?.model.name == StreamWrapper.BranchName || e.version?.model.id == StreamWrapper.BranchName);
+    if (!isCurrentBranch)
     {
       return;
     }
