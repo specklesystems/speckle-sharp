@@ -31,7 +31,6 @@ using Serilog.Events;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Models;
-using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
