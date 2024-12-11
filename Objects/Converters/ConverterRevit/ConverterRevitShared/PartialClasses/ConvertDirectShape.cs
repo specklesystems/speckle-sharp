@@ -185,6 +185,7 @@ public partial class ConverterRevit
     if (existingObj != null && existingObj is DB.DirectShape existingDS) // if it's a directShape, just update
     {
       existingDS.SetShape(converted);
+      SetInstanceParameters(existingDS, speckleDs);
       appObj.Update(status: ApplicationObject.State.Updated, createdId: existingDS.UniqueId, convertedItem: existingDS);
       return appObj;
     }
