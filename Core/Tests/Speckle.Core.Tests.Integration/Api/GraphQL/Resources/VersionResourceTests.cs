@@ -80,7 +80,7 @@ public class VersionResourceTests
   {
     const string NEW_MESSAGE = "MY new version message";
 
-    UpdateVersionInput input = new(_version.id, NEW_MESSAGE);
+    UpdateVersionInput input = new(_version.id, _project.id, NEW_MESSAGE);
     Version updatedVersion = await Sut.Update(input);
 
     Assert.That(updatedVersion, Has.Property(nameof(Version.id)).EqualTo(_version.id));
@@ -91,7 +91,7 @@ public class VersionResourceTests
   [Test]
   public async Task VersionMoveToModel()
   {
-    MoveVersionsInput input = new(_model2.name, new[] { _version.id });
+    MoveVersionsInput input = new(_project.id, _model2.name, new[] { _version.id });
     string id = await Sut.MoveToModel(input);
     Assert.That(id, Is.EqualTo(_model2.id));
     Version movedVersion = await Sut.Get(_version.id, _model2.id, _project.id);
@@ -106,7 +106,7 @@ public class VersionResourceTests
   [Test]
   public async Task VersionDelete()
   {
-    DeleteVersionsInput input = new(new[] { _version.id });
+    DeleteVersionsInput input = new(new[] { _version.id }, _project.id);
 
     bool response = await Sut.Delete(input);
     Assert.That(response, Is.True);

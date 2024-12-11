@@ -18,8 +18,6 @@ public class MainUserControl : ReactiveUserControl<MainViewModel>
     this.WhenActivated(disposables => { });
     AvaloniaXamlLoader.Load(this);
 
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Launched" } }, false);
-
     NotificationManager = this.FindControl<NotificationManager>("NotificationManager");
   }
 }

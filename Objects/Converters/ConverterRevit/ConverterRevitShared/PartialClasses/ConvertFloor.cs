@@ -175,7 +175,7 @@ public partial class ConverterRevit
 #if REVIT2020 || REVIT2021
     var profiles = GetProfiles(revitFloor);
 #else
-    var sketch = Doc.GetElement(revitFloor.SketchId) as Sketch;
+    var sketch = revitFloor.Document.GetElement(revitFloor.SketchId) as Sketch;
     var profiles = GetSketchProfiles(sketch).Cast<ICurve>().ToList();
 #endif
     var type = revitFloor.Document.GetElement(revitFloor.GetTypeId()) as ElementType;
