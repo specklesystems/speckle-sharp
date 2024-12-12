@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json.Linq;
+using SpeckleActivityFactory = Speckle.Sdk.Logging.SpeckleActivityFactory;
 
 namespace Speckle.Core.Api;
 
@@ -154,6 +155,7 @@ public static partial class Operations
     CancellationToken cancellationToken = default
   )
   {
+    using var activity = SpeckleActivityFactory.Start();
     string obj = serializer.Serialize(value);
     Task[] transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToArray();
 

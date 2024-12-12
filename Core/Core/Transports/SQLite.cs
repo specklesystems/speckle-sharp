@@ -9,9 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Data.Sqlite;
-using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Sdk.Logging;
+using SpecklePathProvider = Speckle.Core.Helpers.SpecklePathProvider;
 using Timer = System.Timers.Timer;
 
 namespace Speckle.Core.Transports;
@@ -33,7 +34,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// Connects to an SQLite DB at {<paramref name="basePath"/>}/{<paramref name="applicationName"/>}/{<paramref name="scope"/>}.db
   /// Will attempt to create db + directory structure as needed
   /// </summary>
-  /// <param name="basePath">defaults to <see cref="SpecklePathProvider.UserApplicationDataPath"/> if <see langword="null"/></param>
+  /// <param name="basePath">defaults to <see cref="Helpers.SpecklePathProvider.UserApplicationDataPath"/> if <see langword="null"/></param>
   /// <param name="applicationName">defaults to <c>"Speckle"</c> if <see langword="null"/></param>
   /// <param name="scope">defaults to <c>"Data"</c> if <see langword="null"/></param>
   /// <exception cref="SqliteException">Failed to initialize a connection to the db</exception>
@@ -318,6 +319,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
       using (var c = new SqliteConnection(_connectionString))
       {
+        using var activity = SpeckleActivityFactory.Start("Consume");
         c.Open();
         using var t = c.BeginTransaction();
         const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
