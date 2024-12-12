@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIIFC" Version="2020.2.60" ExcludeAssets="runtime"/>
   </ItemGroup>
 
   <ItemGroup>
