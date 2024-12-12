@@ -469,6 +469,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCivil2025", "Conne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2025", "Objects\Converters\ConverterAutocadCivil\ConverterCivil2025\ConverterCivil2025.csproj", "{F06E4C37-4076-4272-9CA6-FB505E02CD31}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendReceive", "Core\Tests\SendReceive\SendReceive.csproj", "{F164E83B-C177-4BC7-9774-0AF7F239C4DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2399,6 +2401,22 @@ Global
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31}.Release|x64.ActiveCfg = Release|Any CPU
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31}.Release|x64.Build.0 = Release|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Debug|x64.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release|x64.ActiveCfg = Release|Any CPU
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2575,6 +2593,7 @@ Global
 		{829688CD-CECE-4F6C-A5A0-032BB39CD9E0} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{70DEAA13-6DC8-44A0-B287-9E806A8054F1} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
 		{F06E4C37-4076-4272-9CA6-FB505E02CD31} = {BE521908-7944-46F3-98BF-B47D34509934}
+		{F164E83B-C177-4BC7-9774-0AF7F239C4DC} = {5009BB59-0F77-4202-8FD2-DECC07E93146}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
