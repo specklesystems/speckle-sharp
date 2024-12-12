@@ -1,14 +1,27 @@
 using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
+using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI;
 
 public partial class ConverterCSI
 {
-  public string WallPropertyToNative(CSIProperty2D Wall)
+  public string WallPropertyToNative(Property2D property2D)
   {
-    throw new ConversionNotSupportedException("Wall properties are not currently supported on receive");
+    var materialName = MaterialToNative(property2D.material);
+    int success = Model.PropArea.SetWall(
+      property2D.name,
+      eWallPropType.Specified,
+      eShellType.ShellThin, // Lateral stability analysis typically has walls as thin shells
+      materialName,
+      ScaleToNative(property2D.thickness, property2D.units)
+    );
+    if (success != 0)
+    {
+      throw new ConversionException("Failed to set wall property");
+    }
+    return property2D.name;
   }
 
   public CSIProperty2D WallPropertyToSpeckle(string property)

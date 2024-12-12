@@ -7,7 +7,7 @@ public enum PropertyType2D
   Plate,
   Shell,
   Curved,
-  Wall,
+  Wall, // NOTE: Shell and wall duplicates? Where do these come from?
   Strain,
   Axi,
   Load
