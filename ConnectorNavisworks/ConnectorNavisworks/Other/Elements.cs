@@ -16,8 +16,7 @@ public class Element
   private ModelItem _modelItem;
 
   private string _indexPath;
-
-  const char SEPARATOR = '/';
+  private const char SEPARATOR = '/';
 
   public string IndexPath
   {
@@ -243,7 +242,13 @@ public class Element
   {
     if (modelItem == null || baseNode == null || converted == null)
     {
-      throw new ArgumentNullException("modelItem, baseNode, and converted cannot be null.");
+      throw new ArgumentNullException(
+        modelItem == null
+          ? nameof(modelItem)
+          : baseNode == null
+            ? nameof(baseNode)
+            : nameof(converted)
+      );
     }
 
     var firstObjectAncestor =
@@ -272,8 +277,7 @@ public class Element
 
     var groupedProperties = properties
       .GroupBy(property => property.ConcatenatedKey)
-      .Where(group => group.Select(item => item.Value).Distinct().Count() == 1)
-      .ToDictionary(group => group.Key, group => group.First().Value);
+      .ToDictionary(group => group.Key, group => group.Select(item => item.Value).Last());
 
     var formattedProperties = groupedProperties
       .Select(

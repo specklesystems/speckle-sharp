@@ -195,6 +195,14 @@ public sealed class SubscriptionResource : IDisposable
                                  role
                                  avatar
                                }
+                               model{
+                                 id
+                                 name
+                                 description
+                                 displayName
+                                 updatedAt
+                                 createdAt
+                               }
                              }
                            }
                          }
