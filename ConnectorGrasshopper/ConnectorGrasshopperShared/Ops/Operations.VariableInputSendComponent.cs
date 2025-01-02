@@ -558,7 +558,10 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
           transportBranches.Add(serverTransport, sw.BranchName ?? "main");
           Transports.Add(serverTransport);
 
-          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
+          using Client c = new(acc);
+          var workspaceId = c.GetWorkspaceId(sw.StreamId).Result;
+
+          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend, workspaceId);
         }
         else if (transport is ITransport otherTransport)
         {

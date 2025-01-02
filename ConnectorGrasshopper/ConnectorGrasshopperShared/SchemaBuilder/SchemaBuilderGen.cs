@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
-using ConnectorGrasshopperUtils;
-using Grasshopper;
 using Grasshopper.Kernel;
+using Grasshopper;
+using ConnectorGrasshopperUtils;
 
 namespace ConnectorGrasshopper;
 
@@ -53,266 +53,6 @@ public class AdaptiveComponentSchemaComponent : CreateSchemaObjectBase
     SelectedConstructor = CSOUtils.FindConstructor(
       "Objects.BuiltElements.Revit.AdaptiveComponent.ctor(System.String,System.String,System.Collections.Generic.List`1[Objects.Geometry.Point],System.Boolean,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])",
       "Objects.BuiltElements.Revit.AdaptiveComponent"
-    );
-    base.AddedToDocument(document);
-  }
-}
-
-// This is generated code:
-public class AdvanceSteelBeamSchemaComponent : CreateSchemaObjectBase
-{
-  static AdvanceSteelBeamSchemaComponent()
-  {
-    SpeckleGHSettings.SettingsChanged += (_, args) =>
-    {
-      if (!args.Key.StartsWith("Speckle2:tabs."))
-      {
-        return;
-      }
-
-      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-      if (proxy == null)
-      {
-        return;
-      }
-
-      proxy.Exposure = internalExposure;
-    };
-  }
-
-  public AdvanceSteelBeamSchemaComponent()
-    : base(
-      "AdvanceSteelBeam",
-      "AdvanceSteelBeam",
-      "Creates a Advance Steel beam by curve.",
-      "Speckle 2 Advance Steel",
-      "Structure"
-    ) { }
-
-  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
-
-  internal static Guid internalGuid => new("bc7e258d-7e41-97cf-86d4-59bf3312ea52");
-
-  public override GH_Exposure Exposure => internalExposure;
-
-  public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
-
-  public override void AddedToDocument(GH_Document document)
-  {
-    SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.StructuralMaterial)",
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelBeam"
-    );
-    base.AddedToDocument(document);
-  }
-}
-
-// This is generated code:
-public class AdvanceSteelCircularBoltSchemaComponent : CreateSchemaObjectBase
-{
-  static AdvanceSteelCircularBoltSchemaComponent()
-  {
-    SpeckleGHSettings.SettingsChanged += (_, args) =>
-    {
-      if (!args.Key.StartsWith("Speckle2:tabs."))
-      {
-        return;
-      }
-
-      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-      if (proxy == null)
-      {
-        return;
-      }
-
-      proxy.Exposure = internalExposure;
-    };
-  }
-
-  public AdvanceSteelCircularBoltSchemaComponent()
-    : base(
-      "AdvanceSteelCircularBolt",
-      "AdvanceSteelCircularBolt",
-      "Creates a Advance Steel circular bolt.",
-      "Speckle 2 Advance Steel",
-      "Structure"
-    ) { }
-
-  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
-
-  internal static Guid internalGuid => new("2882d168-7e7c-5090-be24-e70091521c1f");
-
-  public override GH_Exposure Exposure => internalExposure;
-
-  public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
-
-  public override void AddedToDocument(GH_Document document)
-  {
-    SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelCircularBolt.ctor",
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelCircularBolt"
-    );
-    base.AddedToDocument(document);
-  }
-}
-
-// This is generated code:
-public class AdvanceSteelPlateSchemaComponent : CreateSchemaObjectBase
-{
-  static AdvanceSteelPlateSchemaComponent()
-  {
-    SpeckleGHSettings.SettingsChanged += (_, args) =>
-    {
-      if (!args.Key.StartsWith("Speckle2:tabs."))
-      {
-        return;
-      }
-
-      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-      if (proxy == null)
-      {
-        return;
-      }
-
-      proxy.Exposure = internalExposure;
-    };
-  }
-
-  public AdvanceSteelPlateSchemaComponent()
-    : base(
-      "AdvanceSteelPlate",
-      "AdvanceSteelPlate",
-      "Creates a Advance Steel plate.",
-      "Speckle 2 Advance Steel",
-      "Structure"
-    ) { }
-
-  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
-
-  internal static Guid internalGuid => new("6cf1d0a8-d647-1ccc-f5b5-51e2f185eaee");
-
-  public override GH_Exposure Exposure => internalExposure;
-
-  public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
-
-  public override void AddedToDocument(GH_Document document)
-  {
-    SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,Objects.Structural.Materials.StructuralMaterial)",
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelPlate"
-    );
-    base.AddedToDocument(document);
-  }
-}
-
-// This is generated code:
-public class AdvanceSteelRectangularBoltSchemaComponent : CreateSchemaObjectBase
-{
-  static AdvanceSteelRectangularBoltSchemaComponent()
-  {
-    SpeckleGHSettings.SettingsChanged += (_, args) =>
-    {
-      if (!args.Key.StartsWith("Speckle2:tabs."))
-      {
-        return;
-      }
-
-      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-      if (proxy == null)
-      {
-        return;
-      }
-
-      proxy.Exposure = internalExposure;
-    };
-  }
-
-  public AdvanceSteelRectangularBoltSchemaComponent()
-    : base(
-      "AdvanceSteelRectangularBolt",
-      "AdvanceSteelRectangularBolt",
-      "Creates a Advance Steel rectangular bolt.",
-      "Speckle 2 Advance Steel",
-      "Structure"
-    ) { }
-
-  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
-
-  internal static Guid internalGuid => new("f6791563-253b-9232-f611-bf6249626a34");
-
-  public override GH_Exposure Exposure => internalExposure;
-
-  public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
-
-  public override void AddedToDocument(GH_Document document)
-  {
-    SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelRectangularBolt.ctor",
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelRectangularBolt"
-    );
-    base.AddedToDocument(document);
-  }
-}
-
-// This is generated code:
-public class AdvanceSteelSpecialPartSchemaComponent : CreateSchemaObjectBase
-{
-  static AdvanceSteelSpecialPartSchemaComponent()
-  {
-    SpeckleGHSettings.SettingsChanged += (_, args) =>
-    {
-      if (!args.Key.StartsWith("Speckle2:tabs."))
-      {
-        return;
-      }
-
-      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
-      if (proxy == null)
-      {
-        return;
-      }
-
-      proxy.Exposure = internalExposure;
-    };
-  }
-
-  public AdvanceSteelSpecialPartSchemaComponent()
-    : base(
-      "AdvanceSteelSpecialPart",
-      "AdvanceSteelSpecialPart",
-      "Creates a Advance Steel special part.",
-      "Speckle 2 Advance Steel",
-      "Structure"
-    ) { }
-
-  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
-
-  internal static Guid internalGuid => new("c93ed779-6784-00a3-d834-951108a361af");
-
-  public override GH_Exposure Exposure => internalExposure;
-
-  public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
-
-  public override void AddedToDocument(GH_Document document)
-  {
-    SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelSpecialPart.ctor",
-      "Objects.BuiltElements.AdvanceSteel.AdvanceSteelSpecialPart"
     );
     base.AddedToDocument(document);
   }
@@ -409,7 +149,7 @@ public class ArchicadBeamSchemaComponent : CreateSchemaObjectBase
   public override void AddedToDocument(GH_Document document)
   {
     SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.Archicad.ArchicadBeam.ctor(Objects.Geometry.Point,Objects.Geometry.Point)",
+      "Objects.BuiltElements.Archicad.ArchicadBeam.ctor",
       "Objects.BuiltElements.Archicad.ArchicadBeam"
     );
     base.AddedToDocument(document);
@@ -461,8 +201,100 @@ public class ArchicadColumnSchemaComponent : CreateSchemaObjectBase
   public override void AddedToDocument(GH_Document document)
   {
     SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.Archicad.ArchicadColumn.ctor(Objects.Geometry.Point,System.Double)",
+      "Objects.BuiltElements.Archicad.ArchicadColumn.ctor",
       "Objects.BuiltElements.Archicad.ArchicadColumn"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class ArchicadOpeningSchemaComponent : CreateSchemaObjectBase
+{
+  static ArchicadOpeningSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public ArchicadOpeningSchemaComponent()
+    : base("ArchicadOpening", "ArchicadOpening", "Creates an Archicad opening.", "Speckle 2 Archicad", "Structure") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Archicad";
+
+  internal static Guid internalGuid => new("70567e1e-5156-d888-febb-fb5bf9f16515");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Archicad.ArchicadOpening.ctor",
+      "Objects.BuiltElements.Archicad.ArchicadOpening"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class ArchicadWallSchemaComponent : CreateSchemaObjectBase
+{
+  static ArchicadWallSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public ArchicadWallSchemaComponent()
+    : base("ArchicadWall", "ArchicadWall", "Creates an Archicad wall.", "Speckle 2 Archicad", "Structure") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Archicad";
+
+  internal static Guid internalGuid => new("241e7c68-a688-47f3-c541-d2585517fd71");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Archicad.ArchicadWall.ctor",
+      "Objects.BuiltElements.Archicad.ArchicadWall"
     );
     base.AddedToDocument(document);
   }
@@ -509,6 +341,145 @@ public class AreaSchemaComponent : CreateSchemaObjectBase
     SelectedConstructor = CSOUtils.FindConstructor(
       "Objects.BuiltElements.Area.ctor(System.String,System.String,Objects.BuiltElements.Level,Objects.Geometry.Point)",
       "Objects.BuiltElements.Area"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class AsteelBeamSchemaComponent : CreateSchemaObjectBase
+{
+  static AsteelBeamSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public AsteelBeamSchemaComponent()
+    : base("AsteelBeam", "AsteelBeam", "Creates a Advance Steel beam by curve.", "Speckle 2 Advance Steel", "Structure")
+  { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
+
+  internal static Guid internalGuid => new("74818c4c-2d7a-c317-2333-4c051a091c84");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.AdvanceSteel.AsteelBeam.ctor(Objects.ICurve,Objects.Structural.Properties.Profiles.SectionProfile,Objects.Structural.Materials.StructuralMaterial)",
+      "Objects.BuiltElements.AdvanceSteel.AsteelBeam"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class AsteelPlateSchemaComponent : CreateSchemaObjectBase
+{
+  static AsteelPlateSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public AsteelPlateSchemaComponent()
+    : base("AsteelPlate", "AsteelPlate", "Creates a Advance Steel plate.", "Speckle 2 Advance Steel", "Structure") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
+
+  internal static Guid internalGuid => new("0ee1f665-ad53-c1d8-c25b-a6108141358a");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.AdvanceSteel.AsteelPlate.ctor(Objects.Geometry.Polyline,System.String,Objects.Structural.Materials.StructuralMaterial)",
+      "Objects.BuiltElements.AdvanceSteel.AsteelPlate"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class AsteelSlabSchemaComponent : CreateSchemaObjectBase
+{
+  static AsteelSlabSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public AsteelSlabSchemaComponent()
+    : base("AsteelSlab", "AsteelSlab", "Creates a Advance Steel slab.", "Speckle 2 Advance Steel", "Structure") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Advance Steel";
+
+  internal static Guid internalGuid => new("c3ce3b39-83ba-6541-d9d7-b3db39157cd0");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.AdvanceSteel.AsteelSlab.ctor(Objects.Geometry.Polyline,System.String,Objects.Structural.Materials.StructuralMaterial)",
+      "Objects.BuiltElements.AdvanceSteel.AsteelSlab"
     );
     base.AddedToDocument(document);
   }
@@ -1005,6 +976,52 @@ public class CircularSchemaComponent : CreateSchemaObjectBase
 }
 
 // This is generated code:
+public class ClassificationSchemaComponent : CreateSchemaObjectBase
+{
+  static ClassificationSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public ClassificationSchemaComponent()
+    : base("Classification", "Classification", "A classification to set on an element", "Speckle 2 BIM", "All") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 BIM";
+
+  internal static Guid internalGuid => new("0150e2ad-6fab-64ef-3b06-6bec8da14a2b");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Archicad.Classification.ctor(System.String,System.String,System.String)",
+      "Objects.BuiltElements.Archicad.Classification"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
 public class ColumnSchemaComponent : CreateSchemaObjectBase
 {
   static ColumnSchemaComponent()
@@ -1036,6 +1053,57 @@ public class ColumnSchemaComponent : CreateSchemaObjectBase
   public override GH_Exposure Exposure => internalExposure;
 
   public override Guid ComponentGuid => internalGuid;
+  public override bool Obsolete => true;
+  internal static GH_Exposure internalExposure => GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Column.ctor(Objects.ICurve)",
+      "Objects.BuiltElements.Column"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class ComponentPropertiesSchemaComponent : CreateSchemaObjectBase
+{
+  static ComponentPropertiesSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public ComponentPropertiesSchemaComponent()
+    : base(
+      "ComponentProperties",
+      "ComponentProperties",
+      "An Archicad element component properties",
+      "Speckle 2 Archicad",
+      "Elements"
+    ) { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Archicad";
+
+  internal static Guid internalGuid => new("2b011158-561b-3286-017c-91b9d35ee2c1");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
 
   internal static GH_Exposure internalExposure =>
     SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
@@ -1043,8 +1111,8 @@ public class ColumnSchemaComponent : CreateSchemaObjectBase
   public override void AddedToDocument(GH_Document document)
   {
     SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.BuiltElements.Column.ctor(Objects.ICurve)",
-      "Objects.BuiltElements.Column"
+      "Objects.BuiltElements.Archicad.ComponentProperties.ctor(System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Archicad.PropertyGroup],System.String)",
+      "Objects.BuiltElements.Archicad.ComponentProperties"
     );
     base.AddedToDocument(document);
   }
@@ -1232,9 +1300,8 @@ public class CSIElement1DSchemaComponent : CreateSchemaObjectBase
   public override GH_Exposure Exposure => internalExposure;
 
   public override Guid ComponentGuid => internalGuid;
-
-  internal static GH_Exposure internalExposure =>
-    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+  public override bool Obsolete => true;
+  internal static GH_Exposure internalExposure => GH_Exposure.hidden;
 
   public override void AddedToDocument(GH_Document document)
   {
@@ -1291,7 +1358,59 @@ public class CSIElement1D1SchemaComponent : CreateSchemaObjectBase
   public override void AddedToDocument(GH_Document document)
   {
     SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.CSI.Properties.CSILinearSpring,System.Double[],Objects.Structural.CSI.Properties.DesignProcedure)",
+      "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Structural.Geometry.Node,System.Double,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
+      "Objects.Structural.CSI.Geometry.CSIElement1D"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class CSIElement1D2SchemaComponent : CreateSchemaObjectBase
+{
+  static CSIElement1D2SchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public CSIElement1D2SchemaComponent()
+    : base(
+      "Element1D (from local axis)",
+      "Element1D (from local axis)",
+      "Creates a Speckle CSI 1D element (from local axis)",
+      "Speckle 2 CSI",
+      "Geometry"
+    ) { }
+
+  internal static string internalCategory { get; } = "Speckle 2 CSI";
+
+  internal static Guid internalGuid => new("438e6adb-2015-952d-4470-7a7c493bafb8");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.Structural.CSI.Geometry.CSIElement1D.ctor(Objects.Geometry.Line,Objects.Structural.Properties.Property1D,Objects.Structural.Geometry.ElementType1D,System.String,Objects.Structural.Geometry.Restraint,Objects.Structural.Geometry.Restraint,Objects.Geometry.Vector,Objects.Geometry.Vector,Objects.Geometry.Plane,Objects.Structural.CSI.Properties.CSILinearSpring,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.DesignProcedure)",
       "Objects.Structural.CSI.Geometry.CSIElement1D"
     );
     base.AddedToDocument(document);
@@ -1336,6 +1455,57 @@ public class CSIElement2DSchemaComponent : CreateSchemaObjectBase
   public override GH_Exposure Exposure => internalExposure;
 
   public override Guid ComponentGuid => internalGuid;
+  public override bool Obsolete => true;
+  internal static GH_Exposure internalExposure => GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.Structural.CSI.Geometry.CSIElement2D.ctor(System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Properties.Property2D,System.Double,System.Double,System.Double[],Objects.Structural.CSI.Properties.CSIAreaSpring,Objects.Structural.CSI.Properties.CSIDiaphragm)",
+      "Objects.Structural.CSI.Geometry.CSIElement2D"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class CSIElement2D1SchemaComponent : CreateSchemaObjectBase
+{
+  static CSIElement2D1SchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public CSIElement2D1SchemaComponent()
+    : base(
+      "Element2D",
+      "Element2D",
+      "Creates a Speckle CSI 2D element (based on a list of edge ie. external, geometry defining nodes)",
+      "Speckle 2 CSI",
+      "Geometry"
+    ) { }
+
+  internal static string internalCategory { get; } = "Speckle 2 CSI";
+
+  internal static Guid internalGuid => new("abcdbcdf-302e-73c7-743a-05c88c56ef92");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
 
   internal static GH_Exposure internalExposure =>
     SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
@@ -1343,7 +1513,7 @@ public class CSIElement2DSchemaComponent : CreateSchemaObjectBase
   public override void AddedToDocument(GH_Document document)
   {
     SelectedConstructor = CSOUtils.FindConstructor(
-      "Objects.Structural.CSI.Geometry.CSIElement2D.ctor(System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Properties.Property2D,System.Double,System.Double,System.Double[],Objects.Structural.CSI.Properties.CSIAreaSpring,Objects.Structural.CSI.Properties.CSIDiaphragm)",
+      "Objects.Structural.CSI.Geometry.CSIElement2D.ctor(System.Collections.Generic.List`1[Objects.Structural.Geometry.Node],Objects.Structural.Properties.Property2D,System.Double,System.Double,System.Collections.Generic.List`1[System.Double],Objects.Structural.CSI.Properties.CSIAreaSpring,Objects.Structural.CSI.Properties.CSIDiaphragm)",
       "Objects.Structural.CSI.Geometry.CSIElement2D"
     );
     base.AddedToDocument(document);
@@ -6408,6 +6578,52 @@ public class PropertyDamper1SchemaComponent : CreateSchemaObjectBase
 }
 
 // This is generated code:
+public class PropertyGroupSchemaComponent : CreateSchemaObjectBase
+{
+  static PropertyGroupSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public PropertyGroupSchemaComponent()
+    : base("PropertyGroup", "PropertyGroup", "An Archicad element property group", "Speckle 2 Archicad", "Elements") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Archicad";
+
+  internal static Guid internalGuid => new("ae3b54eb-83fe-73e9-bea7-ff508581e266");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Archicad.PropertyGroup.ctor(System.String,System.Collections.Generic.List`1[Objects.BuiltElements.Archicad.Property],System.String)",
+      "Objects.BuiltElements.Archicad.PropertyGroup"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
 public class PropertyMassSchemaComponent : CreateSchemaObjectBase
 {
   static PropertyMassSchemaComponent()
@@ -8064,7 +8280,7 @@ public class RevitDuctSchemaComponent : CreateSchemaObjectBase
   }
 
   public RevitDuctSchemaComponent()
-    : base("RevitDuct", "RevitDuct", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
+    : base("RevitDuct (DEPRECATED)", "RevitDuct (DEPRECATED)", "Creates a Revit duct", "Speckle 2 Revit", "MEP") { }
 
   internal static string internalCategory { get; } = "Speckle 2 Revit";
 
@@ -8814,6 +9030,52 @@ public class RevitTopographySchemaComponent : CreateSchemaObjectBase
     SelectedConstructor = CSOUtils.FindConstructor(
       "Objects.BuiltElements.Revit.RevitTopography.ctor(Objects.Geometry.Mesh,System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])",
       "Objects.BuiltElements.Revit.RevitTopography"
+    );
+    base.AddedToDocument(document);
+  }
+}
+
+// This is generated code:
+public class RevitToposolidSchemaComponent : CreateSchemaObjectBase
+{
+  static RevitToposolidSchemaComponent()
+  {
+    SpeckleGHSettings.SettingsChanged += (_, args) =>
+    {
+      if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
+        return;
+      }
+
+      var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+      if (proxy == null)
+      {
+        return;
+      }
+
+      proxy.Exposure = internalExposure;
+    };
+  }
+
+  public RevitToposolidSchemaComponent()
+    : base("RevitToposolid", "RevitToposolid", "Creates a Revit Toposolid", "Speckle 2 Revit", "Architecture") { }
+
+  internal static string internalCategory { get; } = "Speckle 2 Revit";
+
+  internal static Guid internalGuid => new("557b4a20-4ebd-3aa5-08f9-58a4c4c0d080");
+
+  public override GH_Exposure Exposure => internalExposure;
+
+  public override Guid ComponentGuid => internalGuid;
+
+  internal static GH_Exposure internalExposure =>
+    SpeckleGHSettings.GetTabVisibility(internalCategory) ? GH_Exposure.tertiary : GH_Exposure.hidden;
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    SelectedConstructor = CSOUtils.FindConstructor(
+      "Objects.BuiltElements.Revit.RevitToposolid.ctor(Objects.BuiltElements.Level,System.Collections.Generic.List`1[Objects.Geometry.Polycurve],System.Collections.Generic.List`1[Objects.Geometry.Point],System.Collections.Generic.List`1[Speckle.Core.Models.Base],System.Collections.Generic.List`1[Objects.BuiltElements.Revit.Parameter])",
+      "Objects.BuiltElements.Revit.RevitToposolid"
     );
     base.AddedToDocument(document);
   }

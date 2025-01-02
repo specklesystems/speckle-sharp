@@ -29,7 +29,8 @@ using Material.Icons.Avalonia;
 using ReactiveUI;
 using Serilog.Events;
 using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -353,37 +354,38 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     ReportFilterItems = report.Select(o => o.Status).Distinct().ToList();
   }
 
-  private async void GetActivity()
+  private void GetActivity()
   {
-    try
-    {
-      var filteredActivity = (await Client.StreamGetActivity(Stream.id).ConfigureAwait(true))
-        .Where(
-          x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create"
-        )
-        .Reverse()
-        .ToList();
-      var activity = new List<ActivityViewModel>();
-      foreach (var a in filteredActivity)
-      {
-        var avm = new ActivityViewModel(a, Client);
-        activity.Add(avm);
-      }
-
-      Activity = activity;
-      ScrollToBottom();
-    }
-    catch (Exception ex)
-    {
-      SpeckleLog.Logger.Error(ex, "Failed getting activity {exceptionMessage}", ex.Message);
-    }
+    //Disabled as API is deprecated
+    // try
+    // {
+    //   var filteredActivity = (await Client.StreamGetActivity(Stream.id).ConfigureAwait(true))
+    //     .Where(
+    //       x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create"
+    //     )
+    //     .Reverse()
+    //     .ToList();
+    //   var activity = new List<ActivityViewModel>();
+    //   foreach (var a in filteredActivity)
+    //   {
+    //     var avm = new ActivityViewModel(a, Client);
+    //     activity.Add(avm);
+    //   }
+    //
+    //   Activity = activity;
+    //   ScrollToBottom();
+    // }
+    // catch (Exception ex)
+    // {
+    //   SpeckleLog.Logger.Error(ex, "Failed getting activity {exceptionMessage}", ex.Message);
+    // }
   }
 
   private async Task GetComments()
   {
     try
     {
-      var commentData = await Client.StreamGetComments(Stream.id).ConfigureAwait(true);
+      var commentData = await Client.Comment.GetProjectComments(Stream.id).ConfigureAwait(true);
       var comments = new List<CommentViewModel>();
       foreach (var c in commentData.items)
       {
@@ -1099,25 +1101,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private void Subscribe()
   {
-    Client.SubscribeCommitCreated(StreamState.StreamId);
-    Client.SubscribeCommitUpdated(StreamState.StreamId);
-    Client.SubscribeCommitDeleted(StreamState.StreamId);
-    Client.OnCommitCreated += Client_OnCommitCreated;
-    Client.OnCommitUpdated += Client_OnCommitChange;
-    Client.OnCommitDeleted += Client_OnCommitChange;
-
-    Client.SubscribeBranchCreated(StreamState.StreamId);
-    Client.SubscribeBranchUpdated(StreamState.StreamId);
-    Client.SubscribeBranchDeleted(StreamState.StreamId);
-    Client.OnBranchCreated += Client_OnBranchChange;
-    Client.OnBranchUpdated += Client_OnBranchChange;
-    Client.OnBranchDeleted += Client_OnBranchChange;
-
-    Client.SubscribeCommentActivity(StreamState.StreamId);
-    Client.OnCommentActivity += Client_OnCommentActivity;
-
-    Client.SubscribeStreamUpdated(StreamState.StreamId);
-    Client.OnStreamUpdated += Client_OnStreamUpdated;
+    Client.Subscription.CreateProjectUpdatedSubscription(StreamState.StreamId).Listeners += Client_OnStreamUpdated;
+    Client.Subscription.CreateProjectModelsUpdatedSubscription(StreamState.StreamId).Listeners += Client_OnModelChange;
+    Client.Subscription.CreateProjectVersionsUpdatedSubscription(StreamState.StreamId).Listeners +=
+      Client_OnVersionUpdated;
   }
 
   private async void Client_OnCommentActivity(object sender, CommentItem e)
@@ -1175,7 +1162,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  private async void Client_OnBranchChange(object sender, BranchInfo info)
+  private async void Client_OnModelChange(object sender, ProjectModelsUpdatedMessage info)
   {
     if (!_isAddingBranches)
     {
@@ -1183,19 +1170,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  private async void Client_OnCommitChange(object sender, CommitInfo info)
-  {
-    if (info.branchName == SelectedBranch.Branch.name)
-    {
-      await GetCommits().ConfigureAwait(true);
-    }
-  }
-
-  private async void Client_OnCommitCreated(object sender, CommitInfo info)
+  private async void Client_OnVersionUpdated(object sender, ProjectVersionsUpdatedMessage info)
   {
     try
     {
-      if (info.branchName == SelectedBranch.Branch.name)
+      if (info.modelId == SelectedBranch.Branch.id)
       {
         await GetCommits().ConfigureAwait(true);
       }
@@ -1205,8 +1184,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         return;
       }
 
+      if (info.type is not ProjectVersionsUpdatedMessageType.CREATED)
+      {
+        return;
+      }
+
       var authorName = "You";
-      if (info.authorId != Client.Account.userInfo.id)
+      if (info.version?.authorUser.id != Client.Account.userInfo.id)
       {
         var author = await Client.OtherUserGet(info.id).ConfigureAwait(true);
         authorName = author.name;
@@ -1226,7 +1210,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         MainUserControl.NotificationManager.Show(
           new PopUpNotificationViewModel
           {
-            Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
+            Title = $"🆕 {authorName} sent to {Stream.name}/{info.modelId}'",
             Message = openOnline ? "Click to view it online" : "Click open the project",
             OnClick = () =>
             {
@@ -1259,13 +1243,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       SpeckleLog.Logger.Warning(
         ex,
         "Swallowing exception in {methodName}: {exceptionMessage}",
-        nameof(Client_OnCommitCreated),
+        nameof(Client_OnVersionUpdated),
         ex.Message
       );
     }
   }
 
-  private void Client_OnStreamUpdated(object sender, StreamInfo e)
+  private void Client_OnStreamUpdated(object sender, ProjectUpdatedMessage e)
   {
     GetStream().ConfigureAwait(true);
   }
@@ -1409,6 +1393,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       LastUsedTime = DateTime.UtcNow;
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
+      string? workspaceId = await Client.GetWorkspaceId(StreamState.StreamId).ConfigureAwait(false);
+
       Analytics.TrackEvent(
         Client.Account,
         Analytics.Events.Send,
@@ -1420,7 +1406,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
           { "branches", Stream.branches?.totalCount },
           { "commits", Stream.commits?.totalCount },
-          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
+          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+          { "workspace_id", workspaceId },
         }
       );
 
@@ -1548,6 +1535,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
       LastUsedTime = DateTime.UtcNow;
 
+      string? workspaceId = await Client.GetWorkspaceId(StreamState.StreamId).ConfigureAwait(false);
+
       Analytics.TrackEvent(
         StreamState.Client.Account,
         Analytics.Events.Receive,
@@ -1563,7 +1552,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           { "branches", Stream.branches?.totalCount },
           { "commits", Stream.commits?.totalCount },
           { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
-          { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false }
+          { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false },
+          { "workspace_id", workspaceId },
         }
       );
 

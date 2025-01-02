@@ -16,7 +16,7 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
     : base(
       "Account from Server/Token",
       "AccST",
-      "Returns an account based on a Server URL and a token. URL can be a stream url too.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF",
+      "Returns an account based on a Server URL and a token. URL can be a stream url too.\n You'll need to raise a token with at least Profile:Read and Stream:Read to access your account data. Add Stream:Write to enable publishing.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF",
       ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.COMPUTE
     )

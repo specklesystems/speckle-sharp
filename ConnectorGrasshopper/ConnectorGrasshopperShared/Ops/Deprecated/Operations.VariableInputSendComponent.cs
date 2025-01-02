@@ -533,7 +533,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
           transportBranches.Add(serverTransport, sw.BranchName ?? "main");
           Transports.Add(serverTransport);
 
-          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
+          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend, null);
         }
         else if (transport is ITransport otherTransport)
         {

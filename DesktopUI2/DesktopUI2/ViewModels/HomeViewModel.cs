@@ -188,16 +188,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           //NO SEARCH
           if (string.IsNullOrEmpty(SearchQuery))
           {
-            if (SelectedFilter == Filter.favorite)
-            {
-              result = await account.Client
-                .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
-                .ConfigureAwait(true);
-            }
-            else
-            {
-              result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
-            }
+            result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
           }
           //SEARCH
           else
@@ -290,7 +281,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       {
         try
         {
-          var result = await account.Client.GetAllPendingInvites().ConfigureAwait(true);
+          var result = await account.Client.ActiveUser.ProjectInvites().ConfigureAwait(true);
           foreach (var r in result)
           {
             Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
@@ -968,6 +959,11 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SetFilters(Filter oldValue, Filter newValue)
   {
+    if (newValue == Filter.favorite)
+    {
+      throw new NotImplementedException();
+    }
+
     this.RaiseAndSetIfChanged(ref _selectedFilter, newValue);
     //refresh stream list if the previous filter is/was favorite
     if (newValue == Filter.favorite || oldValue == Filter.favorite)

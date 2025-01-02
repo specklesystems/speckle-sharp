@@ -56,6 +56,10 @@ public sealed class SpeckleLogConfiguration
 
   private const string DEFAULT_SENTRY_DNS = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
+  public string SeqToken { get; }
+
+  private const string DEFAULT_SEQ_TOKEN = "EzYqoMOmkow12Lw0KYXp";
+
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
   /// These are the sane defaults we should be using across connectors.
@@ -73,7 +77,8 @@ public sealed class SpeckleLogConfiguration
     bool logToSentry = true,
     bool logToFile = true,
     bool enhancedLogContext = true,
-    string sentryDns = DEFAULT_SENTRY_DNS
+    string sentryDns = DEFAULT_SENTRY_DNS,
+    string seqToken = DEFAULT_SEQ_TOKEN
   )
   {
     MinimumLevel = minimumLevel;
@@ -83,6 +88,7 @@ public sealed class SpeckleLogConfiguration
     LogToFile = logToFile;
     EnhancedLogContext = enhancedLogContext;
     SentryDns = sentryDns;
+    SeqToken = seqToken;
   }
 }
 
@@ -171,8 +177,8 @@ public static class SpeckleLog
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
       .Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
-      .Enrich.WithProperty("version", fileVersionInfo.FileVersion)
-      .Enrich.WithProperty("productVersion", fileVersionInfo.ProductVersion)
+      .Enrich.WithProperty("version", fileVersionInfo?.FileVersion ?? "unknown")
+      .Enrich.WithProperty("productVersion", fileVersionInfo?.ProductVersion ?? "unknown")
       .Enrich.WithProperty("hostOs", DetermineHostOsSlug())
       .Enrich.WithProperty("hostOsVersion", Environment.OSVersion)
       .Enrich.WithProperty("hostOsArchitecture", RuntimeInformation.ProcessArchitecture.ToString())
@@ -202,7 +208,7 @@ public static class SpeckleLog
     {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
         "https://seq.speckle.systems",
-        apiKey: "agZqxG4jQELxQQXh0iZQ"
+        apiKey: logConfiguration.SeqToken
       );
     }
 
@@ -258,9 +264,15 @@ public static class SpeckleLog
     return id;
   }
 
-  private static FileVersionInfo GetFileVersionInfo()
+  private static FileVersionInfo? GetFileVersionInfo()
   {
-    var assembly = Assembly.GetExecutingAssembly().Location;
+    string assembly = Assembly.GetExecutingAssembly().Location;
+
+    if (string.IsNullOrEmpty(assembly))
+    {
+      return null;
+    }
+
     return FileVersionInfo.GetVersionInfo(assembly);
   }
 
