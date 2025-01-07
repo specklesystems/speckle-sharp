@@ -255,7 +255,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
           try
           {
             await _stream.StreamState.Client.ProjectInvite
-              .Create(_stream.StreamState.StreamId, new ProjectInviteCreateInput(null, user.Role, null, user.Id))
+              .Create(_stream.StreamState.StreamId, new ProjectInviteCreateInput(user.Name, user.Role, null, null))
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
