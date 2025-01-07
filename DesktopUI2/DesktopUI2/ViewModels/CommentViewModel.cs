@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using DesktopUI2.Views;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
@@ -20,7 +21,7 @@ public class CommentViewModel : ReactiveObject
 {
   private ConnectorBindings Bindings;
 
-  public CommentViewModel(CommentItem item, string streamId, Client client)
+  public CommentViewModel(Comment item, string streamId, Client client)
   {
     Comment = item;
     StreamId = streamId;
@@ -40,10 +41,10 @@ public class CommentViewModel : ReactiveObject
     }
   }
 
-  public CommentItem Comment { get; set; }
+  public Comment Comment { get; set; }
   public string StreamId { get; private set; }
   public Task<AccountViewModel> Author => GetAuthorAsync();
-  public Task<Bitmap> Screenshot => GetScreenshotAsync();
+  public Task<Bitmap> Screenshot => Task.FromResult(GetScreenshot());
 
   //return string.Join("", Comment.text.Doc?.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
   public string Text { get; private set; }
@@ -72,9 +73,9 @@ public class CommentViewModel : ReactiveObject
     return await ApiUtils.GetAccount(Comment.authorId, _client).ConfigureAwait(true);
   }
 
-  private async Task<Bitmap> GetScreenshotAsync()
+  private Bitmap GetScreenshot()
   {
-    var screenshot = await _client.StreamGetCommentScreenshot(Comment.id, StreamId).ConfigureAwait(true);
+    var screenshot = Comment.screenshot;
     byte[] bytes = Convert.FromBase64String(screenshot.Split(',')[1]);
     Stream stream = new MemoryStream(bytes);
     return new Bitmap(stream);
@@ -84,9 +85,13 @@ public class CommentViewModel : ReactiveObject
   {
     try
     {
-      if (Comment.data != null && Comment.data.camPos != null)
+      if (Comment.viewerState is { ui.camera.position: not null })
       {
-        Bindings.Open3DView(Comment.data.camPos, Comment.id);
+        var camera = Comment.viewerState.ui.camera;
+        //Bindings.Open3DView was designed to take the old flat comment.data.camPos
+        //We'll shim the comment.viewState to look like the old style camPos
+        var oldStyleCoordinates = camera.position.Concat(camera.target).ToList();
+        Bindings.Open3DView(oldStyleCoordinates, Comment.id);
         Analytics.TrackEvent(
           Analytics.Events.DUIAction,
           new Dictionary<string, object> { { "name", "Comment Open 3D View" } }
@@ -115,9 +120,28 @@ public class CommentViewModel : ReactiveObject
 
   public void OpenComment()
   {
+    string url;
+    if (_client.Account.serverInfo.frontend2)
+    {
+      url = FormatFe2Url();
+    }
+    else
+    {
+      url = FormatFe1Url();
+    }
+
+    if (url is not null)
+    {
+      Open.Url(url);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });
+    }
+  }
+
+  private string FormatFe1Url()
+  {
     if (Comment.resources == null || !Comment.resources.Any())
     {
-      return;
+      return null;
     }
 
     var r0 = Comment.resources[0];
@@ -128,14 +152,19 @@ public class CommentViewModel : ReactiveObject
       overlay = "&overlay=" + string.Join(",", Comment.resources.Skip(1).Select(x => x.resourceId));
     }
 
-    var url =
-      $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
-    if (_client.Account.serverInfo.frontend2)
+    return $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
+  }
+
+  private string FormatFe2Url()
+  {
+    if (Comment.viewerResources == null || !Comment.viewerResources.Any())
     {
-      url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
+      return $"{_client.Account.serverInfo.url}/projects/{StreamId}";
     }
 
-    Open.Url(url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });
+    var r0 = Comment.viewerResources[0];
+    var resource = new[] { r0.modelId, r0.versionId }.Where(x => x != null);
+    var resourceId = string.Join("@", resource);
+    return $"{_client.Account.serverInfo.url}/projects/{StreamId}/models/{resourceId}#threadId={Comment.id}";
   }
 }
