@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Newtonsoft.Json;
 using ConnectorArchicad.Communication.Commands;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetRoomData : GetDataBase, ICommand<IEnumerable<Archicad.Room>>
+internal sealed class GetRoomData : GetDataBase, ICommand<IEnumerable<Archicad.Room>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   private sealed class Result

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Objects.Structural.Analysis;
 using Speckle.Core.Models;
-using System.Linq;
 
 namespace Objects.Converter.CSI;
 

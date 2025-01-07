@@ -130,8 +130,8 @@ public partial class ConnectorBindingsRevit
       return new List<string>();
     }
 
-    var selectedObjects = CurrentDoc.Selection
-      .GetElementIds()
+    var selectedObjects = CurrentDoc
+      .Selection.GetElementIds()
       .Select(id => CurrentDoc.Document.GetElement(id).UniqueId)
       .ToList();
     return selectedObjects;
@@ -476,9 +476,11 @@ public partial class ConnectorBindingsRevit
         }
 
         //get ALL the linked model objects
-        selection
-          .AddRange(linkedDoc.Value.GetSupportedElements(revitDocumentAggregateCache)
-          .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)));
+        selection.AddRange(
+          linkedDoc
+            .Value.GetSupportedElements(revitDocumentAggregateCache)
+            .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId))
+        );
 #endif
       }
     }

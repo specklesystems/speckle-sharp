@@ -6,7 +6,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateSkylight : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateSkylight : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

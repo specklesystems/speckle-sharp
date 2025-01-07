@@ -1,5 +1,5 @@
-using Speckle.Core.Logging;
 using System.Text.Json;
+using Speckle.Core.Logging;
 
 namespace Speckle.Automate.Sdk.Test;
 

@@ -1,29 +1,26 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
-
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.ReactiveUI;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
+using Speckle.ConnectorAutocadCivil.UI;
+using Speckle.Core.Logging;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
+using Exception = System.Exception;
 #if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
 using Autodesk.AutoCAD.Runtime;
 #endif
 
-using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-
-using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
-using Speckle.ConnectorAutocadCivil.UI;
-using Speckle.Core.Logging;
-using Exception = System.Exception;
-
 #if ADVANCESTEEL
 [assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
+
 #endif
 
 namespace Speckle.ConnectorAutocadCivil.Entry;

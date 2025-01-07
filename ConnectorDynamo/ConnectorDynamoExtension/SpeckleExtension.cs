@@ -40,8 +40,8 @@ public class SpeckleExtension : IViewExtension
 
   private static void SetCurrentRevitDocumentToGlobals()
   {
-    Globals.RevitDocument = DocumentManager.Instance
-      .GetType()
+    Globals.RevitDocument = DocumentManager
+      .Instance.GetType()
       .GetProperty("CurrentDBDocument")
       ?.GetValue(DocumentManager.Instance);
   }

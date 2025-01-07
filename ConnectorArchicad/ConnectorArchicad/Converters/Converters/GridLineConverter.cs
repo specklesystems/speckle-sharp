@@ -130,8 +130,10 @@ public sealed class GridLineConverter : IConverter
           );
         }
 
-        speckleGridLine.displayValue = Operations.ModelConverter
-          .MeshesAndLinesToSpeckle(elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model)
+        speckleGridLine.displayValue = Operations
+          .ModelConverter.MeshesAndLinesToSpeckle(
+            elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model
+          )
           .Cast<Base>()
           .ToList();
 

@@ -1,7 +1,7 @@
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.Util;

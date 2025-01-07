@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
@@ -75,8 +75,8 @@ internal sealed class GetElementsType : ICommand<Dictionary<string, IEnumerable<
       "GetElementTypes",
       new Parameters(ApplicationIds)
     );
-    return result.ElementTypes
-      .GroupBy(row => row.ElementType)
+    return result
+      .ElementTypes.GroupBy(row => row.ElementType)
       .ToDictionary(group => group.Key, group => group.Select(x => x.ApplicationId));
   }
 

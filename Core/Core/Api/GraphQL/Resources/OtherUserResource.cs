@@ -26,18 +26,18 @@ public sealed class OtherUserResource
   {
     //language=graphql
     const string QUERY = """
-                         query LimitedUser($id: String!) {
-                           otherUser(id: $id){
-                             id,
-                             name,
-                             bio,
-                             company,
-                             avatar,
-                             verified,
-                             role,
-                           }
-                         }
-                         """;
+      query LimitedUser($id: String!) {
+        otherUser(id: $id){
+          id,
+          name,
+          bio,
+          company,
+          avatar,
+          verified,
+          role,
+        }
+      }
+      """;
 
     var request = new GraphQLRequest { Query = QUERY, Variables = new { id } };
 
@@ -70,21 +70,21 @@ public sealed class OtherUserResource
   {
     //language=graphql
     const string QUERY = """
-                             query UserSearch($query: String!, $limit: Int!, $cursor: String, $archived: Boolean, $emailOnly: Boolean) {
-                               userSearch(query: $query, limit: $limit, cursor: $cursor, archived: $archived, emailOnly: $emailOnly) {
-                                 cursor,
-                                 items {
-                                  id
-                                  name
-                                  bio
-                                  company
-                                  avatar
-                                  verified
-                                  role
-                                }
-                              }
-                             }
-                             """;
+      query UserSearch($query: String!, $limit: Int!, $cursor: String, $archived: Boolean, $emailOnly: Boolean) {
+        userSearch(query: $query, limit: $limit, cursor: $cursor, archived: $archived, emailOnly: $emailOnly) {
+          cursor,
+          items {
+           id
+           name
+           bio
+           company
+           avatar
+           verified
+           role
+         }
+       }
+      }
+      """;
 
     var request = new GraphQLRequest
     {

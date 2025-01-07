@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Speckle.Core.Models;
-using Autodesk.Revit.DB;
 using System.Text.RegularExpressions;
+using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 using RevitSharedResources.Interfaces;
+using Speckle.Core.Models;
 
 namespace ConverterRevitShared;
 

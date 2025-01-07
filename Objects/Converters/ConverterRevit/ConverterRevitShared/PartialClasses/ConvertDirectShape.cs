@@ -126,8 +126,8 @@ public partial class ConverterRevit
 
     var converted = new List<GeometryObject>();
 
-    speckleDs.baseGeometries
-      .ToList()
+    speckleDs
+      .baseGeometries.ToList()
       .ForEach(b =>
       {
         switch (b)
@@ -148,8 +148,8 @@ public partial class ConverterRevit
                 );
               }
 
-              var mesh = brep.displayValue.SelectMany(
-                m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial)
+              var mesh = brep.displayValue.SelectMany(m =>
+                MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial)
               );
               converted.AddRange(mesh);
             }

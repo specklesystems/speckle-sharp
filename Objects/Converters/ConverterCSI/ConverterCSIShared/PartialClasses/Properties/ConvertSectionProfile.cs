@@ -1,6 +1,6 @@
-using Objects.Structural.Properties.Profiles;
-using CSiAPIv1;
 using System.Linq;
+using CSiAPIv1;
+using Objects.Structural.Properties.Profiles;
 
 namespace Objects.Converter.CSI;
 

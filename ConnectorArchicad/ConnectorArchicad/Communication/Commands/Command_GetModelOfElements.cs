@@ -4,7 +4,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
+internal sealed class GetModelForElements : ICommand<IEnumerable<Model.ElementModelData>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

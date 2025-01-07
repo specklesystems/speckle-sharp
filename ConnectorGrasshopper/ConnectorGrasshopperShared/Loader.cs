@@ -38,7 +38,7 @@ public class Loader : GH_AssemblyPriority
   {
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
-        false;
+      false;
 #else
       true;
 #endif
@@ -243,7 +243,7 @@ public class Loader : GH_AssemblyPriority
           );
 
 #if MAC
-            path = @"/Applications/Manager for Speckle.app";
+          path = @"/Applications/Manager for Speckle.app";
 
 #else
           path = Path.Combine(
@@ -313,7 +313,7 @@ public class Loader : GH_AssemblyPriority
           Directory.CreateDirectory(path);
         }
 #if MAC
-          Open.File("file://" + path);
+        Open.File("file://" + path);
 #else
         Open.File("explorer.exe", "/select, " + path);
 #endif
@@ -510,8 +510,11 @@ public class Loader : GH_AssemblyPriority
 
     _headlessDoc = RhinoDoc.CreateHeadless(null);
     Console.WriteLine(
-      $"Speckle - Backup headless doc is ready: '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
-    Console.WriteLine("Speckle - To modify the units in a headless run, you can override the 'RhinoDoc.ActiveDoc' in the '.gh' file using a c#/python script.");
+      $"Speckle - Backup headless doc is ready: '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}"
+    );
+    Console.WriteLine(
+      "Speckle - To modify the units in a headless run, you can override the 'RhinoDoc.ActiveDoc' in the '.gh' file using a c#/python script."
+    );
 #endif
   }
 
@@ -529,7 +532,8 @@ public class Loader : GH_AssemblyPriority
       // Only time the _headlessDoc is not set is upon document opening, where the components will
       // check for this as their normal initialisation routine, but the document will be refreshed on every solution run.
       Console.WriteLine(
-        $"Speckle - Fetching headless doc '{_headlessDoc?.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        $"Speckle - Fetching headless doc '{_headlessDoc?.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'"
+      );
       Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
       return _headlessDoc;
     }

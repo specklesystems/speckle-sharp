@@ -125,8 +125,8 @@ public partial class ConverterRevit
       return;
     }
 
-    var speckleObjectRowIndex = speckleTable.rowMetadata.FindIndex(
-      b => b["RevitApplicationIds"] is IList list && list.Contains(elementIds.First())
+    var speckleObjectRowIndex = speckleTable.rowMetadata.FindIndex(b =>
+      b["RevitApplicationIds"] is IList list && list.Contains(elementIds.First())
     );
 
     foreach (var kvp in speckleIndexToRevitParameterDataMap)

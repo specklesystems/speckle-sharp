@@ -1,11 +1,11 @@
-using Autodesk.Revit.DB;
-using Objects.Converter.Revit;
-using Objects.Geometry;
-using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autodesk.Revit.DB;
+using Objects.Converter.Revit;
+using Objects.Geometry;
+using Speckle.Core.Api;
 using Xunit;
 using Xunit.Abstractions;
 

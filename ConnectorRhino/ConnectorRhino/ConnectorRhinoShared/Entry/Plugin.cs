@@ -19,7 +19,6 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
-
 #if !MAC
 using Rhino.UI;
 #endif
@@ -58,7 +57,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
       return;
     }
 #if MAC
-      InitAvaloniaMac();
+    InitAvaloniaMac();
 #else
     appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
 #endif
@@ -142,15 +141,15 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     if (Bindings.GetStreamsInFile().Count > 0)
     {
 #if MAC
-        try
-        {
-          SpeckleCommandMac.CreateOrFocusSpeckle();
-        } 
-        catch (Exception ex) when (!ex.IsFatal())
-        {
-          SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
-          RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
-        }
+      try
+      {
+        SpeckleCommandMac.CreateOrFocusSpeckle();
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
+        RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
+      }
 #else
       Panels.OpenPanel(typeof(DuiPanel).GUID);
       Panels.OpenPanel(typeof(MappingsPanel).GUID);
@@ -204,8 +203,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     // https://speckle.community/t/revit-command-failure-for-external-command/3489/27
     if (!processName.Equals("rhino", StringComparison.InvariantCultureIgnoreCase))
     {
-      SpeckleLog.Logger
-        .ForContext("processVersion", processVersion)
+      SpeckleLog
+        .Logger.ForContext("processVersion", processVersion)
         .Warning("Speckle does not currently support unsupported process {processName}", processName);
       errorMessage = "Speckle does not currently support Rhino.Inside";
       RhinoApp.CommandLineOut.WriteLine(errorMessage);
@@ -262,9 +261,9 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 #if RHINO6
     sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
-      sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
+    sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
 #elif RHINO8
-      sb.Append(@"\McNeel\Rhinoceros\8.0\UI\Plug-ins\");
+    sb.Append(@"\McNeel\Rhinoceros\8.0\UI\Plug-ins\");
 #endif
     sb.AppendFormat("{0}.rui", Assembly.GetName().Name);
 

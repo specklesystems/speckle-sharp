@@ -7,7 +7,6 @@ using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;
-
 #if DEBUG
 using System.Text;
 #endif
@@ -82,25 +81,21 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
     return commandId switch
     {
       TurnPersistCacheOn.COMMAND
-        => new CommandState
-        {
+        => new CommandState {
 #if DEBUG
           IsVisible = !ConnectorBindingsNavisworks.PersistCache,
 #else
           IsVisible = false,
 #endif
-          IsEnabled = !ConnectorBindingsNavisworks.PersistCache
-        },
+          IsEnabled = !ConnectorBindingsNavisworks.PersistCache },
       TurnPersistCacheOff.COMMAND
-        => new CommandState
-        {
+        => new CommandState {
 #if DEBUG
           IsVisible = ConnectorBindingsNavisworks.PersistCache,
 #else
           IsVisible = false,
 #endif
-          IsEnabled = ConnectorBindingsNavisworks.PersistCache
-        },
+          IsEnabled = ConnectorBindingsNavisworks.PersistCache },
       _
         => commandId == RetryLastConversionSend.COMMAND
           ? new CommandState(ConnectorBindingsNavisworks.CachedConversion)

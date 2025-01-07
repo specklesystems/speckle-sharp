@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-
 using DesktopUI2.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
 using Speckle.Core.Logging;

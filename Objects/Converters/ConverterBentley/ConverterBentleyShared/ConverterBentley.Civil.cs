@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Station = Objects.BuiltElements.Station;
-
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.GeometryNET;
@@ -41,7 +40,7 @@ public partial class ConverterBentley
   // alignments
   public Alignment AlignmentToSpeckle(CifGM.Alignment alignment)
   {
-    if(alignment.FeatureDefinition is null)
+    if (alignment.FeatureDefinition is null)
     {
       // An alignment without a feature definition is likely a partial peice of geometry being picked up erroneously upstream.
       //
@@ -51,7 +50,6 @@ public partial class ConverterBentley
     }
 
     var _alignment = new Alignment();
-
 
     CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
     var stationFormatter = new CifGM.StationingFormatter(alignment);
@@ -93,7 +91,7 @@ public partial class ConverterBentley
     if (stationing != null)
     {
       _alignment.startStation = stationing.StartStation;
-      _alignment.endStation = alignment.LinearGeometry.Length + stationing.StartStation;  // swap for end station
+      _alignment.endStation = alignment.LinearGeometry.Length + stationing.StartStation; // swap for end station
 
       var region = stationing.GetStationRegionFromDistanceAlong(stationing.StartStation);
 
@@ -108,8 +106,14 @@ public partial class ConverterBentley
         formattedStationEquations.Add(stnVal);
 
         // DistanceAlong represents Back Station/BackLocation, EquivalentStation represents Ahead Station
-        equations.AddRange(new List<double> { stationEquation.DistanceAlong, stationEquation.DistanceAlong, stationEquation.EquivalentStation });
-
+        equations.AddRange(
+          new List<double>
+          {
+            stationEquation.DistanceAlong,
+            stationEquation.DistanceAlong,
+            stationEquation.EquivalentStation
+          }
+        );
       }
       _alignment.stationEquations = equations;
       _alignment[nameof(formattedStationEquations)] = formattedStationEquations;
@@ -132,10 +136,8 @@ public partial class ConverterBentley
     if (alignment.curves?.Count > 0)
     {
       //Not 100% clear on how best to handle the conversion between multiple curves and single element
-      singleBaseCurve = alignment.curves.Count == 1 ? alignment.curves.Single() : new Polycurve()
-      {
-        segments = alignment.curves
-      };
+      singleBaseCurve =
+        alignment.curves.Count == 1 ? alignment.curves.Single() : new Polycurve() { segments = alignment.curves };
     }
     else if (alignment.baseCurve is not null) // this could be an old alignment using a basecurve
     {
@@ -179,8 +181,6 @@ public partial class ConverterBentley
   {
     var curves = new List<ICurve>();
 
-
-
     switch (profile.ProfileGeometry)
     {
       case ProfileParabola profileParabola:
@@ -188,7 +188,7 @@ public partial class ConverterBentley
         /// This has thrown exceptions in the past, but should be resolved now that only
         /// the active profile is being exported, as it was throwing on isolated curve
         /// elements with no assigned feature properties.
-        /// 
+        ///
         /// Pulled out as its own case so it's a bit clearer why the failure is happening
         /// if it reoccurs.
 

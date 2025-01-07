@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Rhino.Geometry;
 using Grasshopper.Kernel.Types;
 using Rhino;
+using Rhino.Geometry;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Xunit;

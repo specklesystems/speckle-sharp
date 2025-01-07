@@ -1,17 +1,17 @@
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
-using Speckle.ConnectorCSI.Util;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
 using Serilog.Context;
+using Speckle.ConnectorCSI.Util;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using SCT = Speckle.Core.Transports;
 
 namespace Speckle.ConnectorCSI.UI;
@@ -94,8 +94,8 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
       Base converted = null;
       string containerName = string.Empty;
 
-      var selectedObjectType = ConnectorCSIUtils.ObjectIDsTypesAndNames
-        .Where(pair => pair.Key == applicationId)
+      var selectedObjectType = ConnectorCSIUtils
+        .ObjectIDsTypesAndNames.Where(pair => pair.Key == applicationId)
         .Select(pair => pair.Value.Item1)
         .FirstOrDefault();
 
@@ -107,8 +107,8 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         continue;
       }
 
-      var typeAndName = ConnectorCSIUtils.ObjectIDsTypesAndNames
-        .Where(pair => pair.Key == applicationId)
+      var typeAndName = ConnectorCSIUtils
+        .ObjectIDsTypesAndNames.Where(pair => pair.Key == applicationId)
         .Select(pair => pair.Value)
         .FirstOrDefault();
 
