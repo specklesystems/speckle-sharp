@@ -1,7 +1,7 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.Win32;
 using Xunit;
 
 namespace ConverterRhinoGhTests

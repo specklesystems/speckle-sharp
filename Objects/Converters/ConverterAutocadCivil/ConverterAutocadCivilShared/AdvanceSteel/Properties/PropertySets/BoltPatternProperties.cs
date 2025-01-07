@@ -30,6 +30,7 @@ public class BoltPatternProperties : ASBaseProperties<BoltPattern>, IASPropertie
 
     return dictionary;
   }
+
   private static IEnumerable<ASPoint3d> GetMidPoints(BoltPattern boltPattern)
   {
     boltPattern.GetMidpoints(out var points);

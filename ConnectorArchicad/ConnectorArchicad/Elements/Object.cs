@@ -1,7 +1,7 @@
-using Objects.Geometry;
-using Objects.BuiltElements.Archicad;
-using Speckle.Core.Kits;
 using System.Collections.Generic;
+using Objects.BuiltElements.Archicad;
+using Objects.Geometry;
+using Speckle.Core.Kits;
 
 namespace Archicad;
 

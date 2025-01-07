@@ -9,7 +9,6 @@ using Autodesk.AdvanceSteel.Modelling;
 using Objects.BuiltElements;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
 using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
-
 using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil;
@@ -63,11 +62,7 @@ public class BeamProperties : ASBaseProperties<ASBeam>, IASProperties
 
   private static Dictionary<string, double> GetOffsets(ASBeam beam)
   {
-    Dictionary<string, double> dictionary = new()
-    {
-      { "Y", beam.Offsets.x },
-      { "Z", beam.Offsets.y }
-    };
+    Dictionary<string, double> dictionary = new() { { "Y", beam.Offsets.x }, { "Z", beam.Offsets.y } };
 
     return dictionary;
   }
@@ -102,42 +97,89 @@ public class BeamProperties : ASBaseProperties<ASBeam>, IASProperties
 
   private static double GetSawLength(ASBeam beam)
   {
-    GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
+    GetSawInformation(
+      beam,
+      out var sawLength,
+      out var flangeAngleAtStart,
+      out var webAngleAtStart,
+      out var flangeAngleAtEnd,
+      out var webAngleAtEnd
+    );
     return sawLength;
   }
 
   private static double GetFlangeAngleAtStart(ASBeam beam)
   {
-    GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
+    GetSawInformation(
+      beam,
+      out var sawLength,
+      out var flangeAngleAtStart,
+      out var webAngleAtStart,
+      out var flangeAngleAtEnd,
+      out var webAngleAtEnd
+    );
     return DegreeToRadian(flangeAngleAtStart);
   }
 
   private static double GetWebAngleAtStart(ASBeam beam)
   {
-    GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
+    GetSawInformation(
+      beam,
+      out var sawLength,
+      out var flangeAngleAtStart,
+      out var webAngleAtStart,
+      out var flangeAngleAtEnd,
+      out var webAngleAtEnd
+    );
     return DegreeToRadian(webAngleAtStart);
   }
 
   private static double GetFlangeAngleAtEnd(ASBeam beam)
   {
-    GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
+    GetSawInformation(
+      beam,
+      out var sawLength,
+      out var flangeAngleAtStart,
+      out var webAngleAtStart,
+      out var flangeAngleAtEnd,
+      out var webAngleAtEnd
+    );
     return DegreeToRadian(flangeAngleAtEnd);
   }
 
   private static double GetWebAngleAtEnd(ASBeam beam)
   {
-    GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
+    GetSawInformation(
+      beam,
+      out var sawLength,
+      out var flangeAngleAtStart,
+      out var webAngleAtStart,
+      out var flangeAngleAtEnd,
+      out var webAngleAtEnd
+    );
     return DegreeToRadian(webAngleAtEnd);
   }
 
-  private static void GetSawInformation(ASBeam beam, out double sawLength, out double flangeAngleAtStart, out double webAngleAtStart, out double flangeAngleAtEnd, out double webAngleAtEnd)
+  private static void GetSawInformation(
+    ASBeam beam,
+    out double sawLength,
+    out double flangeAngleAtStart,
+    out double webAngleAtStart,
+    out double flangeAngleAtEnd,
+    out double webAngleAtEnd
+  )
   {
-    int executed = beam.GetSawInformation(out sawLength, out flangeAngleAtStart, out webAngleAtStart, out flangeAngleAtEnd, out webAngleAtEnd);
+    int executed = beam.GetSawInformation(
+      out sawLength,
+      out flangeAngleAtStart,
+      out webAngleAtStart,
+      out flangeAngleAtEnd,
+      out webAngleAtEnd
+    );
     //if (executed <= 0)
     //{
     //  throw new System.Exception("No values were found for this steel Beam from Function");
     //}
   }
-
 }
 #endif

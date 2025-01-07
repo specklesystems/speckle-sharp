@@ -8,8 +8,8 @@ public static class UpgradeUtils
 {
   public static void SwapGroups(GH_Document document, IGH_Component component, IGH_Component upgradedComponent)
   {
-    var groups = document.Objects
-      .OfType<GH_Group>()
+    var groups = document
+      .Objects.OfType<GH_Group>()
       .Where(gr => gr.ObjectIDs.Contains(component.InstanceGuid))
       .ToList();
     groups.ForEach(g => g.AddObject(upgradedComponent.InstanceGuid));

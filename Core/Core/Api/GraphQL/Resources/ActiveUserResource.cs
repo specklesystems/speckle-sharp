@@ -28,20 +28,20 @@ public sealed class ActiveUserResource
   {
     //language=graphql
     const string QUERY = """
-                          query User {
-                           activeUser {
-                             id,
-                             email,
-                             name,
-                             bio,
-                             company,
-                             avatar,
-                             verified,
-                             profiles,
-                             role,
-                           }
-                         }
-                         """;
+       query User {
+        activeUser {
+          id,
+          email,
+          name,
+          bio,
+          company,
+          avatar,
+          verified,
+          profiles,
+          role,
+        }
+      }
+      """;
     var request = new GraphQLRequest { Query = QUERY };
 
     var response = await _client
@@ -66,25 +66,25 @@ public sealed class ActiveUserResource
   {
     //language=graphql
     const string QUERY = """
-                          query User($limit : Int!, $cursor: String, $filter: UserProjectsFilter) {
-                           activeUser {
-                             projects(limit: $limit, cursor: $cursor, filter: $filter) {
-                                totalCount
-                                items {
-                                   id
-                                   name
-                                   description
-                                   visibility
-                                   allowPublicComments
-                                   role
-                                   createdAt
-                                   updatedAt
-                                   sourceApps
-                                }
-                             }
-                           }
-                         }
-                         """;
+       query User($limit : Int!, $cursor: String, $filter: UserProjectsFilter) {
+        activeUser {
+          projects(limit: $limit, cursor: $cursor, filter: $filter) {
+             totalCount
+             items {
+                id
+                name
+                description
+                visibility
+                allowPublicComments
+                role
+                createdAt
+                updatedAt
+                sourceApps
+             }
+          }
+        }
+      }
+      """;
     var request = new GraphQLRequest
     {
       Query = QUERY,
@@ -115,39 +115,39 @@ public sealed class ActiveUserResource
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectInvites {
-                           activeUser {
-                             projectInvites {
-                               id
-                               inviteId
-                               invitedBy {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 verified
-                               }
-                               projectId
-                               projectName
-                               role
-                               streamId
-                               streamName
-                               title
-                               token
-                               user {
-                                 id,
-                                 name,
-                                 bio,
-                                 company,
-                                 verified,
-                                 role,
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query ProjectInvites {
+        activeUser {
+          projectInvites {
+            id
+            inviteId
+            invitedBy {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              verified
+            }
+            projectId
+            projectName
+            role
+            streamId
+            streamName
+            title
+            token
+            user {
+              id,
+              name,
+              bio,
+              company,
+              verified,
+              role,
+            }
+          }
+        }
+      }
+      """;
 
     var request = new GraphQLRequest { Query = QUERY };
 

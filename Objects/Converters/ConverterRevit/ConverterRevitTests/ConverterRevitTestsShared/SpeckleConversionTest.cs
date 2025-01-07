@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using ConnectorRevit.Storage;
 using DesktopUI2.Models;
@@ -6,10 +10,6 @@ using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;

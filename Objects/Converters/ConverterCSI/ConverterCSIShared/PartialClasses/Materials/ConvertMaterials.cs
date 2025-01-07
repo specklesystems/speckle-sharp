@@ -1,6 +1,6 @@
-using Objects.Structural.Materials;
-using CSiAPIv1;
 using System.Linq;
+using CSiAPIv1;
+using Objects.Structural.Materials;
 
 namespace Objects.Converter.CSI;
 

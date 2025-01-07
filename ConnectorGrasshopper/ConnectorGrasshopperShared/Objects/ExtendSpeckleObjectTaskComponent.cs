@@ -64,8 +64,8 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
 
   public void VariableParameterMaintenance()
   {
-    Params.Input
-      .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+    Params
+      .Input.Where(param => !(param.Attributes is GenericAccessParamAttributes))
       .ToList()
       .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes));
   }
@@ -282,8 +282,8 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
     {
       var hasErrors = false;
 
-      inputData?.Keys
-        .ToList()
+      inputData
+        ?.Keys.ToList()
         .ForEach(key =>
         {
           var value = inputData[key];

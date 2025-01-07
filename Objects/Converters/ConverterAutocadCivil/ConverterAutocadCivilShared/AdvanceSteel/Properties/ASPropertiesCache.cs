@@ -14,18 +14,15 @@ namespace Objects.Converter.AutocadCivil;
 
 public class ASPropertiesCache
 {
-  private ASPropertiesCache()
-  {
-
-  }
+  private ASPropertiesCache() { }
 
   private static ASPropertiesCache instance;
 
   public static ASPropertiesCache Instance
   {
-    get 
+    get
     {
-      if (instance == null) 
+      if (instance == null)
       {
         instance = new ASPropertiesCache();
         instance.LoadASTypeDictionary();
@@ -33,20 +30,20 @@ public class ASPropertiesCache
 
       return instance;
     }
-
   }
 
-  private readonly Dictionary<Type, ASTypeData> ASPropertiesSets = new()
-  {
-    { typeof(AtomicElement), new ASTypeData ("assembly") },
-    { typeof(Beam), new ASTypeData("beam") },
-    { typeof(MainAlias), new ASTypeData("manufacturing") },
-    { typeof(PolyBeam), new ASTypeData("poly beam") },
-    { typeof(BoltPattern), new ASTypeData("bolt") },
-    { typeof(ScrewBoltPattern), new ASTypeData("screw bolt") },
-    { typeof(ConstructionElement), new ASTypeData("construction") },
-    { typeof(FilerObject), new ASTypeData("asteel") }
-  };
+  private readonly Dictionary<Type, ASTypeData> ASPropertiesSets =
+    new()
+    {
+      { typeof(AtomicElement), new ASTypeData("assembly") },
+      { typeof(Beam), new ASTypeData("beam") },
+      { typeof(MainAlias), new ASTypeData("manufacturing") },
+      { typeof(PolyBeam), new ASTypeData("poly beam") },
+      { typeof(BoltPattern), new ASTypeData("bolt") },
+      { typeof(ScrewBoltPattern), new ASTypeData("screw bolt") },
+      { typeof(ConstructionElement), new ASTypeData("construction") },
+      { typeof(FilerObject), new ASTypeData("asteel") }
+    };
 
   /// <summary>
   /// Get all properties sets that are subclasses or equivalents of the type
@@ -56,12 +53,14 @@ public class ASPropertiesCache
   /// <exception cref="Exception"></exception>
   internal IEnumerable<ASTypeData> GetPropertiesSetsByType(Type objectType)
   {
-    IEnumerable<ASTypeData> steelTypeDataList = ASPropertiesSets.Where(x => objectType.IsSubclassOf(x.Key) || objectType.IsEquivalentTo(x.Key)).Select(x => x.Value);
+    IEnumerable<ASTypeData> steelTypeDataList = ASPropertiesSets
+      .Where(x => objectType.IsSubclassOf(x.Key) || objectType.IsEquivalentTo(x.Key))
+      .Select(x => x.Value);
 
     return steelTypeDataList;
   }
 
-#region Load dictionary
+  #region Load dictionary
 
   /// <summary>
   /// Load all properties of each Advance Steel object type
@@ -69,7 +68,9 @@ public class ASPropertiesCache
   private void LoadASTypeDictionary()
   {
     var assemblyTypes = System.Reflection.Assembly.GetExecutingAssembly().GetTypes();
-    var listIASProperties = assemblyTypes.Where(x => !x.IsAbstract && x.GetInterfaces().Contains(typeof(IASProperties))).Select(x => Activator.CreateInstance(x) as IASProperties);
+    var listIASProperties = assemblyTypes
+      .Where(x => !x.IsAbstract && x.GetInterfaces().Contains(typeof(IASProperties)))
+      .Select(x => Activator.CreateInstance(x) as IASProperties);
 
     //Set specific properties of each type
     foreach (var item in ASPropertiesSets)
@@ -98,6 +99,6 @@ public class ASPropertiesCache
     }
   }
 
-#endregion
+  #endregion
 }
 #endif

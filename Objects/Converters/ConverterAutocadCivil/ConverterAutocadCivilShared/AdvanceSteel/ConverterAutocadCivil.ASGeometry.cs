@@ -3,10 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
-
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Interval = Objects.Primitive.Interval;
@@ -15,9 +13,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Vector = Objects.Geometry.Vector;
-
 using MathNet.Spatial.Euclidean;
-
 using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
 using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;
 using ASLineSeg3d = Autodesk.AdvanceSteel.Geometry.LineSeg3d;
@@ -27,7 +23,6 @@ using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
 using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 using ASBoundBlock3d = Autodesk.AdvanceSteel.Geometry.BoundBlock3d;
-
 using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 using Autodesk.AdvanceSteel.DocumentManagement;
 using Autodesk.AdvanceSteel.DotNetRoots.Units;
@@ -62,6 +57,7 @@ public partial class ConverterAutocadCivil
     var extV = ToExternalCoordinates(VectorASToAcad(vector));
     return new Vector(extV.X, extV.Y, extV.Z, ModelUnits);
   }
+
   private Vector3d VectorASToAcad(ASVector3d vector)
   {
     return new Vector3d(vector.x * FactorFromNative, vector.y * FactorFromNative, vector.z * FactorFromNative);
@@ -102,6 +98,7 @@ public partial class ConverterAutocadCivil
       return null;
     }
   }
+
   private Box BoxToSpeckle(ASExtents extents)
   {
     try
@@ -199,7 +196,13 @@ public partial class ConverterAutocadCivil
 
     if (arc.IsPlanar(out var plane))
     {
-      _arc = new Arc(PlaneToSpeckle(plane), PointToSpeckle(arc.StartPoint), PointToSpeckle(arc.EndPoint), arc.IncludedAngle, ModelUnits);
+      _arc = new Arc(
+        PlaneToSpeckle(plane),
+        PointToSpeckle(arc.StartPoint),
+        PointToSpeckle(arc.EndPoint),
+        arc.IncludedAngle,
+        ModelUnits
+      );
     }
     else
     {
@@ -222,7 +225,13 @@ public partial class ConverterAutocadCivil
   {
     plane.GetCoordSystem(out var origin, out var vectorX, out var vectorY, out var vectorZ);
 
-    return new Plane(PointToSpeckle(origin), VectorToSpeckle(plane.Normal), VectorToSpeckle(vectorX), VectorToSpeckle(vectorY), ModelUnits);
+    return new Plane(
+      PointToSpeckle(origin),
+      VectorToSpeckle(plane.Normal),
+      VectorToSpeckle(vectorX),
+      VectorToSpeckle(vectorY),
+      ModelUnits
+    );
   }
 
   private object ConvertValueToSpeckle(object @object, eUnitType? unitType, out bool converted)
@@ -270,7 +279,7 @@ public partial class ConverterAutocadCivil
     }
     else
     {
-      if(unitType.HasValue && @object is double)
+      if (unitType.HasValue && @object is double)
       {
         @object = FromInternalUnits((double)@object, unitType.Value);
       }
@@ -331,7 +340,7 @@ public partial class ConverterAutocadCivil
     return Math.Round(value, digits, MidpointRounding.AwayFromZero);
   }
 
-#region Units
+  #region Units
 
   private UnitsSet _unitsSet;
 
@@ -411,6 +420,6 @@ public partial class ConverterAutocadCivil
     }
   }
 
-#endregion
+  #endregion
 }
 #endif

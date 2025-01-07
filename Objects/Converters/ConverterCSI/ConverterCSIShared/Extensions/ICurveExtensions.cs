@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Objects.Geometry;
 using Objects;
+using Objects.Geometry;
 
 namespace ConverterCSIShared.Extensions;
 

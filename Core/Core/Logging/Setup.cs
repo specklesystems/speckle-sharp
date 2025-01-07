@@ -54,8 +54,8 @@ public static class Setup
   {
     if (s_initialized)
     {
-      SpeckleLog.Logger
-        .ForContext("newVersionedHostApplication", versionedHostApplication)
+      SpeckleLog
+        .Logger.ForContext("newVersionedHostApplication", versionedHostApplication)
         .ForContext("newHostApplication", hostApplication)
         .Information(
           "Setup was already initialized with {currentHostApp} {currentVersionedHostApp}",

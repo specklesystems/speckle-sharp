@@ -4,7 +4,7 @@ using ConnectorArchicad.Communication.Commands;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetColumnData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
+internal sealed class GetColumnData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
   public GetColumnData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
     : base(applicationIds, sendProperties, sendListingParameters) { }

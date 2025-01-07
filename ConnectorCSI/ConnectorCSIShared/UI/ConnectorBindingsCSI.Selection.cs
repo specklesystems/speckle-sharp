@@ -1,8 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorCSI.Util;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Speckle.ConnectorCSI.UI;
 
@@ -114,8 +114,8 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         foreach (var type in typeFilter.Selection)
         {
           selection.AddRange(
-            ConnectorCSIUtils.ObjectIDsTypesAndNames
-              .Where(pair => pair.Value.Item1 == type)
+            ConnectorCSIUtils
+              .ObjectIDsTypesAndNames.Where(pair => pair.Value.Item1 == type)
               .Select(pair => pair.Key)
               .ToList()
           );

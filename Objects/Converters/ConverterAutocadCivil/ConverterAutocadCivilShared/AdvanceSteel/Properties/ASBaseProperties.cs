@@ -5,9 +5,13 @@ using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil;
 
-public abstract class ASBaseProperties<T> : IASProperties where T : class
+public abstract class ASBaseProperties<T> : IASProperties
+  where T : class
 {
-  public Type ObjectType { get => typeof(T); }
+  public Type ObjectType
+  {
+    get => typeof(T);
+  }
 
   public abstract Dictionary<string, ASProperty> BuildedPropertyList();
 
@@ -18,7 +22,12 @@ public abstract class ASBaseProperties<T> : IASProperties where T : class
   /// <param name="description"></param>
   /// <param name="memberName">Member name of AS Object - May be Get/Set property or Get Method(without parameter)</param>
   /// <param name="unitType"></param>
-  protected void InsertProperty(Dictionary<string, ASProperty> dictionary, string description, string memberName, eUnitType? unitType = null)
+  protected void InsertProperty(
+    Dictionary<string, ASProperty> dictionary,
+    string description,
+    string memberName,
+    eUnitType? unitType = null
+  )
   {
     dictionary.Add(description, new ASProperty(ObjectType, description, memberName, unitType));
   }
@@ -31,7 +40,13 @@ public abstract class ASBaseProperties<T> : IASProperties where T : class
   /// <param name="methodInfoGet">Method name of Get Custom Function on properties class</param>
   /// <param name="methodInfoSet">Method name of Set Custom Function on properties class</param>
   /// <param name="unitType"></param>
-  protected void InsertCustomProperty(Dictionary<string, ASProperty> dictionary, string description, string methodInfoGet, string methodInfoSet, eUnitType? unitType = null)
+  protected void InsertCustomProperty(
+    Dictionary<string, ASProperty> dictionary,
+    string description,
+    string methodInfoGet,
+    string methodInfoSet,
+    eUnitType? unitType = null
+  )
   {
     ASPropertyMethods propertyMethods = new(this.GetType(), methodInfoGet, methodInfoSet);
     dictionary.Add(description, new ASProperty(ObjectType, description, propertyMethods, unitType));

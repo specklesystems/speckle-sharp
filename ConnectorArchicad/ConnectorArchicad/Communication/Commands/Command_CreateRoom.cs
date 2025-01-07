@@ -5,7 +5,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateRoom : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateRoom : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

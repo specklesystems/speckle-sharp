@@ -12,7 +12,7 @@ public partial class ArchicadBinding
     ReceiveParametric = 2
   }
 
-  static public string[] settingSlugs =
+  public static string[] settingSlugs =
   {
     "filter - properties",
     "filter - listing parameters",

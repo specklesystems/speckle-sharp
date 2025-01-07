@@ -1,10 +1,10 @@
-using Objects.Structural.Geometry;
-using Speckle.Core.Models;
+using System;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Geometry;
+using Objects.Structural.Geometry;
 using RevitSharedResources.Extensions.SpeckleExtensions;
 using Speckle.Core.Logging;
-using System;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit;
 

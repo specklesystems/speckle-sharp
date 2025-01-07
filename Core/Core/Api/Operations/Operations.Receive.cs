@@ -114,8 +114,8 @@ public static partial class Operations
     Base res = serializerV2.Deserialize(objString);
 
     timer.Stop();
-    SpeckleLog.Logger
-      .ForContext("deserializerElapsed", serializerV2.Elapsed)
+    SpeckleLog
+      .Logger.ForContext("deserializerElapsed", serializerV2.Elapsed)
       .ForContext(
         "transportElapsedBreakdown",
         new[] { localTransport, remoteTransport }

@@ -110,8 +110,8 @@ public class ExpandSpeckleObjectTaskComponent
   public void VariableParameterMaintenance()
   {
     // Perform parameter maintenance here!
-    Params.Input
-      .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+    Params
+      .Input.Where(param => !(param.Attributes is GenericAccessParamAttributes))
       .ToList()
       .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes));
   }
@@ -190,8 +190,8 @@ public class ExpandSpeckleObjectTaskComponent
           {
             case IGH_Structure structure:
               var path = DA.ParameterTargetPath(indexOfOutputParam);
-              structure.Paths
-                .ToList()
+              structure
+                .Paths.ToList()
                 .ForEach(p =>
                 {
                   var indices = path.Indices.ToList();
@@ -238,8 +238,8 @@ public class ExpandSpeckleObjectTaskComponent
       return false;
     }
 
-    var diffParams = Params.Output.Where(
-      param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
+    var diffParams = Params.Output.Where(param =>
+      !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
     );
     return diffParams.Count() == 1;
   }
@@ -256,11 +256,11 @@ public class ExpandSpeckleObjectTaskComponent
     // Check for single param rename, if so, just rename it and go on.
     if (HasSingleRename())
     {
-      var diffParams = Params.Output.Where(
-        param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
+      var diffParams = Params.Output.Where(param =>
+        !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
       );
-      var diffOut = outputList.Where(
-        name => !Params.Output.Select(p => p.NickName).Contains(name.StartsWith("@") ? name.Substring(1) : name)
+      var diffOut = outputList.Where(name =>
+        !Params.Output.Select(p => p.NickName).Contains(name.StartsWith("@") ? name.Substring(1) : name)
       );
 
       var newName = diffOut.First();
@@ -274,8 +274,8 @@ public class ExpandSpeckleObjectTaskComponent
       return;
     }
     // Check what params must be deleted, and do so when safe.
-    var remove = Params.Output
-      .Select(
+    var remove = Params
+      .Output.Select(
         (p, i) =>
         {
           var res = outputList.Find(o => o == p.Name);

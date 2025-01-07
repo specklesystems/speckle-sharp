@@ -205,8 +205,24 @@ public partial class ConverterRevit
 
 #if REVIT2020 || REVIT2021 || REVIT2022
     var analyticalModel = (AnalyticalModelStick)element.GetAnalyticalModel();
-    analyticalModel.SetReleases(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5]));
-    analyticalModel.SetReleases(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5]));
+    analyticalModel.SetReleases(
+      true,
+      releaseConvert(element1d.end1Releases.code[0]),
+      releaseConvert(element1d.end1Releases.code[1]),
+      releaseConvert(element1d.end1Releases.code[2]),
+      releaseConvert(element1d.end1Releases.code[3]),
+      releaseConvert(element1d.end1Releases.code[4]),
+      releaseConvert(element1d.end1Releases.code[5])
+    );
+    analyticalModel.SetReleases(
+      false,
+      releaseConvert(element1d.end2Releases.code[0]),
+      releaseConvert(element1d.end2Releases.code[1]),
+      releaseConvert(element1d.end2Releases.code[2]),
+      releaseConvert(element1d.end2Releases.code[3]),
+      releaseConvert(element1d.end2Releases.code[4]),
+      releaseConvert(element1d.end2Releases.code[5])
+    );
     analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
     analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
 #else
@@ -277,11 +293,15 @@ public partial class ConverterRevit
       speckleElement1D.baseLine = CurveToSpeckle(curves[0], revitStick.Document) as Objects.Geometry.Line;
     }
 
-
     var coordinateSystem = revitStick.GetLocalCoordinateSystem();
     if (coordinateSystem != null)
     {
-      speckleElement1D.localAxis = new Geometry.Plane(PointToSpeckle(coordinateSystem.Origin, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document));
+      speckleElement1D.localAxis = new Geometry.Plane(
+        PointToSpeckle(coordinateSystem.Origin, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document)
+      );
     }
 
     var startOffset = revitStick.GetOffset(AnalyticalElementSelector.StartOrBase);
@@ -300,9 +320,11 @@ public partial class ConverterRevit
     var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
     if (structMat == null)
     {
-      structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
+      structMat = (DB.Material)
+        stickFamily.Document.GetElement(
+          stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()
+        );
     }
-
 
     prop.profile = speckleSection;
     prop.material = GetStructuralMaterial(structMat);
@@ -338,7 +360,6 @@ public partial class ConverterRevit
     speckleElement1D.displayValue = GetElementDisplayValue(revitStick.Document.GetElement(revitStick.GetElementId()));
     return speckleElement1D;
   }
-
 #else
   private Element1D AnalyticalStickToSpeckle(AnalyticalMember revitStick)
   {

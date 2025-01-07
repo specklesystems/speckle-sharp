@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.DoubleNumerics;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 using Objects.Geometry;
@@ -938,13 +938,12 @@ public partial class ConverterRevit
     var points = new DB.XYZ[count];
     int p = 0;
 
-    controlPoints.ForEach(
-      row =>
-        row.ForEach(pt =>
-        {
-          var point = new Point(pt.x, pt.y, pt.z, pt.units);
-          points[p++] = PointToNative(point);
-        })
+    controlPoints.ForEach(row =>
+      row.ForEach(pt =>
+      {
+        var point = new Point(pt.x, pt.y, pt.z, pt.units);
+        points[p++] = PointToNative(point);
+      })
     );
 
     return points;
@@ -1162,7 +1161,9 @@ public partial class ConverterRevit
   {
 #if REVIT2020
 
-    throw new Speckle.Core.Logging.SpeckleException("Converting BREPs to Speckle is currently only supported in Revit 2021 and above.");
+    throw new Speckle.Core.Logging.SpeckleException(
+      "Converting BREPs to Speckle is currently only supported in Revit 2021 and above."
+    );
 #else
     // TODO: Incomplete implementation!!
     var u = units ?? ModelUnits;

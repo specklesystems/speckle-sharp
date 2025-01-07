@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Bentley.DgnPlatformNET.DgnEC;
-using Bentley.MstnPlatformNET;
 using Bentley.DgnPlatformNET;
-using Bentley.ECObjects.Schema;
+using Bentley.DgnPlatformNET.DgnEC;
+using Bentley.EC.Persistence.Query;
 using Bentley.ECObjects;
 using Bentley.ECObjects.Instance;
-using Bentley.EC.Persistence.Query;
-
-using Speckle.Newtonsoft.Json;
+using Bentley.ECObjects.Schema;
+using Bentley.MstnPlatformNET;
 using DesktopUI2.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorBentley.Storage;
 

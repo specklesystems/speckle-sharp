@@ -383,8 +383,8 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       {
         foreach (var key in PrevReceivedData.Keys)
         {
-          var index = Params.Output.FindIndex(
-            p => p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1)
+          var index = Params.Output.FindIndex(p =>
+            p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1)
           );
           var outTree = PrevReceivedData[key];
           DA.SetDataTree(index, outTree);
@@ -988,8 +988,8 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       return false;
     }
 
-    var diffParams = Parent?.Params.Output.Where(
-      param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name)
+    var diffParams = Parent?.Params.Output.Where(param =>
+      !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name)
     );
     return diffParams.Count() == 1;
   }
@@ -1021,8 +1021,8 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
     }
 
     // Check what params must be deleted, and do so when safe.
-    var remove = Parent.Params.Output
-      .Select(
+    var remove = Parent
+      .Params.Output.Select(
         (p, i) =>
         {
           var res = outputList.Find(o => o == p.Name || p.Name == o.Substring(1));

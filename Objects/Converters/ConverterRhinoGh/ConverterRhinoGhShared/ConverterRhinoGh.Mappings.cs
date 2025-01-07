@@ -3,15 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rhino.DocObjects;
-using RH = Rhino.Geometry;
-using Speckle.Core.Api;
-using Speckle.Core.Models;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Rhino.DocObjects;
+using Speckle.Core.Api;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using RH = Rhino.Geometry;
 
 namespace Objects.Converter.RhinoGh;
 
@@ -221,13 +221,12 @@ public partial class ConverterRhinoGh
     {
       var bottomCrv = brpCurves
         .Where(o => o.IsLinear())
-        ?.Where(
-          o =>
-            new RH.Vector3d(
-              o.PointAtEnd.X - o.PointAtStart.X,
-              o.PointAtEnd.Y - o.PointAtStart.Y,
-              o.PointAtEnd.Z - o.PointAtStart.Z
-            ).IsPerpendicularTo(RH.Vector3d.ZAxis)
+        ?.Where(o =>
+          new RH.Vector3d(
+            o.PointAtEnd.X - o.PointAtStart.X,
+            o.PointAtEnd.Y - o.PointAtStart.Y,
+            o.PointAtEnd.Z - o.PointAtStart.Z
+          ).IsPerpendicularTo(RH.Vector3d.ZAxis)
         )
         ?.Aggregate((curMin, o) => curMin == null || o.PointAtStart.Z < curMin.PointAtStart.Z ? o : curMin);
       if (bottomCrv != null)

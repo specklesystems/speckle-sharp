@@ -1,8 +1,8 @@
 #nullable enable
-using Autodesk.Revit.DB;
-using Objects.Other;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.Other;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;
@@ -114,15 +114,15 @@ public partial class ConverterRevit
     if (materialId != null)
     {
       solids = solids
-        .Where(
-          solid => solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == materialId
+        .Where(solid =>
+          solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == materialId
         )
         .ToList();
     }
 
     double volume = solids.Sum(solid => solid.Volume);
-    IEnumerable<double> areaOfLargestFaceInEachSolid = solids.Select(
-      solid => solid.Faces.Cast<Face>().Select(face => face.Area).Max()
+    IEnumerable<double> areaOfLargestFaceInEachSolid = solids.Select(solid =>
+      solid.Faces.Cast<Face>().Select(face => face.Area).Max()
     );
     double area = areaOfLargestFaceInEachSolid.Sum();
     return (area, volume);
