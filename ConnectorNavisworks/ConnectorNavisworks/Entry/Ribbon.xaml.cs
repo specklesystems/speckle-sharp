@@ -23,7 +23,6 @@ namespace Speckle.ConnectorNavisworks.Entry;
     LoadForCanExecute = true,
     Icon = "Resources/logo16.ico",
     LargeIcon = "Resources/logo32.ico",
-    Shortcut = "Ctrl+Shift+S",
     ToolTip = "Speckle Connector for Navisworks",
     DisplayName = "Speckle\rConnector"
   ),
@@ -31,7 +30,6 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Community.COMMAND,
     Icon = "Resources/forum16.png",
     LargeIcon = "Resources/forum32.png",
-    Shortcut = "Ctrl+Shift+C",
     ToolTip = "Visit the Speckle Support Community",
     DisplayName = "Speckle\rCommunity"
   ),
@@ -40,7 +38,6 @@ namespace Speckle.ConnectorNavisworks.Entry;
     LoadForCanExecute = true,
     Icon = "Resources/retry16.ico",
     LargeIcon = "Resources/retry32.ico",
-    Shortcut = "Ctrl+Shift+R",
     ToolTip = "Retries sending the last complete conversion to Speckle.",
     DisplayName = "Retry\rSend"
   ),
