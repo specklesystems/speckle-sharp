@@ -162,6 +162,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       SSM: 'C:\Program Files\DigiCert\DigiCert One Signing Manager Tools'
     steps:
       - cached-checkout
+      - run:
+          name: Install dotnet
+          command: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.404
+            $HOME/.dotnet/dotnet --version
       - attach_workspace:
           at: ./
       - run:
