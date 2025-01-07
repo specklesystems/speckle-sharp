@@ -114,7 +114,6 @@ public partial class ConverterRevit
       default:
         throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
     }
-
   }
 
   public static DisplayUnitType UnitsToNative(string units)
@@ -135,6 +134,7 @@ public partial class ConverterRevit
         throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
     }
   }
+
   private static string UnitsToNativeString(DisplayUnitType unitType)
   {
     return unitType.ToString();

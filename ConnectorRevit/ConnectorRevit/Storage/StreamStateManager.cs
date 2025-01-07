@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using DesktopUI2.Models;
@@ -16,7 +15,7 @@ namespace Speckle.ConnectorRevit.Storage;
 /// </summary>
 public static class StreamStateManager
 {
-  readonly static Guid ID = new("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
+  static readonly Guid ID = new("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
 
   /// <summary>
   /// Returns all the speckle stream states present in the current document.

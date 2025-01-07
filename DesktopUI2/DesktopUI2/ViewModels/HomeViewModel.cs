@@ -199,8 +199,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               SelectedFilter = Filter.all;
             }
 
-            result = await account.Client
-              .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
+            result = await account
+              .Client.StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
               .ConfigureAwait(true);
           }
 

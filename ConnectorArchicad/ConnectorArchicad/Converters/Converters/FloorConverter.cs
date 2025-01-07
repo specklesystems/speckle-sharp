@@ -39,7 +39,6 @@ public sealed class Floor : IConverter
             floors.Add(archiFloor);
             break;
           case Objects.BuiltElements.Floor floor:
-
             {
               try
               {

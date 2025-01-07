@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.GeometryNET;
 using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
-
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.GeometryNET;
-
 #if (OPENBUILDINGS)
 using Bentley.Building.Api;
 #endif
@@ -82,9 +79,11 @@ public partial class ConverterBentley
       return null;
     }
 
-    for (ITFGridSystem gridSystem = gridSystems.AsTFGridSystem;
-         gridSystem != null;
-         gridSystems.GetNext("", out gridSystems), gridSystem = (gridSystems != null) ? gridSystems.AsTFGridSystem : null)
+    for (
+      ITFGridSystem gridSystem = gridSystems.AsTFGridSystem;
+      gridSystem != null;
+      gridSystems.GetNext("", out gridSystems), gridSystem = (gridSystems != null) ? gridSystems.AsTFGridSystem : null
+    )
     {
       gridSystem.GetGridCurves(0, out ITFGridCurveList curves);
 
@@ -106,7 +105,11 @@ public partial class ConverterBentley
       double maximumCircularAngle = 0;
 
       List<ITFGridCurve> gridCurveList = new();
-      for (ITFGridCurve gridCurve = curves.AsTFGridCurve; gridCurve != null; curves.GetNext("", out curves), gridCurve = curves != null ? curves.AsTFGridCurve : null)
+      for (
+        ITFGridCurve gridCurve = curves.AsTFGridCurve;
+        gridCurve != null;
+        curves.GetNext("", out curves), gridCurve = curves != null ? curves.AsTFGridCurve : null
+      )
       {
         gridCurveList.Add(gridCurve);
         gridCurve.GetType(0, out TFdGridCurveType curveType);
@@ -225,23 +228,42 @@ public partial class ConverterBentley
         {
           case TFdGridCurveType.TFdGridCurveType_OrthogonalX:
           case TFdGridCurveType.TFdGridCurveType_OrthogonalY:
-            baseLine = GridCurveToSpeckle(gridCurve, origin, angle, minimumValueX, minimumValueY, maximumValueX, maximumValueY, u);
+            baseLine = GridCurveToSpeckle(
+              gridCurve,
+              origin,
+              angle,
+              minimumValueX,
+              minimumValueY,
+              maximumValueX,
+              maximumValueY,
+              u
+            );
             break;
 
           case TFdGridCurveType.TFdGridCurveType_Circular:
-            Plane xy = new(new Point(origin.X, origin.Y, 0, u), new Vector(0, 0, 1, u), new Vector(1, 0, 0, u), new Vector(0, 1, 0, u), u);
+            Plane xy =
+              new(
+                new Point(origin.X, origin.Y, 0, u),
+                new Vector(0, 0, 1, u),
+                new Vector(1, 0, 0, u),
+                new Vector(0, 1, 0, u),
+                u
+              );
             baseLine = new Arc(xy, gridValue, angle, maximumCircularAngle + angle, maximumCircularAngle, u);
             break;
 
           case TFdGridCurveType.TFdGridCurveType_Radial:
             Point startPoint = Translate(Rotate(new Point(0, 0, 0, u), angle), origin.X, origin.Y);
-            Point endPoint = Translate(Rotate(Rotate(new Point(maximumRadius, 0, 0, u), gridValue * UoR), angle), origin.X, origin.Y);
+            Point endPoint = Translate(
+              Rotate(Rotate(new Point(maximumRadius, 0, 0, u), gridValue * UoR), angle),
+              origin.X,
+              origin.Y
+            );
             baseLine = new Line(startPoint, endPoint, u);
             break;
 
           default:
             continue;
-
         }
         gridLines.Add(CreateGridLine(baseLine, label, u));
       }
@@ -265,7 +287,15 @@ public partial class ConverterBentley
       Point midPoint = Translate(Rotate(arc.midPoint, angle), origin.X, origin.Y);
       Point endPoint = Translate(Rotate(arc.endPoint, angle), origin.X, origin.Y);
       Plane plane = TransformPlane(arc.plane, origin, angle);
-      Arc transformed = new(plane, (double)arc.radius, (double)arc.startAngle + angle + Math.PI * 2, (double)arc.endAngle + angle + Math.PI * 2, (double)arc.angleRadians, arc.units);
+      Arc transformed =
+        new(
+          plane,
+          (double)arc.radius,
+          (double)arc.startAngle + angle + Math.PI * 2,
+          (double)arc.endAngle + angle + Math.PI * 2,
+          (double)arc.angleRadians,
+          arc.units
+        );
       transformed.startPoint = startPoint;
       transformed.midPoint = midPoint;
       transformed.endPoint = endPoint;
@@ -292,7 +322,16 @@ public partial class ConverterBentley
     return new Plane(planeOrigin, plane.normal, xdir, ydir, plane.units);
   }
 
-  public static ICurve GridCurveToSpeckle(ITFGridCurve gridCurve, DPoint3d origin, double angle, double minimumValueX = 0, double minimumValueY = 0, double maximumValueX = 0, double maximumValueY = 0, string units = null)
+  public static ICurve GridCurveToSpeckle(
+    ITFGridCurve gridCurve,
+    DPoint3d origin,
+    double angle,
+    double minimumValueX = 0,
+    double minimumValueY = 0,
+    double maximumValueX = 0,
+    double maximumValueY = 0,
+    string units = null
+  )
   {
     ICurve baseLine;
 
@@ -301,7 +340,8 @@ public partial class ConverterBentley
     gridCurve.GetMaximumValue(0, out double maximumValue);
     gridCurve.GetValue(0, out double gridValue);
 
-    Point startPoint, endPoint;
+    Point startPoint,
+      endPoint;
     switch (curveType)
     {
       case (TFdGridCurveType.TFdGridCurveType_OrthogonalX):
@@ -338,7 +378,6 @@ public partial class ConverterBentley
 
       default:
         throw new NotSupportedException("GridCurveType " + curveType + " not supported!");
-
     }
     return baseLine;
   }

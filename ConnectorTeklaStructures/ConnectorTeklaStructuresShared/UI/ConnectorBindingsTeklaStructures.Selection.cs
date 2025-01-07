@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorTeklaStructures.Util;
-using System.Collections.Generic;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.UI;

@@ -212,14 +212,13 @@ public class MappingBindingsRhino : MappingsBindings
     {
       var brpCurves = b.DuplicateNakedEdgeCurves(true, false); // see if the bottom curve is parallel to worldxy
       var lowestZ = brp.GetBoundingBox(false).Min.Z;
-      var bottomCrv = brpCurves.Where(
-        o =>
-          new Vector3d(
-            o.PointAtEnd.X - o.PointAtStart.X,
-            o.PointAtEnd.Y - o.PointAtStart.Y,
-            o.PointAtEnd.Z - o.PointAtStart.Z
-          ).IsPerpendicularTo(Vector3d.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
-          && o.PointAtStart.Z - lowestZ <= RhinoDoc.ActiveDoc.ModelAbsoluteTolerance
+      var bottomCrv = brpCurves.Where(o =>
+        new Vector3d(
+          o.PointAtEnd.X - o.PointAtStart.X,
+          o.PointAtEnd.Y - o.PointAtStart.Y,
+          o.PointAtEnd.Z - o.PointAtStart.Z
+        ).IsPerpendicularTo(Vector3d.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
+        && o.PointAtStart.Z - lowestZ <= RhinoDoc.ActiveDoc.ModelAbsoluteTolerance
       );
       if (bottomCrv.Any() && (bottomCrv.First().IsLinear() || bottomCrv.First().IsArc()))
       {
@@ -332,8 +331,8 @@ public class MappingBindingsRhino : MappingsBindings
 
     var objects = RhinoDoc.ActiveDoc.Objects.FindByUserString(SpeckleMappingViewKey, "*", true);
     var schemas = objects
-      .Select(
-        obj => JsonConvert.DeserializeObject<Schema>(obj.Attributes.GetUserString(SpeckleMappingViewKey), settings)
+      .Select(obj =>
+        JsonConvert.DeserializeObject<Schema>(obj.Attributes.GetUserString(SpeckleMappingViewKey), settings)
       )
       .ToList();
 

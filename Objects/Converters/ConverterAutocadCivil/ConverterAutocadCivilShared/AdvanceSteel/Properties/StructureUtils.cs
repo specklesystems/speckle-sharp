@@ -19,7 +19,7 @@ internal static class StructureUtils
     BuildingStructureManager buildStructMan = BuildingStructureManager.getBuildingStructureManager();
     // get the list objects from the manager
     BuildingStructureManagerListObject buildStructManListObject = buildStructMan.ListObject;
-    // get all of the structures in the BuildingStructureManagerListObject 
+    // get all of the structures in the BuildingStructureManagerListObject
     List<BuildingStructureObject> bsoList = buildStructManListObject.Structures;
 
     foreach (BuildingStructureObject currBSO in bsoList)
@@ -64,7 +64,7 @@ internal static class StructureUtils
 
   public static Dictionary<string, Dictionary<string, List<string>>> GetObjectHandleHierarchy()
   {
-    if(objectHandleHierarch == null)
+    if (objectHandleHierarch == null)
     {
       objectHandleHierarch = GetObjectHandleHierarchyIntern();
     }
@@ -84,7 +84,10 @@ internal static class StructureUtils
 
       foreach (var itemGroup in groups)
       {
-        IEnumerable<string> listHandle = itemGroup.Value.getObjectsIDs().Select(x => new ObjectId(x.AsOldId()).Handle.ToString()).Where(x => !x.Equals("0"));
+        IEnumerable<string> listHandle = itemGroup
+          .Value.getObjectsIDs()
+          .Select(x => new ObjectId(x.AsOldId()).Handle.ToString())
+          .Where(x => !x.Equals("0"));
 
         foreach (var handle in listHandle)
         {
@@ -112,16 +115,12 @@ internal static class StructureUtils
           }
 
           listGroup.Add(itemGroup.Key);
-        
-        }//foreach handle
-
-      }//foreach group
-
-    }//foreach structure
+        } //foreach handle
+      } //foreach group
+    } //foreach structure
 
     return dictionaryHierarchy;
   }
-
 }
 
 #endif

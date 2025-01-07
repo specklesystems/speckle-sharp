@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
-using System.Timers;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using CSiAPIv1;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 using Speckle.ConnectorCSI.UI;
-using System.Reflection;
-using System.IO;
 using Speckle.Core.Logging;
 
 namespace SpeckleConnectorCSI;

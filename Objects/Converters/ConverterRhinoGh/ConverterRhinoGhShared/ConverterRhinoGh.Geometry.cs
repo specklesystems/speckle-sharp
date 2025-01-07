@@ -1,6 +1,3 @@
-#if GRASSHOPPER
-using Grasshopper.Kernel.Types;
-#endif
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -17,6 +14,9 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Point = Objects.Geometry.Point;
 using RH = Rhino.Geometry;
+#if GRASSHOPPER
+using Grasshopper.Kernel.Types;
+#endif
 
 namespace Objects.Converter.RhinoGh;
 
@@ -686,33 +686,48 @@ public partial class ConverterRhinoGh
 
 #if RHINO7_OR_GREATER
   public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
+  {
+    var u = units ?? ModelUnits;
+
+    var vertices = new List<RH.Point3d>();
+    var subDVertices = new List<RH.SubDVertex>();
+    for (int i = 0; i < mesh.Vertices.Count; i++)
     {
-      var u = units ?? ModelUnits;
+      vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
+      subDVertices.Add(mesh.Vertices.Find(i));
+    }
+    var verts = PointsToFlatList(vertices);
 
-      var vertices = new List<RH.Point3d>();
-      var subDVertices = new List<RH.SubDVertex>();
-      for(int i = 0 ; i < mesh.Vertices.Count; i++)
-      {
-        vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
-        subDVertices.Add(mesh.Vertices.Find(i));
-      }
-      var verts = PointsToFlatList(vertices);
-
-      var Faces = mesh.Faces.SelectMany(face =>
+    var Faces = mesh
+      .Faces.SelectMany(face =>
       {
         if (face.VertexCount == 4)
         {
-          return new[] { 4, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+          return new[]
+          {
+            4,
+            subDVertices.IndexOf(face.VertexAt(0)),
+            subDVertices.IndexOf(face.VertexAt(1)),
+            subDVertices.IndexOf(face.VertexAt(2)),
+            subDVertices.IndexOf(face.VertexAt(3))
+          };
         }
 
-        return new[] { 3, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
-      }).ToList();
+        return new[]
+        {
+          3,
+          subDVertices.IndexOf(face.VertexAt(0)),
+          subDVertices.IndexOf(face.VertexAt(1)),
+          subDVertices.IndexOf(face.VertexAt(2))
+        };
+      })
+      .ToList();
 
-      var speckleMesh = new Mesh(verts, Faces, null, null, u);
-      speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
+    var speckleMesh = new Mesh(verts, Faces, null, null, u);
+    speckleMesh.bbox = BoxToSpeckle(new RH.Box(mesh.GetBoundingBox(true)), u);
 
-      return speckleMesh;
-    }
+    return speckleMesh;
+  }
 #endif
 
   public RH.Mesh MeshToNative(Mesh mesh)
@@ -772,9 +787,7 @@ public partial class ConverterRhinoGh
 
 #if RHINO7_OR_GREATER
     // get receive mesh setting
-    var meshSetting = Settings.ContainsKey("receive-mesh")
-      ? Settings["receive-mesh"]
-      : string.Empty;
+    var meshSetting = Settings.ContainsKey("receive-mesh") ? Settings["receive-mesh"] : string.Empty;
 
     if (meshSetting == "Merge Coplanar Faces")
     {
@@ -892,51 +905,42 @@ public partial class ConverterRhinoGh
     spcklBrep.Orientation = (BrepOrientation)brep.SolidOrientation;
 
     // Faces
-    spcklBrep.Faces = brep.Faces
-      .Select(
-        f =>
-          new BrepFace(
-            spcklBrep,
-            f.SurfaceIndex,
-            f.Loops.Select(l => l.LoopIndex).ToList(),
-            f.OuterLoop.LoopIndex,
-            f.OrientationIsReversed
-          )
-      )
+    spcklBrep.Faces = brep
+      .Faces.Select(f => new BrepFace(
+        spcklBrep,
+        f.SurfaceIndex,
+        f.Loops.Select(l => l.LoopIndex).ToList(),
+        f.OuterLoop.LoopIndex,
+        f.OrientationIsReversed
+      ))
       .ToList();
 
     // Edges
-    spcklBrep.Edges = brep.Edges
-      .Select(
-        edge =>
-          new BrepEdge(
-            spcklBrep,
-            edge.EdgeCurveIndex,
-            edge.TrimIndices(),
-            edge.StartVertex?.VertexIndex ?? -1,
-            edge.EndVertex?.VertexIndex ?? -1,
-            edge.ProxyCurveIsReversed,
-            IntervalToSpeckle(edge.Domain)
-          )
-      )
+    spcklBrep.Edges = brep
+      .Edges.Select(edge => new BrepEdge(
+        spcklBrep,
+        edge.EdgeCurveIndex,
+        edge.TrimIndices(),
+        edge.StartVertex?.VertexIndex ?? -1,
+        edge.EndVertex?.VertexIndex ?? -1,
+        edge.ProxyCurveIsReversed,
+        IntervalToSpeckle(edge.Domain)
+      ))
       .ToList();
 
     // Loops
-    spcklBrep.Loops = brep.Loops
-      .Select(
-        loop =>
-          new BrepLoop(
-            spcklBrep,
-            loop.Face.FaceIndex,
-            loop.Trims.Select(t => t.TrimIndex).ToList(),
-            (BrepLoopType)loop.LoopType
-          )
-      )
+    spcklBrep.Loops = brep
+      .Loops.Select(loop => new BrepLoop(
+        spcklBrep,
+        loop.Face.FaceIndex,
+        loop.Trims.Select(t => t.TrimIndex).ToList(),
+        (BrepLoopType)loop.LoopType
+      ))
       .ToList();
 
     // Trims
-    spcklBrep.Trims = brep.Trims
-      .Select(trim =>
+    spcklBrep.Trims = brep
+      .Trims.Select(trim =>
       {
         var t = new BrepTrim(
           spcklBrep,
@@ -1039,8 +1043,7 @@ public partial class ConverterRhinoGh
       {
         var f = newBrep.Faces[loop.FaceIndex];
         var l = newBrep.Loops.Add((RH.BrepLoopType)loop.Type, f);
-        loop.Trims
-          .ToList()
+        loop.Trims.ToList()
           .ForEach(trim =>
           {
             RH.BrepTrim rhTrim;
@@ -1217,19 +1220,15 @@ public partial class ConverterRhinoGh
     // Create rhino surface
     var points = surface
       .GetControlPoints()
-      .Select(
-        l =>
-          l.Select(
-              p =>
-                new ControlPoint(
-                  ScaleToNative(p.x, p.units),
-                  ScaleToNative(p.y, p.units),
-                  ScaleToNative(p.z, p.units),
-                  p.weight,
-                  p.units
-                )
-            )
-            .ToList()
+      .Select(l =>
+        l.Select(p => new ControlPoint(
+            ScaleToNative(p.x, p.units),
+            ScaleToNative(p.y, p.units),
+            ScaleToNative(p.z, p.units),
+            p.weight,
+            p.units
+          ))
+          .ToList()
       )
       .ToList();
 
@@ -1326,13 +1325,13 @@ public partial class ConverterRhinoGh
 #if GRASSHOPPER
   // Interval2d
   public Interval2d Interval2dToSpeckle(UVInterval interval)
-    {
-      return new Interval2d(IntervalToSpeckle(interval.U), IntervalToSpeckle(interval.V));
-    }
+  {
+    return new Interval2d(IntervalToSpeckle(interval.U), IntervalToSpeckle(interval.V));
+  }
 
   public UVInterval Interval2dToNative(Interval2d interval)
-    {
-      return new UVInterval(IntervalToNative(interval.u), IntervalToNative(interval.v));
-    }
+  {
+    return new UVInterval(IntervalToNative(interval.u), IntervalToNative(interval.v));
+  }
 #endif
 }

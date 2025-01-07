@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Archicad.Converters;
 using Archicad.Model;
-using Objects.BuiltElements.Archicad;
 using Objects;
+using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Utils;
 using Speckle.Core.Kits;
-using static Archicad.Model.MeshModel;
 using Speckle.Core.Logging;
+using static Archicad.Model.MeshModel;
 
 namespace Archicad.Operations;
 
@@ -30,9 +30,8 @@ public static class ModelConverter
       foreach (var poly in meshModel.polygons)
       {
         var meshIndex = poly.material;
-        meshes[meshIndex].vertices.AddRange(
-          poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
-        );
+        meshes[meshIndex]
+          .vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList());
         meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
         vertCount[meshIndex] += poly.pointIds.Count;
       }
@@ -571,9 +570,12 @@ public static class ModelConverter
     // Form the 4 points of the rectangle from the polyline
     List<Vector> points = Enumerable
       .Range(0, polyline.value.Count / 3)
-      .Select(
-        i => new Vector(polyline.value[i * 3], polyline.value[i * 3 + 1], polyline.value[i * 3 + 2], polyline.units)
-      )
+      .Select(i => new Vector(
+        polyline.value[i * 3],
+        polyline.value[i * 3 + 1],
+        polyline.value[i * 3 + 2],
+        polyline.units
+      ))
       .ToList();
 
     Vector bottomLeft = Utils.ScaleToNative(points[0]);

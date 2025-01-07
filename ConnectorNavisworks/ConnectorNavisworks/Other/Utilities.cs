@@ -20,17 +20,17 @@ internal static class ArrayExtension
 public static class SpeckleNavisworksUtilities
 {
 #if NAVMAN22
-    public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2025);
+  public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2025);
 #elif NAVMAN21
-    public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+  public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
   public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
-    public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
+  public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
 #elif NAVMAN18
-    public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
+  public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
 #elif NAVMAN17
-    public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
+  public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
 #endif
 
   internal static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue) =>

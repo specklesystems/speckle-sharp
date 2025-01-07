@@ -6,7 +6,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetElementBaseData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
+internal sealed class GetElementBaseData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
   [JsonObject(MemberSerialization.OptIn)]
   private sealed class Result

@@ -1,12 +1,12 @@
-using Bentley.DgnPlatformNET;
-using Bentley.GeometryNET;
-using Bentley.MstnPlatformNET;
-using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bentley.DgnPlatformNET;
+using Bentley.GeometryNET;
+using Bentley.MstnPlatformNET;
+using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorBentley;
 

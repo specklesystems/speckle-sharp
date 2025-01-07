@@ -153,8 +153,8 @@ internal sealed class ElementTypeMapper
 
   private static async Task<bool> ShowMissingIncomingTypesDialog()
   {
-    var response = await Dispatcher.UIThread
-      .InvokeAsync<bool>(() =>
+    var response = await Dispatcher
+      .UIThread.InvokeAsync<bool>(() =>
       {
         Analytics.TrackEvent(
           Analytics.Events.DUIAction,
@@ -193,8 +193,8 @@ internal sealed class ElementTypeMapper
     var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
     FamilyImporter familyImporter = null;
 
-    await Dispatcher.UIThread
-      .InvokeAsync<ITypeMap>(() =>
+    await Dispatcher
+      .UIThread.InvokeAsync<ITypeMap>(() =>
       {
         var mappingView = new MappingViewDialog { DataContext = vm };
         return mappingView.ShowDialog<ITypeMap>();
@@ -225,8 +225,8 @@ internal sealed class ElementTypeMapper
       }
 
       vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
-      await Dispatcher.UIThread
-        .InvokeAsync<ITypeMap>(() =>
+      await Dispatcher
+        .UIThread.InvokeAsync<ITypeMap>(() =>
         {
           var mappingView = new MappingViewDialog { DataContext = vm };
           return mappingView.ShowDialog<ITypeMap>();

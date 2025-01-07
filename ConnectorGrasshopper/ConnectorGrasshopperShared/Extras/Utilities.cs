@@ -16,7 +16,6 @@ using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-
 #if RHINO8_OR_GREATER
 using Grasshopper.Rhinoceros.Model;
 #endif
@@ -547,9 +546,9 @@ public static class Utilities
       case ModelObject modelObject:
       {
         var propInfo = value
-                      .GetType()
-                      .GetProperty("Geometry", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        
+          .GetType()
+          .GetProperty("Geometry", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
         return propInfo?.GetValue(value) ?? value;
       }
       default:

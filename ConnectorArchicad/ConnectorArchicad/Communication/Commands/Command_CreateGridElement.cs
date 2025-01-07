@@ -5,7 +5,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateGridElement : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateGridElement : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

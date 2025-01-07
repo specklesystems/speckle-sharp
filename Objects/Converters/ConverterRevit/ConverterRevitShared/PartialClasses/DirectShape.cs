@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
@@ -27,8 +27,8 @@ namespace Objects.Converter.Revit
 
       var converted = new List<GeometryObject>();
 
-      speckleDs.baseGeometries
-        .ToList()
+      speckleDs
+        .baseGeometries.ToList()
         .ForEach(b =>
         {
           switch (b)

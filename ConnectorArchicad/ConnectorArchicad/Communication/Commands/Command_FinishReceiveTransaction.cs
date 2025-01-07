@@ -3,7 +3,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class FinishReceiveTransaction : ICommand<object>
+internal sealed class FinishReceiveTransaction : ICommand<object>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters { }

@@ -149,10 +149,9 @@ public partial class ConverterRevit
 
   private IEnumerable<Solid> GetSolidMeshes(IEnumerable<Mesh> meshes)
   {
-    var allMeshes = meshes.SelectMany(
-      m =>
-        MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
-        ?? new List<GeometryObject>()
+    var allMeshes = meshes.SelectMany(m =>
+      MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+      ?? new List<GeometryObject>()
     );
     var notNull = allMeshes.Where(m => m != null);
     var solids = notNull.Select(m => m as DB.Solid);

@@ -1,8 +1,8 @@
-using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
-using Objects.Structural.Geometry;
 using System.Linq;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 

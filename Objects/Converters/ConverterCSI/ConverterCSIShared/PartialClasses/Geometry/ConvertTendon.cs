@@ -1,6 +1,6 @@
 using System;
-using Objects.Structural.CSI.Geometry;
 using Objects.Geometry;
+using Objects.Structural.CSI.Geometry;
 
 namespace Objects.Converter.CSI;
 

@@ -4,20 +4,20 @@ using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
+using ConnectorRevit.Entry;
 using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using ConnectorRevit.Entry;
 using Speckle.DllConflictManagement;
-using Speckle.DllConflictManagement.Serialization;
 using Speckle.DllConflictManagement.Analytics;
-using Speckle.DllConflictManagement.EventEmitter;
 using Speckle.DllConflictManagement.ConflictManagementOptions;
-using Autodesk.Revit.DB.Events;
-using Speckle.Core.Helpers;
+using Speckle.DllConflictManagement.EventEmitter;
+using Speckle.DllConflictManagement.Serialization;
 
 namespace Speckle.ConnectorRevit.Entry;
 
