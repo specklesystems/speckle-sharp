@@ -25,7 +25,6 @@ public class ASProperty
 
   public eUnitType? UnitType { get; private set; }
 
-
   internal ASProperty(Type objectASType, string description, string memberName, eUnitType? unitType = null)
   {
     ObjectType = objectASType;
@@ -56,10 +55,17 @@ public class ASProperty
       return;
     }
 
-    throw new Exception($"'{memberName}' is not a property nor return method with 0 arguments nor void method with 1 argument");
+    throw new Exception(
+      $"'{memberName}' is not a property nor return method with 0 arguments nor void method with 1 argument"
+    );
   }
 
-  internal ASProperty(Type objectType, string description, ASPropertyMethods propertyMethods, eUnitType? unitType = null)
+  internal ASProperty(
+    Type objectType,
+    string description,
+    ASPropertyMethods propertyMethods,
+    eUnitType? unitType = null
+  )
   {
     ObjectType = objectType;
     Description = description;
@@ -123,7 +129,6 @@ public class ASProperty
     {
       throw new System.Exception($"Object has no property - {Description?.ToString()}");
     }
-
   }
 
   private object GetObjectPropertyValue(object asObject)
@@ -147,6 +152,5 @@ public class ASProperty
       throw new NotImplementedException();
     }
   }
-
 }
 #endif

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Objects.Geometry;
-using BE = Objects.BuiltElements;
 using System.Linq;
+using Objects.Geometry;
 using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 using TSG = Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures;
@@ -111,8 +111,8 @@ public partial class ConverterTeklaStructures
     speckleTeklaBolt.position = GetPositioning(Bolts.Position);
 
     // global bolt coordinates
-    speckleTeklaBolt.coordinates = Bolts.BoltPositions
-      .Cast<TSG.Point>()
+    speckleTeklaBolt.coordinates = Bolts
+      .BoltPositions.Cast<TSG.Point>()
       .Select(p => new Point(p.X, p.Y, p.Z, units))
       .ToList();
 

@@ -273,8 +273,8 @@ public static class Utils
           }
           catch (Exception ex)
           {
-            SpeckleLog.Logger
-              .ForContext("dialogResult", result)
+            SpeckleLog
+              .Logger.ForContext("dialogResult", result)
               .Warning(
                 ex,
                 "Swallowing exception in {methodName} {exceptionMessage}",

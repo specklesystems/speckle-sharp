@@ -102,11 +102,10 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     {
       mainParam = SelectedConstructor
         .GetParameters()
-        .First(
-          cParam =>
-            CustomAttributeData
-              .GetCustomAttributes(cParam)
-              .Any(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
+        .First(cParam =>
+          CustomAttributeData
+            .GetCustomAttributes(cParam)
+            .Any(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
         );
     }
     catch (Exception ex) when (!ex.IsFatal())

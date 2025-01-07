@@ -39,7 +39,6 @@ public sealed class Beam : IConverter
             beams.Add(archiBeam);
             break;
           case Objects.BuiltElements.Beam beam:
-
             // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
             {
               if (beam.baseLine is Line baseLine)

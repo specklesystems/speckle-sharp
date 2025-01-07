@@ -8,9 +8,8 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using Speckle.ConnectorAutocadCivil.Storage;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Speckle.Core.Logging;
-
+using Speckle.Core.Models;
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
@@ -78,8 +77,8 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   #endregion
 
   public override string GetHostAppNameVersion() =>
-    Utils.VersionedAppName
-      .Replace("AutoCAD", "AutoCAD ")
+    Utils
+      .VersionedAppName.Replace("AutoCAD", "AutoCAD ")
       .Replace("Civil3D", "Civil 3D ")
       .Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
 

@@ -41,7 +41,6 @@ public sealed class Column : IConverter
             columns.Add(archicadColumn);
             break;
           case Objects.BuiltElements.Column column:
-
             {
               if (column.baseLine is Line baseLine)
               {

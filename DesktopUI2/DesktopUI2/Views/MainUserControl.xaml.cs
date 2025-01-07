@@ -1,11 +1,9 @@
-using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
-using Speckle.Core.Logging;
 
 namespace DesktopUI2.Views;
 

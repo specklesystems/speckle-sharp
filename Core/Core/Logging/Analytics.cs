@@ -134,9 +134,8 @@ public static class Analytics
       {
         var macAddr = NetworkInterface
           .GetAllNetworkInterfaces()
-          .Where(
-            nic =>
-              nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+          .Where(nic =>
+            nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
           )
           .Select(nic => nic.GetPhysicalAddress().ToString())
           .FirstOrDefault();
@@ -249,8 +248,8 @@ public static class Analytics
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        SpeckleLog.Logger
-          .ForContext("eventName", eventName.ToString())
+        SpeckleLog
+          .Logger.ForContext("eventName", eventName.ToString())
           .ForContext("isAction", isAction)
           .Warning(ex, "Analytics event failed {exceptionMessage}", ex.Message);
       }

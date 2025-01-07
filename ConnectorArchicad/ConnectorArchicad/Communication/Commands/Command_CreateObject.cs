@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Archicad.Model;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Archicad.Model;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateObject : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateObject : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

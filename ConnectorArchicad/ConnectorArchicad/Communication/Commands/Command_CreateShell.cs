@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Objects.BuiltElements.Archicad;
-using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateShell : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateShell : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

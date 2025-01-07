@@ -117,11 +117,10 @@ public partial class ConverterRevit
   private static bool PointExists(List<Point> points, Point newPoint)
   {
     const double TOLERANCE = 1e-6; // Adjust this tolerance as needed
-    return points.Any(
-      p =>
-        Math.Abs(p.x - newPoint.x) < TOLERANCE
-        && Math.Abs(p.y - newPoint.y) < TOLERANCE
-        && Math.Abs(p.z - newPoint.z) < TOLERANCE
+    return points.Any(p =>
+      Math.Abs(p.x - newPoint.x) < TOLERANCE
+      && Math.Abs(p.y - newPoint.y) < TOLERANCE
+      && Math.Abs(p.z - newPoint.z) < TOLERANCE
     );
   }
 }

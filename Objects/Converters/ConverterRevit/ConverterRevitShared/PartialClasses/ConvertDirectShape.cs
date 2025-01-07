@@ -126,8 +126,8 @@ public partial class ConverterRevit
 
     var converted = new List<GeometryObject>();
 
-    speckleDs.baseGeometries
-      .ToList()
+    speckleDs
+      .baseGeometries.ToList()
       .ForEach(b =>
       {
         switch (b)
@@ -148,8 +148,8 @@ public partial class ConverterRevit
                 );
               }
 
-              var mesh = brep.displayValue.SelectMany(
-                m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial)
+              var mesh = brep.displayValue.SelectMany(m =>
+                MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial)
               );
               converted.AddRange(mesh);
             }
@@ -185,6 +185,7 @@ public partial class ConverterRevit
     if (existingObj != null && existingObj is DB.DirectShape existingDS) // if it's a directShape, just update
     {
       existingDS.SetShape(converted);
+      SetInstanceParameters(existingDS, speckleDs);
       appObj.Update(status: ApplicationObject.State.Updated, createdId: existingDS.UniqueId, convertedItem: existingDS);
       return appObj;
     }
@@ -239,6 +240,26 @@ public partial class ConverterRevit
     return appObj;
   }
 
+  private void ProcessGeometry(IEnumerable<GeometryObject> geometryObjects, Document revitDoc, List<Base> geometries)
+  {
+    foreach (var obj in geometryObjects)
+    {
+      switch (obj)
+      {
+        case DB.Mesh mesh:
+          geometries.Add(MeshToSpeckle(mesh, revitDoc));
+          break;
+        case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
+          geometries.AddRange(ConvertSolidsByRenderMaterial(new[] { solid }, revitDoc));
+          break;
+        case GeometryInstance gi:
+          var instanceGeometryElement = gi.GetSymbolGeometry(gi.Transform);
+          ProcessGeometry(instanceGeometryElement, revitDoc, geometries);
+          break;
+      }
+    }
+  }
+
   private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
   {
     var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
@@ -246,18 +267,8 @@ public partial class ConverterRevit
     var element = revitAc.get_Geometry(new Options());
 
     var geometries = new List<Base>();
-    foreach (var obj in element)
-    {
-      switch (obj)
-      {
-        case DB.Mesh mesh:
-          geometries.Add(MeshToSpeckle(mesh, revitAc.Document));
-          break;
-        case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-          geometries.AddRange(ConvertSolidsByRenderMaterial(new[] { solid }, revitAc.Document));
-          break;
-      }
-    }
+
+    ProcessGeometry(element, revitAc.Document, geometries);
 
     var speckleAc = new DirectShape(revitAc.Name, category, geometries);
 

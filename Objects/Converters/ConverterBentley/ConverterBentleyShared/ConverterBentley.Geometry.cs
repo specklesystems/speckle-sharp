@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.GeometryNET;
 using Objects.Geometry;
 using Objects.Primitive;
 using Speckle.Core.Models;
-
-using Bentley.GeometryNET;
-using Bentley.DgnPlatformNET.Elements;
-using Bentley.DgnPlatformNET;
+using Arc = Objects.Geometry.Arc;
 using BIM = Bentley.Interop.MicroStationDGN;
 using BMIU = Bentley.MstnPlatformNET.InteropServices.Utilities;
-
-using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;

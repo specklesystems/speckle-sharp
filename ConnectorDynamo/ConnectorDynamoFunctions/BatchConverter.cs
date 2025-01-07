@@ -1,12 +1,12 @@
-using Autodesk.DesignScript.Runtime;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Autodesk.DesignScript.Runtime;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace Speckle.ConnectorDynamo.Functions;
 
@@ -97,8 +97,8 @@ public class BatchConverter
   {
     var dict = new Dictionary<string, object>();
 
-    dsDic.Keys
-      .ToList()
+    dsDic
+      .Keys.ToList()
       .ForEach(key =>
       {
         dict[key] = dsDic.ValueAtKey(key);
@@ -219,10 +219,8 @@ public class BatchConverter
         continue; // Ignore non matching elements, done for extra safety.
       }
 
-      var parts = name.Split('{')[
-        1
-      ] // Get everything after open curly brace
-      .Split('}')[0] // Get everything before close curly brace
+      var parts = name.Split('{')[1] // Get everything after open curly brace
+        .Split('}')[0] // Get everything before close curly brace
         .Split(';') // Split by ;
         .Select(text =>
         {

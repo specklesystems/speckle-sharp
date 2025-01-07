@@ -205,27 +205,27 @@
         </Grid>
 
       </TabItem>
-
-      <TabItem ToolTip.Tip="Recent Activity">
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="TimelineText" />
-          </StackPanel>
-        </TabItem.Header>
-        <!--  ACTIVITY  -->
-        <Grid RowDefinitions="auto,*">
-          <TextBlock
-            Margin="20,20,20,20"
-            Classes="SpeckleFont"
-            FontSize="18"
-            Text="Activity" />
-          <uc:Activity Grid.Row="1" />
-        </Grid>
-      </TabItem>
+      <!--Disabled as API is deprecated-->
+      <!-- <TabItem ToolTip.Tip="Recent Activity"> -->
+      <!--   <TabItem.Header> -->
+      <!--     <StackPanel Orientation="Horizontal"> -->
+      <!--       <icons:MaterialIcon -->
+      <!--         Width="20" -->
+      <!--         Height="20" -->
+      <!--         VerticalAlignment="Center" -->
+      <!--         Kind="TimelineText" /> -->
+      <!--     </StackPanel> -->
+      <!--   </TabItem.Header> -->
+      <!--   ~1~  ACTIVITY  @1@ -->
+      <!--   <Grid RowDefinitions="auto,*"> -->
+      <!--     <TextBlock -->
+      <!--       Margin="20,20,20,20" -->
+      <!--       Classes="SpeckleFont" -->
+      <!--       FontSize="18" -->
+      <!--       Text="Activity" /> -->
+      <!--     <uc:Activity Grid.Row="1" /> -->
+      <!--   </Grid> -->
+      <!-- </TabItem> -->
       <!--  COMMENTS  -->
       <TabItem ToolTip.Tip="Comments">
         <TabItem.Header>

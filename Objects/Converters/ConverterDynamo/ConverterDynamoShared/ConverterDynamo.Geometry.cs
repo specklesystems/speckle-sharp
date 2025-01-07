@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.DesignScript.Geometry;
 using Objects.Geometry;
-using Speckle.Core.Models;
-using DS = Autodesk.DesignScript.Geometry;
-using Objects.Primitive;
-using Point = Objects.Geometry.Point;
-using Vector = Objects.Geometry.Vector;
-using Line = Objects.Geometry.Line;
-using Plane = Objects.Geometry.Plane;
-using Circle = Objects.Geometry.Circle;
-using Arc = Objects.Geometry.Arc;
-using Ellipse = Objects.Geometry.Ellipse;
-using Curve = Objects.Geometry.Curve;
-using Mesh = Objects.Geometry.Mesh;
 using Objects.Other;
+using Objects.Primitive;
 using Objects.Utils;
-using Spiral = Objects.Geometry.Spiral;
-using Surface = Objects.Geometry.Surface;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Arc = Objects.Geometry.Arc;
+using Circle = Objects.Geometry.Circle;
+using Curve = Objects.Geometry.Curve;
+using DS = Autodesk.DesignScript.Geometry;
+using Ellipse = Objects.Geometry.Ellipse;
+using Line = Objects.Geometry.Line;
+using Mesh = Objects.Geometry.Mesh;
+using Plane = Objects.Geometry.Plane;
+using Point = Objects.Geometry.Point;
+using Spiral = Objects.Geometry.Spiral;
+using Surface = Objects.Geometry.Surface;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Dynamo;
 
@@ -277,8 +277,8 @@ public partial class ConverterDynamo
     var points = ArrayToPointList(polyline.value, polyline.units);
     if (polyline.closed)
     {
-      return DS.PolyCurve
-        .ByPoints(points)
+      return DS
+        .PolyCurve.ByPoints(points)
         .CloseWithLine()
         .SetDynamoProperties<DS.PolyCurve>(GetDynamicMembersFromBase(polyline));
     }
@@ -721,8 +721,8 @@ public partial class ConverterDynamo
     var vertices = PointListToFlatList(mesh.VertexPositions);
     var defaultColour = System.Drawing.Color.FromArgb(255, 100, 100, 100);
 
-    var faces = mesh.FaceIndices
-      .SelectMany(f =>
+    var faces = mesh
+      .FaceIndices.SelectMany(f =>
       {
         if (f.Count == 4)
         {
@@ -912,17 +912,15 @@ public partial class ConverterDynamo
     var controlPoints = surface.GetControlPoints();
 
     points = controlPoints
-      .Select(
-        row =>
-          row.Select(
-              p =>
-                DS.Point.ByCoordinates(
-                  ScaleToNative(p.x, p.units),
-                  ScaleToNative(p.y, p.units),
-                  ScaleToNative(p.z, p.units)
-                )
+      .Select(row =>
+        row.Select(p =>
+            DS.Point.ByCoordinates(
+              ScaleToNative(p.x, p.units),
+              ScaleToNative(p.y, p.units),
+              ScaleToNative(p.z, p.units)
             )
-            .ToArray()
+          )
+          .ToArray()
       )
       .ToArray();
 

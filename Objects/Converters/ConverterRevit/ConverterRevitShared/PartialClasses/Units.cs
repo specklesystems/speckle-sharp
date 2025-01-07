@@ -37,13 +37,19 @@ public partial class ConverterRevit
     }
   }
   public DisplayUnitType RevitMassDensityTypeId
-  { get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_MassDensity).DisplayUnits; } }
+  {
+    get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_MassDensity).DisplayUnits; }
+  }
 
   public DisplayUnitType RevitStressTypeId
-  { get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_Stress).DisplayUnits; } }
+  {
+    get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_Stress).DisplayUnits; }
+  }
 
   public DisplayUnitType RevitThermalExpansionTypeId
-  { get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_ThermalExpansion).DisplayUnits; } }
+  {
+    get { return Doc.GetUnits().GetFormatOptions(UnitType.UT_ThermalExpansion).DisplayUnits; }
+  }
 
   /// <summary>
   /// Converts Speckle length values to internal ones
@@ -122,7 +128,6 @@ public partial class ConverterRevit
       default:
         throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
     }
-
   }
 
   public static DisplayUnitType UnitsToNative(string units)
@@ -143,6 +148,7 @@ public partial class ConverterRevit
         throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
     }
   }
+
   private static string UnitsToNativeString(DisplayUnitType unitType)
   {
     return unitType.ToString();

@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Tekla.Structures.Model;
 using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;

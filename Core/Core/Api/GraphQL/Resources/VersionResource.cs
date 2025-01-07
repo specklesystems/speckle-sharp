@@ -32,31 +32,31 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         query VersionGet($projectId: String!, $modelId: String!, $versionId: String!) {
-                           project(id: $projectId) {
-                             model(id: $modelId) {
-                               version(id: $versionId) {
-                                 id
-                                 referencedObject
-                                 message
-                                 sourceApplication
-                                 createdAt
-                                 previewUrl
-                                 authorUser {
-                                   totalOwnedStreamsFavorites
-                                   id
-                                   name
-                                   bio
-                                   company
-                                   verified
-                                   role
-                                   avatar
-                                 }
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query VersionGet($projectId: String!, $modelId: String!, $versionId: String!) {
+        project(id: $projectId) {
+          model(id: $modelId) {
+            version(id: $versionId) {
+              id
+              referencedObject
+              message
+              sourceApplication
+              createdAt
+              previewUrl
+              authorUser {
+                totalOwnedStreamsFavorites
+                id
+                name
+                bio
+                company
+                verified
+                role
+                avatar
+              }
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request =
       new()
       {
@@ -93,35 +93,35 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         query VersionGetVersions($projectId: String!, $modelId: String!, $limit: Int!, $cursor: String, $filter: ModelVersionsFilter) {
-                           project(id: $projectId) {
-                             model(id: $modelId) {
-                               versions(limit: $limit, cursor: $cursor, filter: $filter) {
-                                 items {
-                                   id
-                                   referencedObject
-                                   message
-                                   sourceApplication
-                                   createdAt
-                                   previewUrl
-                                   authorUser {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     verified
-                                     role
-                                     avatar
-                                   }
-                                 }
-                                 cursor
-                                 totalCount
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query VersionGetVersions($projectId: String!, $modelId: String!, $limit: Int!, $cursor: String, $filter: ModelVersionsFilter) {
+        project(id: $projectId) {
+          model(id: $modelId) {
+            versions(limit: $limit, cursor: $cursor, filter: $filter) {
+              items {
+                id
+                referencedObject
+                message
+                sourceApplication
+                createdAt
+                previewUrl
+                authorUser {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  verified
+                  role
+                  avatar
+                }
+              }
+              cursor
+              totalCount
+            }
+          }
+        }
+      }
+      """;
 
     GraphQLRequest request =
       new()
@@ -159,29 +159,29 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation VersionUpdate($input: UpdateVersionInput!) {
-                           versionMutations {
-                             update(input: $input) {
-                               id
-                               referencedObject
-                               message
-                               sourceApplication
-                               createdAt
-                               previewUrl
-                               authorUser {
-                                 totalOwnedStreamsFavorites
-                                 id
-                                 name
-                                 bio
-                                 company
-                                 verified
-                                 role
-                                 avatar
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation VersionUpdate($input: UpdateVersionInput!) {
+        versionMutations {
+          update(input: $input) {
+            id
+            referencedObject
+            message
+            sourceApplication
+            createdAt
+            previewUrl
+            authorUser {
+              totalOwnedStreamsFavorites
+              id
+              name
+              bio
+              company
+              verified
+              role
+              avatar
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input, } };
 
     var response = await _client
@@ -199,14 +199,14 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation VersionMoveToModel($input: MoveVersionsInput!) {
-                           versionMutations {
-                             moveToModel(input: $input) {
-                               id
-                             }
-                           }
-                         }
-                         """;
+      mutation VersionMoveToModel($input: MoveVersionsInput!) {
+        versionMutations {
+          moveToModel(input: $input) {
+            id
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input, } };
 
     var response = await _client
@@ -222,12 +222,12 @@ public sealed class VersionResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation VersionDelete($input: DeleteVersionsInput!) {
-                           versionMutations {
-                             delete(input: $input)
-                           }
-                         }
-                         """;
+      mutation VersionDelete($input: DeleteVersionsInput!) {
+        versionMutations {
+          delete(input: $input)
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client

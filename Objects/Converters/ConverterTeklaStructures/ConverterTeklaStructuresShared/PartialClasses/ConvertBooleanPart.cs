@@ -1,8 +1,8 @@
-using Objects.Geometry;
-using BE = Objects.BuiltElements;
-using Objects.BuiltElements.TeklaStructures;
 using System.Linq;
+using Objects.BuiltElements.TeklaStructures;
+using Objects.Geometry;
 using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 
 namespace Objects.Converter.TeklaStructures;
 
@@ -14,7 +14,6 @@ public partial class ConverterTeklaStructures
     switch (opening)
     {
       case TeklaContourOpening contourOpening:
-
         {
           var contourPlate = new ContourPlate();
           contourPlate.Profile.ProfileString = contourOpening.cuttingPlate.profile.name;
@@ -34,7 +33,6 @@ public partial class ConverterTeklaStructures
         }
         break;
       case TeklaBeamOpening beamOpening:
-
         {
           var beam = new Beam();
           var baseLine = beamOpening.cuttingBeam.baseLine as Line;

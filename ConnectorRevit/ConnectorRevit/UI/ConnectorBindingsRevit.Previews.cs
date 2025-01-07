@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.ExternalService;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
-using Autodesk.Revit.DB.DirectContext3D;
-using RevitSharedResources.Interfaces;
-using RevitSharedResources.Models;
 
 namespace Speckle.ConnectorRevit.UI;
 

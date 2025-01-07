@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 

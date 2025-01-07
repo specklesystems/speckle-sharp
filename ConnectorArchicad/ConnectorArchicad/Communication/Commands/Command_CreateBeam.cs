@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Objects.BuiltElements.Archicad;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class CreateBeam : ICommand<IEnumerable<ApplicationObject>>
+internal sealed class CreateBeam : ICommand<IEnumerable<ApplicationObject>>
 {
   [JsonObject(MemberSerialization.OptIn)]
   public sealed class Parameters

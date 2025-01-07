@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.DgnEC;
 using Bentley.DgnPlatformNET.Elements;
@@ -11,9 +14,6 @@ using Objects.Geometry;
 using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -34,7 +34,6 @@ using Station = Objects.BuiltElements.Station;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
-
 #if(OPENBUILDINGS)
 using Bentley.Building.Api;
 #endif

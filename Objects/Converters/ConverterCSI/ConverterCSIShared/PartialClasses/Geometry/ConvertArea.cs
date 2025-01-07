@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using Objects.Structural.Geometry;
-using Objects.Structural.CSI.Properties;
-using Speckle.Core.Models;
-using StructuralUtilities.PolygonMesher;
 using System.Linq;
-using Objects.Structural.CSI.Geometry;
-using Objects.Structural.Properties;
-using Objects.Geometry;
 using ConverterCSIShared.Extensions;
+using Objects.Geometry;
+using Objects.Structural.CSI.Geometry;
+using Objects.Structural.CSI.Properties;
+using Objects.Structural.Geometry;
+using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using StructuralUtilities.PolygonMesher;
 
 namespace Objects.Converter.CSI;
 
@@ -65,9 +65,7 @@ public partial class ConverterCSI
       success = Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
       if (success != 0)
       {
-        throw new ConversionException(
-          $"Failed to modify the connectivity of the area: {name}"
-        );
+        throw new ConversionException($"Failed to modify the connectivity of the area: {name}");
       }
 #else
       int tableVersion = 0;

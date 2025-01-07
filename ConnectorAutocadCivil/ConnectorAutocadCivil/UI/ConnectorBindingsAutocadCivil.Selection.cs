@@ -6,7 +6,6 @@ using Autodesk.AutoCAD.EditorInput;
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.Core.Kits;
-
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif

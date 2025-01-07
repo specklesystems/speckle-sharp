@@ -561,8 +561,8 @@ public class SendComponentWorker : WorkerInstance
               };
 
               // Check to see if we have a previous commit; if so set it.
-              var prevCommit = prevCommits.FirstOrDefault(
-                c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
+              var prevCommit = prevCommits.FirstOrDefault(c =>
+                c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
               {

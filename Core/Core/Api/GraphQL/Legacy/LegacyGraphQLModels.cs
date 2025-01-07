@@ -10,11 +10,11 @@ namespace Speckle.Core.Api;
 
 internal static class DeprecationMessages
 {
-  public const string FE2_DEPRECATION_MESSAGE =
+  public const string FE1_DEPRECATION_MESSAGE =
     $"Stream/Branch/Commit API is now deprecated, Use the new Project/Model/Version API functions in {nameof(Client)}";
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamCreateInput
 {
   public string name { get; set; }
@@ -22,7 +22,7 @@ public class StreamCreateInput
   public bool isPublic { get; set; } = true;
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamUpdateInput
 {
   public string id { get; set; }
@@ -31,7 +31,7 @@ public class StreamUpdateInput
   public bool isPublic { get; set; } = true;
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamPermissionInput
 {
   public string streamId { get; set; }
@@ -39,14 +39,14 @@ public class StreamPermissionInput
   public string role { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamRevokePermissionInput
 {
   public string streamId { get; set; }
   public string userId { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamInviteCreateInput
 {
   public string streamId { get; set; }
@@ -56,7 +56,7 @@ public class StreamInviteCreateInput
   public string role { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class BranchCreateInput
 {
   public string streamId { get; set; }
@@ -64,7 +64,7 @@ public class BranchCreateInput
   public string description { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class BranchUpdateInput
 {
   public string streamId { get; set; }
@@ -73,7 +73,7 @@ public class BranchUpdateInput
   public string description { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class BranchDeleteInput
 {
   public string streamId { get; set; }
@@ -94,7 +94,7 @@ public class CommitCreateInput
   public List<string> previousCommitIds { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommitUpdateInput
 {
   public string streamId { get; set; }
@@ -102,14 +102,14 @@ public class CommitUpdateInput
   public string message { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommitDeleteInput
 {
   public string streamId { get; set; }
   public string id { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommitReceivedInput
 {
   public string streamId { get; set; }
@@ -120,7 +120,7 @@ public class CommitReceivedInput
 
 #endregion
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Stream
 {
   public string id { get; set; }
@@ -165,7 +165,7 @@ public class Stream
   }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Collaborator
 {
   public string id { get; set; }
@@ -179,13 +179,13 @@ public class Collaborator
   }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamInvitesResponse
 {
   public List<PendingStreamCollaborator> streamInvites { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Branches
 {
   public int totalCount { get; set; }
@@ -193,7 +193,7 @@ public class Branches
   public List<Branch> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Commits
 {
   public int totalCount { get; set; }
@@ -201,7 +201,7 @@ public class Commits
   public List<Commit> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Commit
 {
   public string id { get; set; }
@@ -257,7 +257,7 @@ public class InfoCommit
   public string branchName { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class SpeckleObject
 {
   public string id { get; set; }
@@ -267,7 +267,7 @@ public class SpeckleObject
   public DateTime createdAt { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Branch
 {
   public string id { get; set; }
@@ -281,7 +281,7 @@ public class Branch
   }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Streams
 {
   public int totalCount { get; set; }
@@ -289,14 +289,14 @@ public class Streams
   public List<Stream> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Resource
 {
   public string resourceId { get; set; }
   public ResourceType resourceType { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Location
 {
   public double x { get; set; }
@@ -304,33 +304,33 @@ public class Location
   public double z { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class UserSearchData
 {
   public UserSearch userSearch { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class UserSearch
 {
   public string cursor { get; set; }
   public List<LimitedUser> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamData
 {
   public Stream stream { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class StreamsData
 {
   public Streams streams { get; set; }
 }
 
 #region comments
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class Comments
 {
   public int totalCount { get; set; }
@@ -338,7 +338,7 @@ public class Comments
   public List<CommentItem> items { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public sealed class CommentData
 {
   public Comments comments { get; init; }
@@ -349,7 +349,7 @@ public sealed class CommentData
   public object sectionBox { get; init; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommentItem
 {
   public string id { get; set; }
@@ -366,7 +366,7 @@ public class CommentItem
   public List<Resource> resources { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class ContentContent
 {
   public string Type { get; set; }
@@ -375,26 +375,26 @@ public class ContentContent
   public string Text { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommentsData
 {
   public Comments comments { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommentItemData
 {
   public CommentItem comment { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommentActivityMessage
 {
   public string type { get; set; }
   public CommentItem comment { get; set; }
 }
 
-[Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+[Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
 public class CommentActivityResponse
 {
   public CommentActivityMessage commentActivity { get; set; }

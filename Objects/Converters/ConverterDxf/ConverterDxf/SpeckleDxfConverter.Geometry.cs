@@ -39,8 +39,8 @@ public partial class SpeckleDxfConverter
     MeshTopologyResult topology,
     string edgeLayerName = "Mesh boundaries"
   ) =>
-    topology.EdgeFaceConnection
-      .Where((kv) => kv.Value.Count == 1)
+    topology
+      .EdgeFaceConnection.Where((kv) => kv.Value.Count == 1)
       .Select(kv =>
       {
         var (iA, iB) = kv.Key;
@@ -56,8 +56,8 @@ public partial class SpeckleDxfConverter
   )
   {
     var vertices = topology.Vertices.Select(VectorToNative).ToList();
-    return topology.Faces
-      .Select(indices =>
+    return topology
+      .Faces.Select(indices =>
       {
         var points = indices.Select(i => vertices[i]).ToList();
         Dxfe.Face3D face;
