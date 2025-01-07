@@ -34,26 +34,26 @@ public static class TestAutomateUtils
     GraphQLRequest query =
       new(
         query: """
-               mutation CreateAutomation(
-                   $projectId: String!
-                   $modelId: String!
-                   $automationName: String!
-                   $automationId: String!
-                   $automationRevisionId: String!
-               ) {
-                       automationMutations {
-                           create(
-                               input: {
-                                   projectId: $projectId
-                                   modelId: $modelId
-                                   automationName: $automationName
-                                   automationId: $automationId
-                                   automationRevisionId: $automationRevisionId
-                               }
-                           )
-                       }
-                   }
-               """,
+        mutation CreateAutomation(
+            $projectId: String!
+            $modelId: String!
+            $automationName: String!
+            $automationId: String!
+            $automationRevisionId: String!
+        ) {
+                automationMutations {
+                    create(
+                        input: {
+                            projectId: $projectId
+                            modelId: $modelId
+                            automationName: $automationName
+                            automationId: $automationId
+                            automationRevisionId: $automationRevisionId
+                        }
+                    )
+                }
+            }
+        """,
         variables: new
         {
           projectId,

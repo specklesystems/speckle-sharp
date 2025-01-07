@@ -139,8 +139,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       //exclude existing ones
-      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
-        x => !AddedUsers.Any(u => u.Id == x.id)
+      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(x =>
+        !AddedUsers.Any(u => u.Id == x.id)
       );
       //exclude myself
       users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
@@ -254,8 +254,11 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client.ProjectInvite
-              .Create(_stream.StreamState.StreamId, new ProjectInviteCreateInput(user.Name, user.Role, null, null))
+            await _stream
+              .StreamState.Client.ProjectInvite.Create(
+                _stream.StreamState.StreamId,
+                new ProjectInviteCreateInput(user.Name, user.Role, null, null)
+              )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -276,8 +279,11 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client.ProjectInvite
-              .Create(_stream.StreamState.StreamId, new ProjectInviteCreateInput(null, user.Role, null, user.Id))
+            await _stream
+              .StreamState.Client.ProjectInvite.Create(
+                _stream.StreamState.StreamId,
+                new ProjectInviteCreateInput(null, user.Role, null, user.Id)
+              )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -298,8 +304,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client.Project
-              .UpdateRole(new ProjectUpdateRoleInput(user.Id, _stream.StreamState.StreamId, user.Role))
+            await _stream
+              .StreamState.Client.Project.UpdateRole(
+                new ProjectUpdateRoleInput(user.Id, _stream.StreamState.StreamId, user.Role)
+              )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -321,8 +329,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client.Project
-              .UpdateRole(new ProjectUpdateRoleInput(user.id, _stream.StreamState.StreamId, null))
+            await _stream
+              .StreamState.Client.Project.UpdateRole(
+                new ProjectUpdateRoleInput(user.id, _stream.StreamState.StreamId, null)
+              )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -344,8 +354,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client.ProjectInvite
-              .Cancel(_stream.StreamState.StreamId, user.inviteId)
+            await _stream
+              .StreamState.Client.ProjectInvite.Cancel(_stream.StreamState.StreamId, user.inviteId)
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -363,8 +373,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       try
       {
         _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
-        var pc = await _stream.StreamState.Client
-          .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
+        var pc = await _stream
+          .StreamState.Client.StreamGetPendingCollaborators(_stream.StreamState.StreamId)
           .ConfigureAwait(true);
         _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
         _stream.StreamState.CachedStream = _stream.Stream;

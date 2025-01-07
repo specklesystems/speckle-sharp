@@ -7,7 +7,6 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif

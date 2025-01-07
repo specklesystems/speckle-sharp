@@ -354,8 +354,8 @@ public partial class ConnectorBindingsNavisworks
     {
       var selectionBuilder = new SelectionHandler(state, _progressViewModel) { ProgressBar = _progressBar };
 
-      var selectedViews = state.Filter.Selection
-        .Distinct()
+      var selectedViews = state
+        .Filter.Selection.Distinct()
         .Select(selectionBuilder.ResolveSavedViewpoint)
         .Select(_conversionInvoker.Convert)
         .Where(c => c != null)

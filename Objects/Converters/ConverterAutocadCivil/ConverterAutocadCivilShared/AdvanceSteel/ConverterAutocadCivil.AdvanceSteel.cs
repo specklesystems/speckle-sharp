@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Speckle.Core.Models;
-
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.AdvanceSteel.Modeler;
@@ -12,10 +10,8 @@ using Autodesk.AdvanceSteel.ConstructionTypes;
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
-
 using Objects.BuiltElements.AdvanceSteel;
 using Mesh = Objects.Geometry.Mesh;
-
 using MathNet.Spatial.Euclidean;
 using MathPlane = MathNet.Spatial.Euclidean.Plane;
 using TriangleNet.Geometry;
@@ -109,7 +105,6 @@ public partial class ConverterAutocadCivil
           }
         }
       }
-
     }
     catch (System.Exception e)
     {
@@ -117,7 +112,6 @@ public partial class ConverterAutocadCivil
     }
 
     asteelObject.asteelProperties = propsAsteelObject;
-
   }
 
   private bool CheckProperty(ASProperty propInfo, object @object, out object value)
@@ -130,7 +124,7 @@ public partial class ConverterAutocadCivil
 
     if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal))
     {
-      if(propInfo.UnitType.HasValue && value is double)
+      if (propInfo.UnitType.HasValue && value is double)
       {
         value = FromInternalUnits((double)value, propInfo.UnitType.Value);
       }
@@ -148,7 +142,7 @@ public partial class ConverterAutocadCivil
       value = value.ToString();
       return true;
     }
-    
+
     value = ConvertValueToSpeckle(value, propInfo.UnitType, out var converted);
 
     return converted;
@@ -210,7 +204,9 @@ public partial class ConverterAutocadCivil
       var triangleMesh = (TriangleMesh)input.Triangulate();
 
       CoordinateSystem coordinateSystemInverted = coordinateSystemAligned.Invert();
-      var verticesMesh = triangleMesh.Vertices.Select(x => new Point3D(x.X, x.Y, 0).TransformBy(coordinateSystemInverted));
+      var verticesMesh = triangleMesh.Vertices.Select(x =>
+        new Point3D(x.X, x.Y, 0).TransformBy(coordinateSystemInverted)
+      );
 
       vertexList.AddRange(GetFlatCoordinates(verticesMesh));
       facesList.AddRange(GetFaceVertices(triangleMesh.Triangles, faceIndexOffset));
@@ -224,7 +220,9 @@ public partial class ConverterAutocadCivil
 
   private Contour CreateContour(IEnumerable<Point3D> points, CoordinateSystem coordinateSystemAligned)
   {
-    var listTriangleVertex = points.Select(x => x.TransformBy(coordinateSystemAligned)).Select(x => new TriangleVertex(x.X, x.Y));
+    var listTriangleVertex = points
+      .Select(x => x.TransformBy(coordinateSystemAligned))
+      .Select(x => new TriangleVertex(x.X, x.Y));
     return new Contour(listTriangleVertex);
   }
 
@@ -267,7 +265,8 @@ public partial class ConverterAutocadCivil
     return CoordinateSystem.CreateMappingCoordinateSystem(fromCs, toCs);
   }
 
-  public static T GetFilerObjectByEntity<T>(DBObject @object) where T : FilerObject
+  public static T GetFilerObjectByEntity<T>(DBObject @object)
+    where T : FilerObject
   {
     ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = DatabaseManager.GetFilerObjectId(idCadEntity, false);

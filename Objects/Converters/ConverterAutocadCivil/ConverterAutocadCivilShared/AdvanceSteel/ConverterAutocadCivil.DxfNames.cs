@@ -6,7 +6,7 @@ using System;
 namespace Objects.Converter.AutocadCivil;
 
 public static class DxfNames
-{ 
+{
   public const string BEAM = "ASTBEAM";
   public const string PLATE = "ASTPLATE";
 

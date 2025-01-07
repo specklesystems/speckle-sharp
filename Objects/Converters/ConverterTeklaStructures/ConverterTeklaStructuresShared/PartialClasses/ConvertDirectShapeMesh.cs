@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using GE = Objects.Geometry;
-using Speckle.Core.Models;
 using System.Linq;
 using Speckle.Core.Kits;
-using Tekla.Structures.Model;
-using Tekla.Structures.Geometry3d;
+using Speckle.Core.Models;
 using Tekla.Structures.Catalogs;
+using Tekla.Structures.Geometry3d;
+using Tekla.Structures.Model;
+using GE = Objects.Geometry;
 
 namespace Objects.Converter.TeklaStructures;
 

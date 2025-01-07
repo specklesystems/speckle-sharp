@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using ConnectorTeklaStructures.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
-using ConnectorTeklaStructures.Storage;
 
 namespace Speckle.ConnectorTeklaStructures.UI;
 

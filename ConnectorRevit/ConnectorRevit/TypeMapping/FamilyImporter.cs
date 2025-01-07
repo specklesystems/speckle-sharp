@@ -47,8 +47,8 @@ internal sealed class FamilyImporter
   /// </returns>
   public async Task ImportFamilyTypes(HostTypeContainer hostTypesContainer)
   {
-    var familyPaths = await Dispatcher.UIThread
-      .InvokeAsync<string[]>(() =>
+    var familyPaths = await Dispatcher
+      .UIThread.InvokeAsync<string[]>(() =>
       {
         using var windowsDialog = new OpenFileDialog
         {
@@ -71,8 +71,8 @@ internal sealed class FamilyImporter
     await PopulateSymbolAndFamilyInfo(familyPaths, allSymbols, familyInfo).ConfigureAwait(false);
 
     var vm = new ImportFamiliesDialogViewModel(allSymbols);
-    await Dispatcher.UIThread
-      .InvokeAsync(async () =>
+    await Dispatcher
+      .UIThread.InvokeAsync(async () =>
       {
         var importFamilies = new ImportFamiliesDialog { DataContext = vm };
         await importFamilies.ShowDialog().ConfigureAwait(true);

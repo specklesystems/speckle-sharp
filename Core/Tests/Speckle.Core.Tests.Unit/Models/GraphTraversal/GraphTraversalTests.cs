@@ -20,8 +20,8 @@ public class GraphTraversalTests
     var traverseListsRule = TraversalRule
       .NewTraversalRule()
       .When(_ => true)
-      .ContinueTraversing(
-        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IList).Select(kvp => kvp.Key)
+      .ContinueTraversing(x =>
+        x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IList).Select(kvp => kvp.Key)
       );
 
     var expectTraverse = new Base { id = "List Member" };
@@ -52,8 +52,8 @@ public class GraphTraversalTests
     var traverseListsRule = TraversalRule
       .NewTraversalRule()
       .When(_ => true)
-      .ContinueTraversing(
-        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IDictionary).Select(kvp => kvp.Key)
+      .ContinueTraversing(x =>
+        x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IDictionary).Select(kvp => kvp.Key)
       );
 
     var expectTraverse = new Base { id = "Dict Member" };

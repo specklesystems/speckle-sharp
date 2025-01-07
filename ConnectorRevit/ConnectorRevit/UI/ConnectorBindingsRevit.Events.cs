@@ -8,13 +8,13 @@ using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Speckle.ConnectorRevit.UI;
 

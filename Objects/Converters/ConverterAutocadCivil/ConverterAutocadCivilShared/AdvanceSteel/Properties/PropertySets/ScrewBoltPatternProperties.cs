@@ -19,7 +19,12 @@ public class ScrewBoltPatternProperties : ASBaseProperties<ScrewBoltPattern>, IA
     Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "top tool diameter", nameof(ScrewBoltPattern.TopToolDiameter), eUnitType.kDistance);
-    InsertProperty(dictionary, "bottom tool diameter", nameof(ScrewBoltPattern.BottomToolDiameter), eUnitType.kDistance);
+    InsertProperty(
+      dictionary,
+      "bottom tool diameter",
+      nameof(ScrewBoltPattern.BottomToolDiameter),
+      eUnitType.kDistance
+    );
     InsertProperty(dictionary, "bottom tool height", nameof(ScrewBoltPattern.BottomToolHeight), eUnitType.kDistance);
     InsertProperty(dictionary, "head number of edges", nameof(ScrewBoltPattern.BoltHeadNumEdges));
     InsertProperty(dictionary, "head diameter", nameof(ScrewBoltPattern.BoltHeadDiameter), eUnitType.kDistance);
@@ -29,12 +34,22 @@ public class ScrewBoltPatternProperties : ASBaseProperties<ScrewBoltPattern>, IA
     InsertProperty(dictionary, "grade", nameof(ScrewBoltPattern.Grade));
     InsertProperty(dictionary, "standard", nameof(ScrewBoltPattern.Standard));
     InsertProperty(dictionary, "hole tolerance", nameof(ScrewBoltPattern.HoleTolerance), eUnitType.kDistance);
-    InsertProperty(dictionary, "binding length addition", nameof(ScrewBoltPattern.BindingLengthAddition), eUnitType.kDistance);
+    InsertProperty(
+      dictionary,
+      "binding length addition",
+      nameof(ScrewBoltPattern.BindingLengthAddition),
+      eUnitType.kDistance
+    );
     InsertProperty(dictionary, "annotation", nameof(ScrewBoltPattern.Annotation));
     InsertProperty(dictionary, "screw length", nameof(ScrewBoltPattern.ScrewLength), eUnitType.kDistance);
     InsertProperty(dictionary, "sum top height", nameof(ScrewBoltPattern.SumTopHeight), eUnitType.kDistance);
     InsertProperty(dictionary, "sum top set height", nameof(ScrewBoltPattern.SumTopSetHeight), eUnitType.kDistance);
-    InsertProperty(dictionary, "sum bottom set height", nameof(ScrewBoltPattern.SumBottomSetHeight), eUnitType.kDistance);
+    InsertProperty(
+      dictionary,
+      "sum bottom set height",
+      nameof(ScrewBoltPattern.SumBottomSetHeight),
+      eUnitType.kDistance
+    );
     InsertProperty(dictionary, "sum bottom height", nameof(ScrewBoltPattern.SumBottomHeight), eUnitType.kDistance);
     InsertProperty(dictionary, "max top diameter", nameof(ScrewBoltPattern.MaxTopDiameter), eUnitType.kDistance);
     InsertProperty(dictionary, "max bottom diameter", nameof(ScrewBoltPattern.MaxBottomDiameter), eUnitType.kDistance);

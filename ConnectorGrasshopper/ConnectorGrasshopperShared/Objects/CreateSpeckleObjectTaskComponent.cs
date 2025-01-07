@@ -63,8 +63,8 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
 
   public void VariableParameterMaintenance()
   {
-    Params.Input
-      .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+    Params
+      .Input.Where(param => !(param.Attributes is GenericAccessParamAttributes))
       .ToList()
       .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes));
   }
@@ -203,8 +203,8 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
         @base = null;
       }
 
-      inputData?.Keys
-        .ToList()
+      inputData
+        ?.Keys.ToList()
         .ForEach(key =>
         {
           var value = inputData[key];

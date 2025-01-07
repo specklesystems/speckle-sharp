@@ -207,8 +207,8 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger
-        .ForContext("fileName", _fileName)
+      SpeckleLog
+        .Logger.ForContext("fileName", _fileName)
         .Debug(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SearchStreams), ex.Message);
     }
     return stream;

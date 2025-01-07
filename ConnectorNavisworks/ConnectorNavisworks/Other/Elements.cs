@@ -280,15 +280,12 @@ public class Element
       .ToDictionary(group => group.Key, group => group.Select(item => item.Value).Last());
 
     var formattedProperties = groupedProperties
-      .Select(
-        kVp =>
-          new
-          {
-            Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)),
-            Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2),
-            kVp.Value
-          }
-      )
+      .Select(kVp => new
+      {
+        Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)),
+        Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2),
+        kVp.Value
+      })
       .Where(item => item.Category != "Internal");
 
     var propertyStack = formattedProperties

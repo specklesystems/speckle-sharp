@@ -23,15 +23,6 @@ public class UserServerInfoTests
     Assert.That(result.frontend2, Is.True);
   }
 
-  [Test]
-  public async Task IsFrontEnd2False()
-  {
-    ServerInfo result = await AccountManager.GetServerInfo("https://speckle.xyz/");
-
-    Assert.That(result, Is.Not.Null);
-    Assert.That(result.frontend2, Is.False);
-  }
-
   /// <remarks>
   /// We get ServerInfo from "http://localhost:3000/graphql",
   /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3000/",

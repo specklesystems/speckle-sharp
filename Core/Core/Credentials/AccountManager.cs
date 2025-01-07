@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Models.Responses;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
@@ -117,15 +117,15 @@ public static class AccountManager
     );
     //language=graphql
     const string QUERY = """
-                         query { 
-                           data:activeUser {
-                             name 
-                             email 
-                             id 
-                             company
-                           } 
-                         }
-                         """;
+      query { 
+        data:activeUser {
+          name 
+          email 
+          id 
+          company
+        } 
+      }
+      """;
     var request = new GraphQLRequest { Query = QUERY };
 
     var response = await gqlClient

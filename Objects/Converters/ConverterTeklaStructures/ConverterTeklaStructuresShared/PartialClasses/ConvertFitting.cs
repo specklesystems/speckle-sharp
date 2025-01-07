@@ -1,6 +1,6 @@
 using Objects.Geometry;
-using BE = Objects.BuiltElements;
 using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 using TSG = Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures;

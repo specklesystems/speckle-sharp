@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using Objects.BuiltElements.TeklaStructures;
 using Objects.Geometry;
 using Tekla.Structures.Model;
-using Objects.BuiltElements.TeklaStructures;
 
 namespace Objects.Converter.TeklaStructures;
 

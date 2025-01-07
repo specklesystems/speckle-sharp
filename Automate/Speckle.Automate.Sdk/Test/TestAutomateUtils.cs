@@ -12,24 +12,24 @@ public static class TestAutomateUtils
     GraphQLRequest query =
       new(
         query: """
-                    mutation Mutation($projectId: ID!, $automationId: ID!) {
-                        projectMutations {
-                            automationMutations(projectId: $projectId) {
-                                createTestAutomationRun(automationId: $automationId) {
-                                    automationRunId
-                                    functionRunId
-                                    triggers {
-                                        payload {
-                                            modelId
-                                            versionId
-                                        }
-                                        triggerType
-                                    }
+            mutation Mutation($projectId: ID!, $automationId: ID!) {
+                projectMutations {
+                    automationMutations(projectId: $projectId) {
+                        createTestAutomationRun(automationId: $automationId) {
+                            automationRunId
+                            functionRunId
+                            triggers {
+                                payload {
+                                    modelId
+                                    versionId
                                 }
+                                triggerType
                             }
                         }
                     }
-                """,
+                }
+            }
+        """,
         variables: new
         {
           automationId = TestAutomateEnvironment.GetSpeckleAutomationId(),

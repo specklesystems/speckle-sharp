@@ -167,13 +167,12 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     {
       var errorMessages = errors.Select(e => e.Message);
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null
-            && (
-              e.Extensions.Contains(new KeyValuePair<string, object>("code", "FORBIDDEN"))
-              || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
-            )
+        errors.Any(e =>
+          e.Extensions != null
+          && (
+            e.Extensions.Contains(new KeyValuePair<string, object>("code", "FORBIDDEN"))
+            || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
+          )
         )
       )
       {
@@ -181,9 +180,8 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
       }
 
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
+        errors.Any(e =>
+          e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
         )
       )
       {
@@ -191,10 +189,9 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
       }
 
       if (
-        errors.Any(
-          e =>
-            e.Extensions != null
-            && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
+        errors.Any(e =>
+          e.Extensions != null
+          && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
         )
       )
       {
@@ -264,8 +261,8 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
               }
               else
               {
-                SpeckleLog.Logger
-                  .ForContext("graphqlResponse", response)
+                SpeckleLog
+                  .Logger.ForContext("graphqlResponse", response)
                   .Error("Cannot execute graphql callback for {resultType}, the response has no data.", typeof(T).Name);
               }
             }
@@ -277,8 +274,8 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
             // anything else related to graphql gets logged
             catch (SpeckleGraphQLException<T> gqlException)
             {
-              SpeckleLog.Logger
-                .ForContext("graphqlResponse", gqlException.Response)
+              SpeckleLog
+                .Logger.ForContext("graphqlResponse", gqlException.Response)
                 .ForContext("graphqlExtensions", gqlException.Extensions)
                 .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
                 .Warning(
@@ -384,12 +381,12 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     }
 
     const string QUERY = """
-                         query Project($projectId: String!) {
-                           project(id: $projectId) {
-                             workspaceId
-                           }
-                         }
-                         """;
+      query Project($projectId: String!) {
+        project(id: $projectId) {
+          workspaceId
+        }
+      }
+      """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 

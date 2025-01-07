@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
+using ConnectorCSI.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
-using ConnectorCSI.Storage;
 using Speckle.Core.Logging;
-using System;
 
 namespace Speckle.ConnectorCSI.UI;
 

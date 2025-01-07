@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Reflection;
-
+using System.Text.RegularExpressions;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Colors;
-
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-
+using Speckle.Core.Models;
 #if CIVIL
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
@@ -340,7 +337,7 @@ public static class Utils
     }
   }
 
-  public static PropertySetDefinition CreatePropertySet(Dictionary<string,object> propertySetDict, Document doc)
+  public static PropertySetDefinition CreatePropertySet(Dictionary<string, object> propertySetDict, Document doc)
   {
     PropertySetDefinition propSetDef = new();
     propSetDef.SetToStandard(doc.Database);
@@ -366,7 +363,9 @@ public static class Utils
       }
       else
       {
-        SpeckleLog.Logger.Error( $"Could not determine property set entry type of {entry.Value}. Property set entry not added to property set definitions.");
+        SpeckleLog.Logger.Error(
+          $"Could not determine property set entry type of {entry.Value}. Property set entry not added to property set definitions."
+        );
       }
     }
 
@@ -386,7 +385,7 @@ public static class Utils
     try
     {
       temporaryId = PropertyDataServices.GetPropertySet(obj, propertySetId);
-    } 
+    }
     catch (Autodesk.AutoCAD.Runtime.Exception e) when (!e.IsFatal())
     {
       // This will throw if the property set does not exist on the object.
@@ -423,9 +422,13 @@ public static class Utils
     {
       throw new InvalidOperationException($"Could not create property set on object {obj.Id}", e);
     }
-  } 
+  }
 
-  public static void SetPropertySets(this Entity entity, Document doc, List<Dictionary<string, object>> propertySetDicts)
+  public static void SetPropertySets(
+    this Entity entity,
+    Document doc,
+    List<Dictionary<string, object>> propertySetDicts
+  )
   {
     // create a dictionary for property sets for this object
     var name = $"Speckle {entity.Handle} Property Set";
@@ -469,7 +472,7 @@ public static class Utils
     {
       propertySetIds = PropertyDataServices.GetPropertySets(obj);
     }
-    catch (Autodesk.AutoCAD.Runtime.Exception e) 
+    catch (Autodesk.AutoCAD.Runtime.Exception e)
     {
       // This may throw if property sets do not exist on the object.
       // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
@@ -483,10 +486,11 @@ public static class Utils
 
     foreach (ObjectId id in propertySetIds)
     {
-      Dictionary<string, object> setDictionary = new() ;
+      Dictionary<string, object> setDictionary = new();
 
       PropertySet propertySet = (PropertySet)tr.GetObject(id, OpenMode.ForRead);
-      PropertySetDefinition setDef = (PropertySetDefinition)tr.GetObject(propertySet.PropertySetDefinition, OpenMode.ForRead);
+      PropertySetDefinition setDef = (PropertySetDefinition)
+        tr.GetObject(propertySet.PropertySetDefinition, OpenMode.ForRead);
 
       PropertyDefinitionCollection propDef = setDef.Definitions;
       Dictionary<int, PropertyDefinition> propDefs = new();
@@ -896,7 +900,8 @@ public static class Utils
 
 #if ADVANCESTEEL
 
-  public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
+  public static T GetFilerObjectByEntity<T>(DBObject @object)
+    where T : ASFilerObject
   {
     ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
