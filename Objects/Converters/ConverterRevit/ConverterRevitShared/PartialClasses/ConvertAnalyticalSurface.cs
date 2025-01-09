@@ -4,6 +4,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Structural;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 using Speckle.Core.Models;
@@ -232,21 +233,18 @@ public partial class ConverterRevit
 
     speckleElement2D.topology = outlineBuilder.GetOutline().Select(p => new Node(p)).ToList();
 
-    speckleElement2D.displayValue = GetElementDisplayValue(revitSurface);
-
     var prop = new Property2D();
 
     // Material
     DB.Material structMaterial = null;
     double thickness = 0;
-    var memberType = MemberType2D.Generic2D;
+    var memberType = PropertyType2D.Plate; // NOTE: a floor is typically classified as a plate since subjected to bending and shear stresses. Standard to have this as default.
 
     if (structuralElement is DB.Floor)
     {
       var floor = structuralElement as DB.Floor;
       structMaterial = floor.Document.GetElement(floor.FloorType.StructuralMaterialId) as DB.Material;
       thickness = GetParamValue<double>(structuralElement, BuiltInParameter.STRUCTURAL_FLOOR_CORE_THICKNESS);
-      memberType = MemberType2D.Slab;
     }
     else if (structuralElement is DB.Wall)
     {
@@ -255,7 +253,7 @@ public partial class ConverterRevit
         wall.Document.GetElement(wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId())
         as DB.Material;
       thickness = ScaleToSpeckle(wall.WallType.Width);
-      memberType = MemberType2D.Wall;
+      memberType = PropertyType2D.Shell; // NOTE: A wall is typically classified as shell since subjected to axial stresses
     }
 
     var speckleMaterial = GetStructuralMaterial(structMaterial);
@@ -263,13 +261,16 @@ public partial class ConverterRevit
     prop.material = speckleMaterial;
 
     prop.name = revitSurface.Document.GetElement(revitSurface.GetElementId()).Name;
-    //prop.type = memberType;
-    //prop.analysisType = Structural.AnalysisType2D.Shell;
+    prop.type = memberType;
     prop.thickness = thickness;
+    prop.units = ModelUnits;
 
     speckleElement2D.property = prop;
 
     GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
+    speckleElement2D.displayValue = GetElementDisplayValue(
+      revitSurface.Document.GetElement(revitSurface.GetElementId())
+    );
 
     return speckleElement2D;
   }
@@ -369,6 +370,33 @@ public partial class ConverterRevit
     }
 
     speckleElement2D.topology = edgeNodes;
+
+    // Property and Material
+    var prop = new Property2D();
+    DB.Material structMaterial = null;
+    double thickness = 0;
+    var memberType = PropertyType2D.Plate; // NOTE: a floor is typically classified as a plate since subjected to bending and shear stresses. Standard to have this as default.
+
+    if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleFloor)
+    {
+      structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
+      thickness = structuralElement.Thickness;
+    }
+    else if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleWall)
+    {
+      structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
+      thickness = structuralElement.Thickness;
+      memberType = PropertyType2D.Shell; // NOTE: A wall is typically classified as shell since subjected to axial stresses
+    }
+
+    var speckleMaterial = GetStructuralMaterial(structMaterial);
+    prop.material = speckleMaterial;
+
+    prop.name = structuralElement.Name; // NOTE: This is typically "" for analytical surfaces
+    prop.type = memberType;
+    prop.thickness = ScaleToSpeckle(thickness);
+    prop.units = ModelUnits;
+
     var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(
       Doc
     );
@@ -377,39 +405,11 @@ public partial class ConverterRevit
       var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
       var physicalElement = Doc.GetElement(physicalElementId);
       speckleElement2D.displayValue = GetElementDisplayValue(physicalElement);
+      prop.name = physicalElement.Name; // Rather use the name of the associated physical type (better than an empty string)
     }
-
-    speckleElement2D.openings = GetOpenings(revitSurface);
-
-    var prop = new Property2D();
-
-    // Material
-    DB.Material structMaterial = null;
-    double thickness = 0;
-    var memberType = MemberType2D.Generic2D;
-
-    if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleFloor)
-    {
-      structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
-      thickness = structuralElement.Thickness;
-      memberType = MemberType2D.Slab;
-    }
-    else if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleWall)
-    {
-      structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
-      thickness = structuralElement.Thickness;
-      memberType = MemberType2D.Wall;
-    }
-
-    var speckleMaterial = GetStructuralMaterial(structMaterial);
-    prop.material = speckleMaterial;
-
-    prop.name = structuralElement.Name;
-    //prop.type = memberType;
-    //prop.analysisType = Structural.AnalysisType2D.Shell;
-    prop.thickness = thickness;
 
     speckleElement2D.property = prop;
+    speckleElement2D.openings = GetOpenings(revitSurface);
 
     GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
 

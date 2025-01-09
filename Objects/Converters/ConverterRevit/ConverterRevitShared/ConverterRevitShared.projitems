@@ -56,6 +56,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertStructuralMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertToposolid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertView.Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertSpace.cs" />
