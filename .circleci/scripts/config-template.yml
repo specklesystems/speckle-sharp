@@ -254,7 +254,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connector-new:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
+      - image: mcr.microsoft.com/dotnet/sdk:6.0 #Needs to say on .NET 6 so long as Speckle.Manager.Feed is .NET 6
     parameters:
       slug:
         type: string
