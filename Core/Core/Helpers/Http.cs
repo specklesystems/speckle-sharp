@@ -158,7 +158,7 @@ public static class Http
   public static Uri GetPingUrl(Uri serverUrl)
   {
     var server = serverUrl.GetLeftPart(UriPartial.Authority);
-    return new Uri(new (server), "/favicon.ico");
+    return new Uri(new(server), "/favicon.ico");
   }
 
   public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? speckleHttpClientHandler = null)

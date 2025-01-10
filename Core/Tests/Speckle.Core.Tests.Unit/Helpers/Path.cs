@@ -18,6 +18,7 @@ public class SpecklePathTests
     var x = Http.GetPingUrl(new Uri(given));
     Assert.That(x, Is.EqualTo(new Uri(expected)));
   }
+
   [Test]
   public void TestUserApplicationDataPath()
   {
