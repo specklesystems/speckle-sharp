@@ -143,7 +143,7 @@ public static class Http
     try
     {
       using var httpClient = GetHttpProxyClient();
-      HttpResponseMessage response = await httpClient.GetAsync(uri).ConfigureAwait(false);
+      HttpResponseMessage response = await httpClient.GetAsync(GetPingUrl(uri)).ConfigureAwait(false);
       response.EnsureSuccessStatusCode();
       SpeckleLog.Logger.Information("Successfully pinged {uri}", uri);
       return response;
@@ -153,6 +153,12 @@ public static class Http
       SpeckleLog.Logger.Warning(ex, "Ping to {uri} was unsuccessful: {message}", uri, ex.Message);
       throw new HttpRequestException($"Ping to {uri} was unsuccessful", ex);
     }
+  }
+
+  public static Uri GetPingUrl(Uri serverUrl)
+  {
+    var server = serverUrl.GetLeftPart(UriPartial.Authority);
+    return new Uri(new (server), "/favicon.ico");
   }
 
   public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? speckleHttpClientHandler = null)
@@ -166,6 +172,8 @@ public static class Http
     {
       Timeout = Timeout.InfiniteTimeSpan //timeout is configured on the SpeckleHttpClientHandler through policy
     };
+    client.DefaultRequestHeaders.UserAgent.Clear();
+    client.DefaultRequestHeaders.UserAgent.Add(new("SpeckleSDK", "2.0.0"));
     return client;
   }
 
