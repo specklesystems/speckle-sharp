@@ -90,7 +90,6 @@ public static class AccountManager
 
     ServerInfo serverInfo = response.Data.serverInfo;
     serverInfo.url = server.ToString().TrimEnd('/');
-    serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
 
     return response.Data.serverInfo;
   }
@@ -198,7 +197,6 @@ public static class AccountManager
 
       ServerInfo serverInfo = response.Data.serverInfo;
       serverInfo.url = server.ToString().TrimEnd('/');
-      serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
 
       return response.Data;
     }
@@ -800,38 +798,6 @@ public static class AccountManager
     {
       throw new SpeckleException($"Failed to get refreshed token from {server}", ex);
     }
-  }
-
-  /// <summary>
-  /// Sends a simple get request to the <paramref name="server"/>, and checks the response headers for a <c>"x-speckle-frontend-2"</c> <see cref="Boolean"/> value
-  /// </summary>
-  /// <param name="server">Server endpoint to get header</param>
-  /// <returns><see langword="true"/> if response contains FE2 header and the value was <see langword="true"/></returns>
-  /// <exception cref="SpeckleException">response contained FE2 header, but the value was <see langword="null"/>, empty, or not parseable to a <see cref="Boolean"/></exception>
-  /// <exception cref="HttpRequestException">Request to <paramref name="server"/> failed to send or response was not successful</exception>
-  private static async Task<bool> IsFrontend2Server(Uri server)
-  {
-    using var httpClient = Http.GetHttpProxyClient();
-
-    var response = await Http.HttpPing(server).ConfigureAwait(false);
-
-    var headers = response.Headers;
-    const string HEADER = "x-speckle-frontend-2";
-    if (!headers.TryGetValues(HEADER, out IEnumerable<string> values))
-    {
-      return false;
-    }
-
-    string? headerValue = values.FirstOrDefault();
-
-    if (!bool.TryParse(headerValue, out bool value))
-    {
-      throw new SpeckleException(
-        $"Headers contained {HEADER} header, but value {headerValue} could not be parsed to a bool"
-      );
-    }
-
-    return value;
   }
 
   private static string GenerateChallenge()
