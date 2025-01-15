@@ -134,28 +134,45 @@ public static class Http
   }
 
   /// <summary>
-  /// Sends a <c>GET</c> request to the provided <paramref name="uri"/>
+  /// Sends a <c>GET</c> request to the provided <paramref name="speckleServerUrl"/>
   /// </summary>
-  /// <param name="uri">The URI that should be pinged</param>
-  /// <exception cref="HttpRequestException">Request to <paramref name="uri"/> failed</exception>
-  public static async Task<HttpResponseMessage> HttpPing(Uri uri)
+  /// <param name="speckleServerUrl">The URI that should be pinged</param>
+  /// <exception cref="HttpRequestException">Request to <paramref name="speckleServerUrl"/> failed</exception>
+  public static async Task<HttpResponseMessage> HttpPing(Uri speckleServerUrl)
   {
-    try
+    using var httpClient = GetHttpProxyClient();
+
+    //GETing the root uri has auth related overheads, so we'd prefer to ping a static resource.
+    //This is setup to be super compatible with older servers that don't have a /api/ping endpoint, and self hosting which may not have a favicon
+    Uri[] pingUrls = { GetPingUrl(speckleServerUrl), GetFaviconUrl(speckleServerUrl), speckleServerUrl };
+    List<Exception> failures = new();
+    foreach (var ping in pingUrls)
     {
-      using var httpClient = GetHttpProxyClient();
-      HttpResponseMessage response = await httpClient.GetAsync(GetPingUrl(uri)).ConfigureAwait(false);
-      response.EnsureSuccessStatusCode();
-      SpeckleLog.Logger.Information("Successfully pinged {uri}", uri);
-      return response;
+      try
+      {
+        var response = await httpClient.GetAsync(ping).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        SpeckleLog.Logger.Information("Successfully pinged {uri}", speckleServerUrl);
+        return response;
+      }
+      catch (HttpRequestException ex)
+      {
+        failures.Add(ex);
+      }
     }
-    catch (HttpRequestException ex)
-    {
-      SpeckleLog.Logger.Warning(ex, "Ping to {uri} was unsuccessful: {message}", uri, ex.Message);
-      throw new HttpRequestException($"Ping to {uri} was unsuccessful", ex);
-    }
+
+    AggregateException ax = new(failures);
+    SpeckleLog.Logger.Warning(ax, $"Ping to {speckleServerUrl} was unsuccessful", speckleServerUrl);
+    throw new HttpRequestException($"Ping to {speckleServerUrl} was unsuccessful", ax);
   }
 
   public static Uri GetPingUrl(Uri serverUrl)
+  {
+    var server = serverUrl.GetLeftPart(UriPartial.Authority);
+    return new Uri(new(server), "/api/ping");
+  }
+
+  public static Uri GetFaviconUrl(Uri serverUrl)
   {
     var server = serverUrl.GetLeftPart(UriPartial.Authority);
     return new Uri(new(server), "/favicon.ico");
