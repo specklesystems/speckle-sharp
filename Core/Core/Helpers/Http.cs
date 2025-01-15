@@ -28,7 +28,8 @@ public static class Http
 
   public static IAsyncPolicy<HttpResponseMessage> HttpAsyncPolicy(
     IEnumerable<TimeSpan>? delay = null,
-    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS
+    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS,
+    TimeoutStrategy timeoutStrategy = TimeoutStrategy.Optimistic
   )
   {
     var retryPolicy = HttpPolicyExtensions
@@ -43,7 +44,7 @@ public static class Http
         }
       );
 
-    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds);
+    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds, timeoutStrategy);
 
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
   }
@@ -138,9 +139,14 @@ public static class Http
   /// </summary>
   /// <param name="speckleServerUrl">The URI that should be pinged</param>
   /// <exception cref="HttpRequestException">Request to <paramref name="speckleServerUrl"/> failed</exception>
-  public static async Task<HttpResponseMessage> HttpPing(Uri speckleServerUrl)
+  public static async Task<HttpResponseMessage> HttpPing(
+    Uri speckleServerUrl,
+    CancellationToken cancellationToken = default
+  )
   {
-    using var httpClient = GetHttpProxyClient();
+    using var httpClient = GetHttpProxyClient(
+      new SpeckleHttpClientHandler(HttpAsyncPolicy(timeoutSeconds: 15, timeoutStrategy: TimeoutStrategy.Pessimistic))
+    );
 
     //GETing the root uri has auth related overheads, so we'd prefer to ping a static resource.
     //This is setup to be super compatible with older servers that don't have a /api/ping endpoint, and self hosting which may not have a favicon
@@ -148,11 +154,11 @@ public static class Http
     List<Exception> failures = new();
     foreach (var ping in pingUrls)
     {
+      var response = await httpClient.GetAsync(ping, cancellationToken).ConfigureAwait(false);
       try
       {
-        var response = await httpClient.GetAsync(ping).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        SpeckleLog.Logger.Information("Successfully pinged {uri}", speckleServerUrl);
+        SpeckleLog.Logger.Debug("Successfully pinged {uri}", speckleServerUrl);
         return response;
       }
       catch (HttpRequestException ex)
