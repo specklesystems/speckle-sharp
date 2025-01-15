@@ -112,42 +112,31 @@ public partial class Client
   {
     var request = new GraphQLRequest
     {
-      Query =
-        $@"query User {{
-                      activeUser{{
-                        id,
-                        email,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        profiles,
-                        role,
-                        streams(limit:{limit}) {{
-                          totalCount,
-                          cursor,
-                          items {{
-                            id,
-                            name,
-                            description,
-                            isPublic,
-                            role,
-                            createdAt,
-                            updatedAt,
-                            favoritedDate,
-                            commentCount
-                            favoritesCount
-                            collaborators {{
-                              id,
-                              name,
-                              role,
-                              avatar
-                            }}
-                          }}
-                        }}
-                      }}
-                    }}"
+      Query = """
+        query User($limit: Int!) {
+          activeUser{
+            streams(limit:$limit) {
+              items {
+                id,
+                name,
+                description,
+                isPublic,
+                role,
+                createdAt,
+                updatedAt,
+                favoritedDate,
+                commentCount,
+                collaborators {
+                  id,
+                  name,
+                  role,
+                }
+              }
+            }
+          }
+        }
+        """,
+      Variables = new { limit }
     };
 
     var res = await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
