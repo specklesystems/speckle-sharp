@@ -9,13 +9,24 @@ namespace Speckle.Core.Tests.Unit.Helpers;
 public class SpecklePathTests
 {
   [Test]
+  [TestCase("https://app.speckle.systems", "https://app.speckle.systems/api/ping")]
+  [TestCase("https://app.speckle.systems/", "https://app.speckle.systems/api/ping")]
+  [TestCase("https://app.speckle.systems/auth/login", "https://app.speckle.systems/api/ping")]
+  [TestCase("https://latest.speckle.systems", "https://latest.speckle.systems/api/ping")]
+  public void TestGetPingUrl(string given, string expected)
+  {
+    var x = Http.GetPingUrl(new Uri(given));
+    Assert.That(x, Is.EqualTo(new Uri(expected)));
+  }
+
+  [Test]
   [TestCase("https://app.speckle.systems", "https://app.speckle.systems/favicon.ico")]
   [TestCase("https://app.speckle.systems/", "https://app.speckle.systems/favicon.ico")]
   [TestCase("https://app.speckle.systems/auth/login", "https://app.speckle.systems/favicon.ico")]
   [TestCase("https://latest.speckle.systems", "https://latest.speckle.systems/favicon.ico")]
-  public void TestGetPingUrl(string given, string expected)
+  public void TestGetFaviconUrl(string given, string expected)
   {
-    var x = Http.GetPingUrl(new Uri(given));
+    var x = Http.GetFaviconUrl(new Uri(given));
     Assert.That(x, Is.EqualTo(new Uri(expected)));
   }
 
