@@ -55,7 +55,7 @@ public partial class Client
   {
     //language=graphql
     const string QUERY = """
-      query Stream ($streamId: String!, $branchesLimit: Int!, $commitsLimit: Int!, $includeCommits: Int!) {
+      query Stream ($streamId: String!, $branchesLimit: Int!, $commitsLimit: Int!, $includeCommits: Boolean!) {
         stream(id: $streamId) {
           branches(limit: $branchesLimit) {
             items {
@@ -95,8 +95,13 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
 
     //faster than making the server query for it for every single commit...
-    foreach (var branch in res.stream.branches.items)
+    foreach (var branch in res.stream.branches?.items)
     {
+      if (branch.commits?.items is null)
+      {
+        continue;
+      }
+
       foreach (var commit in branch.commits.items)
       {
         commit.branchName = branch.name;
