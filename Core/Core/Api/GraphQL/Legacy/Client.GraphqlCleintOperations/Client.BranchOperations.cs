@@ -192,10 +192,13 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     var branch = res.stream.branch;
 
-    //faster than making the server query for it for every single commit...
-    foreach (var commit in branch.commits.items)
+    if (branch.commits?.items is not null)
     {
-      commit.branchName = branch.name;
+      //faster than making the server query for it for every single commit...
+      foreach (var commit in branch.commits.items)
+      {
+        commit.branchName = branch.name;
+      }
     }
 
     return res.stream.branch;
