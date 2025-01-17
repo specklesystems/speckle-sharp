@@ -417,7 +417,7 @@ public class StreamWrapper
     // Check if the branch exists
     if (Type == StreamWrapperType.Branch)
     {
-      var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
+      var branch = await client.BranchGet(StreamId, BranchName!, 0).ConfigureAwait(false);
       if (branch == null)
       {
         throw new SpeckleException(

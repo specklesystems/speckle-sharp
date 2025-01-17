@@ -498,7 +498,7 @@ public class Receive : NodeModel
 
     try
     {
-      var branches = Client.StreamGetBranches(Stream.StreamId).Result;
+      var branches = Client.StreamGetBranches(Stream.StreamId, commitsLimit: 1).Result;
       var branchName = string.IsNullOrEmpty(Stream.BranchName) ? "main" : Stream.BranchName;
       var mainBranch = branches.FirstOrDefault(b => b.name == branchName);
       if (mainBranch == null || !mainBranch.commits.items.Any())
