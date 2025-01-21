@@ -175,24 +175,21 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   public override bool Write(GH_IWriter writer)
   {
     writer.SetBoolean("AutoReceive", AutoReceive);
-    //writer.SetString("CurrentComponentState", CurrentComponentState);
     writer.SetString("LastInfoMessage", LastInfoMessage);
-    //writer.SetString("LastCommitDate", LastCommitDate);
     writer.SetString("ReceivedObjectId", ReceivedObjectId);
     writer.SetString("ReceivedCommitId", ReceivedCommitId);
-    writer.SetString("KitName", Kit.Name);
+    writer.SetString("KitName", Kit?.Name);
+
     var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
     writer.SetString("StreamWrapper", streamUrl);
-    //writer.SetBoolean(nameof(ConvertToNative), ConvertToNative);
+
     return base.Write(writer);
   }
 
   public override bool Read(GH_IReader reader)
   {
     AutoReceive = reader.GetBoolean("AutoReceive");
-    //CurrentComponentState = reader.GetString("CurrentComponentState");
     LastInfoMessage = reader.GetString("LastInfoMessage");
-    //LastCommitDate = reader.GetString("LastCommitDate");
     ReceivedObjectId = reader.GetString("ReceivedObjectId");
     ReceivedCommitId = reader.GetString("ReceivedCommitId");
 
@@ -226,7 +223,15 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   {
     if (RunCount == 1)
     {
-      ParseInput(DA);
+      try
+      {
+        ParseInput(DA);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        throw;
+      }
       if (InputType == "Invalid")
       {
         return;
