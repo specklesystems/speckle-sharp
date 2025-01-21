@@ -178,7 +178,6 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     writer.SetString("LastInfoMessage", LastInfoMessage);
     writer.SetString("ReceivedObjectId", ReceivedObjectId);
     writer.SetString("ReceivedCommitId", ReceivedCommitId);
-    writer.SetString("KitName", Kit?.Name);
 
     var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
     writer.SetString("StreamWrapper", streamUrl);
