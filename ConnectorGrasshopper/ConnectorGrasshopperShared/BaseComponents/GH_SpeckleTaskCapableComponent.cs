@@ -3,6 +3,8 @@ using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Serilog.Context;
+using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper;
 
@@ -59,7 +61,26 @@ public abstract class GH_SpeckleTaskCapableComponent<T> : GH_TaskCapableComponen
     using (LogContext.PushProperty("grasshopperComponent", GetType().Name))
     using (LogContext.PushProperty("traceId", guid))
     {
-      SolveInstanceWithLogContext(DA);
+      try
+      {
+        SolveInstanceWithLogContext(DA);
+      }
+      catch (OperationCanceledException cancelEx)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Canceled execution");
+      }
+      catch (AggregateException ae)
+      {
+        var flat = ae.Flatten();
+        foreach (var e in flat.InnerExceptions)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+        }
+      }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+      }
     }
   }
 }
