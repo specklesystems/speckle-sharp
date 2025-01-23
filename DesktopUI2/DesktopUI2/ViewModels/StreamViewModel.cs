@@ -298,8 +298,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       }
       else
       {
-        var selectionFilter = AvailableFilters.FirstOrDefault(
-          x => x.Filter.Type == typeof(ManualSelectionFilter).ToString()
+        var selectionFilter = AvailableFilters.FirstOrDefault(x =>
+          x.Filter.Type == typeof(ManualSelectionFilter).ToString()
         );
         //if there are any selected objects, set the manual selection automagically
         if (selectionFilter != null && Bindings.GetSelectedObjects().Any())
@@ -576,8 +576,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger
-        .ForContext("imageUrl", url)
+      SpeckleLog
+        .Logger.ForContext("imageUrl", url)
         .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage360), ex.Message);
       Debug.WriteLine(ex);
       _previewImage360 = null; // Could not download...
@@ -1275,8 +1275,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       try
       {
         _isAddingBranches = true;
-        var branchId = await StreamState.Client
-          .BranchCreate(
+        var branchId = await StreamState
+          .Client.BranchCreate(
             new BranchCreateInput
             {
               streamId = Stream.id,
@@ -1483,8 +1483,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       }
 
       GetReport();
-      SpeckleLog.Logger
-        .ForContext(nameof(IsReceiver), IsReceiver)
+      SpeckleLog
+        .Logger.ForContext(nameof(IsReceiver), IsReceiver)
         .Information(CommandSucceededLogTemplate, nameof(PreviewCommand));
     }
     catch (Exception ex)
