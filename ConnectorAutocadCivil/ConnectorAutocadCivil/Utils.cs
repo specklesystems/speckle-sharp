@@ -777,8 +777,6 @@ public static class Utils
     string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
 
 #if CIVIL
-    if (units == Units.None)
-    {
       // try to get the drawing unit instead
       using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
       {
@@ -788,7 +786,6 @@ public static class Utils
         units = Units.GetUnitsFromString(linearUnit.ToString());
         tr.Commit();
       }
-    }
 #endif
     return units;
   }
