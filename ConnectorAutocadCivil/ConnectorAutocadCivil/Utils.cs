@@ -781,19 +781,17 @@ public static class Utils
     string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
 
 #if CIVIL
-    if (units == Units.None)
+    // try to get the drawing unit instead
+    using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
     {
-      // try to get the drawing unit instead
-      using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
-      {
-        var id = DrawingSetupVariables.GetInstance(doc.Database, false);
-        var setupVariables = (DrawingSetupVariables)tr.GetObject(id, OpenMode.ForRead);
-        var linearUnit = setupVariables.LinearUnit;
-        units = Units.GetUnitsFromString(linearUnit.ToString());
-        tr.Commit();
-      }
+      var id = DrawingSetupVariables.GetInstance(doc.Database, false);
+      var setupVariables = (DrawingSetupVariables)tr.GetObject(id, OpenMode.ForRead);
+      var linearUnit = setupVariables.LinearUnit;
+      units = Units.GetUnitsFromString(linearUnit.ToString());
+      tr.Commit();
     }
 #endif
+
     return units;
   }
 
