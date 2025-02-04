@@ -118,8 +118,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
               if (!isPreviewIgnore && (previewObj.Converted == null || previewObj.Converted.Count == 0))
               {
-                var convertedFallback = previewObj.Fallback
-                  .Where(o => o.Converted != null || o.Converted.Count > 0)
+                var convertedFallback = previewObj
+                  .Fallback.Where(o => o.Converted != null || o.Converted.Count > 0)
                   .ToList();
                 if (convertedFallback.Any())
                 {
@@ -398,8 +398,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     {
       ApplicationObject NewAppObj()
       {
-        var speckleType = current.speckle_type
-          .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+        var speckleType = current
+          .speckle_type.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
 
         return new ApplicationObject(current.id, speckleType)
@@ -428,8 +428,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       }
 
       //Handle objects convertable using displayValues
-      var fallbackMember = DefaultTraversal.displayValuePropAliases
-        .Where(o => current[o] != null)
+      var fallbackMember = DefaultTraversal
+        .displayValuePropAliases.Where(o => current[o] != null)
         ?.Select(o => current[o])
         ?.FirstOrDefault();
       if (fallbackMember != null)

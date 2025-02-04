@@ -1,6 +1,3 @@
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.Windows;
-using Speckle.ConnectorAutocadCivil.UI;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -9,9 +6,11 @@ using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.Windows;
+using Speckle.ConnectorAutocadCivil.UI;
 using Speckle.Core.Logging;
 using Forms = System.Windows.Forms;
-
 #if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
@@ -20,6 +19,7 @@ using Autodesk.AutoCAD.Runtime;
 
 #if ADVANCESTEEL
 [assembly: ExtensionApplication(typeof(Speckle.ConnectorAutocadCivil.Entry.App))]
+
 #endif
 
 namespace Speckle.ConnectorAutocadCivil.Entry;
@@ -264,8 +264,8 @@ public class App : IExtensionApplication
     if (!string.IsNullOrEmpty(sourceName) && sourceName.ToLower().EndsWith(".png"))
     {
       Assembly assembly = Assembly.GetExecutingAssembly();
-      string resource = GetType().Assembly
-        .GetManifestResourceNames()
+      string resource = GetType()
+        .Assembly.GetManifestResourceNames()
         .Where(o => o.EndsWith(sourceName))
         .FirstOrDefault();
 

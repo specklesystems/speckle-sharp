@@ -1,6 +1,7 @@
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Properties;
+using Objects.Structural.Properties;
 
 namespace Objects.Converter.CSI;
 
@@ -12,6 +13,20 @@ public partial class ConverterCSI
     property2D.thickness = thickeness;
     property2D.material = MaterialToSpeckle(matProp);
     return;
+  }
+
+  private string Property2DToNative(Property2D property2D)
+  {
+    // Walls are typically shells (axially loaded)
+    if (property2D.type == Structural.PropertyType2D.Wall || property2D.type == Structural.PropertyType2D.Shell)
+    {
+      return WallPropertyToNative(property2D);
+    }
+    // Floors are typically plates (loaded in bending and shear)
+    else
+    {
+      return FloorPropertyToNative(property2D);
+    }
   }
 
   private string Property2DToNative(CSIProperty2D property2D)

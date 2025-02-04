@@ -1,23 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.Linq;
-
+using System.Text;
+using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET.DgnEC;
+using Bentley.DgnPlatformNET.Elements;
+using Bentley.EC.Persistence.Query;
+using Bentley.ECObjects;
+using Bentley.ECObjects.Instance;
+using Bentley.ECObjects.Schema;
+using Bentley.GeometryNET;
+using Bentley.MstnPlatformNET;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-
-using Bentley.DgnPlatformNET.DgnEC;
-using Bentley.MstnPlatformNET;
-using Bentley.DgnPlatformNET;
-using Bentley.ECObjects.Schema;
-using Bentley.ECObjects;
-using Bentley.ECObjects.Instance;
-using Bentley.EC.Persistence.Query;
-using Bentley.GeometryNET;
-using Bentley.DgnPlatformNET.Elements;
-
-using System.Diagnostics;
 
 namespace Objects.Converter.Bentley;
 

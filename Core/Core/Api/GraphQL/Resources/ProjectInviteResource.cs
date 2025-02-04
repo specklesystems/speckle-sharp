@@ -29,67 +29,67 @@ public sealed class ProjectInviteResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectInviteCreate($projectId: ID!, $input: ProjectInviteCreateInput!) {
-                           projectMutations {
-                             invites {
-                               create(projectId: $projectId, input: $input) {
-                                 id
-                                 name
-                                 description
-                                 visibility
-                                 allowPublicComments
-                                 role
-                                 createdAt
-                                 updatedAt
-                                 team {
-                                   role
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                                 invitedTeam {
-                                   id
-                                   inviteId
-                                   projectId
-                                   projectName
-                                   streamName
-                                   title
-                                   role
-                                   streamId
-                                   token
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                   invitedBy {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectInviteCreate($projectId: ID!, $input: ProjectInviteCreateInput!) {
+        projectMutations {
+          invites {
+            create(projectId: $projectId, input: $input) {
+              id
+              name
+              description
+              visibility
+              allowPublicComments
+              role
+              createdAt
+              updatedAt
+              team {
+                role
+                user {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+              }
+              invitedTeam {
+                id
+                inviteId
+                projectId
+                projectName
+                streamName
+                title
+                role
+                streamId
+                token
+                user {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+                invitedBy {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+              }
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, input } };
 
     var response = await _client
@@ -107,14 +107,14 @@ public sealed class ProjectInviteResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectInviteUse($input: ProjectInviteUseInput!) {
-                           projectMutations {
-                             invites {
-                               use(input: $input)
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectInviteUse($input: ProjectInviteUseInput!) {
+        projectMutations {
+          invites {
+            use(input: $input)
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
@@ -136,40 +136,40 @@ public sealed class ProjectInviteResource
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectInvite($projectId: String!, $token: String) {
-                           projectInvite(projectId: $projectId, token: $token) {
-                             id
-                             inviteId
-                             invitedBy {
-                               avatar
-                               bio
-                               company
-                               id
-                               name
-                               role
-                               totalOwnedStreamsFavorites
-                               verified
-                             }
-                             projectId
-                             projectName
-                             role
-                             streamId
-                             streamName
-                             title
-                             token
-                             user {
-                               avatar
-                               bio
-                               company
-                               id
-                               name
-                               role
-                               totalOwnedStreamsFavorites
-                               verified
-                             }
-                           }
-                         }
-                         """;
+      query ProjectInvite($projectId: String!, $token: String) {
+        projectInvite(projectId: $projectId, token: $token) {
+          id
+          inviteId
+          invitedBy {
+            avatar
+            bio
+            company
+            id
+            name
+            role
+            totalOwnedStreamsFavorites
+            verified
+          }
+          projectId
+          projectName
+          role
+          streamId
+          streamName
+          title
+          token
+          user {
+            avatar
+            bio
+            company
+            id
+            name
+            role
+            totalOwnedStreamsFavorites
+            verified
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, token } };
 
     var response = await _client
@@ -188,67 +188,67 @@ public sealed class ProjectInviteResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectInviteCancel($projectId: ID!, $inviteId: String!) {
-                           projectMutations {
-                             invites {
-                               cancel(projectId: $projectId, inviteId: $inviteId) {
-                                 id
-                                 name
-                                 description
-                                 visibility
-                                 allowPublicComments
-                                 role
-                                 createdAt
-                                 updatedAt
-                                 team {
-                                   role
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                                 invitedTeam {
-                                   id
-                                   inviteId
-                                   projectId
-                                   projectName
-                                   streamName
-                                   title
-                                   role
-                                   streamId
-                                   token
-                                   user {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                   invitedBy {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     avatar
-                                     verified
-                                     role
-                                   }
-                                 }
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectInviteCancel($projectId: ID!, $inviteId: String!) {
+        projectMutations {
+          invites {
+            cancel(projectId: $projectId, inviteId: $inviteId) {
+              id
+              name
+              description
+              visibility
+              allowPublicComments
+              role
+              createdAt
+              updatedAt
+              team {
+                role
+                user {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+              }
+              invitedTeam {
+                id
+                inviteId
+                projectId
+                projectName
+                streamName
+                title
+                role
+                streamId
+                token
+                user {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+                invitedBy {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  avatar
+                  verified
+                  role
+                }
+              }
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, inviteId } };
 
     var response = await _client

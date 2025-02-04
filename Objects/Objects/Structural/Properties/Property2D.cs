@@ -39,4 +39,5 @@ public class Property2D : Property
   public double modifierBending { get; set; }
   public double modifierShear { get; set; }
   public double modifierVolume { get; set; }
+  public string units { get; set; }
 }

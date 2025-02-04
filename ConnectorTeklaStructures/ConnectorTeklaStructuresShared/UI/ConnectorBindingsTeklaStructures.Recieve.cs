@@ -1,19 +1,19 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using Speckle.ConnectorTeklaStructures.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Stylet;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using Speckle.ConnectorTeklaStructures.Util;
-using DesktopUI2.ViewModels;
 using Tekla.Structures.Model;
 
 namespace Speckle.ConnectorTeklaStructures.UI

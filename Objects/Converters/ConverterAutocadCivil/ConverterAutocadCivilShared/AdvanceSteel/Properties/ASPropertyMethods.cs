@@ -13,7 +13,10 @@ public class ASPropertyMethods
     if (!string.IsNullOrEmpty(methodInfoGet))
     {
       MethodInfoGet = typeProperties.GetMethod(methodInfoGet, BindingFlags.Static | BindingFlags.NonPublic);
-      if (MethodInfoGet == null || MethodInfoGet.GetParameters().Length != 1 && MethodInfoGet.ReturnType == typeof(void))
+      if (
+        MethodInfoGet == null
+        || MethodInfoGet.GetParameters().Length != 1 && MethodInfoGet.ReturnType == typeof(void)
+      )
       {
         throw new Exception($"Method Get '{methodInfoGet}' must have 1 parameter, 1 return and be static");
       }
@@ -22,7 +25,10 @@ public class ASPropertyMethods
     if (!string.IsNullOrEmpty(methodInfoSet))
     {
       MethodInfoSet = typeProperties.GetMethod(methodInfoSet, BindingFlags.Static | BindingFlags.NonPublic);
-      if (MethodInfoSet == null || MethodInfoSet.GetParameters().Length != 2 && MethodInfoSet.ReturnType != typeof(void))
+      if (
+        MethodInfoSet == null
+        || MethodInfoSet.GetParameters().Length != 2 && MethodInfoSet.ReturnType != typeof(void)
+      )
       {
         throw new Exception($"Method Set '{MethodInfoSet}' must have 2 parameters, void return and be static");
       }
@@ -41,7 +47,6 @@ public class ASPropertyMethods
         throw new Exception("The get return type must be the same second parameter of set method");
       }
     }
-
   }
 
   internal MethodInfo MethodInfoGet { get; private set; }

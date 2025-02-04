@@ -23,8 +23,8 @@ public class ReceiveFromSQLite : IDisposable
   [Benchmark]
   public async Task<Base?> Receive_FromSQLite()
   {
-    Base? b = await Speckle.Core.Api.Operations
-      .Receive(_dataSource.ObjectId, null, _dataSource.Transport)
+    Base? b = await Speckle
+      .Core.Api.Operations.Receive(_dataSource.ObjectId, null, _dataSource.Transport)
       .ConfigureAwait(false);
 
     Trace.Assert(b is not null);

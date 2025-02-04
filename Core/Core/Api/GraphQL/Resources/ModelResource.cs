@@ -26,30 +26,30 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         query ModelGet($modelId: String!, $projectId: String!) {
-                           project(id: $projectId) {
-                             model(id: $modelId) {
-                               id
-                               name
-                               previewUrl
-                               updatedAt
-                               description
-                               displayName
-                               createdAt
-                               author {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 totalOwnedStreamsFavorites
-                                 verified
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query ModelGet($modelId: String!, $projectId: String!) {
+        project(id: $projectId) {
+          model(id: $modelId) {
+            id
+            name
+            previewUrl
+            updatedAt
+            description
+            displayName
+            createdAt
+            author {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              totalOwnedStreamsFavorites
+              verified
+            }
+          }
+        }
+      }
+      """;
     var request = new GraphQLRequest { Query = QUERY, Variables = new { modelId, projectId } };
 
     var response = await _client
@@ -79,51 +79,51 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         query ModelGetWithVersions($modelId: String!, $projectId: String!, $versionsLimit: Int!, $versionsCursor: String, $versionsFilter: ModelVersionsFilter) {
-                           project(id: $projectId) {
-                             model(id: $modelId) {
-                               id
-                               name
-                               previewUrl
-                               updatedAt
-                               versions(limit: $versionsLimit, cursor: $versionsCursor, filter: $versionsFilter) {
-                                 items {
-                                   id
-                                   referencedObject
-                                   message
-                                   sourceApplication
-                                   createdAt
-                                   previewUrl
-                                   authorUser {
-                                     totalOwnedStreamsFavorites
-                                     id
-                                     name
-                                     bio
-                                     company
-                                     verified
-                                     role
-                                   }
-                                 }
-                                 totalCount
-                                 cursor
-                               }
-                               description
-                               displayName
-                               createdAt
-                               author {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 totalOwnedStreamsFavorites
-                                 verified
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query ModelGetWithVersions($modelId: String!, $projectId: String!, $versionsLimit: Int!, $versionsCursor: String, $versionsFilter: ModelVersionsFilter) {
+        project(id: $projectId) {
+          model(id: $modelId) {
+            id
+            name
+            previewUrl
+            updatedAt
+            versions(limit: $versionsLimit, cursor: $versionsCursor, filter: $versionsFilter) {
+              items {
+                id
+                referencedObject
+                message
+                sourceApplication
+                createdAt
+                previewUrl
+                authorUser {
+                  totalOwnedStreamsFavorites
+                  id
+                  name
+                  bio
+                  company
+                  verified
+                  role
+                }
+              }
+              totalCount
+              cursor
+            }
+            description
+            displayName
+            createdAt
+            author {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              totalOwnedStreamsFavorites
+              verified
+            }
+          }
+        }
+      }
+      """;
 
     var request = new GraphQLRequest
     {
@@ -162,24 +162,24 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
-                           project(id: $projectId) {
-                             models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
-                               items {
-                                 id
-                                 name
-                                 previewUrl
-                                 updatedAt
-                                 displayName
-                                 description
-                                 createdAt
-                               }
-                               totalCount
-                               cursor
-                             }
-                           }
-                         }
-                         """;
+      query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
+        project(id: $projectId) {
+          models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
+            items {
+              id
+              name
+              previewUrl
+              updatedAt
+              displayName
+              description
+              createdAt
+            }
+            totalCount
+            cursor
+          }
+        }
+      }
+      """;
     GraphQLRequest request =
       new()
       {
@@ -207,30 +207,30 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ModelCreate($input: CreateModelInput!) {
-                           modelMutations {
-                             create(input: $input) {
-                               id
-                               displayName
-                               name
-                               description
-                               createdAt
-                               updatedAt
-                               previewUrl
-                               author {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 totalOwnedStreamsFavorites
-                                 verified
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation ModelCreate($input: CreateModelInput!) {
+        modelMutations {
+          create(input: $input) {
+            id
+            displayName
+            name
+            description
+            createdAt
+            updatedAt
+            previewUrl
+            author {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              totalOwnedStreamsFavorites
+              verified
+            }
+          }
+        }
+      }
+      """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
@@ -249,12 +249,12 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ModelDelete($input: DeleteModelInput!) {
-                           modelMutations {
-                             delete(input: $input)
-                           }
-                         }
-                         """;
+      mutation ModelDelete($input: DeleteModelInput!) {
+        modelMutations {
+          delete(input: $input)
+        }
+      }
+      """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
@@ -273,30 +273,30 @@ public sealed class ModelResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ModelUpdate($input: UpdateModelInput!) {
-                           modelMutations {
-                             update(input: $input) {
-                               id
-                               name
-                               displayName
-                               description
-                               createdAt
-                               updatedAt
-                               previewUrl
-                               author {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 totalOwnedStreamsFavorites
-                                 verified
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation ModelUpdate($input: UpdateModelInput!) {
+        modelMutations {
+          update(input: $input) {
+            id
+            name
+            displayName
+            description
+            createdAt
+            updatedAt
+            previewUrl
+            author {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              totalOwnedStreamsFavorites
+              verified
+            }
+          }
+        }
+      }
+      """;
 
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 

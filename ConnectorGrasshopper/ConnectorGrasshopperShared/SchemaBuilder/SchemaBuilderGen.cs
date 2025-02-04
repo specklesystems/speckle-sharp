@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Grasshopper.Kernel;
-using Grasshopper;
 using ConnectorGrasshopperUtils;
+using Grasshopper;
+using Grasshopper.Kernel;
 
 namespace ConnectorGrasshopper;
 

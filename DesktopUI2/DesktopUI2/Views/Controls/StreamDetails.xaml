@@ -37,32 +37,33 @@
       Grid.Column="3"
       Classes="Overline"
       Text="{Binding Stream.commentCount}" />
-    <icons:MaterialIcon
+    <!-- FAVOURITE STREAMS IS NO LONGER A FEATURE! -->
+    <!-- <icons:MaterialIcon -->
+    <!--   Grid.Column="4" -->
+    <!--   Margin="3,0" -->
+    <!--   VerticalAlignment="Center" -->
+    <!--   Classes="StreamCard" -->
+    <!--   Kind="Hearts" -->
+    <!--   ToolTip.Tip="Number of people who favorited" /> -->
+    <!-- <TextBlock -->
+    <!--   Grid.Column="5" -->
+    <!--   Classes="Overline" -->
+    <!--   Text="{Binding Stream.favoritesCount}" /> -->
+    <TextBlock
       Grid.Column="4"
-      Margin="3,0"
-      VerticalAlignment="Center"
-      Classes="StreamCard"
-      Kind="Hearts"
-      ToolTip.Tip="Number of people who favorited" />
+      Classes="Overline"
+      Text=" - " />
     <TextBlock
       Grid.Column="5"
       Classes="Overline"
-      Text="{Binding Stream.favoritesCount}" />
+      Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
+      TextTrimming="CharacterEllipsis" />
     <TextBlock
       Grid.Column="6"
       Classes="Overline"
       Text=" - " />
     <TextBlock
       Grid.Column="7"
-      Classes="Overline"
-      Text="{Binding Stream.role, Converter={StaticResource RoleValueConverter}}"
-      TextTrimming="CharacterEllipsis" />
-    <TextBlock
-      Grid.Column="8"
-      Classes="Overline"
-      Text=" - " />
-    <TextBlock
-      Grid.Column="9"
       Classes="Overline"
       Text="{Binding Stream.id}"
       TextTrimming="CharacterEllipsis" />

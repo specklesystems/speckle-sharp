@@ -87,13 +87,12 @@ public partial class ConverterRevit
         }
       }
 
-      var connections = networkElement.links
-        .Cast<RevitNetworkLink>()
+      var connections = networkElement
+        .links.Cast<RevitNetworkLink>()
         .ToDictionary(
           l => l,
           l =>
-            l.elements
-              .Cast<RevitNetworkElement>()
+            l.elements.Cast<RevitNetworkElement>()
               .FirstOrDefault(e => e.applicationId != networkElement.applicationId && e.isCurveBased)
         );
 
@@ -410,15 +409,13 @@ public partial class ConverterRevit
   private bool IsConnectorBasedCreation(DB.FamilyInstance familyInstance)
   {
     var connectors = GetConnectors(familyInstance).Cast<Connector>().ToArray();
-    return connectors.All(
-      c =>
-        connectors.All(
-          c1 =>
-            (c1.Domain == Domain.DomainPiping && c1.PipeSystemType == c.PipeSystemType)
-            || (c1.Domain == Domain.DomainHvac && c1.DuctSystemType == c.DuctSystemType)
-            || (c1.Domain == Domain.DomainElectrical && c1.ElectricalSystemType == c.ElectricalSystemType)
-            || (c1.Domain == Domain.DomainCableTrayConduit)
-        )
+    return connectors.All(c =>
+      connectors.All(c1 =>
+        (c1.Domain == Domain.DomainPiping && c1.PipeSystemType == c.PipeSystemType)
+        || (c1.Domain == Domain.DomainHvac && c1.DuctSystemType == c.DuctSystemType)
+        || (c1.Domain == Domain.DomainElectrical && c1.ElectricalSystemType == c.ElectricalSystemType)
+        || (c1.Domain == Domain.DomainCableTrayConduit)
+      )
     );
   }
 
@@ -509,12 +506,12 @@ public partial class ConverterRevit
     switch (element)
     {
       case MEPCurve o:
-        return o.ConnectorManager.Connectors
-          .Cast<Connector>()
+        return o
+          .ConnectorManager.Connectors.Cast<Connector>()
           .FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
       case DB.FamilyInstance o:
-        return o.MEPModel?.ConnectorManager.Connectors
-          .Cast<Connector>()
+        return o
+          .MEPModel?.ConnectorManager.Connectors.Cast<Connector>()
           .FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
       default:
         return null;

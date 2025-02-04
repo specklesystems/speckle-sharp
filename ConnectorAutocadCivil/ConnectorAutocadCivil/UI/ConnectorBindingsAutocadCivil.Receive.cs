@@ -16,7 +16,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using static Speckle.ConnectorAutocadCivil.Utils;
-
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
@@ -172,8 +171,8 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           string layer = null;
 
           // try to see if there's a collection object first
-          var collection = commitObjs.FirstOrDefault(
-            o => o.Container == container && o.Descriptor.Contains("Collection")
+          var collection = commitObjs.FirstOrDefault(o =>
+            o.Container == container && o.Descriptor.Contains("Collection")
           );
           if (collection != null)
           {
@@ -388,8 +387,8 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     {
       ApplicationObject NewAppObj()
       {
-        var speckleType = current.speckle_type
-          .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+        var speckleType = current
+          .speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
         return new ApplicationObject(current.id, speckleType)
         {

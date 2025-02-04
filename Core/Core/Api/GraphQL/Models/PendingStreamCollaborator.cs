@@ -17,9 +17,9 @@ public sealed class PendingStreamCollaborator
   public LimitedUser user { get; init; }
   public string token { get; init; }
 
-  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public string streamId { get; init; }
 
-  [Obsolete(DeprecationMessages.FE2_DEPRECATION_MESSAGE)]
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE)]
   public string streamName { get; init; }
 }

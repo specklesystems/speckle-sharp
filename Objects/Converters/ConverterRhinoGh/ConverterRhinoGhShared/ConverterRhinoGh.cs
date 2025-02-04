@@ -13,7 +13,6 @@ using Objects.Primitive;
 using Objects.Structural.Geometry;
 using Rhino;
 using Rhino.Collections;
-
 using Rhino.DocObjects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -21,7 +20,6 @@ using Speckle.Core.Models;
 using Plane = Objects.Geometry.Plane;
 using RH = Rhino.Geometry;
 using Vector = Objects.Geometry.Vector;
-
 #if GRASSHOPPER
 using Grasshopper.Kernel.Types;
 using Rhino.Display;
@@ -32,7 +30,7 @@ namespace Objects.Converter.RhinoGh;
 public partial class ConverterRhinoGh : ISpeckleConverter
 {
 #if RHINO6 && GRASSHOPPER
-    public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
+  public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
 #elif RHINO7 && GRASSHOPPER
   public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
 #elif RHINO8 && GRASSHOPPER
@@ -40,7 +38,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #elif RHINO6
   public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
 #elif RHINO7
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
+  public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #elif RHINO8
   public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
 #endif

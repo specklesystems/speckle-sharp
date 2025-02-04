@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ConverterCSIShared.Models;
 using CSiAPIv1;
 using Objects.BuiltElements;
 using Objects.Structural.Analysis;
@@ -5,17 +9,13 @@ using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
+using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Objects.Structural.Results;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Objects.Structural.Materials;
-using OSG = Objects.Structural.Geometry;
 using Speckle.Core.Kits.ConverterInterfaces;
-using ConverterCSIShared.Models;
+using Speckle.Core.Models;
+using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI;
 

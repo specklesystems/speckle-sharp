@@ -1,14 +1,14 @@
-using DB = Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Autodesk.Revit.DB;
-using System.Linq;
 using System;
 using System.Collections.Generic;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using RevitSharedResources.Models;
-using Speckle.Core.Logging;
+using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using RevitSharedResources.Extensions.SpeckleExtensions;
+using RevitSharedResources.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;
 

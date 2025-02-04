@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
-using Objects.Structural.Geometry;
+using System.Linq;
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
-using System.Linq;
-using System;
+using Objects.Structural.Geometry;
 using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI;

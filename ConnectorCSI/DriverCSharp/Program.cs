@@ -1,9 +1,8 @@
 using System;
-using Speckle.Core.Logging;
 using System.Windows.Forms;
 using CSiAPIv1;
+using Speckle.Core.Logging;
 using SpeckleConnectorCSI;
-
 #if DEBUG
 using System.Diagnostics;
 #endif

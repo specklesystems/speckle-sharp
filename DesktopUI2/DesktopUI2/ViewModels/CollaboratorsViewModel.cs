@@ -12,7 +12,7 @@ using DesktopUI2.Views;
 using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
-using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
@@ -44,20 +44,21 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   internal void ReloadUsers()
   {
-    AddedUsers = new ObservableCollection<AccountViewModel>();
+    var newAddedUsers = new ObservableCollection<AccountViewModel>();
     foreach (var collab in _stream.Stream.collaborators)
     //skip myself
     //if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
     //  continue;
     {
-      AddedUsers.Add(new AccountViewModel(collab));
+      newAddedUsers.Add(new AccountViewModel(collab));
     }
 
     foreach (var collab in _stream.Stream.pendingCollaborators)
     {
-      AddedUsers.Add(new AccountViewModel(collab));
+      newAddedUsers.Add(new AccountViewModel(collab));
     }
 
+    AddedUsers = newAddedUsers;
     this.RaisePropertyChanged(nameof(AddedUsers));
   }
 
@@ -138,8 +139,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       //exclude existing ones
-      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
-        x => !AddedUsers.Any(u => u.Id == x.id)
+      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(x =>
+        !AddedUsers.Any(u => u.Id == x.id)
       );
       //exclude myself
       users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
@@ -253,15 +254,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCreate(
-                new StreamInviteCreateInput
-                {
-                  email = user.Name,
-                  streamId = _stream.StreamState.StreamId,
-                  message = "I would like to share a model with you via Speckle!",
-                  role = user.Role
-                }
+            await _stream
+              .StreamState.Client.ProjectInvite.Create(
+                _stream.StreamState.StreamId,
+                new ProjectInviteCreateInput(user.Name, user.Role, null, null)
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
@@ -283,15 +279,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCreate(
-                new StreamInviteCreateInput
-                {
-                  userId = user.Id,
-                  streamId = _stream.StreamState.StreamId,
-                  message = "I would like to share a model with you via Speckle!",
-                  role = user.Role
-                }
+            await _stream
+              .StreamState.Client.ProjectInvite.Create(
+                _stream.StreamState.StreamId,
+                new ProjectInviteCreateInput(null, user.Role, null, user.Id)
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
@@ -313,14 +304,9 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamUpdatePermission(
-                new StreamPermissionInput
-                {
-                  userId = user.Id,
-                  streamId = _stream.StreamState.StreamId,
-                  role = user.Role
-                }
+            await _stream
+              .StreamState.Client.Project.UpdateRole(
+                new ProjectUpdateRoleInput(user.Id, _stream.StreamState.StreamId, user.Role)
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
@@ -343,9 +329,9 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamRevokePermission(
-                new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
+            await _stream
+              .StreamState.Client.Project.UpdateRole(
+                new ProjectUpdateRoleInput(user.id, _stream.StreamState.StreamId, null)
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
@@ -368,8 +354,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           try
           {
-            await _stream.StreamState.Client
-              .StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
+            await _stream
+              .StreamState.Client.ProjectInvite.Cancel(_stream.StreamState.StreamId, user.inviteId)
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
@@ -387,8 +373,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       try
       {
         _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
-        var pc = await _stream.StreamState.Client
-          .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
+        var pc = await _stream
+          .StreamState.Client.StreamGetPendingCollaborators(_stream.StreamState.StreamId)
           .ConfigureAwait(true);
         _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
         _stream.StreamState.CachedStream = _stream.Stream;
@@ -419,8 +405,6 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         ex.Message
       );
     }
-
-    this.RaisePropertyChanged(nameof(AddedUsers));
   }
 
   private async void CloseCommand()

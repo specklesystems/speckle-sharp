@@ -109,12 +109,11 @@ public static class ConnectorRevitUtils
       .WhereElementIsNotElementType()
       .OfCategory(BuiltInCategory.OST_Views)
       .Cast<View>()
-      .Where(
-        x =>
-          x.ViewType == ViewType.CeilingPlan
-          || x.ViewType == ViewType.FloorPlan
-          || x.ViewType == ViewType.Elevation
-          || x.ViewType == ViewType.Section
+      .Where(x =>
+        x.ViewType == ViewType.CeilingPlan
+        || x.ViewType == ViewType.FloorPlan
+        || x.ViewType == ViewType.Elevation
+        || x.ViewType == ViewType.Section
       )
       .ToList();
 

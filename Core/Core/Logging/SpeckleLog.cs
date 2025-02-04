@@ -174,8 +174,8 @@ public static class SpeckleLog
     var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
 
     var fileVersionInfo = GetFileVersionInfo();
-    var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
-      .Is(logConfiguration.MinimumLevel)
+    var serilogLogConfiguration = new LoggerConfiguration()
+      .MinimumLevel.Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
       .Enrich.WithProperty("version", fileVersionInfo?.FileVersion ?? "unknown")
       .Enrich.WithProperty("productVersion", fileVersionInfo?.ProductVersion ?? "unknown")

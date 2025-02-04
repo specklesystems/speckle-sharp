@@ -10,50 +10,45 @@ using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino;
 
-  public class SpeckleCommandMac : Command
+public class SpeckleCommandMac : Command
+{
+  public static SpeckleCommandMac Instance { get; private set; }
+
+  public override string EnglishName => "Speckle";
+
+  public static Window MainWindow { get; private set; }
+
+  public SpeckleCommandMac()
   {
+    Instance = this;
+  }
 
-    public static SpeckleCommandMac Instance { get; private set; }
-
-    public override string EnglishName => "Speckle";
-
-    public static Window MainWindow { get; private set; }
-
-    public SpeckleCommandMac()
+  protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+  {
+    try
     {
-      Instance = this;
+      CreateOrFocusSpeckle();
+      return Result.Success;
     }
-
-    protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+    catch (Exception e) when (!e.IsFatal())
     {
-
-      try
-      {
-        CreateOrFocusSpeckle();
-        return Result.Success;
-      }
-      catch (Exception e) when (!e.IsFatal())
-      {
-        SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle window");
-        RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
-        return Result.Failure;
-      }
-    }
-
-    public static void CreateOrFocusSpeckle()
-    {
-      //SpeckleRhinoConnectorPlugin.Instance.Init();
-      if (MainWindow == null)
-      {
-        var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
-      }
-
-      MainWindow.Show();
-      MainWindow.Activate();
+      SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle window");
+      RhinoApp.CommandLineOut.WriteLine($"Speckle Error - {e.ToFormattedString()}");
+      return Result.Failure;
     }
   }
+
+  public static void CreateOrFocusSpeckle()
+  {
+    //SpeckleRhinoConnectorPlugin.Instance.Init();
+    if (MainWindow == null)
+    {
+      var viewModel = new MainViewModel(SpeckleRhinoConnectorPlugin.Instance.Bindings);
+      MainWindow = new MainWindow { DataContext = viewModel };
+    }
+
+    MainWindow.Show();
+    MainWindow.Activate();
+  }
+}
 #endif

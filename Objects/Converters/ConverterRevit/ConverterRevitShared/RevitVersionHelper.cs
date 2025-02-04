@@ -1,5 +1,5 @@
-using Autodesk.Revit.DB;
 using System;
+using Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;
 
@@ -38,7 +38,9 @@ public static class RevitVersionHelper
     // therefore we need to check if the applicationUnit is in the wrong format
     ForgeTypeId sourceUnit = null;
     if (
-      !string.IsNullOrEmpty(applicationUnit) && applicationUnit.Length >= 3 && applicationUnit.Substring(0, 3) == "DUT"
+      !string.IsNullOrEmpty(applicationUnit)
+      && applicationUnit.Length >= 3
+      && applicationUnit.Substring(0, 3) == "DUT"
     )
     {
       sourceUnit = DUTToForgeTypeId(applicationUnit);

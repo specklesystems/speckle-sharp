@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using DesktopUI2;
-using Speckle.Core.Models;
 using CSiAPIv1;
+using DesktopUI2;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Speckle.ConnectorCSI.UI;
 

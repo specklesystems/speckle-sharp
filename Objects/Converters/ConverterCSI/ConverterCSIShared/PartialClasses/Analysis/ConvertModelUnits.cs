@@ -1,5 +1,5 @@
-using Objects.Structural.Analysis;
 using CSiAPIv1;
+using Objects.Structural.Analysis;
 
 namespace Objects.Converter.CSI;
 

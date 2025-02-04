@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Objects.Geometry;
 using Objects.BuiltElements.TeklaStructures;
+using Objects.Geometry;
 using Tekla.Structures.Model;
 
 namespace Objects.Converter.TeklaStructures;

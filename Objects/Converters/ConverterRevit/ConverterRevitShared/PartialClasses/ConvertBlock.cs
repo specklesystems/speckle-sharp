@@ -6,11 +6,11 @@ using System.IO;
 using System.Linq;
 using ConverterRevitShared.Revit;
 using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;
@@ -356,18 +356,17 @@ public partial class ConverterRevit
   /// <returns></returns>
   private static IEnumerable<ITransformable?> GetBlockDefinitionGeometry(BlockDefinition definition)
   {
-    return definition.geometry
-      .SelectMany(
-        b =>
-          b switch
-          {
-            // This cast to Base is safe. Compiler just can't safely know ITransformable is only applied to Base objects.
-            Instance i => i.GetTransformedGeometry(), // Flattening inner instances here.
-            ITransformable bt => new List<ITransformable> { bt },
-            _
-              => (b.GetDetachedProp("displayValue") as IList)?.OfType<ITransformable>()
-                ?? Enumerable.Empty<ITransformable>()
-          }
+    return definition
+      .geometry.SelectMany(b =>
+        b switch
+        {
+          // This cast to Base is safe. Compiler just can't safely know ITransformable is only applied to Base objects.
+          Instance i => i.GetTransformedGeometry(), // Flattening inner instances here.
+          ITransformable bt => new List<ITransformable> { bt },
+          _
+            => (b.GetDetachedProp("displayValue") as IList)?.OfType<ITransformable>()
+              ?? Enumerable.Empty<ITransformable>()
+        }
       )
       .Where(bt => bt != null);
   }

@@ -38,7 +38,6 @@ public sealed class Room : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom:
-
             {
               Archicad.Room archicadRoom =
                 new()
@@ -62,7 +61,6 @@ public sealed class Room : IConverter
             }
             break;
           case Objects.BuiltElements.Room speckleRoom:
-
             {
               try
               {
