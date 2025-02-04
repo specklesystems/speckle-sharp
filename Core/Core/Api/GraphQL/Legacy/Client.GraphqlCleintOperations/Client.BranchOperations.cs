@@ -137,12 +137,12 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the branch from</param>
   /// <param name="branchName">Name of the branch to get</param>
   /// <param name="cancellationToken"></param>
-  /// <returns>The requested branch</returns>
+  /// <returns>The requested branch, no <see langword="null"/> if there was no branch with the given <paramref name="branchName"/></returns>
   /// <remarks>Updated to Model.GetWithVersions</remarks>
   /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
   /// <seealso cref="GraphQL.Resources.ModelResource.GetWithVersions"/>
   [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Get)}")]
-  public async Task<Branch> BranchGet(
+  public async Task<Branch?> BranchGet(
     string streamId,
     string branchName,
     int commitsLimit = 10,
@@ -192,7 +192,7 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     var branch = res.stream.branch;
 
-    if (branch.commits?.items is not null)
+    if (branch?.commits?.items is not null)
     {
       //faster than making the server query for it for every single commit...
       foreach (var commit in branch.commits.items)
