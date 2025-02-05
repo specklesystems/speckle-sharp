@@ -29,7 +29,7 @@ public sealed class TestDataHelper : IDisposable
     var acc = await sw.GetAccount().ConfigureAwait(false);
     using var client = new Client(acc);
     var branch = await client.BranchGet(sw.StreamId, sw.BranchName!, 1).ConfigureAwait(false);
-    var objectId = branch.commits.items[0].referencedObject;
+    var objectId = branch!.commits.items[0].referencedObject;
 
     using ServerTransport remoteTransport = new(acc, sw.StreamId);
     transport.BeginWrite();

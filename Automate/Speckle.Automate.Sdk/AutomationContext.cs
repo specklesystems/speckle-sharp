@@ -108,7 +108,7 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    Branch branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
+    Branch? branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
 
     if (branch is null)
     {
