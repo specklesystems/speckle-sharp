@@ -19,11 +19,11 @@ namespace Speckle.Core.Api;
 public static partial class Operations
 {
   private const string DEPRECATION_NOTICE = """
-                                            This Send overload has been replaced by an overload with fewer function arguments.
-                                            We are no longer supporting SerializerV1, OnErrorAction, or handling disposal of transports.
-                                            Consider switching one of the other send overloads instead.
-                                            This function will be kept around for several releases, but will eventually be removed.
-                                            """;
+    This Send overload has been replaced by an overload with fewer function arguments.
+    We are no longer supporting SerializerV1, OnErrorAction, or handling disposal of transports.
+    Consider switching one of the other send overloads instead.
+    This function will be kept around for several releases, but will eventually be removed.
+    """;
 
   ///<inheritdoc cref="Send(Speckle.Core.Models.Base,System.Threading.CancellationToken,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
   [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
@@ -225,8 +225,8 @@ public static partial class Operations
       var hash = idToken.ToString();
 
       sendTimer.Stop();
-      SpeckleLog.Logger
-        .ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
+      SpeckleLog
+        .Logger.ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
         .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
         .ForContext("serializerElapsed", serializerV2?.Elapsed)
         .Information(

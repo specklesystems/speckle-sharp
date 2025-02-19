@@ -23,8 +23,8 @@ public partial class ConnectorBindingsNavisworks
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.
     var selectedObjects = new HashSet<string>(
-      s_activeDoc.CurrentSelection.SelectedItems
-        .Where(Element.IsElementVisible)
+      s_activeDoc
+        .CurrentSelection.SelectedItems.Where(Element.IsElementVisible)
         .Select(Element.ResolveModelItemToIndexPath)
     );
 

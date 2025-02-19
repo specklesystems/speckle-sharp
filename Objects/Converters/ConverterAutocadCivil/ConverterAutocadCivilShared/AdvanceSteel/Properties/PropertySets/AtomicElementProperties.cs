@@ -66,8 +66,18 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
     InsertCustomProperty(dictionary, "cuts number", nameof(AtomicElementProperties.GetCutsNumber), null);
     InsertCustomProperty(dictionary, "balance point", nameof(AtomicElementProperties.GetBalancePoint), null);
     InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null, eUnitType.kDistance);
-    InsertCustomProperty(dictionary, "numbering - valid single part", nameof(AtomicElementProperties.HasValidSPNumber), null);
-    InsertCustomProperty(dictionary, "numbering - valid main part", nameof(AtomicElementProperties.HasValidMPNumber), null);
+    InsertCustomProperty(
+      dictionary,
+      "numbering - valid single part",
+      nameof(AtomicElementProperties.HasValidSPNumber),
+      null
+    );
+    InsertCustomProperty(
+      dictionary,
+      "numbering - valid main part",
+      nameof(AtomicElementProperties.HasValidMPNumber),
+      null
+    );
 
     return dictionary;
   }
@@ -79,8 +89,8 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
 
   private static Point3d GetBalancePoint(AtomicElement atomicElement)
   {
-    //it's necessary round the balance point because it has different returns at the last decimals 
-    if(!atomicElement.GetBalancepoint(out var point, out var weigth))
+    //it's necessary round the balance point because it has different returns at the last decimals
+    if (!atomicElement.GetBalancepoint(out var point, out var weigth))
     {
       return Point3d.kOrigin;
     }
@@ -110,12 +120,13 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
     {
       hole.CS.GetCoordSystem(out var point, out _, out _, out var vectorZ);
 
-      Dictionary<object, object> holeProperties = new()
-      {
-        { "diameter", hole.Hole.Diameter},
-        { "center", point },
-        { "normal", vectorZ }
-      };
+      Dictionary<object, object> holeProperties =
+        new()
+        {
+          { "diameter", hole.Hole.Diameter },
+          { "center", point },
+          { "normal", vectorZ }
+        };
 
       listHolesDetails.Add(holeProperties);
     }
@@ -146,6 +157,5 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
 
     return holes;
   }
-
 }
 #endif

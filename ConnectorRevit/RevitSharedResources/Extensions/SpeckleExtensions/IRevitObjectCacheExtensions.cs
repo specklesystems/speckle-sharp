@@ -20,8 +20,8 @@ public static class IRevitObjectCacheExtensions
     // if type was added instead of retreived, add types to master cache to facilitate lookup later
     if (!isExistingValue)
     {
-      cache.ParentCache
-        .GetOrInitializeWithDefaultFactory<ElementType>()
+      cache
+        .ParentCache.GetOrInitializeWithDefaultFactory<ElementType>()
         .AddMany(elementTypes, type => categoryInfo.GetCategorySpecificTypeName(type.Name));
     }
     return elementTypes;

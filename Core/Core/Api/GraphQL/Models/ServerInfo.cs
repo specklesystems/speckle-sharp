@@ -13,10 +13,9 @@ public sealed class ServerInfo
 
   /// <remarks>
   /// This field is not returned from the GQL API,
-  /// it should be populated after construction from the response headers.
-  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
+  /// it was previously populated after construction from the response headers, but now FE1 is deprecated, so we should always assume FE2
   /// </remarks>
-  public bool frontend2 { get; set; }
+  public bool frontend2 { get; set; } = true;
 
   /// <remarks>
   /// This field is not returned from the GQL API,

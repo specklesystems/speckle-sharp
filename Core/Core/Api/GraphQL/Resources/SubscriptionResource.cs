@@ -48,16 +48,16 @@ public sealed class SubscriptionResource : IDisposable
   {
     //language=graphql
     const string QUERY = """
-                         subscription UserProjectsUpdated {
-                           data:userProjectsUpdated {
-                             id
-                             project {
-                               id
-                             }
-                             type
-                           }
-                         }
-                         """;
+      subscription UserProjectsUpdated {
+        data:userProjectsUpdated {
+          id
+          project {
+            id
+          }
+          type
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY };
 
     Subscription<UserProjectsUpdatedMessage> subscription = new(_client, request);
@@ -74,16 +74,16 @@ public sealed class SubscriptionResource : IDisposable
   {
     //language=graphql
     const string QUERY = """
-                         subscription Subscription($target: ViewerUpdateTrackingTarget!) {
-                           data:projectCommentsUpdated(target: $target) {
-                             comment {
-                               id
-                             }
-                             id
-                             type
-                           }
-                         }
-                         """;
+      subscription Subscription($target: ViewerUpdateTrackingTarget!) {
+        data:projectCommentsUpdated(target: $target) {
+          comment {
+            id
+          }
+          id
+          type
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { target } };
 
     Subscription<ProjectCommentsUpdatedMessage> subscription = new(_client, request);
@@ -101,32 +101,32 @@ public sealed class SubscriptionResource : IDisposable
   {
     //language=graphql
     const string QUERY = """
-                         subscription ProjectModelsUpdated($id: String!, $modelIds: [String!]) {
-                           data:projectModelsUpdated(id: $id, modelIds: $modelIds) {
-                             id
-                             model {
-                               id
-                               name
-                               previewUrl
-                               updatedAt
-                               description
-                               displayName
-                               createdAt
-                               author {
-                                 avatar
-                                 bio
-                                 company
-                                 id
-                                 name
-                                 role
-                                 totalOwnedStreamsFavorites
-                                 verified
-                               }
-                             }
-                             type
-                           }
-                         }
-                         """;
+      subscription ProjectModelsUpdated($id: String!, $modelIds: [String!]) {
+        data:projectModelsUpdated(id: $id, modelIds: $modelIds) {
+          id
+          model {
+            id
+            name
+            previewUrl
+            updatedAt
+            description
+            displayName
+            createdAt
+            author {
+              avatar
+              bio
+              company
+              id
+              name
+              role
+              totalOwnedStreamsFavorites
+              verified
+            }
+          }
+          type
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { id, modelIds } };
 
     Subscription<ProjectModelsUpdatedMessage> subscription = new(_client, request);
@@ -141,24 +141,24 @@ public sealed class SubscriptionResource : IDisposable
   {
     //language=graphql
     const string QUERY = """
-                         subscription ProjectUpdated($id: String!) {
-                           data:projectUpdated(id: $id) {
-                             id
-                             project {
-                               id
-                               name
-                               description
-                               visibility
-                               allowPublicComments
-                               role
-                               createdAt
-                               updatedAt
-                               sourceApps
-                             }
-                             type
-                           }
-                         }
-                         """;
+      subscription ProjectUpdated($id: String!) {
+        data:projectUpdated(id: $id) {
+          id
+          project {
+            id
+            name
+            description
+            visibility
+            allowPublicComments
+            role
+            createdAt
+            updatedAt
+            sourceApps
+          }
+          type
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { id } };
 
     Subscription<ProjectUpdatedMessage> subscription = new(_client, request);
@@ -173,32 +173,40 @@ public sealed class SubscriptionResource : IDisposable
   {
     //language=graphql
     const string QUERY = """
-                         subscription ProjectVersionsUpdated($id: String!) {
-                           data:projectVersionsUpdated(id: $id) {
-                             id
-                             modelId
-                             type
-                             version {
-                               id
-                               referencedObject
-                               message
-                               sourceApplication
-                               createdAt
-                               previewUrl
-                               authorUser {
-                                 totalOwnedStreamsFavorites
-                                 id
-                                 name
-                                 bio
-                                 company
-                                 verified
-                                 role
-                                 avatar
-                               }
-                             }
-                           }
-                         }
-                         """;
+      subscription ProjectVersionsUpdated($id: String!) {
+        data:projectVersionsUpdated(id: $id) {
+          id
+          modelId
+          type
+          version {
+            id
+            referencedObject
+            message
+            sourceApplication
+            createdAt
+            previewUrl
+            authorUser {
+              totalOwnedStreamsFavorites
+              id
+              name
+              bio
+              company
+              verified
+              role
+              avatar
+            }
+            model{
+              id
+              name
+              description
+              displayName
+              updatedAt
+              createdAt
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { id } };
 
     Subscription<ProjectVersionsUpdatedMessage> subscription = new(_client, request);

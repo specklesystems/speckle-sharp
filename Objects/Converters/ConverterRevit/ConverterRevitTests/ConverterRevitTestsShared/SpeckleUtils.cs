@@ -112,8 +112,8 @@ internal static class SpeckleUtils
 
   internal static int GetSpeckleObjectTestNumber(DB.Element element)
   {
-    var param = element.Parameters
-      .Cast<DB.Parameter>()
+    var param = element
+      .Parameters.Cast<DB.Parameter>()
       .Where(el => el.Definition.Name == "SpeckleObjectTestNumber")
       .FirstOrDefault();
 

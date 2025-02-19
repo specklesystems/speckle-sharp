@@ -42,7 +42,10 @@ public class ASTypeData
 
   internal void OrderDictionaryPropertiesAll()
   {
-    PropertiesAll = (from entry in PropertiesAll orderby entry.Key ascending select entry).ToDictionary(x => x.Key, y => y.Value);
+    PropertiesAll = (from entry in PropertiesAll orderby entry.Key ascending select entry).ToDictionary(
+      x => x.Key,
+      y => y.Value
+    );
   }
 }
 #endif

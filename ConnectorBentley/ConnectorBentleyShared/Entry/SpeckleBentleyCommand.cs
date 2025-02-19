@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
@@ -9,10 +13,6 @@ using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorBentley.UI;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Speckle.ConnectorBentley.Entry;
 

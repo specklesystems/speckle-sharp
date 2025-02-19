@@ -1,7 +1,7 @@
+using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
-using System.Linq;
 using DB = Autodesk.Revit.DB.Architecture;
 using Point = Objects.Geometry.Point;
 

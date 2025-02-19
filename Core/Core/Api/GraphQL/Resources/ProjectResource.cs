@@ -26,20 +26,20 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         query Project($projectId: String!) {
-                           project(id: $projectId) {
-                             id
-                             name
-                             description
-                             visibility
-                             allowPublicComments
-                             role
-                             createdAt
-                             updatedAt
-                             sourceApps
-                           }
-                         }
-                         """;
+      query Project($projectId: String!) {
+        project(id: $projectId) {
+          id
+          name
+          description
+          visibility
+          allowPublicComments
+          role
+          createdAt
+          updatedAt
+          sourceApps
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
     var response = await _client
@@ -67,33 +67,33 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
-                           project(id: $projectId) {
-                             id
-                             name
-                             description
-                             visibility
-                             allowPublicComments
-                             role
-                             createdAt
-                             updatedAt
-                             sourceApps
-                             models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
-                               items {
-                                 id
-                                 name
-                                 previewUrl
-                                 updatedAt
-                                 displayName
-                                 description
-                                 createdAt
-                               }
-                               cursor
-                               totalCount
-                             }
-                           }
-                         }
-                         """;
+      query ProjectGetWithModels($projectId: String!, $modelsLimit: Int!, $modelsCursor: String, $modelsFilter: ProjectModelsFilter) {
+        project(id: $projectId) {
+          id
+          name
+          description
+          visibility
+          allowPublicComments
+          role
+          createdAt
+          updatedAt
+          sourceApps
+          models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
+            items {
+              id
+              name
+              previewUrl
+              updatedAt
+              displayName
+              description
+              createdAt
+            }
+            cursor
+            totalCount
+          }
+        }
+      }
+      """;
     GraphQLRequest request =
       new()
       {
@@ -123,63 +123,63 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         query ProjectGetWithTeam($projectId: String!) {
-                           project(id: $projectId) {
-                             id
-                             name
-                             description
-                             visibility
-                             allowPublicComments
-                             role
-                             createdAt
-                             updatedAt
-                             team {
-                               role
-                               user {
-                                 totalOwnedStreamsFavorites
-                                 id
-                                 name
-                                 bio
-                                 company
-                                 avatar
-                                 verified
-                                 role
-                               }
-                             }
-                             invitedTeam {
-                               id
-                               inviteId
-                               projectId
-                               projectName
-                               streamId
-                               streamName
-                               title
-                               role
-                               token
-                               user {
-                                 totalOwnedStreamsFavorites
-                                 id
-                                 name
-                                 bio
-                                 company
-                                 avatar
-                                 verified
-                                 role
-                               }
-                               invitedBy {
-                                 totalOwnedStreamsFavorites
-                                 id
-                                 name
-                                 bio
-                                 company
-                                 avatar
-                                 verified
-                                 role
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query ProjectGetWithTeam($projectId: String!) {
+        project(id: $projectId) {
+          id
+          name
+          description
+          visibility
+          allowPublicComments
+          role
+          createdAt
+          updatedAt
+          team {
+            role
+            user {
+              totalOwnedStreamsFavorites
+              id
+              name
+              bio
+              company
+              avatar
+              verified
+              role
+            }
+          }
+          invitedTeam {
+            id
+            inviteId
+            projectId
+            projectName
+            streamId
+            streamName
+            title
+            role
+            token
+            user {
+              totalOwnedStreamsFavorites
+              id
+              name
+              bio
+              company
+              avatar
+              verified
+              role
+            }
+            invitedBy {
+              totalOwnedStreamsFavorites
+              id
+              name
+              bio
+              company
+              avatar
+              verified
+              role
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
     var response = await _client
@@ -196,22 +196,22 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectCreate($input: ProjectCreateInput) {
-                           projectMutations {
-                             create(input: $input) {
-                               id
-                               name
-                               description
-                               visibility
-                               allowPublicComments
-                               role
-                               createdAt
-                               updatedAt
-                               sourceApps
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectCreate($input: ProjectCreateInput) {
+        projectMutations {
+          create(input: $input) {
+            id
+            name
+            description
+            visibility
+            allowPublicComments
+            role
+            createdAt
+            updatedAt
+            sourceApps
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
@@ -228,21 +228,21 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectUpdate($input: ProjectUpdateInput!) {
-                           projectMutations{
-                             update(update: $input) {
-                               id
-                               name
-                               description
-                               visibility
-                               allowPublicComments
-                               role
-                               createdAt
-                               updatedAt
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectUpdate($input: ProjectUpdateInput!) {
+        projectMutations{
+          update(update: $input) {
+            id
+            name
+            description
+            visibility
+            allowPublicComments
+            role
+            createdAt
+            updatedAt
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
@@ -259,12 +259,12 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectDelete($projectId: String!) {
-                           projectMutations {
-                             delete(id: $projectId)
-                           }
-                         }
-                         """;
+      mutation ProjectDelete($projectId: String!) {
+        projectMutations {
+          delete(id: $projectId)
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
 
     var response = await _client
@@ -280,65 +280,65 @@ public sealed class ProjectResource
   {
     //language=graphql
     const string QUERY = """
-                         mutation ProjectUpdateRole($input: ProjectUpdateRoleInput!) {
-                           projectMutations {
-                             updateRole(input: $input) {
-                               id
-                               name
-                               description
-                               visibility
-                               allowPublicComments
-                               role
-                               createdAt
-                               updatedAt
-                               team {
-                                 role
-                                 user {
-                                   totalOwnedStreamsFavorites
-                                   id
-                                   name
-                                   bio
-                                   company
-                                   avatar
-                                   verified
-                                   role
-                                 }
-                               }
-                               invitedTeam {
-                                 id
-                                 inviteId
-                                 projectId
-                                 projectName
-                                 streamId
-                                 streamName
-                                 title
-                                 role
-                                 token
-                                 user {
-                                   totalOwnedStreamsFavorites
-                                   id
-                                   name
-                                   bio
-                                   company
-                                   avatar
-                                   verified
-                                   role
-                                 }
-                                 invitedBy {
-                                   totalOwnedStreamsFavorites
-                                   id
-                                   name
-                                   bio
-                                   company
-                                   avatar
-                                   verified
-                                   role
-                                 }
-                               }
-                             }
-                           }
-                         }
-                         """;
+      mutation ProjectUpdateRole($input: ProjectUpdateRoleInput!) {
+        projectMutations {
+          updateRole(input: $input) {
+            id
+            name
+            description
+            visibility
+            allowPublicComments
+            role
+            createdAt
+            updatedAt
+            team {
+              role
+              user {
+                totalOwnedStreamsFavorites
+                id
+                name
+                bio
+                company
+                avatar
+                verified
+                role
+              }
+            }
+            invitedTeam {
+              id
+              inviteId
+              projectId
+              projectName
+              streamId
+              streamName
+              title
+              role
+              token
+              user {
+                totalOwnedStreamsFavorites
+                id
+                name
+                bio
+                company
+                avatar
+                verified
+                role
+              }
+              invitedBy {
+                totalOwnedStreamsFavorites
+                id
+                name
+                bio
+                company
+                avatar
+                verified
+                role
+              }
+            }
+          }
+        }
+      }
+      """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client

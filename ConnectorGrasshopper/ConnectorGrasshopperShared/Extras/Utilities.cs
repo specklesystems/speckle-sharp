@@ -16,7 +16,6 @@ using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-
 #if RHINO8_OR_GREATER
 using Grasshopper.Rhinoceros.Model;
 #endif
@@ -485,12 +484,11 @@ public static class Utilities
     }
 
     value = UnwrapRhino8Object(value);
-
     if (value is IGH_Goo)
     {
       var valuePropInfo = value
         .GetType()
-        .GetField("m_value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        .GetProperty("Value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
       if (valuePropInfo != null)
       {
         var tempValue = valuePropInfo.GetValue(value);
@@ -547,9 +545,9 @@ public static class Utilities
       case ModelObject modelObject:
       {
         var propInfo = value
-                      .GetType()
-                      .GetProperty("Geometry", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        
+          .GetType()
+          .GetProperty("Geometry", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
         return propInfo?.GetValue(value) ?? value;
       }
       default:

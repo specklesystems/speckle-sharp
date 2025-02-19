@@ -108,7 +108,7 @@ public class AutomationContext
   /// The reason is to prevent circular run loop in automation. </exception>
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelName, string versionMessage = "")
   {
-    Branch branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
+    Branch? branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, modelName).ConfigureAwait(false);
 
     if (branch is null)
     {
@@ -284,8 +284,8 @@ public class AutomationContext
     FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read);
     using StreamContent streamContent = new(fileStream);
     formData.Add(streamContent, "files", Path.GetFileName(filePath));
-    HttpResponseMessage? request = await SpeckleClient.GQLClient.HttpClient
-      .PostAsync(
+    HttpResponseMessage? request = await SpeckleClient
+      .GQLClient.HttpClient.PostAsync(
         new Uri($"{AutomationRunData.SpeckleServerUrl}api/stream/{AutomationRunData.ProjectId}/blob"),
         formData
       )

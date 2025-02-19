@@ -35,13 +35,15 @@ public class ComponentTracker
 
   public void TrackNodeRun(string? name = null, string? node = null)
   {
-    var customProperties = new Dictionary<string, object> { { "name", name ?? Parent?.Name ?? "unset" } };
-    if (node != null)
-    {
-      customProperties.Add("node", node);
-    }
-    AppendHostAppInfoToProperties(customProperties);
-    Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeRun, customProperties);
+    // Node Run tracking is disabled to prevent flooding Mixpanel (see https://linear.app/speckle/issue/CNX-1042/remove-node-run-events-from-gh-nodes)
+
+    // var customProperties = new Dictionary<string, object> { { "name", name ?? Parent?.Name ?? "unset" } };
+    // if (node != null)
+    // {
+    //   customProperties.Add("node", node);
+    // }
+    // AppendHostAppInfoToProperties(customProperties);
+    // Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeRun, customProperties);
   }
 
   public void TrackNodeSend(Account acc, bool auto, string? workspaceId, bool sync = false)

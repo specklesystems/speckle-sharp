@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Objects.Geometry;
 using Objects.BuiltElements.TeklaStructures;
-using SpiralBeam = Objects.BuiltElements.TeklaStructures.SpiralBeam;
+using Objects.Geometry;
 using Point = Objects.Geometry.Point;
+using SpiralBeam = Objects.BuiltElements.TeklaStructures.SpiralBeam;
 
 namespace Objects.Converter.TeklaStructures;
 

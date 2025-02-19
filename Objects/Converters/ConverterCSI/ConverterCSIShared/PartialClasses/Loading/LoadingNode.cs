@@ -1,7 +1,7 @@
-using Objects.Structural.Loading;
 using System.Collections.Generic;
-using Objects.Structural.Geometry;
 using System.Linq;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI;

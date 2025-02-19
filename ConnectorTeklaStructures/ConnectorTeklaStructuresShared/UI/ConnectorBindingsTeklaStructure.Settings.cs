@@ -1,5 +1,5 @@
-using DesktopUI2;
 using System.Collections.Generic;
+using DesktopUI2;
 using DesktopUI2.Models.Settings;
 
 namespace Speckle.ConnectorTeklaStructures.UI;

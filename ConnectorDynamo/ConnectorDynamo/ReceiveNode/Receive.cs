@@ -12,7 +12,8 @@ using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
@@ -456,8 +457,7 @@ public class Receive : NodeModel
     {
       var account = Stream.GetAccount().Result;
       Client = new Client(account);
-      Client.SubscribeCommitCreated(Stream.StreamId);
-      Client.OnCommitCreated += OnCommitChange;
+      Client.Subscription.CreateProjectVersionsUpdatedSubscription(Stream.StreamId).Listeners += OnVersionChange;
 
       CheckIfBehind();
     }
@@ -498,7 +498,7 @@ public class Receive : NodeModel
 
     try
     {
-      var branches = Client.StreamGetBranches(Stream.StreamId).Result;
+      var branches = Client.StreamGetBranches(Stream.StreamId, commitsLimit: 1).Result;
       var branchName = string.IsNullOrEmpty(Stream.BranchName) ? "main" : Stream.BranchName;
       var mainBranch = branches.FirstOrDefault(b => b.name == branchName);
       if (mainBranch == null || !mainBranch.commits.items.Any())
@@ -597,14 +597,20 @@ public class Receive : NodeModel
     OnInputsChanged?.Invoke();
   }
 
-  private void OnCommitChange(object sender, CommitInfo e)
+  private void OnVersionChange(object sender, ProjectVersionsUpdatedMessage e)
   {
-    if (e.branchName != (Stream.BranchName ?? "main"))
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }
 
-    Task.Run(async () => GetExpiredObjectCount(e.objectId));
+    var isSameBranch = e.version.model.name == (Stream.BranchName ?? "main") || e.version.model.id == Stream.BranchName;
+    if (!isSameBranch)
+    {
+      return;
+    }
+
+    Task.Run(async () => GetExpiredObjectCount(e.version.referencedObject));
     if (AutoUpdate)
     {
       OnNewDataAvail?.Invoke();

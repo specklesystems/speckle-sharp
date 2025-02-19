@@ -2,15 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-
+using Speckle.Core.Models;
 #if CIVIL
 using Autodesk.Aec.ApplicationServices;
 #endif

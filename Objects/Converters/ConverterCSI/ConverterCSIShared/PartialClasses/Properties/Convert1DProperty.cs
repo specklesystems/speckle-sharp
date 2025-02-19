@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
-using System.Linq;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 

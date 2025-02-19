@@ -1,10 +1,10 @@
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using Dynamo.Controls;
 using Dynamo.Models;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 
 namespace Speckle.ConnectorDynamo.ViewNode;
 

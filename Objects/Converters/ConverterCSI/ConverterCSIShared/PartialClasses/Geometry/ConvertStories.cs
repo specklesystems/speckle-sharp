@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Objects.Structural.CSI.Analysis;
 using System.Linq;
+using Objects.Structural.CSI.Analysis;
 using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI;

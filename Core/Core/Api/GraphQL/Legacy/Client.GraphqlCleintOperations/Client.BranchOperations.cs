@@ -53,38 +53,61 @@ public partial class Client
     CancellationToken cancellationToken = default
   )
   {
+    //language=graphql
+    const string QUERY = """
+      query Stream ($streamId: String!, $branchesLimit: Int!, $commitsLimit: Int!, $includeCommits: Boolean!) {
+        stream(id: $streamId) {
+          branches(limit: $branchesLimit) {
+            items {
+              id
+              name
+              description
+              commits (limit: $commitsLimit) @include(if: $includeCommits) {
+                totalCount
+                cursor
+                items {
+                  id
+                  referencedObject
+                  sourceApplication
+                  message
+                  authorName
+                  authorId
+                  parents
+                  createdAt
+                }
+              }
+            }
+          }                       
+        }
+      }
+      """;
     var request = new GraphQLRequest
     {
-      Query =
-        $@"query Stream ($streamId: String!) {{
-                      stream(id: $streamId) {{
-                        branches(limit: {branchesLimit}) {{
-                          items {{
-                            id
-                            name
-                            description
-                            commits (limit: {commitsLimit}) {{
-                              totalCount
-                              cursor
-                              items {{
-                                id
-                                referencedObject
-                                sourceApplication
-                                message
-                                authorName
-                                authorId
-                                branchName
-                                parents
-                                createdAt
-                              }}
-                            }}
-                          }}
-                        }}                       
-                      }}
-                    }}",
-      Variables = new { streamId }
+      Query = QUERY,
+      Variables = new
+      {
+        streamId,
+        branchesLimit,
+        commitsLimit,
+        includeCommits = commitsLimit > 0,
+      }
     };
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+    //faster than making the server query for it for every single commit...
+    foreach (var branch in res.stream.branches?.items)
+    {
+      if (branch.commits?.items is null)
+      {
+        continue;
+      }
+
+      foreach (var commit in branch.commits.items)
+      {
+        commit.branchName = branch.name;
+      }
+    }
+
     return res.stream.branches.items;
   }
 
@@ -114,50 +137,70 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the branch from</param>
   /// <param name="branchName">Name of the branch to get</param>
   /// <param name="cancellationToken"></param>
-  /// <returns>The requested branch</returns>
+  /// <returns>The requested branch, no <see langword="null"/> if there was no branch with the given <paramref name="branchName"/></returns>
   /// <remarks>Updated to Model.GetWithVersions</remarks>
   /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
   /// <seealso cref="GraphQL.Resources.ModelResource.GetWithVersions"/>
   [Obsolete($"Use client.{nameof(Model)}.{nameof(ModelResource.Get)}")]
-  public async Task<Branch> BranchGet(
+  public async Task<Branch?> BranchGet(
     string streamId,
     string branchName,
     int commitsLimit = 10,
     CancellationToken cancellationToken = default
   )
   {
+    //language=graphql
+    const string QUERY = """
+      query Stream($streamId: String!, $branchName: String!, $commitsLimit: Int!, $includeCommits: Boolean!) {
+        stream(id: $streamId) {
+          branch(name: $branchName){
+            id,
+            name,
+            description,
+            commits (limit: $commitsLimit) @include(if: $includeCommits) {
+              totalCount,
+              cursor,
+              items {
+                id,
+                referencedObject,
+                sourceApplication,
+                totalChildrenCount,
+                message,
+                authorName,
+                authorId,
+                parents,
+                createdAt
+              }
+            }
+          }                       
+        }
+      }
+      """;
+
     var request = new GraphQLRequest
     {
-      Query =
-        $@"query Stream($streamId: String!, $branchName: String!) {{
-                      stream(id: $streamId) {{
-                        branch(name: $branchName){{
-                          id,
-                          name,
-                          description,
-                          commits (limit: {commitsLimit}) {{
-                            totalCount,
-                            cursor,
-                            items {{
-                              id,
-                              referencedObject,
-                              sourceApplication,
-                              totalChildrenCount,
-                              message,
-                              authorName,
-                              authorId,
-                              branchName,
-                              parents,
-                              createdAt
-                            }}
-                          }}
-                        }}                       
-                      }}
-                    }}",
-      Variables = new { streamId, branchName }
+      Query = QUERY,
+      Variables = new
+      {
+        streamId,
+        branchName,
+        commitsLimit,
+        includeCommits = commitsLimit > 0,
+      }
     };
 
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
+    var branch = res.stream.branch;
+
+    if (branch?.commits?.items is not null)
+    {
+      //faster than making the server query for it for every single commit...
+      foreach (var commit in branch.commits.items)
+      {
+        commit.branchName = branch.name;
+      }
+    }
+
     return res.stream.branch;
   }
 

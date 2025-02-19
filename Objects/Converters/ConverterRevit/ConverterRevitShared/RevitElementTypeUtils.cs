@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using RevitSharedResources.Interfaces;
-using Speckle.Core.Models;
-using OSG = Objects.Structural.Geometry;
-using DB = Autodesk.Revit.DB;
-using Speckle.Core.Logging;
 using RevitSharedResources.Extensions.SpeckleExtensions;
+using RevitSharedResources.Interfaces;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using DB = Autodesk.Revit.DB;
+using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.Revit;
 
