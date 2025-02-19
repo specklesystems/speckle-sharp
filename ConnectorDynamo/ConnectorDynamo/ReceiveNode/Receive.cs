@@ -542,7 +542,7 @@ public class Receive : NodeModel
     {
       var @object = Client.ObjectGet(Stream.StreamId, objectId).Result;
       //quick fix for the scenario in which a single base is sent, we don't want to show 0!
-      var count = Math.Min(@object.totalChildrenCount ?? 0, 1);
+      var count = Math.Max(@object.totalChildrenCount ?? 0, 1);
       ExpiredCount = count.ToString();
       Message = "Updates available";
       _objectCount = count;
