@@ -308,7 +308,8 @@ public partial class ConverterRevit
     speckleElement1D.end1Offset = VectorToSpeckle(startOffset, revitStick.Document);
     speckleElement1D.end2Offset = VectorToSpeckle(endOffset, revitStick.Document);
 
-    speckleElement1D.orientationAngle = revitStick.get_Parameter(BuiltInParameter.ANALYTICAL_MODEL_ROTATION)?.AsDouble() ?? 0.0; // Default to 0.0 if null or parameter not found, in radians
+    speckleElement1D.orientationAngle =
+      revitStick.get_Parameter(BuiltInParameter.ANALYTICAL_MODEL_ROTATION)?.AsDouble() ?? 0.0; // Default to 0.0 if null or parameter not found, in radians
 
     SetEndReleases(revitStick, ref speckleElement1D);
 
