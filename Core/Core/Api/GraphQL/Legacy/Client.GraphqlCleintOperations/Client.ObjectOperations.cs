@@ -27,6 +27,7 @@ public partial class Client
                       stream(id: $streamId) {
                         object(id: $objectId){
                           id
+                          applicationId
                           createdAt
                           totalChildrenCount
                         }                       
