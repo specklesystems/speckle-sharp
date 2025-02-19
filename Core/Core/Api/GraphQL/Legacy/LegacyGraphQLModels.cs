@@ -263,7 +263,7 @@ public class SpeckleObject
   public string id { get; set; }
   public string speckleType { get; set; }
   public string applicationId { get; set; }
-  public int totalChildrenCount { get; set; }
+  public int? totalChildrenCount { get; set; }
   public DateTime createdAt { get; set; }
 }
 
