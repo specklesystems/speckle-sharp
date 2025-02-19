@@ -1,18 +1,18 @@
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
-using Speckle.ConnectorTeklaStructures.Util;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
 using Serilog.Context;
+using Speckle.ConnectorTeklaStructures.Util;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Tekla.Structures.Model;
 using SCT = Speckle.Core.Transports;
 

@@ -554,7 +554,8 @@ public class ReceiveComponentWorker : WorkerInstance
         Done();
         return;
       }
-      receiveComponent.Tracker.TrackNodeSend(client.Account, receiveComponent.AutoReceive);
+
+      receiveComponent.Tracker.TrackNodeSend(client.Account, receiveComponent.AutoReceive, null);
 
       var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
       remoteTransport.TransportName = "R";

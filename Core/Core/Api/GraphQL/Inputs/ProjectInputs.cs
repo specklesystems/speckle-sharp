@@ -17,7 +17,7 @@ public sealed record ProjectModelsFilter(
   IReadOnlyList<string>? ids,
   bool? onlyWithVersions,
   string? search,
-  IReadOnlyList<string> sourceApps
+  IReadOnlyList<string>? sourceApps
 );
 
 public sealed record ProjectModelsTreeFilter(

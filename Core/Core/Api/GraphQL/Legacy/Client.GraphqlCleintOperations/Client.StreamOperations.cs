@@ -112,42 +112,31 @@ public partial class Client
   {
     var request = new GraphQLRequest
     {
-      Query =
-        $@"query User {{
-                      activeUser{{
-                        id,
-                        email,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        profiles,
-                        role,
-                        streams(limit:{limit}) {{
-                          totalCount,
-                          cursor,
-                          items {{
-                            id,
-                            name,
-                            description,
-                            isPublic,
-                            role,
-                            createdAt,
-                            updatedAt,
-                            favoritedDate,
-                            commentCount
-                            favoritesCount
-                            collaborators {{
-                              id,
-                              name,
-                              role,
-                              avatar
-                            }}
-                          }}
-                        }}
-                      }}
-                    }}"
+      Query = """
+        query User($limit: Int!) {
+          activeUser{
+            streams(limit:$limit) {
+              items {
+                id,
+                name,
+                description,
+                isPublic,
+                role,
+                createdAt,
+                updatedAt,
+                favoritedDate,
+                commentCount,
+                collaborators {
+                  id,
+                  name,
+                  role,
+                }
+              }
+            }
+          }
+        }
+        """,
+      Variables = new { limit }
     };
 
     var res = await ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
@@ -162,13 +151,16 @@ public partial class Client
     return res.activeUser.streams.items;
   }
 
-  //TODO: API GAP
   /// <summary>
   /// Gets all favorite streams for the current user
   /// </summary>
   /// <param name="limit">Max number of streams to return</param>
   /// <param name="cancellationToken"></param>
+  /// <remarks>
+  /// Favourite streams is no longer a feature
+  /// </remarks>
   /// <returns></returns>
+  [Obsolete(DeprecationMessages.FE1_DEPRECATION_MESSAGE, true)]
   public async Task<List<Stream>> FavoriteStreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -328,6 +320,7 @@ public partial class Client
   /// <param name="permissionInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.UpdateRole)}", true)]
   public async Task<bool> StreamRevokePermission(
     StreamRevokePermissionInput permissionInput,
     CancellationToken cancellationToken = default
@@ -354,7 +347,7 @@ public partial class Client
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
   /// <seealso cref="GraphQL.Resources.ProjectResource.UpdateRole"/>
-  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.UpdateRole)}")]
+  [Obsolete($"Use client.{nameof(Project)}.{nameof(ProjectResource.UpdateRole)}", true)]
   public async Task<bool> StreamUpdatePermission(
     StreamPermissionInput updatePermissionInput,
     CancellationToken cancellationToken = default
@@ -418,7 +411,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Create"/>
-  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Create)}")]
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Create)}", true)]
   public async Task<bool> StreamInviteCreate(
     StreamInviteCreateInput inviteCreateInput,
     CancellationToken cancellationToken = default
@@ -451,7 +444,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Cancel"/>
-  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Cancel)}")]
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Cancel)}", true)]
   public async Task<bool> StreamInviteCancel(
     string streamId,
     string inviteId,
@@ -482,7 +475,7 @@ public partial class Client
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
-  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Use)}")]
+  [Obsolete($"Use client.{nameof(ProjectInvite)}.{nameof(ProjectInviteResource.Use)}", true)]
   public async Task<bool> StreamInviteUse(
     string streamId,
     string token,
@@ -515,7 +508,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
-  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.ProjectInvites)}")]
+  [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.ProjectInvites)}", true)]
   public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

@@ -7,7 +7,6 @@ namespace Objects.Converter.Dynamo
 {
   public partial class ConverterDynamo
   {
-
     public string GetRevitDocUnits()
     {
       if (Doc != null)
@@ -35,7 +34,6 @@ namespace Objects.Converter.Dynamo
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
       }
-
     }
 
     private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;

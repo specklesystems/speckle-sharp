@@ -4,7 +4,6 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -155,14 +154,6 @@ public static class Fixtures
     var filePath = Path.GetTempFileName();
     File.WriteAllText(filePath, content);
     return new Blob(filePath);
-  }
-
-  internal static async Task<Comment> CreateComment(Client client, string projectId, string modelId, string versionId)
-  {
-    var blobs = await SendBlobData(client.Account, projectId);
-    var blobIds = blobs.Select(b => b.id).ToList();
-    CreateCommentInput input = new(new(blobIds, null), projectId, $"{projectId},{modelId},{versionId}", null, null);
-    return await client.Comment.Create(input);
   }
 
   internal static async Task<Blob[]> SendBlobData(Account account, string projectId)

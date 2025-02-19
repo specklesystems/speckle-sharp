@@ -9,7 +9,8 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Rhino;
 using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -112,14 +113,19 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     ApiClient?.Dispose();
     var acc = await wrapper.GetAccount();
     ApiClient = new Client(acc);
-    ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-    ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+    ApiClient.Subscription.CreateProjectVersionsUpdatedSubscription(StreamWrapper.StreamId).Listeners +=
+      ApiClient_OnVersionUpdate;
   }
 
-  private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
+  private void ApiClient_OnVersionUpdate(object sender, ProjectVersionsUpdatedMessage e)
   {
     // Break if wrapper is branch type and branch name is not equal.
-    if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    if (StreamWrapper.Type == StreamWrapperType.Branch && e.modelId != StreamWrapper.BranchName)
+    {
+      return;
+    }
+
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
     {
       return;
     }
@@ -169,24 +175,20 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   public override bool Write(GH_IWriter writer)
   {
     writer.SetBoolean("AutoReceive", AutoReceive);
-    //writer.SetString("CurrentComponentState", CurrentComponentState);
     writer.SetString("LastInfoMessage", LastInfoMessage);
-    //writer.SetString("LastCommitDate", LastCommitDate);
     writer.SetString("ReceivedObjectId", ReceivedObjectId);
     writer.SetString("ReceivedCommitId", ReceivedCommitId);
-    writer.SetString("KitName", Kit.Name);
+
     var streamUrl = StreamWrapper != null ? StreamWrapper.ToString() : "";
     writer.SetString("StreamWrapper", streamUrl);
-    //writer.SetBoolean(nameof(ConvertToNative), ConvertToNative);
+
     return base.Write(writer);
   }
 
   public override bool Read(GH_IReader reader)
   {
     AutoReceive = reader.GetBoolean("AutoReceive");
-    //CurrentComponentState = reader.GetString("CurrentComponentState");
     LastInfoMessage = reader.GetString("LastInfoMessage");
-    //LastCommitDate = reader.GetString("LastCommitDate");
     ReceivedObjectId = reader.GetString("ReceivedObjectId");
     ReceivedCommitId = reader.GetString("ReceivedCommitId");
 
@@ -220,7 +222,15 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   {
     if (RunCount == 1)
     {
-      ParseInput(DA);
+      try
+      {
+        ParseInput(DA);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        throw;
+      }
       if (InputType == "Invalid")
       {
         return;
@@ -252,7 +262,15 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
             return null;
           }
 
-          Tracker.TrackNodeReceive(acc, AutoReceive, myCommit.authorId != acc.userInfo.id, myCommit.sourceApplication);
+          var workspaceId = await client.GetWorkspaceId(StreamWrapper.StreamId).ConfigureAwait(false);
+
+          Tracker.TrackNodeReceive(
+            acc,
+            AutoReceive,
+            myCommit.authorId != acc.userInfo.id,
+            myCommit.sourceApplication,
+            workspaceId
+          );
 
           var totalObjectCount = 1;
 

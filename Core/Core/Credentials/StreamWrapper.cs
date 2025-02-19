@@ -417,7 +417,7 @@ public class StreamWrapper
     // Check if the branch exists
     if (Type == StreamWrapperType.Branch)
     {
-      var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
+      var branch = await client.BranchGet(StreamId, BranchName!, 0).ConfigureAwait(false);
       if (branch == null)
       {
         throw new SpeckleException(
@@ -436,9 +436,12 @@ public class StreamWrapper
 
     if (OriginalInput != null)
     {
-      Uri uri = new(OriginalInput);
-      var fe2Match = s_fe2UrlRegex.Match(uri.AbsolutePath);
-      return fe2Match.Success ? ToProjectUri() : ToStreamUri();
+      if (Uri.IsWellFormedUriString(OriginalInput, UriKind.Absolute))
+      {
+        Uri uri = new(OriginalInput);
+        var fe2Match = s_fe2UrlRegex.Match(OriginalInput);
+        return fe2Match.Success ? ToProjectUri() : ToStreamUri();
+      }
     }
 
     // Default to old FE1

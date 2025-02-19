@@ -1,20 +1,20 @@
-using ConnectorCSI.Storage;
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
-using Speckle.ConnectorCSI.Util;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ConnectorCSI.Storage;
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
 using Serilog.Context;
-using Speckle.Core.Models.GraphTraversal;
+using Speckle.ConnectorCSI.Util;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Kits.ConverterInterfaces;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorCSI.UI;
 
@@ -184,8 +184,8 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     {
       ApplicationObject NewAppObj()
       {
-        var speckleType = current.speckle_type
-          .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+        var speckleType = current
+          .speckle_type.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
 
         return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, };
@@ -201,8 +201,8 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
       }
 
       //Handle objects convertable using displayValues
-      var fallbackMember = DefaultTraversal.displayValuePropAliases
-        .Where(o => current[o] != null)
+      var fallbackMember = DefaultTraversal
+        .displayValuePropAliases.Where(o => current[o] != null)
         .Select(o => current[o])
         .FirstOrDefault();
 

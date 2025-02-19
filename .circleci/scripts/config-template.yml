@@ -76,8 +76,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.404
             $HOME/.dotnet/dotnet --version
       - run:
           name: Enforce formatting
@@ -124,8 +123,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.404
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -200,9 +198,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
       - unless: # Build Unsigned Installers for untagged, or wip/alpha/feature/etc. tags (non-stable, non-rc)
-          condition: 
+          condition:
             and:
-              -  << pipeline.git.tag >>
+              - << pipeline.git.tag >>
               - not:
                   matches:
                     pattern: "^.*-(?!rc).*$"
@@ -221,7 +219,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - when: # Setup certificates and build installers signed for tagged builds that aren't prerelease
           condition:
             and:
-              -  << pipeline.git.tag >>
+              - << pipeline.git.tag >>
               - not:
                   matches:
                     pattern: "^.*-(?!rc).*$"
@@ -256,7 +254,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connector-new:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: mcr.microsoft.com/dotnet/sdk:6.0 #Needs to say on .NET 6 so long as Speckle.Manager.Feed is .NET 6
     parameters:
       slug:
         type: string
@@ -323,8 +321,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.206
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.404
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
@@ -445,7 +442,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-dotnet-mac:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     parameters:
       slnname:
         type: string

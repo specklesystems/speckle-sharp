@@ -169,16 +169,16 @@ public class SelectionHandler
   public SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
   {
     // Get a flattened list of viewpoints and their references
-    var flattenedViewpointList = Application.ActiveDocument.SavedViewpoints.RootItem.Children
-      .Select(GetViews)
+    var flattenedViewpointList = Application
+      .ActiveDocument.SavedViewpoints.RootItem.Children.Select(GetViews)
       .Where(x => x != null)
       .SelectMany(node => node.Flatten())
       .Select(node => new { node.Reference, node.Guid })
       .ToList();
 
     // Find a match based on the saved view reference
-    var viewPointMatch = flattenedViewpointList.FirstOrDefault(
-      node => node.Guid.ToString() == savedViewReference || node.Reference == savedViewReference
+    var viewPointMatch = flattenedViewpointList.FirstOrDefault(node =>
+      node.Guid.ToString() == savedViewReference || node.Reference == savedViewReference
     );
 
     if (viewPointMatch != null)
@@ -385,8 +385,8 @@ public class SelectionHandler
             return new HashSet<ModelItem>();
           }
 
-          var trimmedAncestors = targetFirstObjectChild.Ancestors
-            .TakeWhile(ancestor => ancestor != firstObjectAncestor)
+          var trimmedAncestors = targetFirstObjectChild
+            .Ancestors.TakeWhile(ancestor => ancestor != firstObjectAncestor)
             .Append(firstObjectAncestor);
 
           return trimmedAncestors;

@@ -28,7 +28,8 @@ public static class Http
 
   public static IAsyncPolicy<HttpResponseMessage> HttpAsyncPolicy(
     IEnumerable<TimeSpan>? delay = null,
-    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS
+    int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS,
+    TimeoutStrategy timeoutStrategy = TimeoutStrategy.Optimistic
   )
   {
     var retryPolicy = HttpPolicyExtensions
@@ -43,7 +44,7 @@ public static class Http
         }
       );
 
-    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds);
+    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(timeoutSeconds, timeoutStrategy);
 
     return Policy.WrapAsync(retryPolicy, timeoutPolicy);
   }
@@ -134,25 +135,53 @@ public static class Http
   }
 
   /// <summary>
-  /// Sends a <c>GET</c> request to the provided <paramref name="uri"/>
+  /// Sends a <c>GET</c> request to the provided <paramref name="speckleServerUrl"/>
   /// </summary>
-  /// <param name="uri">The URI that should be pinged</param>
-  /// <exception cref="HttpRequestException">Request to <paramref name="uri"/> failed</exception>
-  public static async Task<HttpResponseMessage> HttpPing(Uri uri)
+  /// <param name="speckleServerUrl">The URI that should be pinged</param>
+  /// <exception cref="HttpRequestException">Request to <paramref name="speckleServerUrl"/> failed</exception>
+  public static async Task<HttpResponseMessage> HttpPing(
+    Uri speckleServerUrl,
+    CancellationToken cancellationToken = default
+  )
   {
-    try
+    using var httpClient = GetHttpProxyClient(
+      new SpeckleHttpClientHandler(HttpAsyncPolicy(timeoutSeconds: 15, timeoutStrategy: TimeoutStrategy.Pessimistic))
+    );
+
+    //GETing the root uri has auth related overheads, so we'd prefer to ping a static resource.
+    //This is setup to be super compatible with older servers that don't have a /api/ping endpoint, and self hosting which may not have a favicon
+    Uri[] pingUrls = { GetPingUrl(speckleServerUrl), GetFaviconUrl(speckleServerUrl), speckleServerUrl };
+    List<Exception> failures = new();
+    foreach (var ping in pingUrls)
     {
-      using var httpClient = GetHttpProxyClient();
-      HttpResponseMessage response = await httpClient.GetAsync(uri).ConfigureAwait(false);
-      response.EnsureSuccessStatusCode();
-      SpeckleLog.Logger.Information("Successfully pinged {uri}", uri);
-      return response;
+      var response = await httpClient.GetAsync(ping, cancellationToken).ConfigureAwait(false);
+      try
+      {
+        response.EnsureSuccessStatusCode();
+        SpeckleLog.Logger.Debug("Successfully pinged {uri}", speckleServerUrl);
+        return response;
+      }
+      catch (HttpRequestException ex)
+      {
+        failures.Add(ex);
+      }
     }
-    catch (HttpRequestException ex)
-    {
-      SpeckleLog.Logger.Warning(ex, "Ping to {uri} was unsuccessful: {message}", uri, ex.Message);
-      throw new HttpRequestException($"Ping to {uri} was unsuccessful", ex);
-    }
+
+    AggregateException ax = new(failures);
+    SpeckleLog.Logger.Warning(ax, $"Ping to {speckleServerUrl} was unsuccessful", speckleServerUrl);
+    throw new HttpRequestException($"Ping to {speckleServerUrl} was unsuccessful", ax);
+  }
+
+  public static Uri GetPingUrl(Uri serverUrl)
+  {
+    var server = serverUrl.GetLeftPart(UriPartial.Authority);
+    return new Uri(new(server), "/api/ping");
+  }
+
+  public static Uri GetFaviconUrl(Uri serverUrl)
+  {
+    var server = serverUrl.GetLeftPart(UriPartial.Authority);
+    return new Uri(new(server), "/favicon.ico");
   }
 
   public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? speckleHttpClientHandler = null)
@@ -166,6 +195,8 @@ public static class Http
     {
       Timeout = Timeout.InfiniteTimeSpan //timeout is configured on the SpeckleHttpClientHandler through policy
     };
+    client.DefaultRequestHeaders.UserAgent.Clear();
+    client.DefaultRequestHeaders.UserAgent.Add(new("SpeckleSDK", "2.0.0"));
     return client;
   }
 
@@ -232,8 +263,8 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
       timer.Stop();
       var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
       context.TryGetValue("retryCount", out var retryCount);
-      SpeckleLog.Logger
-        .ForContext("ExceptionType", policyResult.FinalException?.GetType())
+      SpeckleLog
+        .Logger.ForContext("ExceptionType", policyResult.FinalException?.GetType())
         .Information(
           "Execution of http request to {httpScheme}://{hostUrl}{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries. Request correlation ID: {correlationId}",
           request.RequestUri.Scheme,

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Speckle.Core.Logging;
 using System.Linq;
 using CSiAPIv1;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorCSI.Util;
 

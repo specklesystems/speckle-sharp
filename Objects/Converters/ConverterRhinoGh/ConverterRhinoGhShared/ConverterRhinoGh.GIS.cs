@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Objects.GIS;
+using Rhino.Geometry;
 using Speckle.Core.Models;
 using RH = Rhino.DocObjects;
-using System.Linq;
-using Rhino.Geometry;
 
 namespace Objects.Converter.RhinoGh;
 

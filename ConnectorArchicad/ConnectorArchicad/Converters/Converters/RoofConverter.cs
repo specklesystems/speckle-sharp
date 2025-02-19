@@ -44,7 +44,6 @@ public sealed class Roof : IConverter
             shells.Add(archiShell);
             break;
           case Objects.BuiltElements.Roof roof:
-
             {
               try
               {

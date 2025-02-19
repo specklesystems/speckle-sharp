@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Objects.Geometry;
-using BE = Objects.BuiltElements;
 using Objects.BuiltElements.TeklaStructures;
+using Objects.Geometry;
 using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 using TSG = Tekla.Structures.Geometry3d;
 
 namespace Objects.Converter.TeklaStructures;

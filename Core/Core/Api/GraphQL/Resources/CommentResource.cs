@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
@@ -9,6 +10,8 @@ namespace Speckle.Core.Api.GraphQL.Resources;
 
 public sealed class CommentResource
 {
+  internal const string OBSOLETE_MESSAGE =
+    "This function is longer compatible with server >=2.22, update nuget reference to Speckle.Sdk for comment mutations";
   private readonly ISpeckleGraphQLClient _client;
 
   internal CommentResource(ISpeckleGraphQLClient client)
@@ -37,51 +40,52 @@ public sealed class CommentResource
   {
     //language=graphql
     const string QUERY = """
-                         query CommentThreads($projectId: String!, $cursor: String, $limit: Int!, $filter: ProjectCommentsFilter, $repliesLimit: Int, $repliesCursor: String) {
-                           project(id: $projectId) {
-                             commentThreads(cursor: $cursor, limit: $limit, filter: $filter) {
-                               cursor
-                               totalArchivedCount
-                               totalCount
-                               items {
-                                 archived
-                                 authorId
-                                 createdAt
-                                 hasParent
-                                 id
-                                 rawText
-                                 replies(limit: $repliesLimit, cursor: $repliesCursor) {
-                                   cursor
-                                   items {
-                                     archived
-                                     authorId
-                                     createdAt
-                                     hasParent
-                                     id
-                                     rawText
-                                     updatedAt
-                                     viewedAt
-                                   }
-                                   totalCount
-                                 }
-                                 resources {
-                                   resourceId
-                                   resourceType
-                                 }
-                                 screenshot
-                                 updatedAt
-                                 viewedAt
-                                 viewerResources {
-                                   modelId
-                                   objectId
-                                   versionId
-                                 }
-                                 data
-                               }
-                             }
-                           }
-                         }
-                         """;
+      query CommentThreads($projectId: String!, $cursor: String, $limit: Int!, $filter: ProjectCommentsFilter, $repliesLimit: Int, $repliesCursor: String) {
+        project(id: $projectId) {
+          commentThreads(cursor: $cursor, limit: $limit, filter: $filter) {
+            cursor
+            totalArchivedCount
+            totalCount
+            items {
+              archived
+              authorId
+              createdAt
+              hasParent
+              id
+              rawText
+              replies(limit: $repliesLimit, cursor: $repliesCursor) {
+                cursor
+                items {
+                  archived
+                  authorId
+                  createdAt
+                  hasParent
+                  id
+                  rawText
+                  updatedAt
+                  viewedAt
+                }
+                totalCount
+              }
+              resources {
+                resourceId
+                resourceType
+              }
+              screenshot
+              updatedAt
+              viewedAt
+              viewerResources {
+                modelId
+                objectId
+                versionId
+              }
+              viewerState
+              data
+            }
+          }
+        }
+      }
+      """;
 
     GraphQLRequest request =
       new()
@@ -105,108 +109,22 @@ public sealed class CommentResource
     return response.project.commentThreads;
   }
 
-  /// <remarks>
-  /// This function only exists here to be able to integration tests the queries.
-  /// The process of creating a comment is more complex and javascript specific than we can expose to our SDKs at this time.
-  /// </remarks>
-  /// <param name="input"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  internal async Task<Comment> Create(CreateCommentInput input, CancellationToken cancellationToken = default)
-  {
-    //language=graphql
-    const string QUERY = """
-                         mutation Mutation($input: CreateCommentInput!) {
-                           data:commentMutations {
-                             create(input: $input) {
-                               archived
-                               authorId
-                               createdAt
-                               hasParent
-                               id
-                               rawText
-                               resources {
-                                 resourceId
-                                 resourceType
-                               }
-                               screenshot
-                               updatedAt
-                               viewedAt
-                               viewerResources {
-                                 modelId
-                                 objectId
-                                 versionId
-                               }
-                               data
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client
-      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return res.data.create;
-  }
-
-  /// <remarks><inheritdoc cref="Create"/></remarks>
-  /// <param name="input"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  internal async Task<Comment> Edit(EditCommentInput input, CancellationToken cancellationToken = default)
-  {
-    //language=graphql
-    const string QUERY = """
-                         mutation Mutation($input: EditCommentInput!) {
-                           data:commentMutations {
-                             edit(input: $input) {
-                               archived
-                               authorId
-                               createdAt
-                               hasParent
-                               id
-                               rawText
-                               resources {
-                                 resourceId
-                                 resourceType
-                               }
-                               screenshot
-                               updatedAt
-                               viewedAt
-                               viewerResources {
-                                 modelId
-                                 objectId
-                                 versionId
-                               }
-                               data
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client
-      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return res.data.edit;
-  }
-
   /// <param name="commentId"></param>
   /// <param name="archive"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  [Obsolete(OBSOLETE_MESSAGE)]
   public async Task<bool> Archive(string commentId, bool archive = true, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
-                         mutation Mutation($commentId: String!, $archive: Boolean!) {
-                           data:commentMutations {
-                              archive(commentId: $commentId, archived: $archive)
-                           }
-                         }
-                         """;
+      mutation Mutation($commentId: String!, $archive: Boolean!) {
+        data:commentMutations {
+           archive(commentId: $commentId, archived: $archive)
+        }
+      }
+      """;
     GraphQLRequest request = new(QUERY, variables: new { commentId, archive });
     var res = await _client
       .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
@@ -218,62 +136,21 @@ public sealed class CommentResource
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  [Obsolete(OBSOLETE_MESSAGE)]
   public async Task<bool> MarkViewed(string commentId, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
-                         mutation Mutation($commentId: String!) {
-                           data:commentMutations {
-                             markViewed(commentId: $commentId)
-                           }
-                         }
-                         """;
+      mutation Mutation($commentId: String!) {
+        data:commentMutations {
+          markViewed(commentId: $commentId)
+        }
+      }
+      """;
     GraphQLRequest request = new(QUERY, variables: new { commentId });
     var res = await _client
       .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
       .ConfigureAwait(false);
     return res.data.markViewed;
-  }
-
-  /// <remarks><inheritdoc cref="Create"/></remarks>
-  /// <param name="input"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
-  internal async Task<Comment> Reply(CreateCommentReplyInput input, CancellationToken cancellationToken = default)
-  {
-    //language=graphql
-    const string QUERY = """
-                         mutation Mutation($input: CreateCommentReplyInput!) {
-                           data:commentMutations {
-                             reply(input: $input) {
-                               archived
-                               authorId
-                               createdAt
-                               hasParent
-                               id
-                               rawText
-                               resources {
-                                 resourceId
-                                 resourceType
-                               }
-                               screenshot
-                               updatedAt
-                               viewedAt
-                               viewerResources {
-                                 modelId
-                                 objectId
-                                 versionId
-                               }
-                               data
-                             }
-                           }
-                         }
-                         """;
-    GraphQLRequest request = new(QUERY, variables: new { input });
-    var res = await _client
-      .ExecuteGraphQLRequest<RequiredResponse<CommentMutation>>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return res.data.reply;
   }
 }

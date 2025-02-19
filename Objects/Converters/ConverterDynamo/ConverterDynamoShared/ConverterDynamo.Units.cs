@@ -74,7 +74,6 @@ public partial class ConverterDynamo
       default:
         throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{type}\" is unsupported.");
     }
-
   }
 #else
 
@@ -129,7 +128,6 @@ public partial class ConverterDynamo
 
     throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
   }
-
 #endif
 
 #endif

@@ -110,8 +110,8 @@ public class StreamDetailsComponent : GH_SpeckleComponent
           int count = 0;
           var tasks = new Dictionary<GH_Path, Task<Stream>>();
 
-          ghStreamTree.Paths
-            .ToList()
+          ghStreamTree
+            .Paths.ToList()
             .ForEach(path =>
             {
               if (count >= 20)

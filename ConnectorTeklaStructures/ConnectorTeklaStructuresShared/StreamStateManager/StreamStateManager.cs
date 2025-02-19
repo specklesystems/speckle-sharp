@@ -1,10 +1,10 @@
 using System;
-using DesktopUI2.Models;
-using Speckle.Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using DesktopUI2.Models;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json;
 using Tekla.Structures.Model;
 
 namespace ConnectorTeklaStructures.Storage;

@@ -6,7 +6,6 @@ using Autodesk.Revit.DB.Structure.StructuralSections;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
-using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Models;
@@ -205,8 +204,24 @@ public partial class ConverterRevit
 
 #if REVIT2020 || REVIT2021 || REVIT2022
     var analyticalModel = (AnalyticalModelStick)element.GetAnalyticalModel();
-    analyticalModel.SetReleases(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5]));
-    analyticalModel.SetReleases(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5]));
+    analyticalModel.SetReleases(
+      true,
+      releaseConvert(element1d.end1Releases.code[0]),
+      releaseConvert(element1d.end1Releases.code[1]),
+      releaseConvert(element1d.end1Releases.code[2]),
+      releaseConvert(element1d.end1Releases.code[3]),
+      releaseConvert(element1d.end1Releases.code[4]),
+      releaseConvert(element1d.end1Releases.code[5])
+    );
+    analyticalModel.SetReleases(
+      false,
+      releaseConvert(element1d.end2Releases.code[0]),
+      releaseConvert(element1d.end2Releases.code[1]),
+      releaseConvert(element1d.end2Releases.code[2]),
+      releaseConvert(element1d.end2Releases.code[3]),
+      releaseConvert(element1d.end2Releases.code[4]),
+      releaseConvert(element1d.end2Releases.code[5])
+    );
     analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
     analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
 #else
@@ -277,11 +292,15 @@ public partial class ConverterRevit
       speckleElement1D.baseLine = CurveToSpeckle(curves[0], revitStick.Document) as Objects.Geometry.Line;
     }
 
-
     var coordinateSystem = revitStick.GetLocalCoordinateSystem();
     if (coordinateSystem != null)
     {
-      speckleElement1D.localAxis = new Geometry.Plane(PointToSpeckle(coordinateSystem.Origin, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document));
+      speckleElement1D.localAxis = new Geometry.Plane(
+        PointToSpeckle(coordinateSystem.Origin, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document),
+        VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document)
+      );
     }
 
     var startOffset = revitStick.GetOffset(AnalyticalElementSelector.StartOrBase);
@@ -302,9 +321,11 @@ public partial class ConverterRevit
     var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
     if (structMat == null)
     {
-      structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
+      structMat = (DB.Material)
+        stickFamily.Document.GetElement(
+          stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()
+        );
     }
-
 
     prop.profile = speckleSection;
     prop.material = GetStructuralMaterial(structMat);
@@ -340,7 +361,6 @@ public partial class ConverterRevit
     speckleElement1D.displayValue = GetElementDisplayValue(revitStick.Document.GetElement(revitStick.GetElementId()));
     return speckleElement1D;
   }
-
 #else
   private Element1D AnalyticalStickToSpeckle(AnalyticalMember revitStick)
   {
@@ -631,159 +651,5 @@ public partial class ConverterRevit
       //speckleSection["flangeToeOfFillet"] = u.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
       //speckleSection["webToeOfFillet"] = u.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
     }
-  }
-
-  private StructuralMaterial GetStructuralMaterial(Material material)
-  {
-    if (material == null)
-    {
-      return null;
-    }
-
-    StructuralAsset materialAsset = null;
-    string name = null;
-    if (material.StructuralAssetId != ElementId.InvalidElementId)
-    {
-      materialAsset = (
-        (PropertySetElement)material.Document.GetElement(material.StructuralAssetId)
-      ).GetStructuralAsset();
-
-      name = material.Document.GetElement(material.StructuralAssetId)?.Name;
-    }
-    var materialName = material.MaterialClass;
-    var materialType = GetMaterialType(materialName);
-
-    var speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
-    speckleMaterial.applicationId = material.UniqueId;
-
-    return speckleMaterial;
-  }
-
-  private StructuralMaterial GetStructuralMaterial(
-    StructuralMaterialType materialType,
-    StructuralAsset materialAsset,
-    string name
-  )
-  {
-    Structural.Materials.StructuralMaterial speckleMaterial = null;
-
-    if (materialType == StructuralMaterialType.Undefined && materialAsset != null)
-    {
-      materialType = GetMaterialType(materialAsset);
-    }
-
-    name ??= materialType.ToString();
-    switch (materialType)
-    {
-      case StructuralMaterialType.Concrete:
-        var concreteMaterial = new Concrete { name = name, materialType = Structural.MaterialType.Concrete, };
-
-        if (materialAsset != null)
-        {
-          concreteMaterial.compressiveStrength = materialAsset.ConcreteCompression; // Newtons per foot meter
-          concreteMaterial.lightweight = materialAsset.Lightweight;
-        }
-
-        speckleMaterial = concreteMaterial;
-        break;
-      case StructuralMaterialType.Steel:
-        var steelMaterial = new Steel
-        {
-          name = name,
-          materialType = Structural.MaterialType.Steel,
-          designCode = null,
-          codeYear = null,
-          maxStrain = 0,
-          dampingRatio = 0,
-        };
-
-        if (materialAsset != null)
-        {
-          steelMaterial.grade = materialAsset.Name;
-          steelMaterial.yieldStrength = materialAsset.MinimumYieldStress; // Newtons per foot meter
-          steelMaterial.ultimateStrength = materialAsset.MinimumTensileStrength; // Newtons per foot meter
-        }
-
-        speckleMaterial = steelMaterial;
-        break;
-      case StructuralMaterialType.Wood:
-        var timberMaterial = new Timber
-        {
-          name = name,
-          materialType = Structural.MaterialType.Timber,
-          designCode = null,
-          codeYear = null,
-          dampingRatio = 0
-        };
-
-        if (materialAsset != null)
-        {
-          timberMaterial.grade = materialAsset.WoodGrade;
-          timberMaterial.species = materialAsset.WoodSpecies;
-          timberMaterial["bendingStrength"] = materialAsset.WoodBendingStrength;
-          timberMaterial["parallelCompressionStrength"] = materialAsset.WoodParallelCompressionStrength;
-          timberMaterial["parallelShearStrength"] = materialAsset.WoodParallelShearStrength;
-          timberMaterial["perpendicularCompressionStrength"] = materialAsset.WoodPerpendicularCompressionStrength;
-          timberMaterial["perpendicularShearStrength"] = materialAsset.WoodPerpendicularShearStrength;
-        }
-
-        speckleMaterial = timberMaterial;
-        break;
-      default:
-        var defaultMaterial = new Objects.Structural.Materials.StructuralMaterial { name = name, };
-        speckleMaterial = defaultMaterial;
-        break;
-    }
-
-    // TODO: support non-isotropic materials
-    if (materialAsset != null)
-    {
-      // some of these are actually the dumbest units I've ever heard of
-      speckleMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter
-      speckleMaterial.poissonsRatio = materialAsset.PoissonRatio.X; // Unitless
-      speckleMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
-      speckleMaterial.density = materialAsset.Density; // kilograms per cubed feet
-      speckleMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
-    }
-
-    return speckleMaterial;
-  }
-
-  private StructuralMaterialType GetMaterialType(string materialName)
-  {
-    StructuralMaterialType materialType = StructuralMaterialType.Undefined;
-    switch (materialName.ToLower())
-    {
-      case "concrete":
-        materialType = StructuralMaterialType.Concrete;
-        break;
-      case "steel":
-        materialType = StructuralMaterialType.Steel;
-        break;
-      case "wood":
-        materialType = StructuralMaterialType.Wood;
-        break;
-    }
-
-    return materialType;
-  }
-
-  private StructuralMaterialType GetMaterialType(StructuralAsset materialAsset)
-  {
-    StructuralMaterialType materialType = StructuralMaterialType.Undefined;
-    switch (materialAsset?.StructuralAssetClass)
-    {
-      case StructuralAssetClass.Metal:
-        materialType = StructuralMaterialType.Steel;
-        break;
-      case StructuralAssetClass.Concrete:
-        materialType = StructuralMaterialType.Concrete;
-        break;
-      case StructuralAssetClass.Wood:
-        materialType = StructuralMaterialType.Wood;
-        break;
-    }
-
-    return materialType;
   }
 }

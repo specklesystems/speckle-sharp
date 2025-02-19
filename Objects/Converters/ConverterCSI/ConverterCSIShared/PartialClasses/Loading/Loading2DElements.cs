@@ -1,11 +1,11 @@
-using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
-using Objects.Structural.Geometry;
 using System.Linq;
-using Speckle.Core.Models;
 using Objects.Structural.CSI.Loading;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI;
 

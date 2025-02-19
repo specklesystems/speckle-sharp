@@ -65,7 +65,9 @@ public class TransactionManager : IDisposable
   public TransactionStatus Commit()
   {
     if (
-      subTransaction != null && subTransaction.IsValidObject && subTransaction.GetStatus() == TransactionStatus.Started
+      subTransaction != null
+      && subTransaction.IsValidObject
+      && subTransaction.GetStatus() == TransactionStatus.Started
     )
     {
       HandleFailedCommit(subTransaction.Commit());
@@ -126,7 +128,9 @@ public class TransactionManager : IDisposable
   public void RollbackSubTransaction()
   {
     if (
-      subTransaction != null && subTransaction.IsValidObject && subTransaction.GetStatus() == TransactionStatus.Started
+      subTransaction != null
+      && subTransaction.IsValidObject
+      && subTransaction.GetStatus() == TransactionStatus.Started
     )
     {
       subTransaction.RollBack();
@@ -150,7 +154,9 @@ public class TransactionManager : IDisposable
   {
     Start();
     if (
-      subTransaction == null || !subTransaction.IsValidObject || subTransaction.GetStatus() != TransactionStatus.Started
+      subTransaction == null
+      || !subTransaction.IsValidObject
+      || subTransaction.GetStatus() != TransactionStatus.Started
     )
     {
       subTransaction = new SubTransaction(document);

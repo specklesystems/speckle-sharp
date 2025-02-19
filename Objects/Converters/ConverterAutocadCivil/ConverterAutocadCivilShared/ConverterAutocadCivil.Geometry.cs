@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
-
-using Autodesk.AutoCAD.Geometry;
-using AcadGeo = Autodesk.AutoCAD.Geometry;
+using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
+using Objects.Utils;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
-
-using Speckle.Core.Models;
-
-using Objects.Utils;
+using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Circle = Objects.Geometry.Circle;
@@ -28,8 +27,6 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -1468,8 +1465,10 @@ public partial class ConverterAutocadCivil
     }
 
     // colors
-    var colors = mesh.VertexColorArray
-      .Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb())
+    var colors = mesh
+      .VertexColorArray.Select(o =>
+        Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb()
+      )
       .ToList();
 
     var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits)

@@ -18,7 +18,6 @@ using RenderMaterial = Rhino.Render.RenderMaterial;
 using RH = Rhino.DocObjects;
 using Transform = Rhino.Geometry.Transform;
 using Utilities = Speckle.Core.Models.Utilities;
-
 #if RHINO7_OR_GREATER
 using Rhino.Render;
 #endif
@@ -212,7 +211,10 @@ public partial class ConverterRhinoGh
     renderMaterial.opacity = 1 - material.Transparency;
 
     // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
-    if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
+    if (
+      (renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem"))
+      && renderMaterial.opacity == 0
+    )
     {
       renderMaterial.opacity = 0.3;
     }
@@ -254,7 +256,10 @@ public partial class ConverterRhinoGh
     renderMaterial.opacity = 1 - simulatedMaterial.Transparency;
 
     // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
-    if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
+    if (
+      (renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem"))
+      && renderMaterial.opacity == 0
+    )
     {
       renderMaterial.opacity = 0.3;
     }

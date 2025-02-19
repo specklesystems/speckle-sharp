@@ -106,8 +106,8 @@ internal class Program
         return addonsData;
       }
 
-      addonsData.Addons = addonsData.Addons
-        .Append(new AddonsDataAddon() { Name = addinName, FullPath = Path.Combine(addinPath, addinDllName) })
+      addonsData.Addons = addonsData
+        .Addons.Append(new AddonsDataAddon() { Name = addinName, FullPath = Path.Combine(addinPath, addinDllName) })
         .ToArray();
     }
     catch (Exception ex)

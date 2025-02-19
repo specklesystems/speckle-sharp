@@ -219,11 +219,12 @@
                       Content="reviewer"
                       GroupName="3"
                       IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=reviewer}" />
-                    <RadioButton
-                      Classes="Button"
-                      Content="{icons:MaterialIconExt Kind=Heart}"
-                      GroupName="3"
-                      IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=favorite}" />
+                    <!-- Favourite streams is deprecated-->
+                    <!-- <RadioButton -->
+                    <!--   Classes="Button" -->
+                    <!--   Content="{icons:MaterialIconExt Kind=Heart}" -->
+                    <!--   GroupName="3" -->
+                    <!--   IsChecked="{Binding Path=SelectedFilter, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=favorite}" /> -->
 
                   </MenuItem>
                 </Menu>

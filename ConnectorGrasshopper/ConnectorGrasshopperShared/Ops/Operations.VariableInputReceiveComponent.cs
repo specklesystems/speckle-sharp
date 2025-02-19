@@ -21,7 +21,8 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
-using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -382,8 +383,8 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       {
         foreach (var key in PrevReceivedData.Keys)
         {
-          var index = Params.Output.FindIndex(
-            p => p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1)
+          var index = Params.Output.FindIndex(p =>
+            p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1)
           );
           var outTree = PrevReceivedData[key];
           DA.SetDataTree(index, outTree);
@@ -577,8 +578,8 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
       ApiClient?.Dispose();
       ApiClient = new Client(account);
-      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
+      ApiClient.Subscription.CreateProjectVersionsUpdatedSubscription(StreamWrapper.StreamId).Listeners +=
+        ApiClient_OnVersionUpdate;
     }
     catch (Exception e) when (!e.IsFatal())
     {
@@ -587,10 +588,18 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     }
   }
 
-  private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
+  private void ApiClient_OnVersionUpdate(object sender, ProjectVersionsUpdatedMessage e)
   {
+    if (e.type != ProjectVersionsUpdatedMessageType.CREATED)
+    {
+      return;
+    }
+
     // Break if wrapper is branch type and branch name is not equal.
-    if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    bool isCurrentBranch =
+      StreamWrapper.Type == StreamWrapperType.Branch
+      && (e.version?.model.name == StreamWrapper.BranchName || e.version?.model.id == StreamWrapper.BranchName);
+    if (!isCurrentBranch)
     {
       return;
     }
@@ -720,11 +729,14 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         }
 
         ReceivedCommit = myCommit;
+        var workspaceId = await receiveComponent.ApiClient.GetWorkspaceId(InputWrapper.StreamId).ConfigureAwait(false);
+
         receiveComponent.Tracker.TrackNodeReceive(
           acc,
           receiveComponent.AutoReceive,
           myCommit.authorId != acc.userInfo.id,
-          myCommit.sourceApplication
+          myCommit.sourceApplication,
+          workspaceId
         );
 
         if (CancellationToken.IsCancellationRequested)
@@ -976,8 +988,8 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       return false;
     }
 
-    var diffParams = Parent?.Params.Output.Where(
-      param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name)
+    var diffParams = Parent?.Params.Output.Where(param =>
+      !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name)
     );
     return diffParams.Count() == 1;
   }
@@ -1009,8 +1021,8 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
     }
 
     // Check what params must be deleted, and do so when safe.
-    var remove = Parent.Params.Output
-      .Select(
+    var remove = Parent
+      .Params.Output.Select(
         (p, i) =>
         {
           var res = outputList.Find(o => o == p.Name || p.Name == o.Substring(1));

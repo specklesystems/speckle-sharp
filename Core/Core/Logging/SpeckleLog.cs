@@ -174,11 +174,11 @@ public static class SpeckleLog
     var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
 
     var fileVersionInfo = GetFileVersionInfo();
-    var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
-      .Is(logConfiguration.MinimumLevel)
+    var serilogLogConfiguration = new LoggerConfiguration()
+      .MinimumLevel.Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
-      .Enrich.WithProperty("version", fileVersionInfo.FileVersion)
-      .Enrich.WithProperty("productVersion", fileVersionInfo.ProductVersion)
+      .Enrich.WithProperty("version", fileVersionInfo?.FileVersion ?? "unknown")
+      .Enrich.WithProperty("productVersion", fileVersionInfo?.ProductVersion ?? "unknown")
       .Enrich.WithProperty("hostOs", DetermineHostOsSlug())
       .Enrich.WithProperty("hostOsVersion", Environment.OSVersion)
       .Enrich.WithProperty("hostOsArchitecture", RuntimeInformation.ProcessArchitecture.ToString())
@@ -264,9 +264,15 @@ public static class SpeckleLog
     return id;
   }
 
-  private static FileVersionInfo GetFileVersionInfo()
+  private static FileVersionInfo? GetFileVersionInfo()
   {
-    var assembly = Assembly.GetExecutingAssembly().Location;
+    string assembly = Assembly.GetExecutingAssembly().Location;
+
+    if (string.IsNullOrEmpty(assembly))
+    {
+      return null;
+    }
+
     return FileVersionInfo.GetVersionInfo(assembly);
   }
 

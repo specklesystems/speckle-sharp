@@ -178,8 +178,8 @@ public partial class ConverterRevit
     try
     {
       View drawingView = GetCurvePlanView(speckleCurve, out bool isTempView);
-      var revitCurve = Doc.Create
-        .NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView)
+      var revitCurve = Doc
+        .Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView)
         .get_Item(0);
 
       // Delete the temp view after drawing
@@ -235,8 +235,8 @@ public partial class ConverterRevit
 
     try
     {
-      var res = Doc.Create
-        .NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView)
+      var res = Doc
+        .Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView)
         .get_Item(0);
       appObj.Update(status: ApplicationObject.State.Created, createdId: res.UniqueId, convertedItem: res);
     }

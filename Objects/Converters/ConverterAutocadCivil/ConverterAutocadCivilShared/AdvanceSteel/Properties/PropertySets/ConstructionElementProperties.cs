@@ -24,7 +24,12 @@ public class ConstructionElementProperties : ASBaseProperties<ConstructionElemen
     InsertProperty(dictionary, "display mode", nameof(ConstructionElement.ReprMode));
 
     //ActiveConstructionElement has only 1 property, we put together here in ConstructionElementProperties
-    InsertCustomProperty(dictionary, "driven connection", nameof(ConstructionElementProperties.GetNumberOfDrivenConObj), null);
+    InsertCustomProperty(
+      dictionary,
+      "driven connection",
+      nameof(ConstructionElementProperties.GetNumberOfDrivenConObj),
+      null
+    );
 
     return dictionary;
   }

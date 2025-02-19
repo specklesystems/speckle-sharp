@@ -24,29 +24,6 @@ public class UserServerInfoTests
   }
 
   [Test]
-  public async Task IsFrontEnd2False()
-  {
-    ServerInfo result = await AccountManager.GetServerInfo("https://speckle.xyz/");
-
-    Assert.That(result, Is.Not.Null);
-    Assert.That(result.frontend2, Is.False);
-  }
-
-  /// <remarks>
-  /// We get ServerInfo from "http://localhost:3000/graphql",
-  /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3000/",
-  /// This is not doable in local server because there is no end-point on this to ping.
-  /// This is a bad sign for mutation.
-  /// </remarks>
-  [Test]
-  public void GetServerInfo_ExpectFail_CantPing()
-  {
-    Uri serverUrl = new(acc.serverInfo.url);
-
-    Assert.ThrowsAsync<HttpRequestException>(async () => await AccountManager.GetServerInfo(serverUrl));
-  }
-
-  [Test]
   public void GetServerInfo_ExpectFail_NoServer()
   {
     Uri serverUrl = new("http://invalidserver.local");

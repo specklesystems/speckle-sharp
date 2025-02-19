@@ -19,8 +19,8 @@ public sealed class AutomationContextTest : IDisposable
     string projectId = await _client.StreamCreate(new() { name = "Automate function e2e test" });
     const string BRANCH_NAME = "main";
 
-    Branch model = await _client.BranchGet(projectId, BRANCH_NAME, 1);
-    string modelId = model.id;
+    Branch? model = await _client.BranchGet(projectId, BRANCH_NAME, 1);
+    string modelId = model!.id;
 
     using ServerTransport remoteTransport = new(_client.Account, projectId);
     string rootObjId = await Operations.Send(testObject, remoteTransport, false);
@@ -155,12 +155,12 @@ public sealed class AutomationContextTest : IDisposable
 
     await automationContext.CreateNewVersionInProject(Utils.TestObject(), BRANCH_NAME, COMMIT_MSG);
 
-    Branch branch = await automationContext.SpeckleClient
-      .BranchGet(automationRunData.ProjectId, BRANCH_NAME, 1)
+    Branch? branch = await automationContext
+      .SpeckleClient.BranchGet(automationRunData.ProjectId, BRANCH_NAME, 1)
       .ConfigureAwait(false);
 
     Assert.NotNull(branch);
-    Assert.That(branch.name, Is.EqualTo(BRANCH_NAME));
+    Assert.That(branch!.name, Is.EqualTo(BRANCH_NAME));
     Assert.That(branch.commits.items[0].message, Is.EqualTo(COMMIT_MSG));
   }
 

@@ -1,15 +1,9 @@
-#if REVIT
-using Autodesk.Revit.DB;
-using RD = Revit.Elements; //Dynamo for Revit nodes
-using Objects.Converter.Revit;
-
-#endif
-using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Arc = Objects.Geometry.Arc;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
@@ -22,6 +16,11 @@ using Point = Objects.Geometry.Point;
 using Spiral = Objects.Geometry.Spiral;
 using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
+#if REVIT
+using Autodesk.Revit.DB;
+using RD = Revit.Elements; //Dynamo for Revit nodes
+using Objects.Converter.Revit;
+#endif
 
 namespace Objects.Converter.Dynamo;
 

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Objects.Geometry;
-using Objects.Structural.CSI.Geometry;
-using Objects.BuiltElements;
 using ConverterCSIShared.Models;
+using Objects.BuiltElements;
+using Objects.Geometry;
 using Objects.Other;
+using Objects.Structural.CSI.Geometry;
 
 namespace Objects.Converter.CSI;
 
