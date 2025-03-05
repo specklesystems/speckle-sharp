@@ -43,18 +43,6 @@ public sealed class DllConflictManager
       loadedAssembliesDict[assembly.GetName().Name] = assembly;
     }
     LoadAssemblyAndDependencies(providedAssembly, loadedAssembliesDict, new HashSet<string>());
-
-    _eventEmitter.EmitAction(
-      new ActionEventArgs(
-        nameof(Events.DUIAction),
-        new()
-        {
-          { "name", "DllConflictsDetected" },
-          { "numConflicts", AllConflictInfo.Count },
-          { "conflicts", AllConflictInfoAsDtos.ToList() },
-        }
-      )
-    );
   }
 
   private void LoadAssemblyAndDependencies(
