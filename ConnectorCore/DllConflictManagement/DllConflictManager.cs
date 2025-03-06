@@ -1,5 +1,4 @@
 using System.Reflection;
-using Speckle.DllConflictManagement.Analytics;
 using Speckle.DllConflictManagement.ConflictManagementOptions;
 using Speckle.DllConflictManagement.EventEmitter;
 
