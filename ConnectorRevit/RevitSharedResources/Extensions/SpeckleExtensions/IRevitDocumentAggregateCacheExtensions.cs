@@ -46,7 +46,19 @@ public static class IRevitDocumentAggregateCacheExtensions
   {
     var _categories = new Dictionary<string, Category>();
 
-    foreach (Category category in doc.Settings.Categories)
+    // Document.Settings.Categories only returns the parent categories.
+    // To avoid iterating over all subcategories of each parent category, we add some extra categories that are not returned by Document.Settings.Categories #3615
+    var extraCategories = new Category[]
+    {
+      Category.GetCategory(doc, BuiltInCategory.OST_Gutter),
+      Category.GetCategory(doc, BuiltInCategory.OST_Fascia),
+      Category.GetCategory(doc, BuiltInCategory.OST_RoofSoffit),
+      Category.GetCategory(doc, BuiltInCategory.OST_EdgeSlab), // Slab Edges
+      Category.GetCategory(doc, BuiltInCategory.OST_Cornices), // Wall Sweeps
+    };
+    var allCategories = doc.Settings.Categories.Cast<Category>().Concat(extraCategories);
+
+    foreach (Category category in allCategories)
     {
       if (!Helpers.Extensions.Extensions.IsCategorySupported(category))
       {

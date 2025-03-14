@@ -22,7 +22,7 @@ public partial class ConnectorBindingsRevit
     var schedules = new List<string>();
     var worksets = new List<string>();
     var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
-
+    
     if (CurrentDoc != null)
     {
       //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
