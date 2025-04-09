@@ -107,19 +107,6 @@ public abstract class DllConflictUserNotifier
       return;
     }
 
-    _eventEmitter.EmitAction(
-      new ActionEventArgs(
-        nameof(Events.DUIAction),
-        new()
-        {
-          { "name", "DllConflictsDetected" },
-          { "dialogShown", true },
-          { "numConflicts", conflictInfoNotIgnored.Count },
-          { "conflicts", conflictInfoNotIgnored.ToDtos().ToList() },
-        }
-      )
-    );
-
     StringBuilder sb = new();
     AddMultipleDependencyErrorsToStringBuilder(sb, conflictInfoNotIgnored);
 
