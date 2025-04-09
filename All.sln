@@ -427,6 +427,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConnectorCore", "ConnectorCore", "{DA9DFC36-C53F-4B19-8911-BF7605230BA7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino8", "ConnectorRhino\ConnectorRhino8\ConnectorRhino8.csproj", "{D22A887D-976C-4DBF-AE5B-9039F169E61C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{89996067-3233-410A-A6A1-39E2F11F0626} = {89996067-3233-410A-A6A1-39E2F11F0626}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino8", "Objects\Converters\ConverterRhinoGh\ConverterRhino8\ConverterRhino8.csproj", "{89996067-3233-410A-A6A1-39E2F11F0626}"
 EndProject
