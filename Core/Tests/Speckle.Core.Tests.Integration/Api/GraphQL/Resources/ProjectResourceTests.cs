@@ -21,7 +21,7 @@ public class ProjectResourceTests
   }
 
   [TestCase("Very private project", "My secret project", ProjectVisibility.Private)]
-  [TestCase("Very public project", null, ProjectVisibility.Public)]
+  [TestCase("Very unlisted  project", null, ProjectVisibility.Unlisted)]
   public async Task ProjectCreate(string name, string desc, ProjectVisibility visibility)
   {
     ProjectCreateInput input = new(name, desc, visibility);
@@ -50,7 +50,7 @@ public class ProjectResourceTests
   {
     const string NEW_NAME = "MY new name";
     const string NEW_DESCRIPTION = "MY new desc";
-    const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Public;
+    const ProjectVisibility NEW_VISIBILITY = ProjectVisibility.Unlisted;
 
     Project newProject = await Sut.Update(new(_testProject.id, NEW_NAME, NEW_DESCRIPTION, null, NEW_VISIBILITY));
 
