@@ -96,10 +96,10 @@ public class MainViewModel : ViewModelBase, IScreen, IDialogHost
     {
       Router.Navigate.Execute(new LogInViewModel(this));
     }
-    else if (config.OneClickMode)
-    {
-      Router.Navigate.Execute(new OneClickViewModel(this));
-    }
+    // else if (config.OneClickMode)
+    // {
+    //   Router.Navigate.Execute(new OneClickViewModel(this));
+    // }
     else
     {
       Home.Refresh();
@@ -127,7 +127,7 @@ public class MainViewModel : ViewModelBase, IScreen, IDialogHost
     }
 
     var config = ConfigManager.Load();
-    if (!config.OneClickMode)
+    // if (!config.OneClickMode)
     {
       RouterInstance.Navigate.Execute(Home);
     }

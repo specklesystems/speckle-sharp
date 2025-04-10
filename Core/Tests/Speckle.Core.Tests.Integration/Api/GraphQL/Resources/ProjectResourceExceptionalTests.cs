@@ -60,7 +60,7 @@ public class ProjectResourceExceptionalTests
   [Test]
   public void ProjectUpdate_NonExistentProject()
   {
-    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(
+    Assert.ThrowsAsync<SpeckleGraphQLStreamNotFoundException>(
       async () => _ = await Sut.Update(new("NonExistentProject", "My new name"))
     );
   }

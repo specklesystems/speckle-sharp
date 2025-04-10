@@ -63,7 +63,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
-      Collaborators = new CollaboratorsViewModel(HostScreen, this);
+      // Collaborators = new CollaboratorsViewModel(HostScreen, this);
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
@@ -229,9 +229,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           .ConfigureAwait(true);
         Stream.pendingCollaborators = streamPendingCollaborators.pendingCollaborators;
       }
-
-      Collaborators.ReloadUsers();
-      ;
+      // Collaborators.ReloadUsers();
 
       StreamState.CachedStream = Stream;
     }
@@ -588,7 +586,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private ConnectorBindings Bindings;
 
-  private CollaboratorsViewModel Collaborators { get; set; }
+  // private CollaboratorsViewModel Collaborators { get; set; }
 
   public ICommand RemoveSavedStreamCommand { get; }
 
@@ -1329,6 +1327,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     SearchQuery = "";
   }
 
+  [Obsolete("Collaborators view is no longer avaiable", true)]
   public void ShareCommand()
   {
     MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));

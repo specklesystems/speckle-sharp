@@ -42,6 +42,8 @@ public static class ConfigManager
 public class Config
 {
   public bool DarkTheme { set; get; }
+
+  [Obsolete("One click is no longer available", true)]
   public bool OneClickMode { set; get; } = true;
   public bool ShowImportExportAlert { set; get; } = true;
   public bool UseFe2 { set; get; }
