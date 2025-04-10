@@ -879,6 +879,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     Refresh();
   }
 
+  [Obsolete("One click mode is no longer available")]
   private void OneClickModeCommand()
   {
     var config = ConfigManager.Load();

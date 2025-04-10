@@ -18,6 +18,7 @@ using Speckle.Core.Logging;
 
 namespace DesktopUI2.ViewModels;
 
+[Obsolete("Collaborators view is not available")]
 public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 {
   private StreamViewModel _stream;
