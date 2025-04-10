@@ -2,11 +2,11 @@
   x:Class="DesktopUI2.Views.Windows.Dialogs.NewStreamDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
+  
   <UserControl.Styles>
 
     <Style Selector="ToggleSwitch[IsChecked=true]">
@@ -19,7 +19,7 @@
 
 
   </UserControl.Styles>
-  <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
+  <Grid RowDefinitions="auto, auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
@@ -27,6 +27,7 @@
       TextTrimming="CharacterEllipsis" />
     <ComboBox
       Name="accounts"
+      DataContext="{Binding #AccountViewModel}"
       Grid.Row="1"
       Margin="10,20,13,5"
       HorizontalAlignment="Stretch"
@@ -58,26 +59,57 @@
       </ComboBox.ItemTemplate>
     </ComboBox>
 
+    <ComboBox
+      Name="workspaces"
+      Grid.Row="2"
+      Margin="10,20,13,5"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Center"
+      PlaceholderText="Select Workspace">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <Grid ColumnDefinitions="auto,*,auto,*">
+            <Image Margin="0,0,5,0"></Image>
+            <icons:MaterialIcon
+              Margin="0,0,5,0"
+              Foreground="DarkGray"
+              Kind="AccountSupervisorCircleOutline" />
+            <TextBlock
+              Grid.Column="1"
+              Text="{Binding Name}"
+              TextTrimming="CharacterEllipsis" />
+            <TextBlock
+              Grid.Column="2"
+              Text="  "/>
+            <TextBlock
+              Grid.Column="3"
+              Text="{Binding Description}"
+              TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+    
 
     <TextBox
       Name="name"
-      Grid.Row="2"
+      Grid.Row="3"
       Margin="15,5"
       Watermark="Project Name (optional)" />
 
     <TextBox
       Name="description"
-      Grid.Row="3"
+      Grid.Row="4"
       Margin="15,5"
       Watermark="Description (optional)" />
 
     <ToggleSwitch
       Name="isPublic"
-      Grid.Row="4"
+      Grid.Row="5"
       Margin="15" />
 
     <StackPanel
-      Grid.Row="5"
+      Grid.Row="6"
       Margin="15"
       HorizontalAlignment="Right"
       Orientation="Horizontal">

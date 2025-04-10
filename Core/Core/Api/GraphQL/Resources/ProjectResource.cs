@@ -220,6 +220,36 @@ public sealed class ProjectResource
     return response.projectMutations.create;
   }
 
+  public async Task<Project> Create(WorkspaceProjectCreateInput input, CancellationToken cancellationToken = default)
+  {
+    //language=graphql
+    const string QUERY = """
+      mutation WorkspaceProjectCreate($input: WorkspaceProjectCreateInput!) {
+        data:workspaceMutations {
+          data:projects {
+            data:create(input: $input) {
+              id
+              name
+              description
+              visibility
+              allowPublicComments
+              role
+              createdAt
+              updatedAt
+              sourceApps
+            }
+          }
+        }
+      }
+      """;
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<RequiredResponse<Project>>>>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.data.data.data;
+  }
+
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>

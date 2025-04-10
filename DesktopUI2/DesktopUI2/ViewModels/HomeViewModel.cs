@@ -22,6 +22,9 @@ using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Inputs;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -641,17 +644,35 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       try
       {
         using var client = new Client(dialog.Account);
-        var streamId = await client
-          .StreamCreate(
-            new StreamCreateInput
-            {
-              description = dialog.Description,
-              name = dialog.StreamName,
-              isPublic = dialog.IsPublic
-            }
-          )
-          .ConfigureAwait(true);
-        var stream = await client.StreamGet(streamId).ConfigureAwait(true);
+
+        Project createdProject;
+        if (dialog.Workspace is null)
+        {
+          createdProject = await client
+            .Project.Create(
+              new ProjectCreateInput(
+                dialog.StreamName,
+                dialog.Description,
+                dialog.IsPublic ? ProjectVisibility.Unlisted : ProjectVisibility.Private
+              )
+            )
+            .ConfigureAwait(true);
+        }
+        else
+        {
+          createdProject = await client
+            .Project.Create(
+              new WorkspaceProjectCreateInput(
+                dialog.StreamName,
+                dialog.Description,
+                dialog.IsPublic ? ProjectVisibility.Unlisted : ProjectVisibility.Private,
+                dialog.Workspace.id
+              )
+            )
+            .ConfigureAwait(true);
+        }
+
+        var stream = await client.StreamGet(createdProject.id).ConfigureAwait(true);
         var streamState = new StreamState(dialog.Account, stream);
 
         MainViewModel.RouterInstance.Navigate.Execute(
