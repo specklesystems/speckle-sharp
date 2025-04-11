@@ -50,6 +50,12 @@ public sealed class ActiveUserResource
     return response.activeUser;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <remarks>Only supported on server versions >=2.23.17</remarks>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
   public async Task<PermissionCheckResult> CanCreatePersonalProjects(CancellationToken cancellationToken = default)
   {
     //language=graphql
@@ -78,6 +84,8 @@ public sealed class ActiveUserResource
     return response.data.data.data;
   }
 
+  /// <summary>Ret</summary>
+  /// <remarks>This feature is only available on Workspace enabled servers (server versions >=2.23.17) e.g. app.speckle.systems</remarks>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>

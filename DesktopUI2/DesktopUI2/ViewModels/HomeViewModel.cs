@@ -661,7 +661,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         else
         {
           createdProject = await client
-            .Project.Create(
+            .Project.CreateInWorkspace(
               new WorkspaceProjectCreateInput(
                 dialog.StreamName,
                 dialog.Description,

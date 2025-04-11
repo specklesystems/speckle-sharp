@@ -188,6 +188,10 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <summary>
+  /// Creates a non-workspace project (aka Personal Project)
+  /// </summary>
+  /// <seealso cref="ActiveUserResource.CanCreatePersonalProjects"/>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -220,7 +224,21 @@ public sealed class ProjectResource
     return response.projectMutations.create;
   }
 
-  public async Task<Project> Create(WorkspaceProjectCreateInput input, CancellationToken cancellationToken = default)
+  /// <summary>
+  /// Creates a workspace project ()
+  /// </summary>
+  /// <remarks>
+  /// This feature is only supported by Workspace Enabled Servers (e.g. app.speckle.systems).
+  /// A <see cref="Workspace"/>'s <see cref="Workspace.permissions"/> list can be checked if the user <see cref="WorkspacePermissionChecks.canCreateProject"/>.
+  /// </remarks>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<Project> CreateInWorkspace(
+    WorkspaceProjectCreateInput input,
+    CancellationToken cancellationToken = default
+  )
   {
     //language=graphql
     const string QUERY = """
