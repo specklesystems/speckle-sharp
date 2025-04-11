@@ -108,7 +108,7 @@
       Margin="15" />
     
     <Label
-      Content=""
+      Content=" "
       Name="permissionMessage"
       Grid.Row="6"
       Margin="15"
