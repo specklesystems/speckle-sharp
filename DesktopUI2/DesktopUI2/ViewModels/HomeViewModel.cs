@@ -186,33 +186,26 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
         try
         {
-          var result = new List<Stream>();
-
-          //NO SEARCH
-          if (string.IsNullOrEmpty(SearchQuery))
+          UserProjectsFilter? filter = null;
+          if (!string.IsNullOrEmpty(SearchQuery))
           {
-            result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
+            filter = new(_searchQuery);
           }
-          //SEARCH
-          else
-          {
-            //do not search favorite streams, too much hassle
-            if (SelectedFilter == Filter.favorite)
-            {
-              SelectedFilter = Filter.all;
-            }
 
-            result = await account
-              .Client.StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
-              .ConfigureAwait(true);
-          }
+          var result = await account
+            .Client.ActiveUser.GetProjectWithLegacyExtras(
+              25,
+              filter: filter,
+              cancellationToken: StreamGetCancelTokenSource.Token
+            )
+            .ConfigureAwait(true);
 
           if (StreamGetCancelTokenSource.IsCancellationRequested)
           {
             return;
           }
 
-          streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
+          streams.AddRange(result.items.Select(x => new StreamAccountWrapper(x, account.Account)));
         }
         catch (OperationCanceledException)
         {
@@ -225,7 +218,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             return;
           }
 
-          SpeckleLog.Logger.Error(ex, "Could not fetch streams");
+          SpeckleLog.Logger.Error(ex, "Could not fetch projects");
 
           Dispatcher.UIThread.Post(
             () =>

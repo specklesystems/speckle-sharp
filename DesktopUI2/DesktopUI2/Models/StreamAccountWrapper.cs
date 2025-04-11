@@ -1,4 +1,6 @@
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Legacy;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 
 namespace DesktopUI2.Models;
@@ -9,12 +11,14 @@ namespace DesktopUI2.Models;
 /// </summary>
 public class StreamAccountWrapper
 {
-  public StreamAccountWrapper(Stream stream, Account account)
+  public StreamAccountWrapper(Project project, Account account)
   {
-    Stream = stream;
+    Project = project;
+    Stream = project.ToLegacy();
     Account = account;
   }
 
   public Stream Stream { get; set; }
+  public Project Project { get; set; }
   public Account Account { get; set; }
 }

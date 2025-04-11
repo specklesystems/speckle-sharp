@@ -107,6 +107,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <seealso cref="ActiveUserResource.GetProjects"/>
+  /// <seealso cref="ActiveUserResource.GetProjectWithLegacyExtras"/>
   [Obsolete($"Use client.{nameof(ActiveUser)}.{nameof(ActiveUserResource.GetProjects)}")]
   public async Task<List<Stream>> StreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {

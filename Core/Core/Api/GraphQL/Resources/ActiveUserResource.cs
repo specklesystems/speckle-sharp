@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -171,6 +172,82 @@ public sealed class ActiveUserResource
                 createdAt
                 updatedAt
                 sourceApps
+             }
+          }
+        }
+      }
+      """;
+    var request = new GraphQLRequest
+    {
+      Query = QUERY,
+      Variables = new
+      {
+        limit,
+        cursor,
+        filter
+      }
+    };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<ActiveUserResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
+
+    if (response.activeUser is null)
+    {
+      throw new SpeckleGraphQLException("GraphQL response indicated that the ActiveUser could not be found");
+    }
+
+    return response.activeUser.projects;
+  }
+
+  /// <summary>
+  /// This is a project query that queries for everything that the old stream queries queried for
+  /// It's not really efficient to do it this way,
+  /// but this is designed to allow easy mix use of the old and new APIs inside DUI2
+  /// <see cref="Speckle.Core.Api.GraphQL.Legacy.LegacyShimHelper.ToLegacy(Project)"/>
+  /// </summary>
+  /// <param name="limit">Max number of projects to fetch</param>
+  /// <param name="cursor">Optional cursor for pagination</param>
+  /// <param name="filter">Optional filter</param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  [Obsolete("This is for legacy DUI2 purposes only, use GetProject instead")]
+  public async Task<ResourceCollection<Project>> GetProjectWithLegacyExtras(
+    int limit = ServerLimits.DEFAULT_PAGINATION_REQUEST,
+    string? cursor = null,
+    UserProjectsFilter? filter = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+       query User($limit : Int!, $cursor: String, $filter: UserProjectsFilter) {
+        activeUser {
+          projects(limit: $limit, cursor: $cursor, filter: $filter) {
+             totalCount
+             items {
+                id
+                name
+                description
+                visibility
+                allowPublicComments
+                role
+                createdAt
+                updatedAt
+                sourceApps
+                commentThreads{
+                    totalCount
+                }
+                team {
+                  id,
+                  user
+                  {
+                    name
+                    role
+                  }
+                  role
+                }
              }
           }
         }

@@ -18,7 +18,10 @@ public class DesignHomeViewModel
     }
 
     using var client = new Client(acc);
-    FilteredStreams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
+    FilteredStreams = client
+      .ActiveUser.GetProjectWithLegacyExtras()
+      .Result.items.Select(x => new StreamAccountWrapper(x, acc))
+      .ToList();
 
     var d = new DesignSavedStreamsViewModel();
     SavedStreams = d.SavedStreams;

@@ -10,6 +10,7 @@ using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
 using Serilog.Events;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
@@ -58,27 +59,30 @@ public class StreamSelectorViewModel : ReactiveObject
 
       try
       {
-        var result = new List<Stream>();
+        UserProjectsFilter? filter = null;
+        if (!string.IsNullOrEmpty(SearchQuery))
+        {
+          filter = new(_searchQuery);
+        }
 
-        //NO SEARCH
-        if (string.IsNullOrEmpty(SearchQuery))
-        {
-          result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
-        }
-        //SEARCH
-        else
-        {
-          result = await account
-            .Client.StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
-            .ConfigureAwait(true);
-        }
+        var result = await account
+          .Client.ActiveUser.GetProjectWithLegacyExtras(
+            25,
+            filter: filter,
+            cancellationToken: StreamGetCancelTokenSource.Token
+          )
+          .ConfigureAwait(true);
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
         {
           return;
         }
 
-        streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
+        streams.AddRange(
+          result
+            .items.Where(x => x.workspaceId is null || x.role != "stream:reviewer" && x.role != null) //Workspace projects need collaborator or owner to receive in connectors
+            .Select(x => new StreamAccountWrapper(x, account.Account))
+        );
       }
       catch (Exception ex)
       {
