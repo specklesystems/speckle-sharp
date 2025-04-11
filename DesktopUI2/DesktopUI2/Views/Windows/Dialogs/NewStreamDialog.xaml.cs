@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,9 +8,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using DesktopUI2.ViewModels;
+using Material.Dialog.Icons;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace DesktopUI2.Views.Windows.Dialogs;
 
@@ -20,6 +23,8 @@ public sealed class NewStreamDialog : DialogUserControl
   private readonly TextBox _name;
   private readonly TextBox _description;
   private readonly ToggleSwitch _isPublic;
+  private readonly Button _create;
+  private readonly Label _permissionMessage;
 
   public NewStreamDialog() { }
 
@@ -31,6 +36,8 @@ public sealed class NewStreamDialog : DialogUserControl
     _name = this.FindControl<TextBox>("name");
     _description = this.FindControl<TextBox>("description");
     _isPublic = this.FindControl<ToggleSwitch>("isPublic");
+    _create = this.FindControl<Button>("create");
+    _permissionMessage = this.FindControl<Label>("permissionMessage");
 
     InitialiseOptions(accounts);
   }
@@ -38,40 +45,108 @@ public sealed class NewStreamDialog : DialogUserControl
   private void InitialiseOptions(List<AccountViewModel> accounts)
   {
     _accountsOptions.Items = accounts;
-    _accountsOptions.SelectionChanged += async (_, _) =>
+    _accountsOptions.SelectionChanged += OnAccountsOptionsOnSelectionChanged;
+    _accountsOptions.SelectedIndex = accounts.FindIndex(x => x.Account.isDefault);
+
+    _workspacesOptions.SelectionChanged += OnWorkspacesOptionsOnSelectionChanged;
+  }
+
+  private async void OnAccountsOptionsOnSelectionChanged(object? o, SelectionChangedEventArgs selectionChangedEventArgs)
+  {
+    try
     {
-      _workspacesOptions.Items = Enumerable.Empty<object>();
+      await UpdateWorkspaces().ConfigureAwait(true);
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      DesktopUI2.Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
+    }
+  }
 
-      IEnumerable<WorkspaceViewModel> workspaceViewModels = Enumerable.Empty<WorkspaceViewModel>();
-      if (_accountsOptions.SelectedItem is AccountViewModel accountViewModel)
+  private async void OnWorkspacesOptionsOnSelectionChanged(object? sender, SelectionChangedEventArgs args)
+  {
+    try
+    {
+      await UpdateCreateButton().ConfigureAwait(true);
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      DesktopUI2.Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
+    }
+  }
+
+  private async Task UpdateCreateButton()
+  {
+    if (
+      _accountsOptions.SelectedItem is not AccountViewModel selectedAccount
+      || _workspacesOptions.SelectedItem is not WorkspaceViewModel selectedWorkspace
+    )
+    {
+      _create.IsEnabled = false;
+      _permissionMessage.Content = "Select a Workspace";
+      return;
+    }
+
+    const string READY_MESSAGE = "Ready";
+    PermissionCheckResult result;
+
+    if (selectedWorkspace.Workspace is null)
+    {
+      try
       {
-        using Client client = new(accountViewModel.Account);
-        var workspaces = await TryFetchWorkspaces(client).ConfigureAwait(true);
-        workspaceViewModels = workspaces.Select(x => new WorkspaceViewModel(x));
+        using Client client = new(selectedAccount.Account);
+        result = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
+      }
+      catch (SpeckleGraphQLException)
+      {
+        //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
+        _create.IsEnabled = true;
+        _permissionMessage.Content = READY_MESSAGE;
+        return;
+      }
+    }
+    else
+    {
+      result = selectedWorkspace.Workspace.permissions.canCreateProject;
+    }
 
-        bool canCreatePersonalProjects = true;
-        try
-        {
-          var res = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
-          canCreatePersonalProjects = res.authorized;
-        }
-        catch (SpeckleGraphQLException)
-        {
-          //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
-        }
+    _create.IsEnabled = result.authorized;
+    _permissionMessage.Content = result.authorized ? READY_MESSAGE : result.message;
+  }
 
-        if (canCreatePersonalProjects)
-        {
-          workspaceViewModels = workspaceViewModels.Prepend(WorkspaceViewModel.PersonalProjects);
-        }
+  private async Task UpdateWorkspaces()
+  {
+    _workspacesOptions.Items = Enumerable.Empty<object>();
+    _workspacesOptions.SelectedIndex = -1;
+
+    IEnumerable<WorkspaceViewModel> workspaceViewModels = Enumerable.Empty<WorkspaceViewModel>();
+    if (_accountsOptions.SelectedItem is AccountViewModel selectedViewModel)
+    {
+      using Client client = new(selectedViewModel.Account);
+      var workspaces = await TryFetchWorkspaces(client).ConfigureAwait(true);
+      workspaceViewModels = workspaces.Select(x => new WorkspaceViewModel(x));
+
+      bool canCreatePersonalProjects;
+      try
+      {
+        var res = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
+        canCreatePersonalProjects = res.authorized;
+      }
+      catch (SpeckleGraphQLException)
+      {
+        //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
+        canCreatePersonalProjects = true;
       }
 
-      var items = workspaceViewModels.ToList();
-      _workspacesOptions.Items = items;
-      _workspacesOptions.SelectedIndex = items.Count > 0 ? 0 : -1;
-    };
+      if (canCreatePersonalProjects)
+      {
+        workspaceViewModels = workspaceViewModels.Prepend(WorkspaceViewModel.PersonalProjects);
+        _workspacesOptions.SelectedIndex = 0;
+      }
+    }
 
-    _accountsOptions.SelectedIndex = accounts.FindIndex(x => x.Account.isDefault);
+    var items = workspaceViewModels.ToList();
+    _workspacesOptions.Items = items;
   }
 
   public Account Account { get; private set; }
@@ -110,7 +185,7 @@ public sealed class NewStreamDialog : DialogUserControl
     try
     {
       var workspaces = await client.ActiveUser.GetWorkspaces(cancellationToken: cancellationToken).ConfigureAwait(true);
-      return workspaces.items.Where(w => w.permissions.canCreateProject.authorized);
+      return workspaces.items;
     }
     catch (SpeckleGraphQLException)
     {

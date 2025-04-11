@@ -19,7 +19,7 @@
 
 
   </UserControl.Styles>
-  <Grid RowDefinitions="auto, auto, auto, auto, auto, auto, auto">
+  <Grid RowDefinitions="auto, auto, auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
@@ -27,7 +27,6 @@
       TextTrimming="CharacterEllipsis" />
     <ComboBox
       Name="accounts"
-      DataContext="{Binding #AccountViewModel}"
       Grid.Row="1"
       Margin="10,20,13,5"
       HorizontalAlignment="Stretch"
@@ -107,9 +106,16 @@
       Name="isPublic"
       Grid.Row="5"
       Margin="15" />
+    
+    <Label
+      Content=""
+      Name="permissionMessage"
+      Grid.Row="6"
+      Margin="15"
+      HorizontalContentAlignment="Right"/>
 
     <StackPanel
-      Grid.Row="6"
+      Grid.Row="7"
       Margin="15"
       HorizontalAlignment="Right"
       Orientation="Horizontal">
@@ -117,11 +123,15 @@
         Margin="0,0,10,0"
         Classes="Outline"
         Click="Close_Click"
+        IsCancel="True"
         Content="Cancel" />
       <Button
+        Name="create"
         Margin="0,0,10,0"
         Click="Create_Click"
-        Content="Create" />
+        IsEnabled="{Binding CheckUserHasPermission}"
+        Content="Create"
+        IsDefault="True"/>
 
     </StackPanel>
   </Grid>
