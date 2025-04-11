@@ -188,6 +188,10 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <summary>
+  /// Creates a non-workspace project (aka Personal Project)
+  /// </summary>
+  /// <seealso cref="ActiveUserResource.CanCreatePersonalProjects"/>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -218,6 +222,50 @@ public sealed class ProjectResource
       .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
     return response.projectMutations.create;
+  }
+
+  /// <summary>
+  /// Creates a workspace project ()
+  /// </summary>
+  /// <remarks>
+  /// This feature is only supported by Workspace Enabled Servers (e.g. app.speckle.systems).
+  /// A <see cref="Workspace"/>'s <see cref="Workspace.permissions"/> list can be checked if the user <see cref="WorkspacePermissionChecks.canCreateProject"/>.
+  /// </remarks>
+  /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<Project> CreateInWorkspace(
+    WorkspaceProjectCreateInput input,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+      mutation WorkspaceProjectCreate($input: WorkspaceProjectCreateInput!) {
+        data:workspaceMutations {
+          data:projects {
+            data:create(input: $input) {
+              id
+              name
+              description
+              visibility
+              allowPublicComments
+              role
+              createdAt
+              updatedAt
+              sourceApps
+            }
+          }
+        }
+      }
+      """;
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<RequiredResponse<Project>>>>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.data.data.data;
   }
 
   /// <param name="input"></param>
