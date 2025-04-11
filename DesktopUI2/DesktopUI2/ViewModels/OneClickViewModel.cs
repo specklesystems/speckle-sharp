@@ -14,6 +14,7 @@ using Splat;
 
 namespace DesktopUI2.ViewModels;
 
+[Obsolete("One click is no longer available")]
 public class OneClickViewModel : ReactiveObject, IRoutableViewModel
 {
   public OneClickViewModel(IScreen screen)

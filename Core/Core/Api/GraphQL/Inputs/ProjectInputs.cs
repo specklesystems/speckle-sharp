@@ -7,6 +7,13 @@ public sealed record ProjectCommentsFilter(bool? includeArchived, bool? loadedVe
 
 public sealed record ProjectCreateInput(string? name, string? description, ProjectVisibility? visibility);
 
+public sealed record WorkspaceProjectCreateInput(
+  string? name,
+  string? description,
+  ProjectVisibility? visibility,
+  string workspaceId
+);
+
 public sealed record ProjectInviteCreateInput(string? email, string? role, string? serverRole, string? userId);
 
 public sealed record ProjectInviteUseInput(bool accept, string projectId, string token);

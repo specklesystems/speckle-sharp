@@ -453,25 +453,25 @@
 
       </ScrollViewer>
 
-      <Button
-        Grid.Row="4"
-        Margin="5"
-        Classes="Flat Mini"
-        Command="{Binding OneClickModeCommand}">
-        <Button.Content>
-          <StackPanel
-            Margin="10"
-            Orientation="Horizontal"
-            Spacing="12">
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              Foreground="{DynamicResource PrimaryHueDarkBrush}"
-              Kind="SwapHorizontalVariant" />
-            <TextBlock Classes="ButtonText" Text="Switch to OneClick mode" />
-          </StackPanel>
-        </Button.Content>
-      </Button>
+      <!-- <Button -->
+      <!--   Grid.Row="4" -->
+      <!--   Margin="5" -->
+      <!--   Classes="Flat Mini" -->
+      <!--   Command="{Binding OneClickModeCommand}"> -->
+      <!--   <Button.Content> -->
+      <!--     <StackPanel -->
+      <!--       Margin="10" -->
+      <!--       Orientation="Horizontal" -->
+      <!--       Spacing="12"> -->
+      <!--       <icons:MaterialIcon -->
+      <!--         Width="15" -->
+      <!--         Height="15" -->
+      <!--         Foreground="{DynamicResource PrimaryHueDarkBrush}" -->
+      <!--         Kind="SwapHorizontalVariant" /> -->
+      <!--       <TextBlock Classes="ButtonText" Text="Switch to OneClick mode" /> -->
+      <!--     </StackPanel> -->
+      <!--   </Button.Content> -->
+      <!-- </Button> -->
 
     </Grid>
     <!--  NO INTERNET  -->

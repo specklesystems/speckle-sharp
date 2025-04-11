@@ -21,7 +21,6 @@ public sealed class ActiveUserResource
   /// Gets the currently active user profile.
   /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <returns></returns>
   /// <returns>the requested user, or null if the user does not exist (i.e. <see cref="Client"/> was initialised with an unauthenticated account)</returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
   public async Task<User?> Get(CancellationToken cancellationToken = default)
@@ -49,6 +48,98 @@ public sealed class ActiveUserResource
       .ConfigureAwait(false);
 
     return response.activeUser;
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <remarks>Only supported on server versions >=2.23.17</remarks>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  public async Task<PermissionCheckResult> CanCreatePersonalProjects(CancellationToken cancellationToken = default)
+  {
+    //language=graphql
+    const string QUERY = """
+      query CanCreatePersonalProject {
+        data:activeUser {
+          data:permissions {
+            data:canCreatePersonalProject {
+              authorized
+              code
+              message
+            }
+          }
+        }
+      }
+      """;
+    var request = new GraphQLRequest { Query = QUERY, };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<RequiredResponse<PermissionCheckResult>>>>(
+        request,
+        cancellationToken
+      )
+      .ConfigureAwait(false);
+
+    return response.data.data.data;
+  }
+
+  /// <summary>Ret</summary>
+  /// <remarks>This feature is only available on Workspace enabled servers (server versions >=2.23.17) e.g. app.speckle.systems</remarks>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<ResourceCollection<Workspace>> GetWorkspaces(
+    int limit = 25,
+    string? cursor = null,
+    UserWorkspacesFilter? filter = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+      query ActiveUser($limit: Int!, $cursor: String, $filter: UserWorkspacesFilter) {
+        data:activeUser {
+          data:workspaces(limit: $limit, cursor: $cursor, filter: $filter) {
+            cursor
+            totalCount
+            items {
+              id
+              name
+              role
+              slug
+              description
+              permissions {
+                canCreateProject {
+                  authorized
+                  code
+                  message
+                }
+              }
+            }
+          }
+        }
+      }
+      """;
+    var request = new GraphQLRequest
+    {
+      Query = QUERY,
+      Variables = new
+      {
+        limit,
+        cursor,
+        filter
+      }
+    };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<ResourceCollection<Workspace>>>>(
+        request,
+        cancellationToken
+      )
+      .ConfigureAwait(false);
+
+    return response.data.data;
   }
 
   /// <param name="limit">Max number of projects to fetch</param>
