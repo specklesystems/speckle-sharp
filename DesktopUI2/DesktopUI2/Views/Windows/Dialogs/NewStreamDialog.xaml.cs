@@ -117,36 +117,35 @@ public sealed class NewStreamDialog : DialogUserControl
   private async Task UpdateWorkspaces()
   {
     _workspacesOptions.Items = Enumerable.Empty<object>();
-    _workspacesOptions.SelectedIndex = -1;
 
-    IEnumerable<WorkspaceViewModel> workspaceViewModels = Enumerable.Empty<WorkspaceViewModel>();
-    if (_accountsOptions.SelectedItem is AccountViewModel selectedViewModel)
+    if (_accountsOptions.SelectedItem is not AccountViewModel selectedViewModel)
     {
-      using Client client = new(selectedViewModel.Account);
-      var workspaces = await TryFetchWorkspaces(client).ConfigureAwait(true);
-      workspaceViewModels = workspaces.Select(x => new WorkspaceViewModel(x));
-
-      bool canCreatePersonalProjects;
-      try
-      {
-        var res = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
-        canCreatePersonalProjects = res.authorized;
-      }
-      catch (SpeckleGraphQLException)
-      {
-        //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
-        canCreatePersonalProjects = true;
-      }
-
-      if (canCreatePersonalProjects)
-      {
-        workspaceViewModels = workspaceViewModels.Prepend(WorkspaceViewModel.PersonalProjects);
-        _workspacesOptions.SelectedIndex = 0;
-      }
+      return;
     }
 
-    var items = workspaceViewModels.ToList();
-    _workspacesOptions.Items = items;
+    using Client client = new(selectedViewModel.Account);
+    var workspaces = await TryFetchWorkspaces(client).ConfigureAwait(true);
+    IEnumerable<WorkspaceViewModel> workspaceViewModels = workspaces.Select(x => new WorkspaceViewModel(x));
+
+    bool canCreatePersonalProjects;
+    try
+    {
+      var res = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
+      canCreatePersonalProjects = res.authorized;
+    }
+    catch (SpeckleGraphQLException)
+    {
+      //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
+      canCreatePersonalProjects = true;
+    }
+
+    if (canCreatePersonalProjects)
+    {
+      workspaceViewModels = workspaceViewModels.Prepend(WorkspaceViewModel.PersonalProjects);
+    }
+
+    _workspacesOptions.Items = workspaceViewModels.ToList();
+    _workspacesOptions.SelectedIndex = canCreatePersonalProjects ? 0 : -1;
   }
 
   public Account Account { get; private set; }
