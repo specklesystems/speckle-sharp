@@ -10,6 +10,7 @@ using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
 using Serilog.Events;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -59,11 +60,10 @@ public class StreamSelectorViewModel : ReactiveObject
 
       try
       {
-        UserProjectsFilter? filter = null;
-        if (!string.IsNullOrEmpty(SearchQuery))
-        {
-          filter = new(_searchQuery);
-        }
+        string[] allowedReceiveRoles = { StreamRoles.STREAM_OWNER, StreamRoles.STREAM_CONTRIBUTOR };
+        string? search = string.IsNullOrEmpty(SearchQuery) ? null : _searchQuery;
+
+        UserProjectsFilter filter = new(search, onlyWithRoles: allowedReceiveRoles);
 
         var result = await account
           .Client.ActiveUser.GetProjectWithLegacyExtras(
@@ -78,11 +78,7 @@ public class StreamSelectorViewModel : ReactiveObject
           return;
         }
 
-        streams.AddRange(
-          result
-            .items.Where(x => x.workspaceId is null || x.role != "stream:reviewer" && x.role != null) //Workspace projects need collaborator or owner to receive in connectors
-            .Select(x => new StreamAccountWrapper(x, account.Account))
-        );
+        streams.AddRange(result.items.Select(x => new StreamAccountWrapper(x, account.Account)));
       }
       catch (Exception ex)
       {
