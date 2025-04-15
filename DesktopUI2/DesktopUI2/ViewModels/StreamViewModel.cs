@@ -29,6 +29,7 @@ using Material.Icons.Avalonia;
 using ReactiveUI;
 using Serilog.Events;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
@@ -676,7 +677,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  public bool StreamEnabled => !IsRemovingStream && !NoAccess;
+  public bool StreamEnabled => !IsRemovingStream && !NoAccess && _stream.CanReceive();
 
   private bool _isExpanded;
 
