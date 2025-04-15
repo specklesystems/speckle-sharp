@@ -1,4 +1,6 @@
-﻿namespace Speckle.Core.Api.GraphQL.Models;
+﻿using Speckle.Core.Logging;
+
+namespace Speckle.Core.Api.GraphQL.Models;
 
 public sealed class Workspace
 {
@@ -20,4 +22,13 @@ public sealed class PermissionCheckResult
   public bool authorized { get; init; }
   public string code { get; init; }
   public string message { get; init; }
+
+  /// <exception cref="SpeckleException">Throws when <see cref="PermissionCheckResult.authorized"/> is <see langword="false"/></exception>
+  public void EnsureAuthorised()
+  {
+    if (!authorized)
+    {
+      throw new SpeckleException(message);
+    }
+  }
 }
