@@ -19,6 +19,8 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+    <conv:BoolToBrushConverter x:Key="BoolToBrushConverter" />
+    <conv:RoleReceiveErrorMessageConverter x:Key="RoleReceiveErrorMessageConverter" />
   </UserControl.Resources>
   <Grid RowDefinitions="auto, *">
     <!--  HEADER BAR  -->
@@ -344,13 +346,14 @@
                 </ItemsRepeater.Styles>
                 <ItemsRepeater.ItemTemplate>
                   <DataTemplate>
-                    <Grid ColumnDefinitions="*,auto">
                       <Button
                         Grid.Column="0"
                         Padding="5,7"
                         Classes="Invisible"
                         Command="{Binding $parent[local:HomeView].DataContext.OpenStreamCommand}"
-                        IsEnabled="{Binding CanReceive}"
+                        Foreground="{Binding CanReceive, Converter={StaticResource BoolToBrushConverter}}"
+                        ToolTip.Tip="{Binding Stream.role, Converter={StaticResource RoleReceiveErrorMessageConverter}}"
+                        ToolTip.ShowDelay="750"
                         CommandParameter="{Binding}">
                         <Grid
                           Margin="4,0"
@@ -392,11 +395,6 @@
                               Margin="0,3,0,0"
                               ColumnDefinitions="auto,auto,*"
                               IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
-                              <Grid.Styles>
-                                <Style Selector="TextBlock">
-                                  <Setter Property="Foreground" Value="LightGray" />
-                                </Style>
-                              </Grid.Styles>
                               <TextBlock
                                 Classes="Overline"
                                 Text="{Binding Account.userInfo.email}"
@@ -412,36 +410,34 @@
                                 TextTrimming="CharacterEllipsis" />
                             </Grid>
                           </Grid>
+                          <StackPanel
+                            Name="HoverButtons"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal"
+                            Spacing="10">
+
+                            <m:FloatingButton
+                              VerticalAlignment="Center"
+                              assists:ShadowAssist.ShadowDepth="0"
+                              Background="Transparent"
+                              Classes="Mini"
+                              Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
+                              CommandParameter="{Binding}"
+                              ToolTip.Tip="View online">
+                              <Button.Content>
+                                <icons:MaterialIcon
+                                  Width="15"
+                                  Height="15"
+                                  Foreground="Gray"
+                                  Kind="ExternalLink" />
+                              </Button.Content>
+                            </m:FloatingButton>
+                          </StackPanel>
                         </Grid>
-
-
                       </Button>
-                      <StackPanel
-                        Name="HoverButtons"
-                        Grid.Column="1"
-                        Margin="20,20,20,20"
-                        VerticalAlignment="Top"
-                        Orientation="Horizontal"
-                        Spacing="10">
-
-                        <m:FloatingButton
-                          VerticalAlignment="Center"
-                          assists:ShadowAssist.ShadowDepth="0"
-                          Background="Transparent"
-                          Classes="Mini"
-                          Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
-                          CommandParameter="{Binding}"
-                          ToolTip.Tip="View online">
-                          <Button.Content>
-                            <icons:MaterialIcon
-                              Width="15"
-                              Height="15"
-                              Foreground="Gray"
-                              Kind="ExternalLink" />
-                          </Button.Content>
-                        </m:FloatingButton>
-                      </StackPanel>
-                    </Grid>
                   </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
 
