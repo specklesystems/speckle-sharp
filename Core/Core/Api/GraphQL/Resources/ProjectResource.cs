@@ -16,6 +16,7 @@ public sealed class ProjectResource
     _client = client;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -37,6 +38,7 @@ public sealed class ProjectResource
           createdAt
           updatedAt
           sourceApps
+          workspaceId
         }
       }
       """;
@@ -48,6 +50,7 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="modelsLimit">Max number of models to fetch</param>
   /// <param name="modelsCursor">Optional cursor for pagination</param>
@@ -78,6 +81,7 @@ public sealed class ProjectResource
           createdAt
           updatedAt
           sourceApps
+          workspaceId
           models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
             items {
               id
@@ -113,6 +117,7 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -133,6 +138,7 @@ public sealed class ProjectResource
           role
           createdAt
           updatedAt
+          workspaceId
           team {
             role
             user {
@@ -191,6 +197,7 @@ public sealed class ProjectResource
   /// <summary>
   /// Creates a non-workspace project (aka Personal Project)
   /// </summary>
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <seealso cref="ActiveUserResource.CanCreatePersonalProjects"/>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
@@ -212,6 +219,7 @@ public sealed class ProjectResource
             createdAt
             updatedAt
             sourceApps
+            workspaceId
           }
         }
       }
@@ -255,6 +263,7 @@ public sealed class ProjectResource
               createdAt
               updatedAt
               sourceApps
+              workspaceId
             }
           }
         }
@@ -269,6 +278,7 @@ public sealed class ProjectResource
   }
 
   /// <param name="input"></param>
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
@@ -287,6 +297,7 @@ public sealed class ProjectResource
             role
             createdAt
             updatedAt
+            workspaceId
           }
         }
       }
@@ -321,6 +332,7 @@ public sealed class ProjectResource
     return response.projectMutations.delete;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
@@ -339,6 +351,7 @@ public sealed class ProjectResource
             role
             createdAt
             updatedAt
+            workspaceId
             team {
               role
               user {
