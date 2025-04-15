@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
 
 namespace DesktopUI2.Models;
@@ -16,5 +18,6 @@ public class StreamAccountWrapper
   }
 
   public Stream Stream { get; set; }
+  public bool CanReceive => Stream.CanReceive();
   public Account Account { get; set; }
 }

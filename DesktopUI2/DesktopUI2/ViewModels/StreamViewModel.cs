@@ -29,7 +29,9 @@ using Material.Icons.Avalonia;
 using ReactiveUI;
 using Serilog.Events;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Enums;
+using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
@@ -675,7 +677,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  public bool StreamEnabled => !IsRemovingStream && !NoAccess;
+  public bool StreamEnabled => !IsRemovingStream && !NoAccess && _stream.CanReceive();
 
   private bool _isExpanded;
 
@@ -1273,16 +1275,19 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       try
       {
         _isAddingBranches = true;
-        var branchId = await StreamState
-          .Client.BranchCreate(
-            new BranchCreateInput
-            {
-              streamId = Stream.id,
-              description = nbvm.Description ?? "",
-              name = nbvm.BranchName
-            }
-          )
+
+        Project project = await StreamState.Client.Project.Get(_stream.id).ConfigureAwait(true);
+        if (project.workspaceId != null)
+        {
+          Workspace workspace = await StreamState.Client.Workspace.Get(project.workspaceId).ConfigureAwait(true);
+
+          workspace.permissions.canCreateProject.EnsureAuthorised();
+        }
+
+        _ = await StreamState
+          .Client.Model.Create(new CreateModelInput(nbvm.BranchName, nbvm.Description, _stream.id))
           .ConfigureAwait(true);
+
         await GetBranches().ConfigureAwait(true);
 
         var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
@@ -1298,8 +1303,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, "Failed adding new branch {exceptionMessage}", ex.Message);
-        Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
+        SpeckleLog.Logger.Error(ex, "Failed to create new model {exceptionMessage}", ex.Message);
+        Dialogs.ShowDialog("Failed to create new model", ex.Message, DialogIconKind.Error);
+        SelectedBranch = BranchesViewModel[0];
       }
       finally
       {
