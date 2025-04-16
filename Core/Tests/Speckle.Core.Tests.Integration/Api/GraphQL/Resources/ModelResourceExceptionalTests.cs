@@ -66,7 +66,7 @@ public class ModelResourceExceptionalTests
 
     var ex = Assert.CatchAsync<SpeckleGraphQLException>(async () => await Sut.Update(input));
     //Different server versions respond slightly differently
-    Assert.That(ex, Is.TypeOf<SpeckleGraphQLForbiddenException>().Or.TypeOf<SpeckleGraphQLForbiddenException>());
+    Assert.That(ex, Is.TypeOf<SpeckleGraphQLStreamNotFoundException>().Or.TypeOf<SpeckleGraphQLForbiddenException>());
   }
 
   [Test]
