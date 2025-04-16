@@ -461,6 +461,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2025", "ConnectorRevit\RevitSharedResources2025\RevitSharedResources2025.csproj", "{7B02BACC-D9B6-4FFE-A450-7ECB5F71F209}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2025", "ConnectorRevit\ConnectorRevit2025\ConnectorRevit2025.csproj", "{D607BD0A-9F7F-4C3A-9B9C-FEAD6BA49C7C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C0295BF9-9A40-4FCD-BE39-E943985CA3F8} = {C0295BF9-9A40-4FCD-BE39-E943985CA3F8}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2025", "Objects\Converters\ConverterRevit\ConverterRevit2025\ConverterRevit2025.csproj", "{C0295BF9-9A40-4FCD-BE39-E943985CA3F8}"
 EndProject

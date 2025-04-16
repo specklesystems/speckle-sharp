@@ -183,7 +183,7 @@ public partial class ConverterRevit
     // No implicit displayValue
     // speckleZone.displayValue = GetElementDisplayValue(revitSpace);
 
-    speckleZone["phaseName"] = revitZone.Phase.Name;
+    speckleZone["phaseName"] = revitZone.Phase?.Name;
 
     return speckleZone;
   }
