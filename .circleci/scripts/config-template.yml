@@ -240,7 +240,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Sync Certs
                 command: |
-                  & $env:SSM\smksp_cert_sync.exe
+                  & $env:SSM\smctl.exe windows certsync
             - run:
                 name: Build Installer Signed
                 command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
