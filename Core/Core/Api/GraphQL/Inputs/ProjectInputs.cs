@@ -43,4 +43,4 @@ public sealed record ProjectUpdateInput(
 
 public sealed record ProjectUpdateRoleInput(string userId, string projectId, string? role);
 
-public sealed record UserProjectsFilter(string search, IReadOnlyList<string>? onlyWithRoles = null);
+public sealed record UserProjectsFilter(string? search, IReadOnlyList<string>? onlyWithRoles = null);
