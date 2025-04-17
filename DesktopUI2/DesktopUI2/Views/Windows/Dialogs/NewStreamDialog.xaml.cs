@@ -87,7 +87,7 @@ public sealed class NewStreamDialog : DialogUserControl
       return;
     }
 
-    const string READY_MESSAGE = "Ready";
+    const string READY_MESSAGE = " ";
     PermissionCheckResult result;
 
     if (selectedWorkspace.Workspace is null)

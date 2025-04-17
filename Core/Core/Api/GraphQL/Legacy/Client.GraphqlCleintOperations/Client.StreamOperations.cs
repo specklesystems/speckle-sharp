@@ -251,7 +251,7 @@ public partial class Client
       Variables = new { query, limit }
     };
 
-    var res = await GQLClient.SendMutationAsync<StreamsData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
+    // var res = await GQLClient.SendMutationAsync<StreamsData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
     return (await ExecuteGraphQLRequest<StreamsData>(request, cancellationToken).ConfigureAwait(false)).streams.items;
   }
 
@@ -400,7 +400,7 @@ public partial class Client
                     }",
       Variables = new { id = streamId }
     };
-    var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
+    // var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
     return (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
   }
 

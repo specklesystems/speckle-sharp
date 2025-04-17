@@ -75,11 +75,16 @@ public sealed class ActiveUserResource
     var request = new GraphQLRequest { Query = QUERY, };
 
     var response = await _client
-      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<RequiredResponse<PermissionCheckResult>>>>(
+      .ExecuteGraphQLRequest<OptionalResponse<RequiredResponse<RequiredResponse<PermissionCheckResult>>>>(
         request,
         cancellationToken
       )
       .ConfigureAwait(false);
+
+    if (response.data is null)
+    {
+      throw new SpeckleGraphQLException("GraphQL response indicated that the ActiveUser could not be found");
+    }
 
     return response.data.data.data;
   }
@@ -133,11 +138,16 @@ public sealed class ActiveUserResource
     };
 
     var response = await _client
-      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<ResourceCollection<Workspace>>>>(
+      .ExecuteGraphQLRequest<OptionalResponse<RequiredResponse<ResourceCollection<Workspace>>>>(
         request,
         cancellationToken
       )
       .ConfigureAwait(false);
+
+    if (response.data is null)
+    {
+      throw new SpeckleGraphQLException("GraphQL response indicated that the ActiveUser could not be found");
+    }
 
     return response.data.data;
   }
