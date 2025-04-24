@@ -64,7 +64,9 @@ public class ModelResourceExceptionalTests
   {
     UpdateModelInput input = new(_model.id, "MY new name", "MY new desc", "non-existent project");
 
-    Assert.ThrowsAsync<SpeckleGraphQLForbiddenException>(async () => await Sut.Update(input));
+    var ex = Assert.CatchAsync<SpeckleGraphQLException>(async () => await Sut.Update(input));
+    //Different server versions respond slightly differently
+    Assert.That(ex, Is.TypeOf<SpeckleGraphQLStreamNotFoundException>().Or.TypeOf<SpeckleGraphQLForbiddenException>());
   }
 
   [Test]

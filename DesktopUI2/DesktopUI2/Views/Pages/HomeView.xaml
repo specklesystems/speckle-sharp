@@ -19,6 +19,8 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+    <conv:BoolToBrushConverter x:Key="BoolToBrushConverter" />
+    <conv:RoleReceiveErrorMessageConverter x:Key="RoleReceiveErrorMessageConverter" />
   </UserControl.Resources>
   <Grid RowDefinitions="auto, *">
     <!--  HEADER BAR  -->
@@ -344,104 +346,98 @@
                 </ItemsRepeater.Styles>
                 <ItemsRepeater.ItemTemplate>
                   <DataTemplate>
-                    <Button
-                      Padding="5,7"
-                      Classes="Invisible"
-                      Command="{Binding $parent[local:HomeView].DataContext.OpenStreamCommand}"
-                      CommandParameter="{Binding}">
-                      <Grid
-                        Margin="4,0"
-                        ColumnDefinitions="*,Auto"
-                        RowDefinitions="auto, auto">
-                        <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
-                          <TextBlock
-                            Classes="Medium"
-                            Text="{Binding Stream.name}"
-                            TextTrimming="CharacterEllipsis" />
-                          <icons:MaterialIcon
-                            Grid.Column="1"
-                            Width="10"
-                            Height="10"
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                            Kind="Heart"
-                            ToolTip.Tip="This is a favorite project" />
-                        </Grid>
+                      <Button
+                        Grid.Column="0"
+                        Padding="5,7"
+                        Classes="Invisible"
+                        Command="{Binding $parent[local:HomeView].DataContext.OpenStreamCommand}"
+                        Foreground="{Binding CanReceive, Converter={StaticResource BoolToBrushConverter}}"
+                        ToolTip.Tip="{Binding Stream.role, Converter={StaticResource RoleReceiveErrorMessageConverter}}"
+                        ToolTip.ShowDelay="750"
+                        CommandParameter="{Binding}">
                         <Grid
-                          Grid.Row="1"
-                          Grid.Column="0"
-                          RowDefinitions="15,15, auto">
-
-
-                          <TextBlock
-                            Grid.Row="0"
-                            Margin="0,3,0,0"
-                            Classes="Caption"
-                            MaxLines="1"
-                            Text="{Binding Stream.description}"
-                            TextTrimming="CharacterEllipsis" />
-
-                          <c:StreamDetails Grid.Row="1" />
-
-                          <Grid
-                            Grid.Row="2"
-                            Margin="0,3,0,0"
-                            ColumnDefinitions="auto,auto,*"
-                            IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
-                            <Grid.Styles>
-                              <Style Selector="TextBlock">
-                                <Setter Property="Foreground" Value="LightGray" />
-                              </Style>
-                            </Grid.Styles>
+                          Margin="4,0"
+                          ColumnDefinitions="*,Auto"
+                          RowDefinitions="auto, auto">
+                          <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
                             <TextBlock
-                              Classes="Overline"
-                              Text="{Binding Account.userInfo.email}"
+                              Classes="Medium"
+                              Text="{Binding Stream.name}"
                               TextTrimming="CharacterEllipsis" />
-                            <TextBlock
+                            <icons:MaterialIcon
                               Grid.Column="1"
-                              Classes="Overline"
-                              Text=" | " />
-                            <TextBlock
-                              Grid.Column="2"
-                              Classes="Overline"
-                              Text="{Binding Account.serverInfo.url}"
-                              TextTrimming="CharacterEllipsis" />
+                              Width="10"
+                              Height="10"
+                              Margin="5,0,0,0"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                              Kind="Heart"
+                              ToolTip.Tip="This is a favorite project" />
                           </Grid>
+                          <Grid
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            RowDefinitions="15,15, auto">
 
 
+                            <TextBlock
+                              Grid.Row="0"
+                              Margin="0,3,0,0"
+                              Classes="Caption"
+                              MaxLines="1"
+                              Text="{Binding Stream.description}"
+                              TextTrimming="CharacterEllipsis" />
+
+                            <c:StreamDetails Grid.Row="1" />
+
+                            <Grid
+                              Grid.Row="2"
+                              Margin="0,3,0,0"
+                              ColumnDefinitions="auto,auto,*"
+                              IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
+                              <TextBlock
+                                Classes="Overline"
+                                Text="{Binding Account.userInfo.email}"
+                                TextTrimming="CharacterEllipsis" />
+                              <TextBlock
+                                Grid.Column="1"
+                                Classes="Overline"
+                                Text=" | " />
+                              <TextBlock
+                                Grid.Column="2"
+                                Classes="Overline"
+                                Text="{Binding Account.serverInfo.url}"
+                                TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                          </Grid>
+                          <StackPanel
+                            Name="HoverButtons"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal"
+                            Spacing="10">
+
+                            <m:FloatingButton
+                              VerticalAlignment="Center"
+                              assists:ShadowAssist.ShadowDepth="0"
+                              Background="Transparent"
+                              Classes="Mini"
+                              Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
+                              CommandParameter="{Binding}"
+                              ToolTip.Tip="View online">
+                              <Button.Content>
+                                <icons:MaterialIcon
+                                  Width="15"
+                                  Height="15"
+                                  Foreground="Gray"
+                                  Kind="ExternalLink" />
+                              </Button.Content>
+                            </m:FloatingButton>
+                          </StackPanel>
                         </Grid>
-                        <StackPanel
-                          Name="HoverButtons"
-                          Grid.Row="1"
-                          Grid.Column="1"
-                          Margin="0,0,0,0"
-                          VerticalAlignment="Top"
-                          Orientation="Horizontal"
-                          Spacing="10">
-
-                          <m:FloatingButton
-                            VerticalAlignment="Center"
-                            assists:ShadowAssist.ShadowDepth="0"
-                            Background="Transparent"
-                            Classes="Mini"
-                            Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
-                            CommandParameter="{Binding}"
-                            ToolTip.Tip="View online">
-                            <Button.Content>
-                              <icons:MaterialIcon
-                                Width="15"
-                                Height="15"
-                                Foreground="Gray"
-                                Kind="ExternalLink" />
-
-                            </Button.Content>
-                          </m:FloatingButton>
-                        </StackPanel>
-                      </Grid>
-
-
-                    </Button>
+                      </Button>
                   </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
 
@@ -453,25 +449,25 @@
 
       </ScrollViewer>
 
-      <Button
-        Grid.Row="4"
-        Margin="5"
-        Classes="Flat Mini"
-        Command="{Binding OneClickModeCommand}">
-        <Button.Content>
-          <StackPanel
-            Margin="10"
-            Orientation="Horizontal"
-            Spacing="12">
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              Foreground="{DynamicResource PrimaryHueDarkBrush}"
-              Kind="SwapHorizontalVariant" />
-            <TextBlock Classes="ButtonText" Text="Switch to OneClick mode" />
-          </StackPanel>
-        </Button.Content>
-      </Button>
+      <!-- <Button -->
+      <!--   Grid.Row="4" -->
+      <!--   Margin="5" -->
+      <!--   Classes="Flat Mini" -->
+      <!--   Command="{Binding OneClickModeCommand}"> -->
+      <!--   <Button.Content> -->
+      <!--     <StackPanel -->
+      <!--       Margin="10" -->
+      <!--       Orientation="Horizontal" -->
+      <!--       Spacing="12"> -->
+      <!--       <icons:MaterialIcon -->
+      <!--         Width="15" -->
+      <!--         Height="15" -->
+      <!--         Foreground="{DynamicResource PrimaryHueDarkBrush}" -->
+      <!--         Kind="SwapHorizontalVariant" /> -->
+      <!--       <TextBlock Classes="ButtonText" Text="Switch to OneClick mode" /> -->
+      <!--     </StackPanel> -->
+      <!--   </Button.Content> -->
+      <!-- </Button> -->
 
     </Grid>
     <!--  NO INTERNET  -->

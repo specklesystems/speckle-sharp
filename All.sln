@@ -427,6 +427,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConnectorCore", "ConnectorCore", "{DA9DFC36-C53F-4B19-8911-BF7605230BA7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino8", "ConnectorRhino\ConnectorRhino8\ConnectorRhino8.csproj", "{D22A887D-976C-4DBF-AE5B-9039F169E61C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{89996067-3233-410A-A6A1-39E2F11F0626} = {89996067-3233-410A-A6A1-39E2F11F0626}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino8", "Objects\Converters\ConverterRhinoGh\ConverterRhino8\ConverterRhino8.csproj", "{89996067-3233-410A-A6A1-39E2F11F0626}"
 EndProject
@@ -458,6 +461,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2025", "ConnectorRevit\RevitSharedResources2025\RevitSharedResources2025.csproj", "{7B02BACC-D9B6-4FFE-A450-7ECB5F71F209}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2025", "ConnectorRevit\ConnectorRevit2025\ConnectorRevit2025.csproj", "{D607BD0A-9F7F-4C3A-9B9C-FEAD6BA49C7C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C0295BF9-9A40-4FCD-BE39-E943985CA3F8} = {C0295BF9-9A40-4FCD-BE39-E943985CA3F8}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2025", "Objects\Converters\ConverterRevit\ConverterRevit2025\ConverterRevit2025.csproj", "{C0295BF9-9A40-4FCD-BE39-E943985CA3F8}"
 EndProject

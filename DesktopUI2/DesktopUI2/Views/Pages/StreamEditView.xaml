@@ -25,6 +25,8 @@
 
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:RoleCanReceiveValueConverter x:Key="RoleCanReceiveValueConverter" />
+    <conv:RoleCanNotReceiveValueConverter x:Key="RoleCanNotReceiveValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
     <conv:StreamEditHeightConverter x:Key="StreamEditHeightConverter" />
@@ -152,7 +154,7 @@
             </TabItem>
 
             <!--  RECEIVE  -->
-            <TabItem IsVisible="{Binding CanReceive}" ToolTip.Tip="Receive">
+            <TabItem IsVisible="{Binding CanReceive}" IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}" ToolTip.Tip="Receive">
               <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                   <icons:MaterialIcon
@@ -173,38 +175,45 @@
                 </StackPanel>
               </TabItem.Header>
               <ScrollViewer>
-                <uc:Receive />
+                <Panel>
+                  <uc:Receive IsVisible="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}" ToolTip.Tip="Receive"/>
+                  <Label
+                    HorizontalContentAlignment="Center"
+                    Margin="25"
+                    IsVisible="{Binding Stream.role, Converter={StaticResource RoleCanNotReceiveValueConverter}}">You do not have permission to receive model this model</Label>
+                </Panel>
               </ScrollViewer>
             </TabItem>
           </TabControl>
+          
         </Grid>
 
       </TabItem>
 
-      <!--  COLLABORATORS  -->
-      <TabItem ToolTip.Tip="Manage Collaborators">
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              Kind="AccountGroup" />
-          </StackPanel>
-        </TabItem.Header>
-        <Grid RowDefinitions="auto,*">
-          <TextBlock
-            Margin="20"
-            Classes="SpeckleFont"
-            FontSize="18"
-            Text="Collaborators" />
-          <c:CollaboratorsControl
-            Grid.Row="1"
-            Margin="10,0,10,10"
-            Padding="5"
-            DataContext="{Binding Collaborators}" />
-        </Grid>
-
-      </TabItem>
+      <!--  COLLABORATORS  - No longer supported -->
+      <!-- <TabItem ToolTip.Tip="Manage Collaborators"> -->
+      <!--   <TabItem.Header> -->
+      <!--     <StackPanel Orientation="Horizontal"> -->
+      <!--       <icons:MaterialIcon -->
+      <!--         Width="20" -->
+      <!--         Height="20" -->
+      <!--         Kind="AccountGroup" /> -->
+      <!--     </StackPanel> -->
+      <!--   </TabItem.Header> -->
+      <!--   <Grid RowDefinitions="auto,*"> -->
+      <!--     <TextBlock -->
+      <!--       Margin="20" -->
+      <!--       Classes="SpeckleFont" -->
+      <!--       FontSize="18" -->
+      <!--       Text="Collaborators" /> -->
+      <!--     <c:CollaboratorsControl -->
+      <!--       Grid.Row="1" -->
+      <!--       Margin="10,0,10,10" -->
+      <!--       Padding="5" -->
+      <!--       DataContext="{Binding Collaborators}" /> -->
+      <!--   </Grid> -->
+      <!-- -->
+      <!-- </TabItem> -->
       <!--Disabled as API is deprecated-->
       <!-- <TabItem ToolTip.Tip="Recent Activity"> -->
       <!--   <TabItem.Header> -->
@@ -226,30 +235,30 @@
       <!--     <uc:Activity Grid.Row="1" /> -->
       <!--   </Grid> -->
       <!-- </TabItem> -->
-      <!--  COMMENTS  -->
-      <TabItem ToolTip.Tip="Comments">
-        <TabItem.Header>
-          <StackPanel Orientation="Horizontal">
-            <icons:MaterialIcon
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Kind="Comments" />
-          </StackPanel>
-        </TabItem.Header>
-        <Grid RowDefinitions="auto,*">
-          <TextBlock
-            Margin="20,20,20,20"
-            Classes="SpeckleFont"
-            FontSize="18"
-            Text="Comments" />
-          <uc:Comments Grid.Row="1" Margin="15,0" />
-        </Grid>
-
-      </TabItem>
+      <!--  COMMENTS  - Disabled since we don't know how limits will work -->
+      <!-- <TabItem ToolTip.Tip="Comments"> -->
+      <!--   <TabItem.Header> -->
+      <!--     <StackPanel Orientation="Horizontal"> -->
+      <!--       <icons:MaterialIcon -->
+      <!--         Width="20" -->
+      <!--         Height="20" -->
+      <!--         VerticalAlignment="Center" -->
+      <!--         Kind="Comments" /> -->
+      <!--     </StackPanel> -->
+      <!--   </TabItem.Header> -->
+      <!--   <Grid RowDefinitions="auto,*"> -->
+      <!--     <TextBlock -->
+      <!--       Margin="20,20,20,20" -->
+      <!--       Classes="SpeckleFont" -->
+      <!--       FontSize="18" -->
+      <!--       Text="Comments" /> -->
+      <!--     <uc:Comments Grid.Row="1" Margin="15,0" /> -->
+      <!--   </Grid> -->
+      <!-- -->
+      <!-- </TabItem> -->
 
       <!--  REPORT  -->
-      <TabItem ToolTip.Tip="Report">
+      <TabItem ToolTip.Tip="Report" IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon

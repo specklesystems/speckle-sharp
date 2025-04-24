@@ -35,6 +35,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
   public ActiveUserResource ActiveUser { get; }
   public OtherUserResource OtherUser { get; }
   public ProjectInviteResource ProjectInvite { get; }
+  public WorkspaceResource Workspace { get; }
   public CommentResource Comment { get; }
   public SubscriptionResource Subscription { get; }
 
@@ -65,6 +66,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     ProjectInvite = new(this);
     Comment = new(this);
     Subscription = new(this);
+    Workspace = new(this);
 
     HttpClient = CreateHttpClient(account);
 
@@ -371,6 +373,7 @@ public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
     return httpClient;
   }
 
+  [Obsolete("You can now simply use " + nameof(ProjectResource) + nameof(ProjectResource.Get))]
   public async Task<string?> GetWorkspaceId(string projectId, CancellationToken cancellationToken = default)
   {
     Version serverVersion = await GQLClient.GetServerVersion(cancellationToken).ConfigureAwait(false);

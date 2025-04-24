@@ -16,6 +16,7 @@ public sealed class ProjectResource
     _client = client;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -37,6 +38,7 @@ public sealed class ProjectResource
           createdAt
           updatedAt
           sourceApps
+          workspaceId
         }
       }
       """;
@@ -48,6 +50,7 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="modelsLimit">Max number of models to fetch</param>
   /// <param name="modelsCursor">Optional cursor for pagination</param>
@@ -78,6 +81,7 @@ public sealed class ProjectResource
           createdAt
           updatedAt
           sourceApps
+          workspaceId
           models(limit: $modelsLimit, cursor: $modelsCursor, filter: $modelsFilter) {
             items {
               id
@@ -113,6 +117,7 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -133,6 +138,7 @@ public sealed class ProjectResource
           role
           createdAt
           updatedAt
+          workspaceId
           team {
             role
             user {
@@ -188,6 +194,11 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <summary>
+  /// Creates a non-workspace project (aka Personal Project)
+  /// </summary>
+  /// <remarks>Requires server version >=2.20.6</remarks>
+  /// <seealso cref="ActiveUserResource.CanCreatePersonalProjects"/>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
@@ -208,6 +219,7 @@ public sealed class ProjectResource
             createdAt
             updatedAt
             sourceApps
+            workspaceId
           }
         }
       }
@@ -220,7 +232,53 @@ public sealed class ProjectResource
     return response.projectMutations.create;
   }
 
+  /// <summary>
+  /// Creates a workspace project ()
+  /// </summary>
+  /// <remarks>
+  /// This feature is only supported by Workspace Enabled Servers (e.g. app.speckle.systems).
+  /// A <see cref="Workspace"/>'s <see cref="Workspace.permissions"/> list can be checked if the user <see cref="WorkspacePermissionChecks.canCreateProject"/>.
+  /// </remarks>
   /// <param name="input"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<Project> CreateInWorkspace(
+    WorkspaceProjectCreateInput input,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+      mutation WorkspaceProjectCreate($input: WorkspaceProjectCreateInput!) {
+        data:workspaceMutations {
+          data:projects {
+            data:create(input: $input) {
+              id
+              name
+              description
+              visibility
+              allowPublicComments
+              role
+              createdAt
+              updatedAt
+              sourceApps
+              workspaceId
+            }
+          }
+        }
+      }
+      """;
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
+
+    var response = await _client
+      .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<RequiredResponse<Project>>>>(request, cancellationToken)
+      .ConfigureAwait(false);
+    return response.data.data.data;
+  }
+
+  /// <param name="input"></param>
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
@@ -239,6 +297,7 @@ public sealed class ProjectResource
             role
             createdAt
             updatedAt
+            workspaceId
           }
         }
       }
@@ -273,6 +332,7 @@ public sealed class ProjectResource
     return response.projectMutations.delete;
   }
 
+  /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="input"></param>
   /// <param name="cancellationToken"></param>
   /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
@@ -291,6 +351,7 @@ public sealed class ProjectResource
             role
             createdAt
             updatedAt
+            workspaceId
             team {
               role
               user {
