@@ -116,7 +116,9 @@ public partial class ConverterCSI
       end2node = element1D.end2Node.basePoint;
     }
 
-    CreateFrame(end1node, end2node, out var newFrame, out _, appObj);
+    // We need to actually do something with the name
+    // If name is null this is still safe since CreateFrame has a null check before ChangeName method
+    CreateFrame(end1node, end2node, out var newFrame, out _, appObj, nameOverride: element1D.name);
     SetFrameElementProperties(element1D, newFrame, appObj.Log);
   }
 
