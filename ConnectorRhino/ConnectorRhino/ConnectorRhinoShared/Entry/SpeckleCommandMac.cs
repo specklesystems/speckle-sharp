@@ -14,7 +14,7 @@ public class SpeckleCommandMac : Command
 {
   public static SpeckleCommandMac Instance { get; private set; }
 
-  public override string EnglishName => "Speckle";
+  public override string EnglishName => "SpeckleLegacy";
 
   public static Window MainWindow { get; private set; }
 
