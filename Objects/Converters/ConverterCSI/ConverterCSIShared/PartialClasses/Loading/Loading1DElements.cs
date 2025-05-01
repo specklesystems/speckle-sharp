@@ -126,10 +126,26 @@ public partial class ConverterCSI
         continue;
       }
 
+      // 💩 Fallback to id (below) won't work. ETABS is all name-based.
+      // If name is null (and we use id) load won't be set to instance of object
+      // But we're in maintenance mode, so I won't dive deeper here, just noting it 🤷
+      // If user sets name, this will work
+      // Best would be to get name of frame element after creating but this would require strict order of operations
       int success;
-      string name = element.name ?? element.id;
+      string name = element.name ?? element.id; // <-- 💩
 
       if (loadBeam.loadType == BeamLoadType.Point)
+      {
+        success = Model.FrameObj.SetLoadPoint(
+          name,
+          loadBeam.loadCase.name,
+          myType,
+          direction,
+          loadBeam.positions[0],
+          loadBeam.values[0]
+        );
+      }
+      else
       {
         success = Model.FrameObj.SetLoadDistributed(
           name,
@@ -140,17 +156,6 @@ public partial class ConverterCSI
           loadBeam.positions[1],
           loadBeam.values[0],
           loadBeam.values[1]
-        );
-      }
-      else
-      {
-        success = Model.FrameObj.SetLoadPoint(
-          name,
-          loadBeam.loadCase.name,
-          myType,
-          direction,
-          loadBeam.positions[0],
-          loadBeam.values[0]
         );
       }
 
