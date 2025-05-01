@@ -226,7 +226,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
 #if !MAC
     Type panelType = typeof(DuiPanel);
-    Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+    Panels.RegisterPanel(this, panelType, "Speckle (Legacy)", Resources.icon);
 
     Type mappingsPanelType = typeof(MappingsPanel);
     Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapper", Resources.mapper);
