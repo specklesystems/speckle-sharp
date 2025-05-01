@@ -51,7 +51,7 @@ public class SpeckleAutocadCommand
   /// <summary>
   /// Main command to initialize Speckle Connector
   /// </summary>
-  [CommandMethod("Speckle", CommandFlags.Modal)]
+  [CommandMethod("SpeckleLegacy", CommandFlags.Modal)]
   public static void SpeckleCommand()
   {
     CreateOrFocusSpeckle();
