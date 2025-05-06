@@ -19,7 +19,6 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
-    <conv:BoolToBrushConverter x:Key="BoolToBrushConverter" />
     <conv:RoleReceiveErrorMessageConverter x:Key="RoleReceiveErrorMessageConverter" />
   </UserControl.Resources>
   <Grid RowDefinitions="auto, *">
@@ -351,10 +350,16 @@
                         Padding="5,7"
                         Classes="Invisible"
                         Command="{Binding $parent[local:HomeView].DataContext.OpenStreamCommand}"
-                        Foreground="{Binding CanReceive, Converter={StaticResource BoolToBrushConverter}}"
                         ToolTip.Tip="{Binding Stream.role, Converter={StaticResource RoleReceiveErrorMessageConverter}}"
                         ToolTip.ShowDelay="750"
-                        CommandParameter="{Binding}">
+                        CommandParameter="{Binding}"
+                        Classes.CanNotReceive="{Binding CanReceive, Converter={x:Static BoolConverters.Not }}"
+                        >
+                        <Button.Styles>
+                          <Style Selector="Button.CanNotReceive">
+                            <Setter Property="Foreground" Value="Gray"/>
+                          </Style>
+                        </Button.Styles>
                         <Grid
                           Margin="4,0"
                           ColumnDefinitions="*,Auto"
