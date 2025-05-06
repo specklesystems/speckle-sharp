@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -12,6 +13,7 @@ using Material.Dialog.Icons;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace DesktopUI2.Views.Windows.Dialogs;
@@ -24,7 +26,8 @@ public sealed class NewStreamDialog : DialogUserControl
   private readonly TextBox _description;
   private readonly ToggleSwitch _isPublic;
   private readonly Button _create;
-  private readonly Label _permissionMessage;
+  private readonly TextBlock _permissionMessage;
+  private readonly Button _callToAction;
 
   public NewStreamDialog() { }
 
@@ -37,7 +40,8 @@ public sealed class NewStreamDialog : DialogUserControl
     _description = this.FindControl<TextBox>("description");
     _isPublic = this.FindControl<ToggleSwitch>("isPublic");
     _create = this.FindControl<Button>("create");
-    _permissionMessage = this.FindControl<Label>("permissionMessage");
+    _permissionMessage = this.FindControl<TextBlock>("permissionMessage");
+    _callToAction = this.FindControl<Button>("callToAction");
 
     InitialiseOptions(accounts);
   }
@@ -82,8 +86,7 @@ public sealed class NewStreamDialog : DialogUserControl
       || _workspacesOptions.SelectedItem is not WorkspaceViewModel selectedWorkspace
     )
     {
-      _create.IsEnabled = false;
-      _permissionMessage.Content = "Select a Workspace";
+      SetStatus("Select a Workspace", false, false);
       return;
     }
 
@@ -100,8 +103,7 @@ public sealed class NewStreamDialog : DialogUserControl
       catch (SpeckleGraphQLException)
       {
         //Expected `GRAPHQL_VALIDATION_FAILED` (old servers)
-        _create.IsEnabled = true;
-        _permissionMessage.Content = READY_MESSAGE;
+        SetStatus(READY_MESSAGE, true, false);
         return;
       }
     }
@@ -110,8 +112,21 @@ public sealed class NewStreamDialog : DialogUserControl
       result = selectedWorkspace.Workspace.permissions.canCreateProject;
     }
 
-    _create.IsEnabled = result.authorized;
-    _permissionMessage.Content = result.authorized ? READY_MESSAGE : result.message;
+    SetStatus(
+      result.authorized ? READY_MESSAGE : result.message,
+      result.authorized,
+      result.code == "WorkspaceLimitsReached"
+    );
+
+    return;
+
+    void SetStatus(string message, bool isReady, bool isLimit)
+    {
+      _create.IsEnabled = isReady;
+      _callToAction.IsVisible = isLimit;
+      _callToAction.IsEnabled = isLimit;
+      _permissionMessage.Text = message;
+    }
   }
 
   private async Task UpdateWorkspaces()
@@ -169,6 +184,13 @@ public sealed class NewStreamDialog : DialogUserControl
     IsPublic = _isPublic.IsChecked ?? false;
     Workspace = (_workspacesOptions.SelectedItem as WorkspaceViewModel)?.Workspace;
     Close(true);
+  }
+
+  public void CTA_Click(object sender, RoutedEventArgs e)
+  {
+    Account = ((AccountViewModel)_accountsOptions.SelectedItem).Account;
+    Workspace = ((WorkspaceViewModel)_workspacesOptions.SelectedItem).Workspace;
+    Open.Url($"{Account.serverInfo.url}/settings/workspaces/{Workspace.slug}/billing");
   }
 
   public void Close_Click(object sender, RoutedEventArgs e)

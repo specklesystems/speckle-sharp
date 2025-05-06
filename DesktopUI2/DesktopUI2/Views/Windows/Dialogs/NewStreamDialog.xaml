@@ -107,18 +107,26 @@
       Grid.Row="5"
       Margin="15" />
     
-    <Label
-      Content=" "
+    <TextBlock
+      Text=" "
       Name="permissionMessage"
       Grid.Row="6"
       Margin="15"
-      HorizontalContentAlignment="Right"/>
+      TextWrapping="Wrap"
+      TextAlignment="Right"/>
 
     <StackPanel
       Grid.Row="7"
       Margin="15"
       HorizontalAlignment="Right"
       Orientation="Horizontal">
+      <Button
+        Name="callToAction"
+        Margin="0,0,10,0"
+        Click="CTA_Click"
+        Content="Explore Plans"
+        IsVisible="False"
+        />
       <Button
         Margin="0,0,10,0"
         Classes="Outline"
