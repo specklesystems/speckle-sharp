@@ -28,6 +28,7 @@ public sealed class NewStreamDialog : DialogUserControl
   private readonly Button _create;
   private readonly TextBlock _permissionMessage;
   private readonly Button _callToAction;
+  private CancellationTokenSource? _currentTask;
 
   public NewStreamDialog() { }
 
@@ -59,7 +60,20 @@ public sealed class NewStreamDialog : DialogUserControl
   {
     try
     {
-      await UpdateWorkspaces().ConfigureAwait(true);
+      _currentTask?.Cancel();
+    }
+    catch (ObjectDisposedException) { }
+
+    try
+    {
+      using var currentTask = new CancellationTokenSource();
+      _currentTask = currentTask;
+
+      await UpdateWorkspaces(_currentTask.Token).ConfigureAwait(true);
+    }
+    catch (OperationCanceledException)
+    {
+      //Do nothing!
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
@@ -129,7 +143,7 @@ public sealed class NewStreamDialog : DialogUserControl
     }
   }
 
-  private async Task UpdateWorkspaces()
+  private async Task UpdateWorkspaces(CancellationToken cancellationToken)
   {
     _workspacesOptions.Items = Enumerable.Empty<object>();
 
@@ -139,13 +153,13 @@ public sealed class NewStreamDialog : DialogUserControl
     }
 
     using Client client = new(selectedViewModel.Account);
-    var workspaces = await TryFetchWorkspaces(client).ConfigureAwait(true);
+    var workspaces = await TryFetchWorkspaces(client, cancellationToken).ConfigureAwait(true);
     IEnumerable<WorkspaceViewModel> workspaceViewModels = workspaces.Select(x => new WorkspaceViewModel(x));
 
     bool canCreatePersonalProjects;
     try
     {
-      var res = await client.ActiveUser.CanCreatePersonalProjects().ConfigureAwait(true);
+      var res = await client.ActiveUser.CanCreatePersonalProjects(cancellationToken).ConfigureAwait(true);
       canCreatePersonalProjects = res.authorized;
     }
     catch (SpeckleGraphQLException)
