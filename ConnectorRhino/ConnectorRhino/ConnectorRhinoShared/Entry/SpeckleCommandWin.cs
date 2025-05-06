@@ -17,7 +17,7 @@ public class SpeckleCommandWin : Command
 
   public static SpeckleCommandWin Instance { get; private set; }
 
-  public override string EnglishName => "Speckle";
+  public override string EnglishName => "SpeckleLegacy";
 
   protected override Result RunCommand(RhinoDoc doc, RunMode mode)
   {
