@@ -100,6 +100,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Grasshopper", "Grasshopper", "{9461B162-AD2F-4F60-BCE4-E72DCEFD4608}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{E94E7327-5A9B-48EE-93CC-E9E9A5B980F1}"
+	ProjectSection(SolutionItems) = preProject
+		ConnectorRhino\ConnectorRhino\Toolbars\SpeckleConnectorRhino.rui = ConnectorRhino\ConnectorRhino\Toolbars\SpeckleConnectorRhino.rui
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino6", "ConnectorRhino\ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
 	ProjectSection(ProjectDependencies) = postProject
