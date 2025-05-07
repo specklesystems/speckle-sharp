@@ -136,12 +136,19 @@ public class App : IExtensionApplication
     }
 
     RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
-    RibbonToolTip oneClickTip = CreateToolTip(
-      "Send",
-      "Sends your selected objects to your account's document stream. If nothing is selected, sends everything in the document."
+    RibbonButton button = CreateButton(
+      "Connector " + Utils.AppName,
+      SpeckleAutocadCommand.SPECKLE_COMMAND_NAME,
+      panel,
+      null,
+      speckleTip,
+      "logo"
     );
-    RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
-    RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
+    // RibbonToolTip oneClickTip = CreateToolTip(
+    //   "Send",
+    //   "Sends your selected objects to your account's document stream. If nothing is selected, sends everything in the document."
+    // );
+    // RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
 
     // help and resources buttons
     RibbonSplitButton helpButton =
@@ -166,9 +173,30 @@ public class App : IExtensionApplication
       "Check out our tutorials! Opens a page in your web browser"
     );
     RibbonToolTip docsTip = CreateToolTip("Docs", "Check out our documentation! Opens a page in your web browser");
-    RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
-    RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
-    RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
+    RibbonButton community = CreateButton(
+      "Community",
+      SpeckleAutocadCommand.SPECKLE_COMMUNITY_COMMAND_NAME,
+      null,
+      helpButton,
+      communityTip,
+      "forum"
+    );
+    RibbonButton tutorials = CreateButton(
+      "Tutorials",
+      SpeckleAutocadCommand.SPECKLE_TUTORIALS_COMMAND_NAME,
+      null,
+      helpButton,
+      tutorialsTip,
+      "tutorials"
+    );
+    RibbonButton docs = CreateButton(
+      "Docs",
+      SpeckleAutocadCommand.SPECKLE_DOCS_COMMAND_NAME,
+      null,
+      helpButton,
+      docsTip,
+      "docs"
+    );
   }
 
   public void Terminate() { }
@@ -325,16 +353,16 @@ public class App : IExtensionApplication
       {
         switch (commandParameter)
         {
-          case "Speckle":
+          case SpeckleAutocadCommand.SPECKLE_COMMAND_NAME:
             SpeckleAutocadCommand.SpeckleCommand();
             break;
-          case "SpeckleCommunity":
+          case SpeckleAutocadCommand.SPECKLE_COMMUNITY_COMMAND_NAME:
             SpeckleAutocadCommand.SpeckleCommunity();
             break;
-          case "SpeckleTutorials":
+          case SpeckleAutocadCommand.SPECKLE_TUTORIALS_COMMAND_NAME:
             SpeckleAutocadCommand.SpeckleTutorials();
             break;
-          case "SpeckleDocs":
+          case SpeckleAutocadCommand.SPECKLE_DOCS_COMMAND_NAME:
             SpeckleAutocadCommand.SpeckleDocs();
             break;
           default:
