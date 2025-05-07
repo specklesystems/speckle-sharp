@@ -34,6 +34,11 @@ public class SpeckleAutocadCommand
 
   const int GWL_HWNDPARENT = -8;
   #endregion
+
+  public const string SPECKLE_COMMAND_NAME = "SpeckleLegacy";
+  public const string SPECKLE_COMMUNITY_COMMAND_NAME = "SpeckleCommunity";
+  public const string SPECKLE_TUTORIALS_COMMAND_NAME = "SpeckleTutorials";
+  public const string SPECKLE_DOCS_COMMAND_NAME = "SpeckleDocs";
   private static Avalonia.Application AvaloniaApp { get; set; }
   public static Window MainWindow { get; private set; }
   private static CancellationTokenSource Lifetime = null;
@@ -51,7 +56,7 @@ public class SpeckleAutocadCommand
   /// <summary>
   /// Main command to initialize Speckle Connector
   /// </summary>
-  [CommandMethod("SpeckleLegacy", CommandFlags.Modal)]
+  [CommandMethod(SPECKLE_COMMAND_NAME, CommandFlags.Modal)]
   public static void SpeckleCommand()
   {
     CreateOrFocusSpeckle();
@@ -109,7 +114,7 @@ public class SpeckleAutocadCommand
     AvaloniaApp = app;
   }
 
-  [CommandMethod("SpeckleCommunity", CommandFlags.ActionMacro)]
+  [CommandMethod(SPECKLE_COMMUNITY_COMMAND_NAME, CommandFlags.ActionMacro)]
   public static void SpeckleCommunity()
   {
     try
@@ -127,7 +132,7 @@ public class SpeckleAutocadCommand
     }
   }
 
-  [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
+  [CommandMethod(SPECKLE_TUTORIALS_COMMAND_NAME, CommandFlags.ActionMacro)]
   public static void SpeckleTutorials()
   {
     try
@@ -145,7 +150,7 @@ public class SpeckleAutocadCommand
     }
   }
 
-  [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
+  [CommandMethod(SPECKLE_DOCS_COMMAND_NAME, CommandFlags.ActionMacro)]
   public static void SpeckleDocs()
   {
     try
