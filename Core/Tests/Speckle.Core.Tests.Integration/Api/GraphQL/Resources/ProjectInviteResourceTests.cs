@@ -1,5 +1,6 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
