@@ -6,7 +6,9 @@ public enum ProjectVisibility
 {
   Private,
 
-  [Obsolete("Use Unlisted instead")]
   Public,
-  Unlisted
+
+  [Obsolete("Use Public instead")]
+  Unlisted,
+  Workspace,
 }

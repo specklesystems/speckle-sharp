@@ -1,5 +1,6 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
 using Speckle.Core.Api.GraphQL.Resources;
@@ -19,7 +20,7 @@ public class ProjectInviteResourceTests
   {
     _inviter = await Fixtures.SeedUserWithClient();
     _invitee = await Fixtures.SeedUserWithClient();
-    _project = await _inviter.Project.Create(new("test", null, null));
+    _project = await _inviter.Project.Create(new("test", null, ProjectVisibility.Public));
     _createdInvite = await SeedInvite();
   }
 
