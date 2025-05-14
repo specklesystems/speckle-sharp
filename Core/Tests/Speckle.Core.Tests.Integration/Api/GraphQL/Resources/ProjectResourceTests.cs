@@ -21,7 +21,7 @@ public class ProjectResourceTests
   }
 
   [TestCase("Very private project", "My secret project", ProjectVisibility.Private)]
-  [TestCase("Very unlisted  project", null, ProjectVisibility.Unlisted)]
+  [TestCase("Very public project", null, ProjectVisibility.Public)]
   public async Task ProjectCreate(string name, string desc, ProjectVisibility visibility)
   {
     ProjectCreateInput input = new(name, desc, visibility);
