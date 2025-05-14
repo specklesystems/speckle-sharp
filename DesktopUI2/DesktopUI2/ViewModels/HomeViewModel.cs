@@ -654,7 +654,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               new ProjectCreateInput(
                 dialog.StreamName,
                 dialog.Description,
-                dialog.IsPublic ? ProjectVisibility.Unlisted : ProjectVisibility.Private
+                dialog.IsPublic ? ProjectVisibility.Public : ProjectVisibility.Private
               )
             )
             .ConfigureAwait(true);
@@ -666,7 +666,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               new WorkspaceProjectCreateInput(
                 dialog.StreamName,
                 dialog.Description,
-                dialog.IsPublic ? ProjectVisibility.Unlisted : ProjectVisibility.Private,
+                dialog.IsPublic ? ProjectVisibility.Public : ProjectVisibility.Private,
                 dialog.Workspace.id
               )
             )
