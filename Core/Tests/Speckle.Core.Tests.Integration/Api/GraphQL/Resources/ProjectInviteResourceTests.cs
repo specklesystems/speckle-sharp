@@ -19,7 +19,7 @@ public class ProjectInviteResourceTests
   {
     _inviter = await Fixtures.SeedUserWithClient();
     _invitee = await Fixtures.SeedUserWithClient();
-    _project = await _inviter.Project.Create(new("test", null, null));
+    _project = await _inviter.Project.Create(new("test", null, ProjectVisibility.Public));
     _createdInvite = await SeedInvite();
   }
 
