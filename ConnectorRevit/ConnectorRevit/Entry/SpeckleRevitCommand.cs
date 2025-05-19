@@ -87,7 +87,7 @@ public class SpeckleRevitCommand : IExternalCommand
       //Register dockable panel
       var viewModel = new MainViewModel(Bindings);
       _panel = new Panel { DataContext = viewModel };
-      App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
+      App.AppInstance.RegisterDockablePane(PanelId, "Speckle (Legacy)", _panel);
       _panel.Init();
     }
   }
