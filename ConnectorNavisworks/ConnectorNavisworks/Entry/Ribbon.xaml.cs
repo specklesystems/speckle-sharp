@@ -24,7 +24,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Icon = "Resources/logo16.ico",
     LargeIcon = "Resources/logo32.ico",
     ToolTip = "Speckle Connector for Navisworks",
-    DisplayName = "Speckle\rConnector"
+    DisplayName = "Speckle\r(Legacy)"
   ),
   Command(
     Community.COMMAND,
