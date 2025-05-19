@@ -129,7 +129,7 @@ public class App : IExtensionApplication
       return;
     }
 
-    RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
+    RibbonPanelSource panel = CreateButtonPanel("Speckle (Legacy)", tab);
     if (panel == null)
     {
       return;
