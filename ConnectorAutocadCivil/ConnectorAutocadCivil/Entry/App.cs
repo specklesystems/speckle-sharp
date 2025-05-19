@@ -137,7 +137,7 @@ public class App : IExtensionApplication
 
     RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
     RibbonButton button = CreateButton(
-      "Connector " + Utils.AppName,
+      "Speckle (Legacy)",
       SpeckleAutocadCommand.SPECKLE_COMMAND_NAME,
       panel,
       null,
