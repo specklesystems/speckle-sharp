@@ -246,7 +246,7 @@ public class App : IExternalApplication
       throw;
     }
 
-    var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
+    var specklePanel = application.CreateRibbonPanel(tabName, "Speckle (Legacy)");
 
     string path = typeof(App).Assembly.Location;
 
@@ -255,7 +255,7 @@ public class App : IExternalApplication
       specklePanel.AddItem(
         new PushButtonData(
           "Speckle 2",
-          "Revit Connector",
+          "Speckle (Legacy)",
           typeof(App).Assembly.Location,
           typeof(SpeckleRevitCommand).FullName
         )
