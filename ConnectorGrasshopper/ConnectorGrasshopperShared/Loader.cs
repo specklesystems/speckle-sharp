@@ -187,7 +187,7 @@ public class Loader : GH_AssemblyPriority
     }
     // Double check that the menu does not exist.
 
-    var menuName = "Speckle 2";
+    var menuName = "Speckle (Legacy)";
     if (mainMenu.Items.ContainsKey(menuName))
     {
       mainMenu.Items.RemoveByKey(menuName);
@@ -204,27 +204,6 @@ public class Loader : GH_AssemblyPriority
     // CreateHeadlessTemplateMenu();
     speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
     CreateTabsMenu();
-    speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-
-    // Help items
-    var helpHeader = speckleMenu.DropDown.Items.Add("Looking for help?");
-    helpHeader.Enabled = false;
-    speckleMenu.DropDown.Items.Add(
-      "Community Forum",
-      Resources.forum16,
-      (o, args) => Open.Url("https://speckle.community/tag/grasshopper")
-    );
-    speckleMenu.DropDown.Items.Add(
-      "Tutorials",
-      Resources.tutorials16,
-      (o, args) => Open.Url("https://v1.speckle.systems/tag/grasshopper/")
-    );
-    speckleMenu.DropDown.Items.Add(
-      "Docs",
-      Resources.docs16,
-      (o, args) => Open.Url("https://speckle.guide/user/grasshopper.html")
-    );
-
     speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
 
     // Manager button
@@ -388,7 +367,7 @@ public class Loader : GH_AssemblyPriority
     var tabsMenu = speckleMenu.DropDown.Items.Add("Show/Hide Components") as ToolStripMenuItem;
     new List<string> { "BIM", "Revit", "Structural", "GSA", "Tekla", "CSI", "Archicad", "Advance Steel" }.ForEach(s =>
     {
-      var category = $"Speckle 2 {s}";
+      var category = $"Speckle (Legacy) {s}";
       var itemName = $"Show {s} components";
       var mi = tabsMenu.DropDown.Items.Add(itemName) as ToolStripMenuItem;
       mi.CheckOnClick = true;
