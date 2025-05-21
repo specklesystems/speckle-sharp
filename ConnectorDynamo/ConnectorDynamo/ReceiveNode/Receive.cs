@@ -24,7 +24,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode;
 /// Receive data from Speckle
 /// </summary>
 [NodeName("Receive")]
-[NodeCategory("Speckle 2")]
+[NodeCategory("Speckle (Legacy)")]
 [NodeDescription("Receive data from a Speckle server")]
 [NodeSearchTags("receive", "speckle")]
 [IsDesignScriptCompatible]

@@ -23,7 +23,7 @@ namespace Speckle.ConnectorDynamo.SendNode;
 /// Send data to Speckle
 /// </summary>
 [NodeName("Send")]
-[NodeCategory("Speckle 2")]
+[NodeCategory("Speckle (Legacy)")]
 [NodeDescription("Send data to a Speckle server")]
 [NodeSearchTags("send", "speckle")]
 [IsDesignScriptCompatible]

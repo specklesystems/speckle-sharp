@@ -16,7 +16,7 @@ namespace Speckle.ConnectorDynamo.ViewNode;
 /// Send data to Speckle
 /// </summary>
 [NodeName("View Online")]
-[NodeCategory("Speckle 2.Stream")]
+[NodeCategory("Speckle (Legacy).Stream")]
 [NodeDescription("View Stream online")]
 [NodeSearchTags("view", "speckle")]
 [IsDesignScriptCompatible]
