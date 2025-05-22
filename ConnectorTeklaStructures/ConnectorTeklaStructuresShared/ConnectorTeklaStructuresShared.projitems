@@ -27,7 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorTeklaStructuresUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)et_element_Speckle.ConnectorTeklaStructures.bmp">
+    <Content Include="$(MSBuildThisFileDirectory)et_element_Speckle.ConnectorTeklaStructures_Legacy.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

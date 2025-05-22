@@ -5,7 +5,7 @@
     },
     "Run 2023": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Tekla Structures\\2023.0\\bin\\TeklaStructures.exe"
+      "executablePath": "C:\\TeklaStructures\\2023.0\\bin\\TeklaStructures.exe"
     }
   }
 }
