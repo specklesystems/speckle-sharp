@@ -30,7 +30,7 @@ public class MainViewModel : ViewModelBase, IScreen, IDialogHost
     Init();
   }
 
-  public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
+  public string TitleFull => "Speckle (Legacy) for " + Bindings.GetHostAppNameVersion();
 
   public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
 
