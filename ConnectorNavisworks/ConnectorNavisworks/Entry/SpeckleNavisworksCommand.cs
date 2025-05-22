@@ -20,7 +20,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
   Plugin(
     LaunchSpeckleConnector.PLUGIN,
     "Speckle",
-    DisplayName = "Speckle",
+    DisplayName = "Speckle (Legacy)",
     Options = PluginOptions.None,
     ToolTip = "Speckle Connector for Navisworks",
     ExtendedToolTip = "Speckle Connector for Navisworks"
