@@ -1,12 +1,12 @@
 #include "ResourceIds.hpp"
 
 'STR#' ID_ADDON_INFO "Add-on Name and Description" {
-/* [  1] */		"Speckle Connector AddOn"
-/* [  2] */		"Speckle Connector AddOn Description..."
+/* [  1] */		"Speckle (Legacy) AddOn"
+/* [  2] */		"Speckle (Legacy) AddOn Description..."
 }
 
 'STR#' ID_ADDON_MENU "Strings for the Menu" {
-/* [  1] */		"Speckle Connector ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
+/* [  1] */		"Speckle (Legacy) ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 
 'STR#' ID_LOG_MESSAGES "Messages for conversion log" {
