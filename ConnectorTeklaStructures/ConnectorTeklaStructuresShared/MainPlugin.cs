@@ -5,7 +5,7 @@ namespace Speckle.ConnectorTeklaStructures;
 
 public class StructuresData { }
 
-[Plugin("Speckle.ConnectorTeklaStructures")]
+[Plugin("Speckle.ConnectorTeklaStructures_Legacy")]
 [PluginUserInterface("Speckle.ConnectorTeklaStructures.MainForm")]
 [InputObjectDependency(InputObjectDependency.NOT_DEPENDENT)]
 public class MainPlugin : PluginBase

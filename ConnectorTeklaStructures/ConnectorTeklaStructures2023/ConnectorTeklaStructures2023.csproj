@@ -11,10 +11,12 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <PostBuildEvent Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">RD /S /Q "$(TargetDir)arm64\"
       if EXIST "C:\Program Files\Tekla Structures\2023.0\" (
-      xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+      xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E /H
+      xcopy "$(TargetDir)et_element_Speckle.ConnectorTeklaStructures_Legacy.bmp" "C:\ProgramData\Trimble\Tekla Structures\2023.0\bitmaps\" /Y
       )
       if EXIST "C:\TeklaStructures\2023.0\" (
-      xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+      xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E /H
+      xcopy "$(TargetDir)et_element_Speckle.ConnectorTeklaStructures_Legacy.bmp" "C:\TeklaStructures\2023.0\bitmaps\" /Y /I
       )
     </PostBuildEvent>
   </PropertyGroup>
