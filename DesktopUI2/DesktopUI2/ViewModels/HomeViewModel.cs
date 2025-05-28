@@ -615,7 +615,12 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   public void NextGenConnectorsCommand()
   {
-    Process.Start(new ProcessStartInfo("https://www.speckle.systems/blog/guide-how-to-switch-to-next-gen-connectors") { UseShellExecute = true });
+    Process.Start(
+      new ProcessStartInfo("https://www.speckle.systems/blog/guide-how-to-switch-to-next-gen-connectors")
+      {
+        UseShellExecute = true
+      }
+    );
   }
 
   public void ClearSearchCommand()
