@@ -137,10 +137,31 @@
       Grid.Row="1"
       Margin="5,10,5,5"
       IsVisible="{Binding HasAccounts}"
-      RowDefinitions="auto,auto, auto, *, auto">
+      RowDefinitions="auto, auto, auto, auto, *, auto">
 
+      <!-- Next-gen connectors Banner -->
+      <Border
+        Grid.Row="0"
+        Margin="0,10,0,15"
+        CornerRadius="10"
+        >
+        <Button
+          Command="{Binding NextGenConnectorsCommand}"
+          Padding="0"
+          Background="Transparent"
+          ToolTip.Tip="Currently not available via Manager, click to install!">
+          <Image
+            Source="avares://DesktopUI2/Assets/legacy_connector.png"
+            Width="360"
+            Height="110"
+            Stretch="UniformToFill"
+            />
+
+        </Button>
+      </Border>
+      
       <!--  SEARCH STREAMS  -->
-      <Grid Grid.Row="0" Margin="0">
+      <Grid Grid.Row="1" Margin="0">
         <m:Card
           Margin="5,0"
           Padding="0"
@@ -247,7 +268,7 @@
 
       <!--  CREATE/ADD STREAMS  -->
       <Grid
-        Grid.Row="1"
+        Grid.Row="2"
         Margin="0,15,0,5"
         ColumnDefinitions="*,*">
         <Button
@@ -282,7 +303,7 @@
         </Button>
       </Grid>
       <Grid
-        Grid.Row="2"
+        Grid.Row="3"
         Margin="0,10,0,0"
         IsVisible="{Binding InProgress}">
         <ProgressBar IsIndeterminate="True" />
@@ -290,7 +311,7 @@
 
 
       <ScrollViewer
-        Grid.Row="3"
+        Grid.Row="4"
         Padding="0,5,13,5"
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
         <StackPanel Margin="5,0,5,5" Orientation="Vertical">

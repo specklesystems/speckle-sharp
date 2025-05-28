@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading;
@@ -610,6 +611,11 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public void LaunchManagerCommand()
   {
     Utils.LaunchManager();
+  }
+
+  public void NextGenConnectorsCommand()
+  {
+    Process.Start(new ProcessStartInfo("https://www.speckle.systems/blog/guide-how-to-switch-to-next-gen-connectors") { UseShellExecute = true });
   }
 
   public void ClearSearchCommand()
