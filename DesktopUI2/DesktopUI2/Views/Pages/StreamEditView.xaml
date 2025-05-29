@@ -25,8 +25,6 @@
 
   <UserControl.Resources>
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
-    <conv:RoleCanReceiveValueConverter x:Key="RoleCanReceiveValueConverter" />
-    <conv:RoleCanNotReceiveValueConverter x:Key="RoleCanNotReceiveValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
     <conv:StreamEditHeightConverter x:Key="StreamEditHeightConverter" />
@@ -154,7 +152,7 @@
             </TabItem>
 
             <!--  RECEIVE  -->
-            <TabItem IsVisible="{Binding CanReceive}" IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}" ToolTip.Tip="Receive">
+            <TabItem IsVisible="{Binding CanReceive}" IsEnabled="{Binding CanLoad}" ToolTip.Tip="Receive">
               <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                   <icons:MaterialIcon
@@ -176,11 +174,13 @@
               </TabItem.Header>
               <ScrollViewer>
                 <Panel>
-                  <uc:Receive IsVisible="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}" ToolTip.Tip="Receive"/>
-                  <Label
-                    HorizontalContentAlignment="Center"
+                  <uc:Receive IsVisible="{Binding CanLoad}" ToolTip.Tip="Receive"/>
+                  <TextBlock
+                    HorizontalAlignment="Center"
                     Margin="25"
-                    IsVisible="{Binding Stream.role, Converter={StaticResource RoleCanNotReceiveValueConverter}}">You do not have permission to receive model this model</Label>
+                    IsVisible="{Binding CanLoad, Converter={x:Static BoolConverters.Not}}"
+                    Text="{Binding CanLoadErrorMessage}"
+                    TextWrapping="Wrap"/>
                 </Panel>
               </ScrollViewer>
             </TabItem>
@@ -258,7 +258,7 @@
       <!-- </TabItem> -->
 
       <!--  REPORT  -->
-      <TabItem ToolTip.Tip="Report" IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanReceiveValueConverter}}">
+      <TabItem ToolTip.Tip="Report" IsEnabled="{Binding CanLoad}">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
             <icons:MaterialIcon
