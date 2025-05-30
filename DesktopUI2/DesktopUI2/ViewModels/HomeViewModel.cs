@@ -748,11 +748,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         var account = await sw.GetAccount().ConfigureAwait(true);
         using var client = new Client(account);
         var stream = await client.StreamGet(sw.StreamId).ConfigureAwait(true);
-
-        if (!stream.CanReceive())
-        {
-          throw new SpeckleException("You do not have permission to receive model this model");
-        }
+        var permissionCheck = await client.Project.GetPermissions(stream.id).ConfigureAwait(true);
+        permissionCheck?.canLoad.EnsureAuthorised();
 
         var streamState = new StreamState(account, stream);
         streamState.BranchName = sw.BranchName;

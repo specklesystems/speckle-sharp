@@ -223,7 +223,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
+      var projectPermission = await Client.Project.GetPermissions(StreamState.StreamId).ConfigureAwait(true);
+      CanLoad = projectPermission?.canLoad.authorized ?? true;
+      CanLoadErrorMessage =
+        $"You do not have permission to receive model this model:\n{projectPermission?.canLoad.message}";
+
       Stream = await Client.StreamGet(StreamState.StreamId, 25).ConfigureAwait(true);
+
       if (Stream.role == "stream:owner")
       {
         var streamPendingCollaborators = await Client
@@ -613,6 +619,20 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
+  private bool _canLoad;
+  public bool CanLoad
+  {
+    get => _canLoad;
+    internal set => this.RaiseAndSetIfChanged(ref _canLoad, value);
+  }
+
+  private string _canLoadErrorMessage;
+  public string CanLoadErrorMessage
+  {
+    get => _canLoadErrorMessage;
+    internal set => this.RaiseAndSetIfChanged(ref _canLoadErrorMessage, value);
+  }
+
   private Stream _stream;
 
   public Stream Stream
@@ -677,7 +697,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  public bool StreamEnabled => !IsRemovingStream && !NoAccess && _stream.CanReceive();
+  public bool StreamEnabled => !IsRemovingStream && !NoAccess;
 
   private bool _isExpanded;
 

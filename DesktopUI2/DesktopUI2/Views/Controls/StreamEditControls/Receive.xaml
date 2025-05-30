@@ -99,7 +99,7 @@
             VerticalAlignment="Center"
             IsEnabled="{Binding Commits.Count}"
             Items="{Binding Commits}"
-            PlaceholderText="Select a commit"
+            PlaceholderText="Select a model version"
             SelectedIndex="0"
             SelectedItem="{Binding SelectedCommit}">
             <ComboBox.ItemTemplate>

@@ -117,6 +117,60 @@ public sealed class ProjectResource
     return response.project;
   }
 
+  /// <param name="projectId"></param>
+  /// <param name="cancellationToken"></param>
+  /// <returns><see langword="null"/> if the server responds with an error, to support older server versions easier</returns>
+  /// <inheritdoc cref="ISpeckleGraphQLClient.ExecuteGraphQLRequest{T}"/>
+  public async Task<ProjectPermissionChecks?> GetPermissions(
+    string projectId,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+      query Project($projectId: String!) {
+        data:project(id: $projectId) {
+          data:permissions {
+            canCreateModel {
+              authorized
+              code
+              message
+            }
+            canDelete {
+              authorized
+              code
+              message
+            }
+            canLoad {
+              authorized
+              code
+              message
+            }
+            canPublish {
+              authorized
+              code
+              message
+            }
+          }
+        }
+      }
+      """;
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId } };
+
+    try
+    {
+      var response = await _client
+        .ExecuteGraphQLRequest<RequiredResponse<RequiredResponse<ProjectPermissionChecks>>>(request, cancellationToken)
+        .ConfigureAwait(false);
+      return response.data.data;
+    }
+    catch (SpeckleGraphQLException)
+    {
+      //Expecting older server versions to not have the permission check in the schema
+      return null;
+    }
+  }
+
   /// <remarks>Requires server version >=2.20.6</remarks>
   /// <param name="projectId"></param>
   /// <param name="cancellationToken"></param>
