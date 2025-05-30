@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading;
@@ -22,7 +23,6 @@ using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Enums;
 using Speckle.Core.Api.GraphQL.Inputs;
 using Speckle.Core.Api.GraphQL.Models;
@@ -46,6 +46,14 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   }
 
   private ConnectorBindings Bindings;
+
+  // is there a better way to do this?
+  private bool _showLegacyConnectorWarning = true;
+  public bool ShowLegacyConnectorWarning
+  {
+    get => _showLegacyConnectorWarning;
+    set => this.RaiseAndSetIfChanged(ref _showLegacyConnectorWarning, value);
+  }
 
   public HomeViewModel(IScreen screen)
   {
@@ -610,6 +618,21 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public void LaunchManagerCommand()
   {
     Utils.LaunchManager();
+  }
+
+  public void NextGenConnectorsCommand()
+  {
+    Process.Start(
+      new ProcessStartInfo("https://www.speckle.systems/blog/guide-how-to-switch-to-next-gen-connectors")
+      {
+        UseShellExecute = true
+      }
+    );
+  }
+
+  public void DismissWarningCommand()
+  {
+    ShowLegacyConnectorWarning = false;
   }
 
   public void ClearSearchCommand()
