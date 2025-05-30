@@ -1,4 +1,4 @@
-﻿using Speckle.Core.Api.GraphQL.Models;
+﻿namespace Speckle.Core.Api.GraphQL.Models;
 
 public class ProjectPermissionChecks
 {
