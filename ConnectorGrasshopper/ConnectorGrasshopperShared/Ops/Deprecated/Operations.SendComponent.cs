@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -30,7 +31,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class SendComponent : SelectKitAsyncComponentBase
+public class SendComponent : SelectKitAsyncComponentBase<SendComponent>
 {
   public List<StreamWrapper> OutputWrappers = new();
 
@@ -232,7 +233,7 @@ public class SendComponent : SelectKitAsyncComponentBase
 
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
-    if (Workers.Count == 0)
+    if (WorkerCount == 0)
     {
       return;
     }
@@ -280,7 +281,7 @@ public class SendComponent : SelectKitAsyncComponentBase
   "CA1031:Do not catch general exception types",
   Justification = "Class is used by obsolete component"
 )]
-public class SendComponentWorker : WorkerInstance
+public class SendComponentWorker : WorkerInstance<SendComponent>
 {
   private GH_Structure<GH_String> _MessageInput;
   private GH_Structure<IGH_Goo> _TransportsInput;
@@ -301,8 +302,8 @@ public class SendComponentWorker : WorkerInstance
 
   private List<ITransport> Transports;
 
-  public SendComponentWorker(GH_Component p)
-    : base(p)
+  public SendComponentWorker(SendComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+    : base(parent, id, cancellationToken)
   {
     RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
   }
@@ -311,9 +312,9 @@ public class SendComponentWorker : WorkerInstance
 
   public string BaseId { get; set; }
 
-  public override WorkerInstance Duplicate()
+  public override WorkerInstance<SendComponent> Duplicate(string id, CancellationToken cancellationToken)
   {
-    return new SendComponentWorker(Parent);
+    return new SendComponentWorker(Parent, id, cancellationToken);
   }
 
   public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
@@ -328,11 +329,11 @@ public class SendComponentWorker : WorkerInstance
     stopwatch.Start();
   }
 
-  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+  public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
     try
     {
-      var sendComponent = (SendComponent)Parent;
+      var sendComponent = Parent;
       if (sendComponent.JustPastedIn)
       {
         Done();
@@ -485,14 +486,13 @@ public class SendComponentWorker : WorkerInstance
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        var asyncParent = (GH_AsyncComponent)Parent;
-        asyncParent.CancellationSources.ForEach(source =>
+        foreach(var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {
             source.Cancel();
           }
-        });
+        }
       };
 
       if (CancellationToken.IsCancellationRequested)

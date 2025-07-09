@@ -9,7 +9,7 @@ using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Objects;
 
-public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
+public abstract class SelectKitAsyncComponentBase<T> : GH_SpeckleAsyncComponent<T> where T : GH_Component
 {
   public ISpeckleConverter Converter;
 
@@ -17,7 +17,7 @@ public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
 
   public string SelectedKitName;
 
-  public SelectKitAsyncComponentBase(
+  protected SelectKitAsyncComponentBase(
     string name,
     string nickname,
     string description,

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
@@ -16,7 +18,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class SendLocalComponent : SelectKitAsyncComponentBase
+public class SendLocalComponent : SelectKitAsyncComponentBase<SendLocalComponent>
 {
   public ISpeckleConverter Converter;
 
@@ -60,28 +62,28 @@ public class SendLocalComponent : SelectKitAsyncComponentBase
   }
 }
 
-public class SendLocalWorker : WorkerInstance
+public class SendLocalWorker : WorkerInstance<SendLocalComponent>
 {
   private GH_Structure<IGH_Goo> data;
 
   private string sentObjectId;
 
-  public SendLocalWorker(GH_Component _parent)
-    : base(_parent) { }
+  public SendLocalWorker(SendLocalComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+    : base(parent, id, cancellationToken) { }
 
   private List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new();
 
-  public override WorkerInstance Duplicate()
+  public override WorkerInstance<SendLocalComponent> Duplicate(string id, CancellationToken cancellationToken)
   {
-    return new SendLocalWorker(Parent);
+    return new SendLocalWorker(Parent, id, cancellationToken);
   }
 
-  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+  public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
     try
     {
       Parent.Message = "Sending...";
-      var converter = (Parent as SendLocalComponent)?.Converter;
+      var converter = Parent.Converter;
       converter?.SetContextDocument(Loader.GetCurrentDocument());
       var converted = Utilities.DataTreeToNestedLists(data, converter);
       var ObjectToSend = new Base();

@@ -32,7 +32,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 namespace ConnectorGrasshopper.Ops;
 
 [Obsolete($"Use {nameof(VariableInputReceiveComponent)}")]
-public class ReceiveComponent : SelectKitAsyncComponentBase
+public class ReceiveComponent : SelectKitAsyncComponentBase<ReceiveComponent>
 {
   public GH_Structure<IGH_Goo> PrevReceivedData;
 
@@ -330,7 +330,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
 
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
-    if (Workers.Count == 0)
+    if (WorkerCount == 0)
     {
       return;
     }
@@ -479,15 +479,16 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
   "CA1031:Do not catch general exception types",
   Justification = "Class is used by obsolete component"
 )]
-public class ReceiveComponentWorker : WorkerInstance
+[Obsolete("ReceiveComponent is obsolete")]
+public class ReceiveComponentWorker : WorkerInstance<ReceiveComponent>
 {
   private GH_Structure<IGH_Goo> DataInput;
   private Action<string, Exception> ErrorAction;
 
   private Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-  public ReceiveComponentWorker(GH_Component p)
-    : base(p) { }
+  public ReceiveComponentWorker(ReceiveComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+    : base(parent, id, cancellationToken) { }
 
   private StreamWrapper InputWrapper { get; set; }
 
@@ -499,19 +500,19 @@ public class ReceiveComponentWorker : WorkerInstance
 
   public int TotalObjectCount { get; set; } = 1;
 
-  public override WorkerInstance Duplicate()
+  public override WorkerInstance<ReceiveComponent> Duplicate(string id, CancellationToken cancellationToken)
   {
-    return new ReceiveComponentWorker(Parent);
+    return new ReceiveComponentWorker(Parent, id, cancellationToken);
   }
 
   public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
   {
-    InputWrapper = ((ReceiveComponent)Parent).StreamWrapper;
+    InputWrapper = Parent.StreamWrapper;
   }
 
-  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+  public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
-    var receiveComponent = (ReceiveComponent)Parent;
+    var receiveComponent = Parent;
     try
     {
       InternalProgressAction = dict =>
@@ -532,14 +533,13 @@ public class ReceiveComponentWorker : WorkerInstance
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        var asyncParent = (GH_AsyncComponent)Parent;
-        asyncParent.CancellationSources.ForEach(source =>
+        foreach(var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {
             source.Cancel();
           }
-        });
+        }
       };
 
       Client client;

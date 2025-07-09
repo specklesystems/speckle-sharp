@@ -23,7 +23,7 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" />
-    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
+    <PackageReference Include="GrasshopperAsyncComponent" Version="2.0.3" />
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
 

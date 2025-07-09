@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
@@ -31,7 +32,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+public class VariableInputSendComponent : SelectKitAsyncComponentBase<VariableInputSendComponent>, IGH_VariableParameterComponent
 {
   private DebounceDispatcher nicknameChangeDebounce = new();
 
@@ -270,7 +271,7 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
 
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
-    if (Workers.Count == 0)
+    if (WorkerCount == 0)
     {
       return;
     }
@@ -344,7 +345,7 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
   "CA1031:Do not catch general exception types",
   Justification = "Class is used by obsolete component"
 )]
-public class VariableInputSendComponentWorker : WorkerInstance
+public class VariableInputSendComponentWorker : WorkerInstance<VariableInputSendComponent>
 {
   private GH_Structure<GH_String> _MessageInput;
   private GH_Structure<IGH_Goo> _TransportsInput;
@@ -366,8 +367,8 @@ public class VariableInputSendComponentWorker : WorkerInstance
 
   private List<ITransport> Transports;
 
-  public VariableInputSendComponentWorker(GH_Component p)
-    : base(p)
+  public VariableInputSendComponentWorker(VariableInputSendComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+    : base(parent, id, cancellationToken)
   {
     RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
     DataInputs = new Dictionary<string, GH_Structure<IGH_Goo>>();
@@ -377,9 +378,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
 
   public string BaseId { get; set; }
 
-  public override WorkerInstance Duplicate()
+  public override WorkerInstance<VariableInputSendComponent> Duplicate(string id, CancellationToken cancellationToken)
   {
-    return new VariableInputSendComponentWorker(Parent);
+    return new VariableInputSendComponentWorker(Parent, id, cancellationToken);
   }
 
   public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
@@ -397,11 +398,11 @@ public class VariableInputSendComponentWorker : WorkerInstance
     stopwatch.Start();
   }
 
-  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+  public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
     try
     {
-      var sendComponent = (VariableInputSendComponent)Parent;
+      var sendComponent = Parent;
       if (sendComponent.JustPastedIn)
       {
         Done();
@@ -569,14 +570,13 @@ public class VariableInputSendComponentWorker : WorkerInstance
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        var asyncParent = (GH_AsyncComponent)Parent;
-        asyncParent.CancellationSources.ForEach(source =>
+        foreach(var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {
             source.Cancel();
           }
-        });
+        }
       };
 
       if (CancellationToken.IsCancellationRequested)

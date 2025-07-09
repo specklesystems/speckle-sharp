@@ -33,7 +33,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+public class VariableInputReceiveComponent : SelectKitAsyncComponentBase<VariableInputReceiveComponent>, IGH_VariableParameterComponent
 {
   public Task ApiResetTask;
 
@@ -403,7 +403,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
-    if (Workers.Count == 0)
+    if (WorkerCount == 0)
     {
       return;
     }
@@ -608,7 +608,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
   }
 }
 
-public class VariableInputReceiveComponentWorker : WorkerInstance
+public class VariableInputReceiveComponentWorker : WorkerInstance<VariableInputReceiveComponent>
 {
   private GH_Structure<IGH_Goo> DataInput;
   private Action<string, Exception> ErrorAction;
@@ -617,8 +617,8 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
 
   public List<string> outputList = new();
 
-  public VariableInputReceiveComponentWorker(GH_Component p)
-    : base(p) { }
+  public VariableInputReceiveComponentWorker(VariableInputReceiveComponent p, string id = "baseWorker", CancellationToken cancellationToken = default)
+    : base(p, id, cancellationToken) { }
 
   private StreamWrapper InputWrapper { get; set; }
 
@@ -630,19 +630,20 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
 
   public int TotalObjectCount { get; set; } = 1;
 
-  public override WorkerInstance Duplicate()
+  public override WorkerInstance<VariableInputReceiveComponent> Duplicate(string id, CancellationToken cancellationToken)
   {
-    return new VariableInputReceiveComponentWorker(Parent);
+    return new VariableInputReceiveComponentWorker(Parent, id, cancellationToken);
   }
 
   public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
   {
-    InputWrapper = ((VariableInputReceiveComponent)Parent).StreamWrapper;
+    InputWrapper = Parent.StreamWrapper;
   }
 
-  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+
+  public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
-    var receiveComponent = (VariableInputReceiveComponent)Parent;
+    var receiveComponent = Parent;
     try
     {
       InternalProgressAction = dict =>
@@ -663,14 +664,13 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        var asyncParent = (GH_AsyncComponent)Parent;
-        asyncParent.CancellationSources.ForEach(source =>
+        foreach(var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {
             source.Cancel();
           }
-        });
+        }
       };
 
       if (receiveComponent.ApiResetTask == null)
