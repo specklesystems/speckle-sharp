@@ -32,7 +32,9 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class VariableInputSendComponent : SelectKitAsyncComponentBase<VariableInputSendComponent>, IGH_VariableParameterComponent
+public class VariableInputSendComponent
+  : SelectKitAsyncComponentBase<VariableInputSendComponent>,
+    IGH_VariableParameterComponent
 {
   private DebounceDispatcher nicknameChangeDebounce = new();
 
@@ -367,7 +369,11 @@ public class VariableInputSendComponentWorker : WorkerInstance<VariableInputSend
 
   private List<ITransport> Transports;
 
-  public VariableInputSendComponentWorker(VariableInputSendComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public VariableInputSendComponentWorker(
+    VariableInputSendComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken)
   {
     RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
@@ -570,7 +576,7 @@ public class VariableInputSendComponentWorker : WorkerInstance<VariableInputSend
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        foreach(var source in Parent.CancellationTokenSources)
+        foreach (var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {

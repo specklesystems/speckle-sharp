@@ -7,7 +7,8 @@ using Serilog.Context;
 
 namespace ConnectorGrasshopper;
 
-public abstract class GH_SpeckleAsyncComponent<T> : GH_AsyncComponent<T>, ISpeckleTrackingDocumentObject where T : GH_Component
+public abstract class GH_SpeckleAsyncComponent<T> : GH_AsyncComponent<T>, ISpeckleTrackingDocumentObject
+  where T : GH_Component
 {
   protected GH_SpeckleAsyncComponent(
     string name,

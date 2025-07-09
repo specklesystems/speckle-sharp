@@ -31,7 +31,9 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class NewVariableInputSendComponent : SelectKitAsyncComponentBase<NewVariableInputSendComponent>, IGH_VariableParameterComponent
+public class NewVariableInputSendComponent
+  : SelectKitAsyncComponentBase<NewVariableInputSendComponent>,
+    IGH_VariableParameterComponent
 {
   private DebounceDispatcher nicknameChangeDebounce = new();
 
@@ -380,7 +382,11 @@ public class NewVariableInputSendComponentWorker : WorkerInstance<NewVariableInp
 
   private List<ITransport> Transports;
 
-  public NewVariableInputSendComponentWorker(NewVariableInputSendComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public NewVariableInputSendComponentWorker(
+    NewVariableInputSendComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken)
   {
     RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
@@ -391,7 +397,10 @@ public class NewVariableInputSendComponentWorker : WorkerInstance<NewVariableInp
 
   public string BaseId { get; set; }
 
-  public override WorkerInstance<NewVariableInputSendComponent> Duplicate(string id, CancellationToken cancellationToken) 
+  public override WorkerInstance<NewVariableInputSendComponent> Duplicate(
+    string id,
+    CancellationToken cancellationToken
+  )
   {
     return new NewVariableInputSendComponentWorker(Parent, id, cancellationToken);
   }
@@ -598,7 +607,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance<NewVariableInp
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
         Done();
-        foreach(var source in Parent.CancellationTokenSources)
+        foreach (var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {

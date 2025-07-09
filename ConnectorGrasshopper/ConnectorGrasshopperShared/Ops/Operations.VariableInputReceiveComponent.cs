@@ -33,7 +33,9 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
-public class VariableInputReceiveComponent : SelectKitAsyncComponentBase<VariableInputReceiveComponent>, IGH_VariableParameterComponent
+public class VariableInputReceiveComponent
+  : SelectKitAsyncComponentBase<VariableInputReceiveComponent>,
+    IGH_VariableParameterComponent
 {
   public Task ApiResetTask;
 
@@ -617,7 +619,11 @@ public class VariableInputReceiveComponentWorker : WorkerInstance<VariableInputR
 
   public List<string> outputList = new();
 
-  public VariableInputReceiveComponentWorker(VariableInputReceiveComponent p, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public VariableInputReceiveComponentWorker(
+    VariableInputReceiveComponent p,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(p, id, cancellationToken) { }
 
   private StreamWrapper InputWrapper { get; set; }
@@ -630,7 +636,10 @@ public class VariableInputReceiveComponentWorker : WorkerInstance<VariableInputR
 
   public int TotalObjectCount { get; set; } = 1;
 
-  public override WorkerInstance<VariableInputReceiveComponent> Duplicate(string id, CancellationToken cancellationToken)
+  public override WorkerInstance<VariableInputReceiveComponent> Duplicate(
+    string id,
+    CancellationToken cancellationToken
+  )
   {
     return new VariableInputReceiveComponentWorker(Parent, id, cancellationToken);
   }
@@ -639,7 +648,6 @@ public class VariableInputReceiveComponentWorker : WorkerInstance<VariableInputR
   {
     InputWrapper = Parent.StreamWrapper;
   }
-
 
   public override async Task DoWork(Action<string, double> ReportProgress, Action Done)
   {
@@ -664,7 +672,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance<VariableInputR
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        foreach(var source in Parent.CancellationTokenSources)
+        foreach (var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {

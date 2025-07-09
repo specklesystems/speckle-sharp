@@ -137,7 +137,11 @@ public class ReceiveLocalWorker : WorkerInstance<ReceiveLocalComponent>
   private GH_Structure<IGH_Goo> data;
   private string localDataId;
 
-  public ReceiveLocalWorker(ReceiveLocalComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public ReceiveLocalWorker(
+    ReceiveLocalComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken) { }
 
   private List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new();

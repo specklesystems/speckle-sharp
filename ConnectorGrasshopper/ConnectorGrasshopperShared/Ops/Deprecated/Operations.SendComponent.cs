@@ -302,7 +302,11 @@ public class SendComponentWorker : WorkerInstance<SendComponent>
 
   private List<ITransport> Transports;
 
-  public SendComponentWorker(SendComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public SendComponentWorker(
+    SendComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken)
   {
     RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
@@ -486,7 +490,7 @@ public class SendComponentWorker : WorkerInstance<SendComponent>
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        foreach(var source in Parent.CancellationTokenSources)
+        foreach (var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {

@@ -68,7 +68,11 @@ public class SendLocalWorker : WorkerInstance<SendLocalComponent>
 
   private string sentObjectId;
 
-  public SendLocalWorker(SendLocalComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public SendLocalWorker(
+    SendLocalComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken) { }
 
   private List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new();

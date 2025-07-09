@@ -487,7 +487,11 @@ public class ReceiveComponentWorker : WorkerInstance<ReceiveComponent>
 
   private Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-  public ReceiveComponentWorker(ReceiveComponent parent, string id = "baseWorker", CancellationToken cancellationToken = default)
+  public ReceiveComponentWorker(
+    ReceiveComponent parent,
+    string id = "baseWorker",
+    CancellationToken cancellationToken = default
+  )
     : base(parent, id, cancellationToken) { }
 
   private StreamWrapper InputWrapper { get; set; }
@@ -533,7 +537,7 @@ public class ReceiveComponentWorker : WorkerInstance<ReceiveComponent>
           : exception.ToFormattedString();
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
         Done();
-        foreach(var source in Parent.CancellationTokenSources)
+        foreach (var source in Parent.CancellationTokenSources)
         {
           if (source.Token != CancellationToken)
           {
