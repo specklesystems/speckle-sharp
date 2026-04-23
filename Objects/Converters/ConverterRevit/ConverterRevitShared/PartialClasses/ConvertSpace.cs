@@ -66,20 +66,25 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    var revitZone = revitSpace.Zone;
-    revitZone = CreateRevitZoneIfNeeded(speckleSpace, revitZone, targetPhase, level);
-
-    // if a relevant zone exists add space to it
-    if (revitZone != null)
+    // Only attempt zone association when the incoming Speckle object has an explicit zone.
+    // A null speckleSpace.zone means the source space had no zone — skipping prevents
+    // the connector from touching the Revit document's default "No Zone" state and
+    // accidentally wiping existing spaces (fixes #3524).
+    if (speckleSpace.zone != null)
     {
-      var currentSpaces = revitZone.Spaces;
+      var revitZone = revitSpace.Zone;
+      revitZone = CreateRevitZoneIfNeeded(speckleSpace, revitZone, targetPhase, level);
 
-      // if the space is already in the zone, do nothing.
-      if (!currentSpaces.Contains(revitSpace))
+      if (revitZone != null)
       {
-        var spaceSet = new DB.SpaceSet();
-        spaceSet.Insert(revitSpace);
-        revitZone.AddSpaces(spaceSet);
+        var currentSpaces = revitZone.Spaces;
+
+        if (!currentSpaces.Contains(revitSpace))
+        {
+          var spaceSet = new DB.SpaceSet();
+          spaceSet.Insert(revitSpace);
+          revitZone.AddSpaces(spaceSet);
+        }
       }
     }
 
@@ -280,10 +285,14 @@ public partial class ConverterRevit
       speckleSpace["roomId"] = revitSpace.Room.Id.ToString();
     }
 
-    // Zones are stored as a Space prop despite being a parent object, so we need to convert it here
-    speckleSpace.zone = revitDocumentAggregateCache
-      .GetOrInitializeEmptyCacheOfType<RevitZone>(out _)
-      .GetOrAdd(revitSpace.Zone.Name, () => ZoneToSpeckle(revitSpace.Zone), out _);
+    // Zones are stored as a Space prop despite being a parent object, so we need to convert it here.
+    // Guard against null: Space.Zone is null when the space has not been assigned to any zone.
+    if (revitSpace.Zone != null)
+    {
+      speckleSpace.zone = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<RevitZone>(out _)
+        .GetOrAdd(revitSpace.Zone.Name, () => ZoneToSpeckle(revitSpace.Zone), out _);
+    }
 
     GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
